@@ -1,3 +1,5 @@
+import { Logger } from '../utils/logger';
+
 export enum AgentState {
   IDLE = 'idle',
   THINKING = 'thinking',
@@ -6,38 +8,64 @@ export enum AgentState {
   ERROR = 'error'
 }
 
-export interface AgentStatus {
-  state: AgentState;
-  progress: number;
-  message: string;
+export interface AgentConfig {
+  id: string;
+  name: string;
+  role?: string;
+  model?: string;
+  color?: string;
+  systemInstruction?: string;
 }
 
 export abstract class BaseAgent {
-  public id: string;
-  public name: string;
-  public color: string;
-  private status: AgentStatus;
+  protected config: AgentConfig;
+  protected logger: Logger;
+  protected state: AgentState = AgentState.IDLE;
+  protected progress: number = 0;
+  protected lastStatus: string = '';
+  public onStatusUpdate?: (status: any) => void;
 
-  constructor(id: string, name: string, color: string) {
-    this.id = id;
-    this.name = name;
-    this.color = color;
-    this.status = {
-      state: AgentState.IDLE,
-      progress: 0,
-      message: 'Agent initialized'
+  constructor(config: AgentConfig | string, name?: string, color?: string) {
+    if (typeof config === 'string') {
+      this.config = { id: config, name: name || config, color };
+    } else {
+      this.config = config;
+    }
+    this.logger = new Logger(this.config.id);
+  }
+
+  /**
+   * Core execution logic for the agent.
+   * Every agent in the GenIUS swarm must implement this.
+   */
+  abstract execute(input: any): Promise<any>;
+
+  /**
+   * Status reporting for the React Console.
+   */
+  protected updateStatus(state: AgentState, status: string, progress: number = 0) {
+    this.state = state;
+    this.lastStatus = status;
+    this.progress = progress;
+    this.logger.info(`[${state.toUpperCase()}] ${status} (${progress}%)`);
+    if (this.onStatusUpdate) {
+      this.onStatusUpdate(this.getStatus());
+    }
+    // Future: Emit to Firestore for real-time console updates
+  }
+
+  public getStatus() {
+    return {
+      id: this.config.id,
+      name: this.config.name,
+      color: this.config.color,
+      state: this.state,
+      lastStatus: this.lastStatus,
+      progress: this.progress
     };
   }
 
-  public getStatus(): AgentStatus {
-    return { ...this.status };
+  public getConfig(): AgentConfig {
+    return this.config;
   }
-
-  protected updateStatus(state: AgentState, message: string, progress: number = 0) {
-    this.status = { state, message, progress };
-    console.log(`[${this.name}] ${state.toUpperCase()}: ${message} (${progress}%)`);
-    // Note: Emitting to Firestore/WebSocket will be handled by the Orchestrator
-  }
-
-  public abstract execute(input: unknown): Promise<unknown>;
 }

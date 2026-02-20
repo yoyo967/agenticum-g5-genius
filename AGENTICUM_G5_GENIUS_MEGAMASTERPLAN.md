@@ -12,7 +12,8 @@ Mission Statement
 Hackathon Intel — Rules & Compliance Matrix
 Project Identity & Branding System
 The Genius Architecture — Technical Blueprint
-Agent Specifications — The Genius Five
+Agent Specifications — The Genius Five + PM-07
+The Algorithmic Senate — Responsible AI Tribunal
 Tech Stack — Pure Google Native
 Landing Page — Premium Relaunch
 Backend — Neural Live Fabric
@@ -153,12 +154,13 @@ No resemblance to any existing brand
    └────────────────────────────────────┘
    │
    ▼
-   ┌────────────────────┐
-   │ REACT CONSOLE │
-   │ Live Agent Feed │
-   │ Asset Gallery │
-   │ Voice Visualizer │
-   └────────────────────┘
+   ┌────────────────────┐ ┌──────────────────────────┐
+   │ REACT CONSOLE │ │ PM-07 PERSISTENT AGENT │
+   │ Live Agent Feed │ <──> │ Cloud Run (Proactive) │
+   │ Asset Gallery │ └───────────┬──────────────┘
+   │ Voice Visualizer │ ┌───────────┴──────────────┐
+   └────────────────────┘ │ Google Chat | Scheduler │
+   └──────────────────────────┘
    4.2 Data Flow — A Typical Session
 
 User speaks: "I need a social media campaign for a sustainable coffee brand targeting Gen Z"
@@ -235,8 +237,8 @@ Responsibilities:
 Analyzes competitor screenshots via Vision API (no DOM, pure visual)
 Identifies messaging hierarchies, CTA patterns, design language
 Reports competitive gaps and opportunities
+**Lead Senator of the Algorithmic Senate (Tribunal for Ethical Audit)**
 Audits DA-03's outputs for brand consistency
-Quality gate before final delivery
 Narrates findings with competitive context
 
 5.4 CC-06 GENIUS — Video & Content Director
