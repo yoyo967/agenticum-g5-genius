@@ -5,7 +5,7 @@ export class SN00Orchestrator extends BaseAgent {
     super('sn-00', 'Neural Orchestrator', '#4285F4');
   }
 
-  public async execute(userInput: string): Promise<any> {
+  public async execute(_userInput: string): Promise<{ plan: string; nextSteps: string[] }> {
     this.updateStatus(AgentState.THINKING, 'Analyzing user intent...', 10);
     
     // Logic for Thinking Mode and Dispatching to other agents will go here

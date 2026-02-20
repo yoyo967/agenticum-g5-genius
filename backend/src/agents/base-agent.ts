@@ -39,5 +39,5 @@ export abstract class BaseAgent {
     // Note: Emitting to Firestore/WebSocket will be handled by the Orchestrator
   }
 
-  public abstract execute(input: any): Promise<any>;
+  public abstract execute(input: unknown): Promise<unknown>;
 }
