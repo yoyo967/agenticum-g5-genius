@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { storageService } from '../services/storage';
+import { DiscoveryEngineService } from '../services/discovery-engine';
+const pdfParse = require('pdf-parse');
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -13,9 +15,30 @@ router.post('/upload', upload.array('files'), async (req: Request, res: Response
       return res.status(400).json({ error: 'No files provided in payload.' });
     }
 
-    const uploadPromises = files.map(file => 
-      storageService.uploadFile(file.originalname, file.buffer, file.mimetype)
-    );
+    const uploadPromises = files.map(async file => {
+      // 1. Upload to storage (local fallback or GCS)
+      const url = await storageService.uploadFile(file.originalname, file.buffer, file.mimetype);
+      
+      // 2. Parse text and send to Discovery Engine
+      try {
+        let text = '';
+        if (file.mimetype === 'application/pdf') {
+          const pdfData = await pdfParse(file.buffer);
+          text = pdfData.text;
+        } else if (file.mimetype.includes('text')) {
+          text = file.buffer.toString('utf-8');
+        }
+        
+        if (text.trim()) {
+          await DiscoveryEngineService.getInstance().ingestDocument(file.originalname, text);
+        }
+      } catch (parseError) {
+        console.error(`Failed to parse document context ${file.originalname}:`, parseError);
+        // Continue without failing the whole upload
+      }
+      
+      return url;
+    });
 
     const urls = await Promise.all(uploadPromises);
 
