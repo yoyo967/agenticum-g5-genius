@@ -1,3 +1,4 @@
+import { GoogleGenAI } from '@google/genai';
 import { VertexAI, GenerativeModel } from '@google-cloud/vertexai';
 import { Logger } from '../utils/logger';
 
@@ -39,9 +40,38 @@ export class VertexAIService {
   }
 
   async generateImage(prompt: string): Promise<string> {
-    // This will be implemented using the Imagen 3 endpoint on Vertex AI
-    this.logger.info(`Requesting Image Generation: ${prompt.substring(0, 50)}...`);
-    // Placeholder returning a mock GCS URL for now
-    return `https://storage.googleapis.com/online-marketing-manager-genius-assets/mock-${Date.now()}.png`;
+    this.logger.info(`Requesting Image Generation from Imagen 3: ${prompt.substring(0, 50)}...`);
+    
+    // Check if we have the key, otherwise fallback gracefully
+    if (!process.env.GEMINI_API_KEY) {
+       this.logger.warn('No GEMINI_API_KEY found, returning placeholder mock for DA-03.');
+       return `https://storage.googleapis.com/online-marketing-manager-genius-assets/mock-${Date.now()}.png`;
+    }
+
+    try {
+      // Use the official Google Gen AI SDK for cross-model support
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      // Imagen 3 requires exactly the right model string
+      const response = await ai.models.generateImages({
+        model: 'imagen-3.0-generate-002',
+        prompt: prompt,
+        config: {
+            numberOfImages: 1,
+            outputMimeType: 'image/jpeg',
+            aspectRatio: '16:9'
+        }
+      });
+      
+      const b64 = response.generatedImages?.[0]?.image?.imageBytes;
+      if (b64) {
+          // Return a data URI so it renders instantly in the React markdown
+          return `data:image/jpeg;base64,${b64}`;
+      } else {
+          throw new Error('No image bytes returned from Imagen 3.');
+      }
+    } catch (error) {
+       this.logger.error('Imagen 3 generation failed', error as Error);
+       return `https://storage.googleapis.com/online-marketing-manager-genius-assets/mock-${Date.now()}.png`;
+    }
   }
 }

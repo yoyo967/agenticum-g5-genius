@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Target, Cpu, ShieldCheck, Layers } from 'lucide-react';
+import { Target, Cpu, ShieldCheck, Layers, Monitor, Network } from 'lucide-react';
 
 const NEXUS_ITEMS = [
   {
@@ -29,12 +29,26 @@ const NEXUS_ITEMS = [
     content: "Innovation through real-time multi-agent orchestration. Orchestrated by SN-00, our substrate handles parallel strategy, audit, and creative execution.",
     category: "Justification",
     color: "#a855f7"
+  },
+  {
+    title: "Enterprise Gateway",
+    icon: Monitor,
+    content: "We pivoted from a simple showcase to a routed OS environment. The public Landing Page serves only as a gateway to the secure, internal Swarm Operations Dashboard.",
+    category: "Architecture",
+    color: "#ff0055"
+  },
+  {
+    title: "Autonomous CMS",
+    icon: Network,
+    content: "The Swarm doesn't just chat—it publishes. PM-07 continuously crawls for insights, commanding CC-06 to autonomously author and publish deeply connected SEO Pillar articles.",
+    category: "Autonomy",
+    color: "#ff9900"
   }
 ];
 
 export const ProjectNexus = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-7xl mx-auto py-20 px-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl mx-auto py-20 px-6">
       {NEXUS_ITEMS.map((item, i) => (
         <motion.div
           key={i}

@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bot, Shield, Cpu, Zap, Palette, Film, 
   Terminal, Activity, CheckCircle2, 
-  Sparkles, Scale, DollarSign, Leaf
+  Sparkles, Scale, DollarSign, Leaf,
+  Mic, MicOff, Volume2
 } from 'lucide-react';
 
 interface AgentStatus {
@@ -30,12 +31,57 @@ export function GeniusConsole() {
   const [logs, setLogs] = useState<{ type: string; message: string; timestamp: string }[]>([]);
   const [output, setOutput] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  
   const ws = useRef<WebSocket | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Audio refs
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const nextPlayTimeRef = useRef<number>(0);
 
   const addLog = useCallback((type: string, message: string) => {
     setLogs(prev => [...prev.slice(-19), { type, message, timestamp: new Date().toLocaleTimeString() }]);
   }, []);
+
+  const base64ToArrayBuffer = (base64: string) => {
+    const binaryString = window.atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  };
+
+  const playPCMChunk = (base64Data: string, sampleRate = 24000) => {
+    if (!audioContextRef.current) return;
+    const ctx = audioContextRef.current;
+    
+    // The Gemini Live API returns 16-bit PCM. We need to convert it to Float32 for Web Audio
+    const buffer = base64ToArrayBuffer(base64Data);
+    const int16Array = new Int16Array(buffer);
+    const float32Array = new Float32Array(int16Array.length);
+    for (let i = 0; i < int16Array.length; i++) {
+        float32Array[i] = int16Array[i] / 32768.0;
+    }
+
+    const audioBuffer = ctx.createBuffer(1, float32Array.length, sampleRate);
+    audioBuffer.getChannelData(0).set(float32Array);
+
+    const source = ctx.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(ctx.destination);
+
+    const currentTime = ctx.currentTime;
+    if (nextPlayTimeRef.current < currentTime) {
+        nextPlayTimeRef.current = currentTime;
+    }
+
+    source.start(nextPlayTimeRef.current);
+    nextPlayTimeRef.current += audioBuffer.duration;
+  };
 
   const connect = useCallback(() => {
     ws.current = new WebSocket('ws://localhost:8080');
@@ -53,6 +99,9 @@ export function GeniusConsole() {
         } else if (data.type === 'output') {
           setOutput(data.data);
           addLog('success', 'Full campaign payload received');
+        } else if (data.type === 'realtime_output') {
+          // Play incoming Voice from Gemini
+          playPCMChunk(data.data, 24000); 
         } else if (data.type === 'error') {
           addLog('error', data.message);
         }
@@ -88,6 +137,66 @@ export function GeniusConsole() {
     }
   };
 
+  const toggleRecording = async () => {
+    if (isRecording) {
+      setIsRecording(false);
+      streamRef.current?.getTracks().forEach(track => track.stop());
+      processorRef.current?.disconnect();
+      addLog('system', 'Neural Uplink (Voice) Closed.');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
+      audioContextRef.current = audioCtx;
+      
+      const source = audioCtx.createMediaStreamSource(stream);
+      const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+      processorRef.current = processor;
+
+      processor.onaudioprocess = (e) => {
+        const float32Array = e.inputBuffer.getChannelData(0);
+        // Convert Float32 to Int16
+        const int16Array = new Int16Array(float32Array.length);
+        for (let i = 0; i < float32Array.length; i++) {
+           let val = float32Array[i] * 32768;
+           val = Math.max(-32768, Math.min(32767, val));
+           int16Array[i] = val;
+        }
+
+        // Convert Int16Array to Base64
+        const uint8Array = new Uint8Array(int16Array.buffer);
+        let binary = '';
+        const len = uint8Array.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(uint8Array[i]);
+        }
+        const base64Data = window.btoa(binary);
+
+        // Send over WS
+        if (ws.current?.readyState === WebSocket.OPEN) {
+           ws.current.send(JSON.stringify({
+             type: 'realtime_input',
+             sampleRate: 16000,
+             data: base64Data
+           }));
+        }
+      };
+
+      source.connect(processor);
+      processor.connect(audioCtx.destination);
+      
+      setIsRecording(true);
+      addLog('system', 'Neural Uplink (Voice) Established. Speak now.');
+    } catch (err) {
+      addLog('error', 'Microphone connection denied.');
+      console.error(err);
+    }
+  };
+
   const getAgentIcon = (id: string) => {
     switch (id) {
       case 'sn-00': return <Cpu size={16} />;
@@ -98,6 +207,40 @@ export function GeniusConsole() {
       case 'pm-07': return <Bot size={16} />;
       default: return <Bot size={16} />;
     }
+  };
+
+  const renderMarkdown = (text: string) => {
+    return text.split('\n').map((line, i) => {
+      // Header handling
+      if (line.startsWith('# ')) return <h1 key={i} className="text-3xl font-display font-black uppercase italic tracking-tighter mb-4 mt-6 text-white">{line.replace('# ', '')}</h1>;
+      if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-display font-black uppercase tracking-tight mb-3 mt-5 text-neural-blue/90">{line.replace('## ', '')}</h2>;
+      if (line.startsWith('### ')) return <h3 key={i} className="text-lg font-display font-bold uppercase mb-2 mt-4 text-white/80">{line.replace('### ', '')}</h3>;
+      
+      // Image handling: ![Alt text](url)
+      const imgMatch = line.match(/!\[(.*?)\]\((.*?)\)/);
+      if (imgMatch) {
+        return (
+          <div key={i} className="my-6 rounded-xl overflow-hidden border border-white/10 shadow-2xl group relative bg-black/20">
+             <div className="absolute inset-0 bg-neural-blue/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity" />
+             <img src={imgMatch[2]} alt={imgMatch[1]} className="w-full h-auto object-cover object-center max-h-[400px]" />
+             <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-neural-black to-transparent">
+                <span className="text-[10px] uppercase font-black tracking-widest text-neural-blue p-1 bg-neural-blue/10 rounded">{imgMatch[1]}</span>
+             </div>
+          </div>
+        );
+      }
+
+      // Basic formatting
+      if (line.startsWith('> ')) return <blockquote key={i} className="border-l-2 border-neural-gold/50 pl-4 py-1 italic text-white/60 mb-4 bg-white/2">{line.replace('> ', '')}</blockquote>;
+      if (line.startsWith('- ')) return <li key={i} className="ml-6 list-disc mb-1 text-white/70">{line.replace('- ', '')}</li>;
+      if (line.trim() === '') return <br key={i} />;
+      
+      const formatted = line
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em class="text-white/80">$1</em>');
+      
+      return <p key={i} className="mb-4 leading-relaxed font-light text-white/70" dangerouslySetInnerHTML={{ __html: formatted }} />;
+    });
   };
 
   return (
@@ -119,9 +262,24 @@ export function GeniusConsole() {
         </div>
         
         <div className="flex items-center gap-6">
-          <div className="flex gap-2">
-            {[1, 2, 3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/10" />)}
+          <div className="flex gap-2 text-[10px] uppercase font-black text-white/50 tracking-widest items-center mr-4">
+             {isRecording ? (
+                <span className="flex items-center gap-2 text-neural-gold border border-neural-gold/30 px-3 py-1 rounded bg-neural-gold/10">
+                  <div className="w-2 h-2 rounded-full bg-neural-gold animate-pulse" />
+                  Live Uplink
+                </span>
+             ) : (
+                <span className="flex items-center gap-2">
+                  <Volume2 size={12} /> Idle Data
+                </span>
+             )}
           </div>
+          <button 
+            onClick={toggleRecording}
+            className={`p-2 rounded border transition-all active:scale-95 ${isRecording ? 'bg-red-500/20 text-red-500 border-red-500/30' : 'bg-neural-gold/10 text-neural-gold hover:bg-neural-gold border-neural-gold/20 hover:text-obsidian'}`}
+          >
+            {isRecording ? <MicOff size={14} /> : <Mic size={14} />}
+          </button>
           <button 
             onClick={handleStart}
             disabled={!connected || (swarm?.state !== 'idle' && swarm?.state !== 'done')}
@@ -243,9 +401,9 @@ export function GeniusConsole() {
                       <Sparkles size={18} className="text-neural-blue" />
                       <h2 className="text-xl font-display font-black uppercase italic tracking-tighter m-0">Campaign Forge Complete</h2>
                     </div>
-                    <pre className="p-6 bg-white/[0.02] rounded-xl border border-white/5 whitespace-pre-wrap leading-relaxed text-white/80">
-                      {output}
-                    </pre>
+                    <div className="px-2 pb-12">
+                      {renderMarkdown(output)}
+                    </div>
                  </motion.div>
                ) : (
                  <motion.div key="logs" className="flex flex-col gap-2">

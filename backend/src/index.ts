@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { WebSocket, WebSocketServer } from 'ws';
 import { createServer } from 'http';
 import { LiveApiManager } from './live-api/live-api-manager';
+import blogRoutes from './routes/blog';
 
 dotenv.config();
 
@@ -15,6 +16,9 @@ const liveApi = new LiveApiManager();
 
 app.use(cors());
 app.use(express.json());
+
+// API Routes
+app.use('/api/blog', blogRoutes);
 
 wss.on('connection', (ws: WebSocket) => {
   liveApi.handleConnection(ws);
