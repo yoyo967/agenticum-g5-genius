@@ -6,7 +6,7 @@ const AGENTS = [
   { id: 'SN-00', name: 'Strategic Node', role: 'Orchestrator', color: '#00e5ff', x: 50, y: 15 },
   { id: 'SP-01', name: 'Syntactic Processor', role: 'Data Analyst', color: '#8b5cf6', x: 80, y: 40 },
   { id: 'DA-03', name: 'Diffusion Architect', role: 'Visuals', color: '#ec4899', x: 70, y: 80 },
-  { id: 'SC-09', name: 'Security Cortex', role: 'Ethics/Safety', color: '#ffd700', x: 30, y: 80 },
+  { id: 'RA-01', name: 'Security Cortex', role: 'Ethics/Safety', color: '#ef4444', x: 70, y: 70 },
   { id: 'CC-06', name: 'Cognitive Core', role: 'Copywriter', color: '#10b981', x: 20, y: 40 }
 ];
 
@@ -107,9 +107,9 @@ export function SynergyMap() {
               className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group z-20 cursor-crosshair"
               style={{ left: `${agent.x}%`, top: `${agent.y}%` }}
             >
-               <motion.div 
-                 animate={{ scale: [1, 1.05, 1], boxShadow: [`0 0 20px ${agent.color}40`, `0 0 40px ${agent.color}80`, `0 0 20px ${agent.color}40`] }}
-                 transition={{ repeat: Infinity, duration: 2 + Math.random() }}
+                <motion.div 
+                  animate={{ scale: [1, 1.05, 1], boxShadow: [`0 0 20px ${agent.color}40`, `0 0 40px ${agent.color}80`, `0 0 20px ${agent.color}40`] }}
+                  transition={{ repeat: Infinity, duration: agent.id === 'SN-00' ? 2.5 : agent.id === 'SP-01' ? 3 : 2 }}
                  className="w-16 h-16 rounded-2xl glass border flex items-center justify-center backdrop-blur-md transition-all duration-300 group-hover:scale-110"
                  style={{ borderColor: `${agent.color}80`, backgroundColor: `${agent.color}10` }}
                >
