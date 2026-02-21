@@ -4,7 +4,7 @@ import {
   Terminal, Shield, 
   ChevronLeft, Command, Database, Users
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GeniusConsole } from '../components/GeniusConsole';
 import { AssetVault } from '../components/AssetVault';
 import { CreativeStudio } from '../components/CreativeStudio';
@@ -18,11 +18,14 @@ import { SynergyMap } from '../components/SynergyMap';
 import { OmniscientSearch } from '../components/OmniscientSearch';
 import { CampaignManager } from '../components/CampaignManager';
 import { NexusEngineV2 } from '../components/NexusEngineV2';
-import { Palette, GitMerge, Activity, Settings, FolderHeart, Network, Search, Target, LayoutGrid } from 'lucide-react';
+import { PillarBlogEngine } from '../components/PillarBlogEngine';
+import { Palette, GitMerge, Activity, Settings, FolderHeart, Network, Search, Target, LayoutGrid, FileText } from 'lucide-react';
 
 export function OSPortal() {
   const navigate = useNavigate();
-  const [activeModule, setActiveModule] = useState<'console' | 'blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign'>('dashboard');
+  const [searchParams] = useSearchParams();
+  const initialModule = (searchParams.get('module') as any) || 'dashboard';
+  const [activeModule, setActiveModule] = useState<'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign'>(initialModule);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
@@ -74,14 +77,14 @@ export function OSPortal() {
           <SidebarButton 
             icon={<LayoutGrid size={18} />} 
             label="Nexus Engine V2" 
-            active={activeModule === 'blog'} 
-            onClick={() => setActiveModule('blog')}
+            active={activeModule === 'nexus-engine'} 
+            onClick={() => setActiveModule('nexus-engine')}
           />
           <SidebarButton 
-            icon={<LayoutGrid size={18} />} 
+            icon={<FileText size={18} />} 
             label="Pillar Blog Engine" 
-            active={activeModule === 'blog'} 
-            onClick={() => setActiveModule('blog')}
+            active={activeModule === 'pillar-blog'} 
+            onClick={() => setActiveModule('pillar-blog')}
           />
           <SidebarButton 
             icon={<Palette size={18} />} 
@@ -156,7 +159,8 @@ export function OSPortal() {
               {activeModule === 'dashboard' && 'Global Metrics'}
               {activeModule === 'campaign' && 'Agency Directives Orchestrator'}
               {activeModule === 'console' && 'Interactive Matrix'}
-              {activeModule === 'blog' && 'Autonomous Nexus Editor'}
+              {activeModule === 'nexus-engine' && 'Autonomous Nexus Editor'}
+              {activeModule === 'pillar-blog' && 'Pillar Blog Network'}
               {activeModule === 'vault' && 'Secure Storage'}
               {activeModule === 'studio' && 'Interactive Creative Hub'}
               {activeModule === 'workflows' && 'Agency Autopilot'}
@@ -202,7 +206,8 @@ export function OSPortal() {
               {activeModule === 'dashboard' && <ExecutiveDashboard />}
               {activeModule === 'campaign' && <CampaignManager />}
               {activeModule === 'console' && <div className="h-full relative z-10 spatial-depth glass p-1 rounded-xl shadow-[0_50px_100px_rgba(0,0,0,0.5)] border-neural-blue/10 bg-black/40"><GeniusConsole /></div>}
-              {activeModule === 'blog' && <NexusEngineV2 />}
+              {activeModule === 'nexus-engine' && <NexusEngineV2 />}
+              {activeModule === 'pillar-blog' && <PillarBlogEngine />}
               {activeModule === 'vault' && <AssetVault />}
               {activeModule === 'studio' && <CreativeStudio />}
               {activeModule === 'workflows' && <WorkflowBuilder />}
