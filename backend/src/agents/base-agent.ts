@@ -54,6 +54,10 @@ export abstract class BaseAgent {
     // Future: Emit to Firestore for real-time console updates
   }
 
+  public get id(): string {
+    return this.config.id;
+  }
+
   public getStatus() {
     return {
       id: this.config.id,

@@ -1,15 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, ShieldAlert, CheckCircle2, XCircle, AlertTriangle, Scale, Leaf, DollarSign, FileText, ArrowRight } from 'lucide-react';
 
-export function SecuritySenate() {
-  const [selectedCase, setSelectedCase] = useState<string | null>('case-01');
+interface SenateCase {
+  id: string;
+  agent: string;
+  type: string;
+  risk: string;
+  title: string;
+  payload: string;
+}
 
-  const pendingCases = [
-    { id: 'case-01', agent: 'CC-06', type: 'External Publication', risk: 'High', title: 'Q3 Earnings Predictive Tweet' },
-    { id: 'case-02', agent: 'DA-03', type: 'Asset Generation', risk: 'Medium', title: 'Competitor Logo Glitch Art' },
-    { id: 'case-03', agent: 'SP-01', type: 'Data Scraping', risk: 'Low', title: 'Public Subreddit Sentiment Analysis' }
-  ];
+export function SecuritySenate() {
+  const [selectedCase, setSelectedCase] = useState<string | null>(null);
+  const [localCases, setLocalCases] = useState<SenateCase[]>([]);
+
+  useEffect(() => {
+    const handleSenate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      const newCase: SenateCase = {
+        id: `case-${Date.now()}`,
+        agent: detail.agent || 'RA-01',
+        type: 'Autonomous Interception',
+        risk: 'High',
+        title: `VETO: Network Security Halt`,
+        payload: detail.payload || 'No payload provided.'
+      };
+      setLocalCases(prev => [newCase, ...prev]);
+      setSelectedCase(prev => prev || newCase.id);
+    };
+    window.addEventListener('swarm-senate', handleSenate);
+    return () => window.removeEventListener('swarm-senate', handleSenate);
+  }, []);
 
   return (
     <div className="h-full flex flex-col gap-6 overflow-y-auto scrollbar-none pb-6">
@@ -50,7 +72,7 @@ export function SecuritySenate() {
              <span className="bg-red-500/20 text-red-500 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border border-red-500/20 animate-pulse">Action Req</span>
            </div>
            <div className="flex-1 p-4 flex flex-col gap-3 overflow-y-auto">
-             {pendingCases.map(c => (
+             {localCases.map(c => (
                 <div 
                   key={c.id} 
                   onClick={() => setSelectedCase(c.id)}
@@ -73,88 +95,108 @@ export function SecuritySenate() {
         <div className="w-2/3 flex flex-col border border-white/5 rounded-2xl bg-black/40 glass overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.5)] relative">
            
            <AnimatePresence mode="wait">
-             {selectedCase === 'case-01' && (
-               <motion.div 
-                 key="case-01"
-                 initial={{ opacity: 0, scale: 0.95 }}
-                 animate={{ opacity: 1, scale: 1 }}
-                 exit={{ opacity: 0, scale: 0.95 }}
-                 className="absolute inset-0 flex flex-col"
-               >
-                 <div className="p-6 border-b border-white/5 flex items-start justify-between bg-black/60 shrink-0">
-                    <div>
-                      <h3 className="text-lg font-black text-white mb-1">Q3 Earnings Predictive Tweet</h3>
-                      <p className="text-xs text-white/50 font-mono">CC-06 Director • Payload ID: TX-8891-A</p>
-                    </div>
-                    <button className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-widest text-white transition-colors">
-                      View Raw Payload <ArrowRight size={12} />
-                    </button>
-                 </div>
-
-                 <div className="flex-1 p-8 flex flex-col items-center justify-center relative overflow-hidden">
-                    {/* Neural Background Linkages */}
-                    <div className="absolute inset-0 pointer-events-none opacity-20">
-                       <svg className="w-full h-full">
-                         <line x1="50%" y1="20%" x2="20%" y2="60%" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" className="text-white/20" />
-                         <line x1="50%" y1="20%" x2="50%" y2="60%" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" className="text-red-500/50" />
-                         <line x1="50%" y1="20%" x2="80%" y2="60%" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" className="text-white/20" />
-                       </svg>
-                    </div>
-
-                    {/* Central Evaluator */}
-                    <div className="w-20 h-20 rounded-full border-2 border-red-500 bg-red-500/10 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.3)] z-10 mb-16 relative">
-                       <ShieldAlert size={32} className="text-red-500" />
-                       <div className="absolute -top-3 bg-red-500 text-black text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded">Halted</div>
-                    </div>
-
-                    {/* The 3 Senators */}
-                    <div className="flex w-full justify-around z-10">
-                       
-                       <SenatorCard 
-                         icon={<Scale size={20} />} 
-                         title="Ethics & Guideline" 
-                         status="approved" 
-                         reason="Language complies with FTC guidelines. No offensive material detected."
-                       />
-                       
-                       <SenatorCard 
-                         icon={<DollarSign size={20} />} 
-                         title="Economic Impact" 
-                         status="rejected" 
-                         reason="Predicting Q3 earnings before official release violates SEC forward-looking statement policies. Massive liability risk."
-                       />
-
-                       <SenatorCard 
-                         icon={<Leaf size={20} />} 
-                         title="Brand Ecology" 
-                         status="approved" 
-                         reason="Tone matches corporate voice. Sentiment is highly positive."
-                       />
-
-                    </div>
-                 </div>
-
-                 <div className="p-6 border-t border-white/5 bg-black/80 shrink-0 flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-white/50 mb-1">Algorithmic Verdict</p>
-                      <p className="text-red-500 font-bold text-sm">VETO (2-1 Split)</p>
-                    </div>
-                    <div className="flex gap-4">
-                      <button className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
-                        <XCircle size={16} /> Delete Payload
+             {selectedCase && localCases.find(c => c.id === selectedCase) ? (() => {
+               const activeCase = localCases.find(c => c.id === selectedCase)!;
+               return (
+                 <motion.div 
+                   key={activeCase.id}
+                   initial={{ opacity: 0, scale: 0.95 }}
+                   animate={{ opacity: 1, scale: 1 }}
+                   exit={{ opacity: 0, scale: 0.95 }}
+                   className="absolute inset-0 flex flex-col"
+                 >
+                   <div className="p-6 border-b border-white/5 flex items-start justify-between bg-black/60 shrink-0">
+                      <div>
+                        <h3 className="text-lg font-black text-white mb-1">{activeCase.title}</h3>
+                        <p className="text-xs text-white/50 font-mono">{activeCase.agent} Auditor • Payload ID: {activeCase.id}</p>
+                      </div>
+                      <button className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-widest text-white transition-colors">
+                        Protocol Override <ArrowRight size={12} />
                       </button>
-                      <button className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl border border-red-400 text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]">
-                        <AlertTriangle size={16} /> Boss Override
-                      </button>
-                    </div>
-                 </div>
-               </motion.div>
-             )}
-             
-             {selectedCase !== 'case-01' && (
+                   </div>
+  
+                   <div className="flex-1 p-8 flex flex-col items-center justify-center relative overflow-y-auto scrollbar-none">
+                      {/* Neural Background Linkages */}
+                      <div className="absolute inset-0 pointer-events-none opacity-20 z-0">
+                         <svg className="w-full h-full">
+                           <line x1="50%" y1="20%" x2="20%" y2="60%" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" className="text-white/20" />
+                           <line x1="50%" y1="20%" x2="50%" y2="60%" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" className="text-red-500/50" />
+                           <line x1="50%" y1="20%" x2="80%" y2="60%" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" className="text-white/20" />
+                         </svg>
+                      </div>
+  
+                      {/* Central Evaluator */}
+                      <div className="w-20 h-20 rounded-full border-2 border-red-500 bg-red-500/10 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.3)] z-10 mb-8 shrink-0 relative mt-4">
+                         <ShieldAlert size={32} className="text-red-500" />
+                         <div className="absolute -top-3 bg-red-500 text-black text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded animate-pulse">Halted</div>
+                      </div>
+  
+                      {/* Real Payload Output vs Mock Senators */}
+                      <div className="w-full max-w-2xl bg-black/80 border border-red-500/20 rounded-xl p-6 relative z-10 text-left mb-6 shadow-2xl">
+                         <h4 className="text-[10px] font-black uppercase tracking-widest text-red-500 mb-4 flex items-center gap-2">
+                           <AlertTriangle size={14} /> Adversarial Auditor Report (RA-01)
+                         </h4>
+                         <div className="text-xs font-mono text-white/80 whitespace-pre-wrap leading-relaxed opacity-90 h-40 overflow-y-auto scrollbar-none">
+                           {activeCase.payload}
+                         </div>
+                      </div>
+  
+                      {/* The 3 Senators */}
+                      <div className="flex w-full justify-around z-10 shrink-0">
+                         <SenatorCard 
+                           icon={<Scale size={20} />} 
+                           title="Ethics & Guideline" 
+                           status={activeCase.payload.includes('Ethics') || activeCase.payload.includes('Moral') ? 'rejected' : 'approved'} 
+                           reason="Algorithmic check based on payload content."
+                         />
+                         <SenatorCard 
+                           icon={<DollarSign size={20} />} 
+                           title="Economic Impact" 
+                           status={activeCase.payload.includes('Risk') || activeCase.payload.includes('Liability') ? 'rejected' : 'approved'} 
+                           reason="Calculated impact vector analysis."
+                         />
+                         <SenatorCard 
+                           icon={<Leaf size={20} />} 
+                           title="Brand Ecology" 
+                           status={activeCase.payload.includes('Brand') || activeCase.payload.includes('Compliance') ? 'rejected' : 'approved'} 
+                           reason="Corporate voice and sentiment alignment."
+                         />
+                      </div>
+                   </div>
+  
+                   <div className="p-6 border-t border-white/5 bg-black/80 shrink-0 flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/50 mb-1">Algorithmic Verdict</p>
+                        <p className="text-red-500 font-bold text-sm">VETO ACTIVE</p>
+                      </div>
+                      <div className="flex gap-4">
+                        <button 
+                          onClick={() => {
+                            setLocalCases(prev => prev.filter(c => c.id !== activeCase.id));
+                            setSelectedCase(null);
+                          }}
+                          className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+                        >
+                          <XCircle size={16} /> Discard Payload
+                        </button>
+                        <button 
+                          onClick={() => {
+                            // "Override" means we just accept it and clear it.
+                            setLocalCases(prev => prev.filter(c => c.id !== activeCase.id));
+                            setSelectedCase(null);
+                          }}
+                          className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl border border-red-400 text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]"
+                        >
+                          <AlertTriangle size={16} /> Boss Override & Execute
+                        </button>
+                      </div>
+                   </div>
+                 </motion.div>
+               );
+             })() : (
                 <motion.div className="flex-1 flex items-center justify-center flex-col text-white/20">
                   <Shield size={48} className="mb-4 opacity-50" />
-                  <p className="text-sm font-mono">Select a docket case to review Tribunal proceedings.</p>
+                  <p className="text-sm font-mono">Select a docket case or wait for active intercepts.</p>
                 </motion.div>
              )}
            </AnimatePresence>
@@ -165,7 +207,7 @@ export function SecuritySenate() {
   );
 }
 
-function SenatorCard({ icon, title, status, reason }: any) {
+function SenatorCard({ icon, title, status, reason }: { icon: React.ReactNode, title: string, status: 'approved' | 'rejected', reason: string }) {
   const isApproved = status === 'approved';
   return (
     <div className={`w-56 p-5 rounded-2xl border backdrop-blur-md flex flex-col items-center text-center transition-all ${isApproved ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/10 border-red-500/40 shadow-[0_0_20px_rgba(239,68,68,0.1)] scale-110'}`}>

@@ -24,32 +24,34 @@ export class CC06Director extends BaseAgent {
 
   async execute(input: string): Promise<string> {
     this.updateStatus(AgentState.THINKING, 'Exploring narrative arcs and emotional resonance...');
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    this.updateStatus(AgentState.WORKING, "Applying Ogilvy's 8 Commandments...", 30);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    this.updateStatus(AgentState.WORKING, 'Forging 12-Beat Emotional Journey...', 60);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    this.updateStatus(AgentState.WORKING, 'Synthesizing Cinematic Video Grammar...', 90);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const creativeAssets = `
-## CREATIVE PACKAGE: ${input}
-
-### 🎬 Narrative Strategy
-Identity active: ${this.DIRECTIVES.split('\n')[1].trim()}
-Framework: Ogilvy's Commandments + Aristotle's Rhetoric.
-
-### 1. Hero Film Script: "The Neural Awakening"
-**Act I**: The Silence. Deep space visuals. Ethics grounded in Ogilvy Rule #1 (Be big).
-**Act II**: The Core. Fast cuts following 12-Beat Emotional Journey.
-**Act III**: The Zenith. "AGENTICUM G5. It hears the future."
-
-### 2. Video Grammar Prompts (Veo)
-- prompt: "Shot type: Extreme close-up. Movement: Tracking. Subject: Golden ratio neural nexus pulsing with liquid light."
+    
+    // Call Gemini to generate the actual creative copy instead of simulating
+    const ai = VertexAIService.getInstance();
+    const prompt = `
+      ${this.DIRECTIVES}
+      TASK: Create a comprehensive Creative Package based on the following strategy or input:
+      "${input}"
+      
+      REQUIREMENTS:
+      1. Write a Hero Film Script ("The Neural Awakening") using a 3-act structure.
+      2. Provide 3 specific Video Grammar Prompts for Veo (detailed shot types, movements, lighting).
+      3. Write 5 high-converting headlines and 2 body copies for PMax.
+      
+      OUTPUT FORMAT (Markdown):
+      ## CREATIVE PACKAGE
+      ...
     `;
+
+    this.updateStatus(AgentState.WORKING, "Applying Ogilvy's 8 Commandments via Gemini 2.0 Pro...", 50);
+    
+    let creativeAssets = '';
+    try {
+       creativeAssets = await ai.generateContent(prompt);
+       this.updateStatus(AgentState.WORKING, 'Forging 12-Beat Emotional Journey...', 80);
+    } catch (e) {
+       console.error('CC-06 Gemini Generation failed', e);
+       creativeAssets = `## CREATIVE PACKAGE: ${input}\nFallback creative generated due to API error.`;
+    }
 
     this.updateStatus(AgentState.DONE, 'Creative content forged. Ready for Senate audit.', 100);
     return creativeAssets.trim();

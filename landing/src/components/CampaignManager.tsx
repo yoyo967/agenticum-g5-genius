@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Terminal, Briefcase, Zap, Send, FileText, Image as ImageIcon, Cpu, Activity, CircleDashed } from 'lucide-react';
+import { Target, Terminal, Briefcase, Zap, Send, FileText, Image as ImageIcon, Cpu, Activity, CircleDashed, DollarSign, Crosshair, BarChart2 } from 'lucide-react';
 
 type AgentDraft = {
   agent: string;
@@ -15,6 +15,11 @@ export function CampaignManager() {
   const [directive, setDirective] = useState('');
   const [isOrchestrating, setIsOrchestrating] = useState(false);
   
+  // PMax Specific Settings Extensions
+  const [budget, setBudget] = useState<number>(100);
+  const [biddingStrategy, setBiddingStrategy] = useState<'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE'>('MAXIMIZE_CONVERSIONS');
+  const [targetValue, setTargetValue] = useState<number>(0);
+  
   const [agentTasks, setAgentTasks] = useState<AgentDraft[]>([
     { agent: 'CC-06', role: 'Copywriter', status: 'pending' },
     { agent: 'DA-03', role: 'Visuals', status: 'pending' },
@@ -22,38 +27,62 @@ export function CampaignManager() {
     { agent: 'SN-00', role: 'Orchestrator', status: 'pending' }
   ]);
 
+  useEffect(() => {
+    const handleSwarmStatus = (e: CustomEvent<any[]>) => {
+      const statuses = e.detail;
+      let allComplete = true;
+      let hasWorking = false;
+      
+      const newTasks = agentTasks.map(task => {
+         const backendStatus = statuses.find(s => s.agent === task.agent);
+         if (backendStatus) {
+            if (backendStatus.status !== 'complete') allComplete = false;
+            if (backendStatus.status === 'working') hasWorking = true;
+            return {
+               ...task,
+               status: backendStatus.status,
+               output: backendStatus.output
+            };
+         }
+         allComplete = false;
+         return task;
+      });
+      
+      setAgentTasks(newTasks);
+      
+      if (allComplete) {
+         setIsOrchestrating(false);
+      } else if (hasWorking) {
+         setIsOrchestrating(true);
+      }
+    };
+
+    window.addEventListener('swarm-status', handleSwarmStatus as EventListener);
+    return () => window.removeEventListener('swarm-status', handleSwarmStatus as EventListener);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agentTasks]);
+
   const handleDispatch = () => {
     if (!directive.trim() && (!clientName.trim() || !objective.trim())) return;
     
     setIsOrchestrating(true);
     
-    // Simulate parallel swarm execution
-    setAgentTasks(prev => prev.map(t => ({ ...t, status: 'working' })));
+    // Set initial working state optimistically
+    setAgentTasks(prev => prev.map(t => ({ ...t, status: 'working', output: undefined })));
     
-    setTimeout(() => {
-      setAgentTasks(prev => prev.map(t => 
-        t.agent === 'SN-00' ? { ...t, status: 'complete', output: 'Campaign Strategy Matrix Locked.' } : t
-      ));
-    }, 2000);
-    
-    setTimeout(() => {
-      setAgentTasks(prev => prev.map(t => 
-        t.agent === 'PM-07' ? { ...t, status: 'complete', output: 'Pillar Page Schema Generated.' } : t
-      ));
-    }, 3500);
-    
-    setTimeout(() => {
-      setAgentTasks(prev => prev.map(t => 
-        t.agent === 'CC-06' ? { ...t, status: 'complete', output: 'Viral LinkedIn Hooks Crafted.' } : t
-      ));
-    }, 5000);
-    
-    setTimeout(() => {
-      setAgentTasks(prev => prev.map(t => 
-        t.agent === 'DA-03' ? { ...t, status: 'complete', output: 'Imagen 3 Prompts Ready.' } : t
-      ));
-      setIsOrchestrating(false);
-    }, 6500);
+    // Dispatch to the global connection orchestrator (GeniusConsole handles the physical WS send)
+    const payload = {
+       type: 'campaign_orchestration',
+       client: clientName,
+       objective: objective,
+       directive: directive,
+       pmaxConfig: {
+          budget,
+          biddingStrategy,
+          targetValue: targetValue > 0 ? targetValue : undefined
+       }
+    };
+    window.dispatchEvent(new CustomEvent('trigger-orchestration', { detail: payload }));
   };
 
   return (
@@ -66,7 +95,7 @@ export function CampaignManager() {
             <Target className="text-neural-blue" size={32} />
             Campaign Orchestrator
           </h2>
-          <p className="text-white/40 font-mono text-xs mt-1">Multi-Agent Parallel Dispatch Matrix</p>
+          <p className="text-white/40 font-mono text-xs mt-1">Multi-Agent PMax Parallel Dispatch Matrix</p>
         </div>
         
         <div className="flex items-center gap-4">
@@ -86,7 +115,7 @@ export function CampaignManager() {
       <div className="flex-1 flex gap-6 min-h-0">
         
         {/* Left: Input & Directives */}
-        <div className="w-1/2 flex flex-col gap-6 overflow-y-auto scrollbar-none pb-6">
+        <div className="w-1/2 flex flex-col gap-6 overflow-y-auto scrollbar-none pb-6 pr-2">
           
           {/* Campaign Parameters */}
           <div className="border border-white/5 rounded-2xl bg-black/40 glass p-6 shadow-lg">
@@ -120,19 +149,65 @@ export function CampaignManager() {
             </div>
           </div>
 
+          {/* Performance Max Engine Settings */}
+          <div className="border border-white/5 rounded-2xl bg-black/40 glass p-6 shadow-lg">
+             <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2 mb-6">
+               <Target size={14} className="text-neural-green" />
+               Performance Max Logic Engine
+             </h3>
+             <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-white/50 mb-2">
+                     <DollarSign size={12}/> Daily Budget (USD)
+                  </label>
+                  <input 
+                    type="number"
+                    value={budget || ''}
+                    onChange={(e) => setBudget(parseInt(e.target.value) || 0)}
+                    className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-neural-green/50 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-white/50 mb-2">
+                     <BarChart2 size={12}/> Bidding Strategy
+                  </label>
+                  <select 
+                    value={biddingStrategy}
+                    onChange={(e) => setBiddingStrategy(e.target.value as any)}
+                    className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-sm font-mono text-white focus:outline-none focus:border-neural-green/50 transition-colors"
+                  >
+                     <option value="MAXIMIZE_CONVERSIONS">Max Conversions (Volume)</option>
+                     <option value="MAXIMIZE_CONVERSION_VALUE">Max Value (ROAS)</option>
+                  </select>
+                </div>
+                <div className="col-span-2">
+                  <label className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-white/50 mb-2">
+                     <Crosshair size={12}/> {biddingStrategy === 'MAXIMIZE_CONVERSIONS' ? 'Target CPA ($) (Optional)' : 'Target ROAS (%) (Optional)'}
+                  </label>
+                  <input 
+                    type="number"
+                    value={targetValue || ''}
+                    onChange={(e) => setTargetValue(parseInt(e.target.value) || 0)}
+                    placeholder="Leave blank to rely solely on machine learning volume"
+                    className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-neural-green/50 transition-colors"
+                  />
+                </div>
+             </div>
+          </div>
+
           {/* Global Directives Interface (Command Line) */}
-          <div className="border border-white/5 rounded-2xl bg-black/40 glass p-6 shadow-lg flex-1 flex flex-col">
+          <div className="border border-white/5 rounded-2xl bg-black/40 glass p-6 shadow-lg flex flex-col mb-4">
             <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2 mb-2">
               <Terminal size={14} className="text-neural-gold" />
               Global Directives Interface
             </h3>
             <p className="text-[10px] font-mono text-white/40 mb-4">Unstructured natural language commands for the Swarm.</p>
             
-            <div className="flex-1 relative mb-4">
+            <div className="relative mb-4 h-32">
               <textarea 
                 value={directive}
                 onChange={(e) => setDirective(e.target.value)}
-                placeholder="Command the Swarm... (e.g. 'CC-06, write a high-converting landing page copy. DA-03, generate 3 photorealistic cyber-dystopia hero images.')"
+                placeholder="Command the Swarm... (e.g. 'CC-06, write 15 PMax Headlines. DA-03, generate 3 photorealistic landscape images.')"
                 className="w-full h-full bg-black/50 border border-white/10 rounded-lg p-4 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-neural-gold/50 transition-colors resize-none shadow-[inset_0_5px_20px_rgba(0,0,0,0.5)]"
               />
               <div className="absolute bottom-4 right-4 text-[10px] uppercase font-black text-white/20 flex items-center gap-2 pointer-events-none">
@@ -151,7 +226,7 @@ export function CampaignManager() {
               }`}
             >
               <Zap size={16} className={isOrchestrating ? 'opacity-50' : ''} />
-              {isOrchestrating ? 'Orchestration in Progress...' : 'Dispatch Swarm'}
+              {isOrchestrating ? 'PMax Orchestration in Progress...' : 'Dispatch PMax Swarm'}
             </button>
           </div>
 
@@ -171,7 +246,7 @@ export function CampaignManager() {
             {!isOrchestrating && agentTasks.every(t => t.status === 'pending') && (
               <div className="h-full flex flex-col items-center justify-center text-center text-white/30">
                 <CircleDashed size={48} className="mb-4 opacity-50" />
-                <p className="text-sm font-mono uppercase tracking-widest">Awaiting Directives</p>
+                <p className="text-sm font-mono uppercase tracking-widest">Awaiting PMax Directives</p>
               </div>
             )}
 
@@ -221,9 +296,13 @@ export function CampaignManager() {
                        <motion.div 
                          initial={{ opacity: 0, height: 0 }}
                          animate={{ opacity: 1, height: 'auto' }}
-                         className="p-3 rounded-lg bg-black/40 border border-white/5 mt-2"
+                         className="p-3 rounded-lg bg-black/40 border border-white/5 mt-2 overflow-hidden"
                        >
-                         <p className="text-[10px] font-mono text-white/70 italic">"{task.output}"</p>
+                         {task.agent === 'DA-03' && task.output.startsWith('data:image') ? (
+                            <img src={task.output} alt="Generated Asset" className="w-full rounded-md border border-white/10 opacity-80 hover:opacity-100 transition-opacity" />
+                         ) : (
+                            <p className="text-[10px] font-mono text-white/70 italic">"{task.output}"</p>
+                         )}
                        </motion.div>
                      )}
                   </motion.div>

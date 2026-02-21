@@ -1,0 +1,6 @@
+src/agents/sn00-orchestrator.ts(82,35): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/agents/sn00-orchestrator.ts(82,44): error TS6234: This expression is not callable because it is a 'get' accessor. Did you mean to use it without '()'?
+  Type 'String' has no call signatures.
+src/agents/sn00-orchestrator.ts(110,47): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/agents/sn00-orchestrator.ts(115,47): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/agents/sn00-orchestrator.ts(116,47): error TS7006: Parameter 't' implicitly has an 'any' type.

@@ -1,4 +1,5 @@
 import { BaseAgent, AgentState } from './base-agent';
+import { VertexAIService } from '../services/vertex-ai';
 
 export class PM07Manager extends BaseAgent {
   private readonly DIRECTIVES = `
@@ -6,10 +7,8 @@ export class PM07Manager extends BaseAgent {
     KNOWLEDGE BASE:
     - 5 Autonomy Levels for AI Agents
     - Continuous Intelligence Stack (4 layers)
-    - Morning Brief Protocol
     - Persistent Memory Architecture (Firestore)
-    - Google Workspace Integration Matrix (Chat, Calendar, Gmail)
-    - Autonomous Action Matrix (Cron & Pub/Sub Triggers)
+    - Google Workspace Integration Matrix
   `;
 
   constructor() {
@@ -22,30 +21,27 @@ export class PM07Manager extends BaseAgent {
 
   async execute(input: string): Promise<string> {
     this.updateStatus(AgentState.THINKING, 'Synchronizing persistent cross-session memory...');
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const vertexAI = VertexAIService.getInstance();
 
-    this.updateStatus(AgentState.WORKING, 'Checking Proactive Intelligence triggers...', 30);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    this.updateStatus(AgentState.WORKING, 'Aligning with Google Workspace (Gmail/Chat)...', 60);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    const managementReport = `
-## MANAGEMENT REPORT: PERSISTENCY SYNC
-
-### 🧠 Mission Continuity
-Identity active: PM-07 Persistent Manager.
-Memory Stack: Firestore Cross-Session Ledger synchronized.
-
-### 1. Operations Sync
-- **Proactive Scan**: No immediate competitive threats detected in the last 6-hour cycle.
-- **Stakeholder Update**: Brief summary sent to Google Chat group "Nexus Project".
-
-### 2. Next Autonomous Action
-Scheduled: T-24h. Trigger: Morning Brief Protocol.
+    this.updateStatus(AgentState.WORKING, 'Checking Proactive Intelligence triggers...', 50);
+    
+    const prompt = `
+      ${this.DIRECTIVES}
+      TASK: Summarize the mission state for: "${input}"
+      
+      REQUIREMENTS:
+      1. Confirm Firestore Cross-Session Ledger sync.
+      2. Detail the next autonomous action scheduled in T-24h.
+      
+      OUTPUT FORMAT:
+      ## MANAGEMENT REPORT: PERSISTENCY SYNC
+      ...
     `;
 
+    const summaryResults = await vertexAI.generateContent(prompt);
+
     this.updateStatus(AgentState.DONE, 'Management sync complete', 100);
-    return managementReport.trim();
+    return summaryResults;
   }
 }

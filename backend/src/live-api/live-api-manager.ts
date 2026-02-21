@@ -17,67 +17,75 @@ export class LiveApiManager {
 
     // Establish the upstream connection to Gemini Live via raw WebSockets for maximum stability
     const apiKey = process.env.GEMINI_API_KEY;
+    let geminiWs: WebSocket | null = null;
+    
     if (!apiKey) {
       this.logger.error('GEMINI_API_KEY missing. Audio streaming will fail.', new Error('No Key'));
       if (clientWs.readyState === WebSocket.OPEN) {
-        clientWs.send(JSON.stringify({ type: 'error', message: 'API Key missing on server.' }));
+        clientWs.send(JSON.stringify({ type: 'error', message: 'API Key missing for audio streaming. Falling back to text orchestrator.' }));
       }
-      return;
-    }
+      // DO NOT RETURN. Let the text-based workflow still attach.
+    } else {
+      const host = 'generativelanguage.googleapis.com';
+      const path = '/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent';
+      const uri = `wss://${host}${path}?key=${apiKey}`;
 
-    const host = 'generativelanguage.googleapis.com';
-    const path = '/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent';
-    const uri = `wss://${host}${path}?key=${apiKey}`;
+      geminiWs = new WebSocket(uri);
+      this.activeSessions.set(clientWs, geminiWs);
 
-    const geminiWs = new WebSocket(uri);
-    this.activeSessions.set(clientWs, geminiWs);
-
-    geminiWs.on('open', () => {
-      this.logger.info('Upstream Gemini Live WS Opened.');
-      // Send initial setup
-      geminiWs.send(JSON.stringify({
-        setup: {
-          model: 'models/gemini-2.0-flash-exp',
-          systemInstruction: {
-            parts: [{ text: "You are the Agenticum G5 GENIUS Orchestrator. Keep your spoken responses concise, highly intelligent, and authoritative. Respond enthusiastically to creative marketing briefs." }]
-          },
-          generationConfig: {
-            responseModalities: ["AUDIO"]
+      geminiWs.on('open', () => {
+        this.logger.info('Upstream Gemini Live WS Opened.');
+        // Send initial setup
+        geminiWs?.send(JSON.stringify({
+          setup: {
+            model: 'models/gemini-2.0-flash-exp',
+            systemInstruction: {
+              parts: [{ text: "You are the Agenticum G5 GENIUS Orchestrator. Keep your spoken responses concise, highly intelligent, and authoritative. Respond enthusiastically to creative marketing briefs." }]
+            },
+            generationConfig: {
+              responseModalities: ["AUDIO"]
+            }
           }
-        }
-      }));
-    });
+        }));
+      });
 
-    geminiWs.on('message', (data: any) => {
-      try {
-        const response = JSON.parse(data.toString());
-        if (response.serverContent?.modelTurn?.parts) {
-          const parts = response.serverContent.modelTurn.parts;
-          for (const part of parts) {
-            if (part.inlineData && part.inlineData.data) {
-              if (clientWs.readyState === WebSocket.OPEN) {
-                clientWs.send(JSON.stringify({
-                  type: 'realtime_output',
-                  mimeType: part.inlineData.mimeType,
-                  data: part.inlineData.data // base64
-                }));
+      geminiWs.on('message', (data: any) => {
+        try {
+          const response = JSON.parse(data.toString());
+          if (response.serverContent?.modelTurn?.parts) {
+            const parts = response.serverContent.modelTurn.parts;
+            for (const part of parts) {
+              if (part.inlineData && part.inlineData.data) {
+                if (clientWs.readyState === WebSocket.OPEN) {
+                  clientWs.send(JSON.stringify({
+                    type: 'realtime_output',
+                    mimeType: part.inlineData.mimeType,
+                    data: part.inlineData.data // base64
+                  }));
+                }
               }
             }
           }
+        } catch (e) {
+          console.error('Error parsing upstream message', e);
         }
-      } catch (e) {
-        console.error('Error parsing upstream message', e);
-      }
-    });
+      });
 
-    geminiWs.on('error', (err) => {
-      this.logger.error('Upstream Gemini Live error', err);
-    });
+      geminiWs.on('error', (err) => {
+        this.logger.error('Upstream Gemini Live error', err);
+      });
+    }
 
     // Pipe Swarm Statuses to Frontend
     this.orchestrator.onStatusUpdate = (status) => {
       if (clientWs.readyState === WebSocket.OPEN) {
         clientWs.send(JSON.stringify({ type: 'status', agent: status }));
+      }
+    };
+
+    this.orchestrator.onBroadcast = (message) => {
+      if (clientWs.readyState === WebSocket.OPEN) {
+        clientWs.send(JSON.stringify(message));
       }
     };
 
@@ -95,7 +103,7 @@ export class LiveApiManager {
 
         // Handle Audio Chunk routing
         if (message.type === 'realtime_input' && message.data) {
-           if (geminiWs.readyState === WebSocket.OPEN) {
+           if (geminiWs && geminiWs.readyState === WebSocket.OPEN) {
               geminiWs.send(JSON.stringify({
                  clientContent: {
                    turns: [{

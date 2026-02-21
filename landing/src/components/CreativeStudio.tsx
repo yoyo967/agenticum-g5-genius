@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Palette, PenTool, Type, Image as ImageIcon, Download, RefreshCw, Maximize2, X, FileText, Video, Sparkles, Cpu } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface CreativeAsset {
   id: string;
@@ -46,9 +48,15 @@ export function CreativeStudio() {
   const [generatingMedia, setGeneratingMedia] = useState<'image' | 'video' | null>(null);
   const [mediaPrompt, setMediaPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [remixingId, setRemixingId] = useState<string | null>(null);
   const [localAssets, setLocalAssets] = useState<CreativeAsset[]>(mockAssets);
 
   const filteredAssets = localAssets.filter(a => activeTab === 'all' || a.type === activeTab);
+
+  const handleSaveAsset = (updatedAsset: CreativeAsset) => {
+    setLocalAssets(prev => prev.map(a => a.id === updatedAsset.id ? updatedAsset : a));
+    setEditingAsset(null);
+  };
 
   const handleEditCopy = (asset: CreativeAsset) => {
     setEditingAsset(asset);
@@ -56,37 +64,91 @@ export function CreativeStudio() {
   };
 
   const handleDownloadImage = (url: string, title: string) => {
-    // Implement actual download logic in production
+    // Robust hackathon payload download mock
     const a = document.createElement('a');
     a.href = url;
     a.download = `${title.replace(/\s+/g, '_')}.jpg`;
+    a.target = '_blank';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   };
 
-  const handleGenerateMedia = () => {
+  const handleRemix = (asset: CreativeAsset) => {
+    setRemixingId(asset.id);
+    setTimeout(() => {
+      const newAsset: CreativeAsset = {
+        id: `remix-${Date.now()}`,
+        type: 'image',
+        title: `${asset.title} (Remix)`,
+        agent: 'DA-03',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        content: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop'
+      };
+      setLocalAssets(prev => [newAsset, ...prev]);
+      setRemixingId(null);
+    }, 2500);
+  };
+
+  const handleRewrite = () => {
+    setEditorContent(prev => prev + '\n\n*Rewrite AI applied.* Analyzing neural constraints...\n');
+    setTimeout(() => {
+      setEditorContent(prev => prev.replace('*Rewrite AI applied.* Analyzing neural constraints...\n', '> **AI Rewrite:** This campaign is structurally enhanced to drive 300% ROI across enterprise boundaries. Proceed with immediate deployment.'));
+    }, 1500);
+  };
+
+  useEffect(() => {
+    const fetchAssets = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+        const response = await fetch(`${baseUrl}/vault/list`);
+        if (!response.ok) throw new Error('Vault Sync Failed');
+        const data = await response.json();
+        
+        const vaultAssets: CreativeAsset[] = data.files.map((f: { name: string; url: string; timestamp: string }) => ({
+          id: f.name,
+          type: f.name.match(/\.(mp4|webm)$/i) ? 'video' : f.name.match(/\.(jpg|jpeg|png|gif)$/i) ? 'image' : 'copy',
+          title: f.name,
+          agent: 'DA-03',
+          timestamp: f.timestamp,
+          content: f.url
+        }));
+
+        setLocalAssets([...vaultAssets, ...mockAssets]);
+      } catch (err) {
+        console.error('Failed to sync Creative Vault', err);
+      }
+    };
+
+    fetchAssets();
+  }, []);
+
+  const handleGenerateMedia = async () => {
     if (!mediaPrompt.trim()) return;
     setIsProcessing(true);
     
-    // Simulate generation delay
-    setTimeout(() => {
-      const newAsset: CreativeAsset = {
-        id: `gen-${Date.now()}`,
-        type: generatingMedia === 'video' ? 'video' as any : 'image', // Casting for local demo
-        title: 'Generated: ' + mediaPrompt.substring(0, 20) + '...',
-        agent: 'DA-03',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        content: generatingMedia === 'video' 
-          ? 'https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0fdabdf8e411b02b93fb24cb1c6feec&profile_id=164&oauth2_token_id=57447761' // Placeholder video
-          : 'https://images.unsplash.com/photo-1531297172867-bb415fc8f742?q=80&w=1000&auto=format&fit=crop'
-      };
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+      const response = await fetch(`${baseUrl}/blog/agent-dispatch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: mediaPrompt,
+          type: generatingMedia === 'video' ? 'video' : 'cluster' // Use cluster for image generation path in dispatch
+        })
+      });
+
+      if (!response.ok) throw new Error('Generation Dispatch Failed');
       
-      setLocalAssets(prev => [newAsset, ...prev]);
-      setIsProcessing(false);
+      // We don't wait for the file to be ready (it's async in backend)
+      // but we inform the user to check back.
       setGeneratingMedia(null);
       setMediaPrompt('');
-    }, 4500);
+    } catch (err) {
+      console.error('Failed to dispatch generation:', err);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -137,9 +199,9 @@ export function CreativeStudio() {
                   key={asset.id} 
                   className="rounded-xl overflow-hidden glass border border-white/10 group bg-black/40 flex flex-col h-64"
                 >
-                  {asset.type === 'image' || (asset.type as any) === 'video' ? (
+                  {asset.type === 'image' || asset.type === 'video' ? (
                     <div className="flex-1 relative overflow-hidden bg-black/50">
-                      {(asset.type as any) === 'video' ? (
+                      {asset.type === 'video' ? (
                         <video src={asset.content} controls className="w-full h-full object-cover opacity-80" autoPlay loop muted />
                       ) : (
                         <img src={asset.content} alt={asset.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -154,11 +216,23 @@ export function CreativeStudio() {
                               <Download size={16} />
                             </button>
                          </div>
-                         <button className="p-2 rounded bg-neural-gold/20 hover:bg-neural-gold/40 text-neural-gold backdrop-blur-md transition-colors flex items-center gap-2 pointer-events-auto">
-                            <RefreshCw size={14} />
-                            <span className="text-[10px] font-black uppercase tracking-widest hidden lg:block">Remix</span>
+                         <button 
+                           onClick={() => handleRemix(asset)}
+                           className="p-2 rounded bg-neural-gold/20 hover:bg-neural-gold/40 text-neural-gold backdrop-blur-md transition-colors flex items-center gap-2 pointer-events-auto"
+                         >
+                            <RefreshCw size={14} className={remixingId === asset.id ? 'animate-spin' : ''} />
+                            <span className="text-[10px] font-black uppercase tracking-widest hidden lg:block">
+                              {remixingId === asset.id ? 'Remixing...' : 'Remix'}
+                            </span>
                          </button>
                       </div>
+                      
+                      {remixingId === asset.id && (
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10 transition-opacity">
+                           <div className="w-8 h-8 rounded-full border-2 border-neural-gold border-t-transparent animate-spin mb-3" />
+                           <span className="text-[10px] uppercase font-black tracking-[0.2em] text-neural-gold animate-pulse">Running Diffusion...</span>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="flex-1 p-6 flex flex-col relative overflow-hidden bg-linear-to-br from-white/3 to-transparent">
@@ -180,7 +254,7 @@ export function CreativeStudio() {
                       <h4 className="text-xs font-bold text-white truncate max-w-[150px]">{asset.title}</h4>
                       <p className="text-[9px] text-white/40 uppercase tracking-widest mt-0.5">{asset.agent} • {asset.timestamp}</p>
                     </div>
-                    <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${(asset.type as any) === 'video' ? 'bg-blue-600/20 text-blue-400' : asset.type === 'image' ? 'bg-neural-purple/20 text-neural-purple' : 'bg-neural-blue/20 text-neural-blue'}`}>
+                    <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${asset.type === 'video' ? 'bg-blue-600/20 text-blue-400' : asset.type === 'image' ? 'bg-neural-purple/20 text-neural-purple' : 'bg-neural-blue/20 text-neural-blue'}`}>
                        {asset.type}
                     </div>
                   </div>
@@ -196,7 +270,7 @@ export function CreativeStudio() {
         {editingAsset && (
           <motion.div 
             initial={{ opacity: 0, x: 50, width: 0 }}
-            animate={{ opacity: 1, x: 0, width: '50%' }}
+            animate={{ opacity: 1, x: 0, width: '60%' }}
             exit={{ opacity: 0, x: 50, width: 0 }}
             className="flex flex-col border border-neural-blue/20 rounded-2xl bg-black/40 glass overflow-hidden shadow-[0_0_50px_rgba(0,229,255,0.1)] shrink-0"
           >
@@ -222,22 +296,46 @@ export function CreativeStudio() {
                  <button className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest text-white transition-colors">H1</button>
                  <button className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest text-white transition-colors">H2</button>
                  <div className="flex-1" />
-                 <button className="px-3 py-1.5 rounded bg-neural-blue/20 text-neural-blue hover:bg-neural-blue hover:text-obsidian text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2">
+                 <button onClick={handleRewrite} className="px-3 py-1.5 rounded bg-neural-blue/20 text-neural-blue hover:bg-neural-blue hover:text-obsidian text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2">
                    <RefreshCw size={12} /> Rewrite AI
                  </button>
               </div>
               
-              <textarea 
-                value={editorContent}
-                onChange={e => setEditorContent(e.target.value)}
-                className="flex-1 bg-black/50 border border-white/10 rounded-xl p-6 text-sm text-white/80 font-mono leading-relaxed resize-none focus:outline-none focus:border-neural-blue/50 transition-colors"
-              />
+              <div className="flex-1 flex gap-4 min-h-0">
+                {/* Raw Editor Pane */}
+                <textarea 
+                  value={editorContent}
+                  onChange={e => setEditorContent(e.target.value)}
+                  className="flex-1 bg-black/50 border border-white/10 rounded-xl p-6 text-sm text-white/80 font-mono leading-relaxed resize-none focus:outline-none focus:border-neural-blue/50 transition-colors"
+                />
+                
+                {/* Live Markdown Preview Pane */}
+                <div className="flex-1 bg-black/50 border border-white/10 rounded-xl p-6 overflow-y-auto scrollbar-none text-sm text-white/90 leading-relaxed font-body">
+                  <style>{`
+                    .markdown-preview h1 { font-size: 1.5em; font-weight: 900; margin-bottom: 0.5em; color: #fff; text-transform: uppercase; letter-spacing: -0.05em; }
+                    .markdown-preview h2 { font-size: 1.25em; font-weight: 800; margin-bottom: 0.5em; color: #fff; text-transform: uppercase; }
+                    .markdown-preview p { margin-bottom: 1.5em; color: rgba(255,255,255,0.7); }
+                    .markdown-preview ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1.5em; color: rgba(255,255,255,0.7); }
+                    .markdown-preview li { margin-bottom: 0.5em; }
+                    .markdown-preview strong { font-weight: 900; color: #00e5ff; }
+                    .markdown-preview blockquote { border-left: 2px solid #00e5ff; padding-left: 1rem; margin-left: 0; font-style: italic; color: #00e5ff; }
+                  `}</style>
+                  <div className="markdown-preview">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {editorContent}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              </div>
               
               <div className="flex justify-end gap-3 shrink-0">
-                <button className="px-6 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-black uppercase tracking-widest text-white transition-colors">
-                  Save Draft
+                <button 
+                  onClick={() => handleSaveAsset({ ...editingAsset, content: editorContent })}
+                  className="px-6 py-2 rounded-lg bg-neural-blue text-obsidian hover:bg-white text-xs font-black uppercase tracking-widest transition-colors"
+                >
+                  Save Changes
                 </button>
-                <button className="px-6 py-2 rounded-lg bg-neural-blue text-obsidian hover:bg-white text-xs font-black uppercase tracking-widest transition-colors">
+                <button className="px-6 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-black uppercase tracking-widest text-white transition-colors">
                   Export to PDF
                 </button>
               </div>

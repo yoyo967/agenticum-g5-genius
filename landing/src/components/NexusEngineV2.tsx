@@ -69,7 +69,16 @@ export function NexusEngineV2() {
   };
 
   const runWorkflow = () => {
-    setToast('Workflow compilation initiated. Agents engaged.');
+    setToast(`${activeWorkflow.name} Compilation Initiated. Swarm Engaged.`);
+    
+    // Dispatch global event for GeniusConsole to pick up
+    window.dispatchEvent(new CustomEvent('trigger-orchestration', { 
+      detail: { 
+        input: `Execute workflow: ${activeWorkflow.name}. Context: ${activeWorkflow.desc}`,
+        workflowId: activeWorkflow.id 
+      } 
+    }));
+
     setTimeout(() => setToast(null), 3000);
   };
 

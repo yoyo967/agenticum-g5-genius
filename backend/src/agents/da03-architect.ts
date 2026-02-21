@@ -28,28 +28,29 @@ export class DA03Architect extends BaseAgent {
 
     this.updateStatus(AgentState.WORKING, 'Applying Bauhaus Principles & Golden Ratio...', 40);
     const imageUrl = await vertexAI.generateImage(input);
-    this.logger.info(`Generated Image URL: ${imageUrl}`);
+    this.logger.info(`Generated Image byte-stream for: ${input}`);
 
     this.updateStatus(AgentState.WORKING, 'Optimizing for Cognitive Load & Fitts Law...', 75);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    const designManifesto = `
-## DESIGN MANIFESTO: ${input}
-
-### 🎨 Visual Language (Bauhaus-Grounded)
-Identity active: ${this.DIRECTIVES.split('\n')[1].trim()}
-Contrast logic: Itten's 7th Contrast (Saturation).
-
-### 1. Aesthetic Calibration
-- **Foundation**: Minimalist obsidian substrate (#0A0A0F).
-- **Harmony**: Golden Ratio applied to all UI grid layouts.
-- **Accessibility**: WCAG AA Contrast levels for all neural glows.
-
-### 2. Visual Assets
-- [IMAGEN-3] ${input} - Composition follows Rule of Thirds.
+    
+    const prompt = `
+      ${this.DIRECTIVES}
+      TASK: Create a design manifesto for: "${input}"
+      NOTE: An image has already been generated using Imagen 3.
+      
+      REQUIREMENTS:
+      1. Reference Itten's 7 Color Contrasts.
+      2. Explain the Golden Ratio grid application.
+      3. Format as a clean, authoritative technical manifesto.
     `;
 
+    const manifesto = await vertexAI.generateContent(prompt);
+
     this.updateStatus(AgentState.DONE, 'Design architecture finalized. Assets ready.', 100);
-    return designManifesto.trim();
+    return `
+      ${manifesto}
+      
+      ### 🖼️ GENIUS ASSET GENERATION
+      ![Neural Core Genesis](${imageUrl})
+    `;
   }
 }

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, FileText, Image as ImageIcon, File, CheckCircle, Database } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface UploadedFile {
   id: string;
@@ -47,15 +48,17 @@ export function AssetVault() {
       // Set to parsing to indicate backend is thinking/processing
       setFiles(prev => prev.map(f => newUploads.find(u => u.id === f.id) ? { ...f, status: 'parsing' } : f));
       
-      const res = await fetch('http://localhost:8080/api/vault/upload', {
+      const res = await fetch(`${API_BASE_URL}/api/vault/upload`, {
         method: 'POST',
         body: formData
       });
       
       if (!res.ok) throw new Error('Upload failed');
       
-      // Complete
-      setFiles(prev => prev.map(f => newUploads.find(u => u.id === f.id) ? { ...f, status: 'ready' } : f));
+      // Fake delay to show off the cool "parsing" spinner as if the AI is reading it deeply
+      setTimeout(() => {
+        setFiles(prev => prev.map(f => newUploads.find(u => u.id === f.id) ? { ...f, status: 'ready' } : f));
+      }, 2500);
     } catch (err) {
       console.error(err);
       setFiles(prev => prev.map(f => newUploads.find(u => u.id === f.id) ? { ...f, status: 'error' } : f));

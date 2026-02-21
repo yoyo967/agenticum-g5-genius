@@ -24,7 +24,7 @@ import { Palette, GitMerge, Activity, Settings, FolderHeart, Network, Search, Ta
 export function OSPortal() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialModule = (searchParams.get('module') as any) || 'dashboard';
+  const initialModule = (searchParams.get('module') as 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign') || 'dashboard';
   const [activeModule, setActiveModule] = useState<'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign'>(initialModule);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -193,30 +193,39 @@ export function OSPortal() {
         </header>
 
         {/* Dynamic Module Rendering */}
-        <section className="flex-1 overflow-y-auto p-4 md:p-8">
+        <section className="flex-1 overflow-y-auto p-4 md:p-8 relative">
+          
+          {/* Persistent Background Console (Maintains WebSocket & Audio) */}
+          <div className="absolute inset-4 md:inset-8" style={{ display: activeModule === 'console' ? 'block' : 'none', zIndex: 10 }}>
+             <div className="h-full relative spatial-depth glass p-1 rounded-xl shadow-[0_50px_100px_rgba(0,0,0,0.5)] border-neural-blue/10 bg-black/40">
+               <GeniusConsole />
+             </div>
+          </div>
+
           <AnimatePresence mode="wait">
-            <motion.div
-              key={activeModule}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="h-full"
-            >
-              {activeModule === 'dashboard' && <ExecutiveDashboard />}
-              {activeModule === 'campaign' && <CampaignManager />}
-              {activeModule === 'console' && <div className="h-full relative z-10 spatial-depth glass p-1 rounded-xl shadow-[0_50px_100px_rgba(0,0,0,0.5)] border-neural-blue/10 bg-black/40"><GeniusConsole /></div>}
-              {activeModule === 'nexus-engine' && <NexusEngineV2 />}
-              {activeModule === 'pillar-blog' && <PillarBlogEngine />}
-              {activeModule === 'vault' && <AssetVault />}
-              {activeModule === 'studio' && <CreativeStudio />}
-              {activeModule === 'workflows' && <WorkflowBuilder />}
-              {activeModule === 'analytics' && <SwarmAnalytics />}
-              {activeModule === 'senate' && <SecuritySenate />}
-              {activeModule === 'settings' && <GlobalControlPlane />}
-              {activeModule === 'memory' && <ProjectMemory />}
-              {activeModule === 'synergy' && <SynergyMap />}
-            </motion.div>
+            {activeModule !== 'console' && (
+              <motion.div
+                key={activeModule}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="h-full relative z-20"
+              >
+                {activeModule === 'dashboard' && <ExecutiveDashboard onNavigate={(route) => setActiveModule(route as Parameters<typeof setActiveModule>[0])} />}
+                {activeModule === 'campaign' && <CampaignManager />}
+                {activeModule === 'nexus-engine' && <NexusEngineV2 />}
+                {activeModule === 'pillar-blog' && <PillarBlogEngine />}
+                {activeModule === 'vault' && <AssetVault />}
+                {activeModule === 'studio' && <CreativeStudio />}
+                {activeModule === 'workflows' && <WorkflowBuilder />}
+                {activeModule === 'analytics' && <SwarmAnalytics />}
+                {activeModule === 'senate' && <SecuritySenate />}
+                {activeModule === 'settings' && <GlobalControlPlane />}
+                {activeModule === 'memory' && <ProjectMemory />}
+                {activeModule === 'synergy' && <SynergyMap />}
+              </motion.div>
+            )}
           </AnimatePresence>
         </section>
 
@@ -225,7 +234,7 @@ export function OSPortal() {
       <OmniscientSearch 
         isOpen={isSearchOpen} 
         onClose={() => setIsSearchOpen(false)} 
-        onNavigate={(route) => setActiveModule(route as any)} 
+        onNavigate={(route) => setActiveModule(route as 'dashboard')} 
       />
     </div>
   );

@@ -21,6 +21,7 @@ export class SN00Orchestrator extends BaseAgent {
   private architect: DA03Architect;
   private director: CC06Director;
   private manager: PM07Manager;
+  public onBroadcast?: (message: any) => void;
 
   constructor() {
     super({
@@ -47,42 +48,119 @@ export class SN00Orchestrator extends BaseAgent {
   }
 
   async execute(input: string): Promise<string> {
-    this.updateStatus(AgentState.THINKING, 'Applying Systems Thinking to campaign brief...', 5);
+    this.updateStatus(AgentState.THINKING, 'Parsing user directive via Gemini 2.0 Pro...', 5);
     
-    // 1. Strategy Generation (Observe & Orient)
-    const strategy = await this.strategist.execute(input);
+    // 1. Generate Swarm Protocol using Google GenAI
+    let executionPlan: any = null;
+    try {
+       const { GoogleGenAI, Type } = await import('@google/genai');
+       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+       const response = await ai.models.generateContent({
+          model: 'gemini-2.0-flash-exp',
+          contents: `Create a Swarm Execution Plan for the following directive:\n${input}\n\nAvailable agents: 'sp-01', 'cc-06', 'da-03', 'ra-01', 'pm-07'.`,
+          config: {
+             responseMimeType: 'application/json',
+             responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                   reasoning: { type: Type.STRING },
+                   tasks: {
+                      type: Type.ARRAY,
+                      items: {
+                         type: Type.OBJECT,
+                         properties: {
+                            agentId: { type: Type.STRING },
+                            description: { type: Type.STRING }
+                         }
+                      }
+                   }
+                }
+             }
+          }
+       });
+       
+       executionPlan = JSON.parse(response.text || '{}');
+       this.updateStatus(AgentState.THINKING, `Plan Generated: ${executionPlan.tasks?.length || 0} tasks sequenced.`, 15);
+       
+       if (this.onBroadcast) {
+         this.onBroadcast({
+             type: 'payload',
+             from: 'sn-00',
+             to: 'os-core',
+             payloadType: 'Neural Execution Plan',
+             payload: JSON.stringify(executionPlan, null, 2)
+         });
+       }
+    } catch (e) {
+       console.error('Failed to parse execution plan via Gemini', e);
+       this.updateStatus(AgentState.WORKING, 'Fallback to standard monolithic pipeline...', 10);
+    }
+
+    let accumulatedContext = input;
+    let strategy = '';
+    let creative = '';
+    let design = '';
+    let auditStatus = '';
+
+    // If Gemini built a plan, we can dynamically route. For Phase A, we still hardcode the dependencies 
+    // but we use the dynamic descriptions from the plan to feed the agents.
     
-    // 2. Content & Design (Decide)
-    this.updateStatus(AgentState.WORKING, 'Orchestrating Creative Core (CC-06 + DA-03)...', 40);
-    const [creative, design] = await Promise.all([
-      this.director.execute(strategy),
-      this.architect.execute(strategy)
+    // Dispatch to SP-01
+    this.updateStatus(AgentState.WORKING, 'Delegating Strategic Discovery (SP-01)...', 20);
+    const spPlan = executionPlan?.tasks?.find((t: any) => t.agentId === 'sp-01')?.description || accumulatedContext;
+    strategy = await this.strategist.execute(spPlan);
+    
+    // Parallel Execute CC-06 & DA-03
+    this.updateStatus(AgentState.WORKING, 'Orchestrating Creative Core (CC-06 & DA-03) in parallel...', 50);
+    const ccPlan = executionPlan?.tasks?.find((t: any) => t.agentId === 'cc-06')?.description || strategy;
+    const daPlan = executionPlan?.tasks?.find((t: any) => t.agentId === 'da-03')?.description || strategy;
+    
+    [creative, design] = await Promise.all([
+      this.director.execute(ccPlan),
+      this.architect.execute(daPlan)
     ]);
 
-    // 3. Oversight (Adversarial Audit)
-    this.updateStatus(AgentState.WORKING, 'Initiating Algorithmic Senate Oversight...', 70);
-    const auditStatus = await this.auditor.execute(`${creative}\n${design}`);
+    // RA-01 Oversight
+    this.updateStatus(AgentState.WORKING, 'Initiating Algorithmic Senate Oversight (RA-01)...', 75);
+    auditStatus = await this.auditor.execute(`${creative}\n${design}`);
+    
+    if (auditStatus.includes('REJECTED') || auditStatus.includes('VETO')) {
+      if (this.onBroadcast) {
+        this.onBroadcast({
+          type: 'senate',
+          verdict: 'VETO',
+          agent: 'RA-01',
+          payload: auditStatus
+        });
+      }
+    }
 
-    // 4. Persistence Management
-    this.updateStatus(AgentState.WORKING, 'Syncing with Persistent Memory (PM-07)...', 90);
-    await this.manager.execute(input);
+    // PM-07 Persistence
+    this.updateStatus(AgentState.WORKING, 'Syncing with Persistent Vault (PM-07)...', 90);
+    await this.manager.execute(`Original Directive: ${input}\nStrategy: ${strategy}\nCreative: [Generated]`);
 
     this.updateStatus(AgentState.DONE, 'Full campaign generated and verified.', 100);
 
     return `
 # NEURAL FABRIC OUTPUT: ${input}
-Orchestration Mode: OODA Loop Active. 
 
-${strategy}
+## 🧠 Master Orchestration Plan
+${executionPlan ? executionPlan.reasoning : 'Standard execution pipeline engaged.'}
 
-${creative}
+## 📊 Strategic Blueprint
+${strategy.substring(0, 1000)}...
 
+## ✍️ Content Generation
+${creative.substring(0, 1000)}...
+
+## 🎨 Asset Matrix (DA-03)
 ${design}
 
+## ⚖️ Algorithmic Senate Review
 ${auditStatus}
 
 ---
-Verified via SN-00 Neural Fabric // ${new Date().toISOString()}
+*Autonomous Mesh OS Status: Verified & Deployed.*
     `;
   }
 

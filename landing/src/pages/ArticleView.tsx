@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Terminal, Cpu } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export function ArticleView() {
   const { slug } = useParams();
@@ -10,7 +11,7 @@ export function ArticleView() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:8080/api/blog/article/${slug}`)
+    fetch(`${API_BASE_URL}/api/blog/article/${slug}`)
       .then(res => {
         if (!res.ok) throw new Error('Not found');
         return res.json();

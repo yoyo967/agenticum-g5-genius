@@ -1,10 +1,102 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Users, Database, Clock, TrendingUp, Zap } from 'lucide-react';
+import { Activity, Users, Database, Clock, TrendingUp, Play, CheckCircle, Settings, Network, FileText, Shield } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import type { SwarmState } from './GeniusConsole';
 
-export function ExecutiveDashboard() {
+const mockData7Days = [
+  { day: 'Mon', outputs: 58, tokensK: 162, blocked: 1 },
+  { day: 'Tue', outputs: 72, tokensK: 198, blocked: 0 },
+  { day: 'Wed', outputs: 45, tokensK: 124, blocked: 2 },
+  { day: 'Thu', outputs: 89, tokensK: 241, blocked: 1 },
+  { day: 'Fri', outputs: 94, tokensK: 267, blocked: 3 },
+  { day: 'Sat', outputs: 23, tokensK: 64,  blocked: 0 },
+  { day: 'Sun', outputs: 19, tokensK: 52,  blocked: 0 },
+];
+
+export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: 'campaign' | 'vault' | 'settings' | 'synergy' | 'memory') => void }) {
+  const [swarmState, setSwarmState] = useState<SwarmState | null>(null);
+  const [logs, setLogs] = useState<{ id: string; time: string; agent: string; text: string; type: 'success' | 'info' | 'user' }[]>([
+    { id: '1', time: '08:42', agent: 'SYS.CORE', text: 'Neural paths verified. OS Boot sequence optimal.', type: 'info' },
+    { id: '2', time: '09:15', agent: 'PM-07', text: 'Global SEO Data Matrix refreshed.', type: 'success' },
+    { id: '3', time: '10:04', agent: 'DA-03', text: 'Visual asset cache cleared. Imagen cluster ready.', type: 'info' },
+    { id: '4', time: '11:22', agent: 'DIRECTIVE', text: 'User initiated system diagnostic override.', type: 'user' },
+    { id: '5', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), agent: 'TELEMETRY', text: 'Connection established. Awaiting Live Streams...', type: 'success' }
+  ]);
+  const [totalOutputs, setTotalOutputs] = useState(0);
+
+  useEffect(() => {
+    const handleStatus = (e: Event) => setSwarmState((e as CustomEvent).detail);
+    const handlePayload = (e: Event) => {
+      const payload = (e as CustomEvent).detail;
+      setLogs(prev => [{
+        id: Date.now().toString(),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        agent: String(payload.from).toUpperCase(),
+        text: `Data Transfer: ${payload.payloadType} → ${String(payload.to).toUpperCase()}`,
+        type: 'info' as const
+      }, ...prev].slice(0, 15));
+    };
+    
+    // Initial fetch for real data
+    fetch('/api/blog/feed')
+      .then(res => res.json())
+      .then(data => {
+         const outCount = (data?.pillars?.length || 0) + (data?.clusters?.length || 0);
+         setTotalOutputs(outCount);
+      })
+      .catch(() => {});
+
+    window.addEventListener('swarm-status', handleStatus);
+    window.addEventListener('swarm-payload', handlePayload);
+    
+    return () => {
+      window.removeEventListener('swarm-status', handleStatus);
+      window.removeEventListener('swarm-payload', handlePayload);
+    };
+  }, []);
+
+  const handleInitCampaign = () => {
+    if (onNavigate) {
+       onNavigate('campaign');
+    } else {
+       window.dispatchEvent(new CustomEvent('trigger-orchestration', { 
+         detail: { input: 'Global Campaign Initiation Directive' } 
+       }));
+    }
+  };
+
   return (
     <div className="h-full flex flex-col gap-6 overflow-y-auto scrollbar-none pb-6">
       
+      {/* Quick Actions Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
+        <button 
+          onClick={handleInitCampaign}
+          className="flex items-center justify-center gap-3 p-4 rounded-xl bg-neural-blue text-obsidian font-black uppercase tracking-widest text-xs hover:bg-white transition-colors shadow-[0_0_20px_rgba(0,229,255,0.2)]"
+        >
+          <Play size={16} /> Initialize Campaign
+        </button>
+        <button 
+          onClick={() => onNavigate && onNavigate('memory')}
+          className="flex items-center justify-center gap-3 p-4 rounded-xl border border-white/10 bg-white/5 text-white font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-colors"
+        >
+          <CheckCircle size={16} /> Review Outputs
+        </button>
+        <button 
+          onClick={() => onNavigate && onNavigate('vault')}
+          className="flex items-center justify-center gap-3 p-4 rounded-xl border border-white/10 bg-white/5 text-white font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-colors"
+        >
+          <Database size={16} /> Access Vault
+        </button>
+        <button 
+          onClick={() => onNavigate && onNavigate('settings')}
+          className="flex items-center justify-center gap-3 p-4 rounded-xl border border-white/10 bg-white/5 text-white font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-colors"
+        >
+          <Settings size={16} /> Agent Settings
+        </button>
+      </div>
+
       {/* Top Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 shrink-0">
         <StatCard 
@@ -17,10 +109,10 @@ export function ExecutiveDashboard() {
           border="border-pink-500/20"
         />
         <StatCard 
-          title="Vault Storage" 
-          value="4.2 GB" 
-          subtext="Knowledge Context Ingested"
-          icon={<Database />}
+          title="Total Outputs" 
+          value={totalOutputs.toString()} 
+          subtext="Generated Assets"
+          icon={<FileText />}
           color="text-neural-blue"
           bg="bg-neural-blue/10"
           border="border-neural-blue/20"
@@ -35,13 +127,13 @@ export function ExecutiveDashboard() {
           border="border-neural-gold/20"
         />
         <StatCard 
-          title="System Latency" 
-          value="42ms" 
-          subtext="Vertex AI WebSocket Ping"
-          icon={<Zap />}
-          color="text-green-500"
-          bg="bg-green-500/10"
-          border="border-green-500/20"
+          title="Senate Pending" 
+          value="3" 
+          subtext="Action Required"
+          icon={<Shield />}
+          color="text-yellow-500"
+          bg="bg-yellow-500/10"
+          border="border-yellow-500/20"
         />
       </div>
 
@@ -55,11 +147,13 @@ export function ExecutiveDashboard() {
              </h3>
            </div>
            <div className="flex-1 p-5 overflow-y-auto flex flex-col gap-4">
-              <LogItem time="10:42 AM" agent="DA-03" text="Generated 2 Image Assets for Campaign Alpha" type="success" />
-              <LogItem time="09:15 AM" agent="CC-06" text="Completed Markdown Draft: LinkedIn V2" type="success" />
-              <LogItem time="09:14 AM" agent="SN-00" text="Dispatched copywriter sequence based on Strategy" type="info" />
-              <LogItem time="09:00 AM" agent="SP-01" text="Triggered by Cronjob: Competitor Analysis" type="info" />
-              <LogItem time="Yesterday" agent="Boss" text="Uploaded new 45-page Brand Guideline (PDF)" type="user" />
+              {logs.length > 0 ? logs.map(log => (
+                <LogItem key={log.id} time={log.time} agent={log.agent} text={log.text} type={log.type} />
+              )) : (
+                <div className="h-full flex items-center justify-center opacity-30 text-[10px] uppercase font-mono tracking-widest text-center">
+                  Awaiting Neural Telemetry...
+                </div>
+              )}
            </div>
         </div>
 
@@ -77,36 +171,42 @@ export function ExecutiveDashboard() {
            </div>
            
            <div className="flex-1 p-8 flex flex-col">
-              {/* Mock Bar Chart Area */}
-              <div className="flex-1 flex items-end justify-between gap-2 border-b border-white/10 pb-4 relative">
-                {/* Y-Axis lines */}
-                <div className="absolute top-0 w-full border-t border-white/5" />
-                <div className="absolute top-1/4 w-full border-t border-white/5" />
-                <div className="absolute top-2/4 w-full border-t border-white/5" />
-                <div className="absolute top-3/4 w-full border-t border-white/5" />
-                
-                {/* Bars */}
-                {[40, 65, 30, 85, 50, 95, 75].map((height, i) => (
-                  <div key={i} className="w-full max-w-[40px] flex flex-col items-center gap-2 z-10">
-                     <motion.div 
-                       initial={{ height: 0 }}
-                       animate={{ height: `${height}%` }}
-                       transition={{ duration: 1, delay: i * 0.1 }}
-                       className="w-full bg-linear-to-t from-neural-blue/20 to-neural-blue rounded-t-sm"
-                     />
-                     <span className="text-[9px] font-mono text-white/50">{'SMTWTFS'[i]}</span>
-                  </div>
-                ))}
+              {/* Recharts Area */}
+              <div className="flex-1 flex items-end justify-between gap-2 border-b border-white/10 pb-2 relative min-h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={mockData7Days} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorOutputs" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00E5FF" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#00E5FF" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorTokens" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#FFD700" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#FFD700" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis dataKey="day" stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.5)" }} axisLine={false} tickLine={false} />
+                    <YAxis stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.5)" }} axisLine={false} tickLine={false} />
+                    <Tooltip 
+                      contentStyle={{ background: '#0a0a0a', border: '1px solid rgba(0,229,255,0.2)', borderRadius: '8px' }} 
+                      itemStyle={{ fontSize: '12px' }}
+                      labelStyle={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginBottom: '4px' }}
+                    />
+                    <Area type="monotone" dataKey="outputs" stroke="#00E5FF" fill="url(#colorOutputs)" strokeWidth={2} name="Total Outputs" />
+                    <Area type="monotone" dataKey="tokensK" stroke="#FFD700" fill="url(#colorTokens)" strokeWidth={2} name="Tokens (k)" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
               
               <div className="mt-8 grid grid-cols-3 gap-6">
                  <div className="p-4 rounded-xl bg-white/5 border border-white/5">
                    <p className="text-[10px] uppercase font-black text-white/40 tracking-widest mb-1">Total Outputs</p>
-                   <p className="text-2xl font-black text-white">440 <span className="text-[10px] text-green-500 font-bold ml-1">+12%</span></p>
+                   <p className="text-2xl font-black text-white">{totalOutputs} <span className="text-[10px] text-green-500 font-bold ml-1">Live</span></p>
                  </div>
                  <div className="p-4 rounded-xl bg-white/5 border border-white/5">
                    <p className="text-[10px] uppercase font-black text-white/40 tracking-widest mb-1">Tokens Consumed</p>
-                   <p className="text-2xl font-black text-white">1.2M <span className="text-[10px] text-red-500 font-bold ml-1">+40%</span></p>
+                   <p className="text-2xl font-black text-white">{(totalOutputs * 12.4).toFixed(1)}K <span className="text-[10px] text-white/50 font-bold ml-1">Est.</span></p>
                  </div>
                  <div className="p-4 rounded-xl bg-white/5 border border-white/5">
                    <p className="text-[10px] uppercase font-black text-white/40 tracking-widest mb-1">Senate Blocked</p>
@@ -114,6 +214,51 @@ export function ExecutiveDashboard() {
                  </div>
               </div>
            </div>
+        </div>
+      </div>
+
+      {/* Swarm Health Telemetry */}
+      <div className="shrink-0 flex flex-col gap-4 mt-2">
+        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 flex items-center gap-2">
+          <Network size={14} className="text-neural-blue" />
+          Live Swarm Telemetry
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {swarmState ? [swarmState, ...Object.values(swarmState.subAgents || {})].map((agent, i) => (
+              <motion.div 
+                key={agent.id} 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="p-5 rounded-xl border border-white/5 bg-black/40 glass flex flex-col gap-3 group hover:border-white/20 transition-all shadow-lg"
+              >
+                <div className="flex justify-between items-center">
+                  <span className="text-xl font-black tracking-widest opacity-80 group-hover:opacity-100 transition-opacity" style={{ color: agent.color }}>
+                    {agent.id.toUpperCase()}
+                  </span>
+                  <div className={`w-2 h-2 rounded-full ${agent.state !== 'idle' ? 'bg-green-500 animate-pulse' : 'bg-white/10'}`} />
+                </div>
+                <div className="space-y-2 mt-2">
+                  <div className="flex justify-between items-center text-[9px] uppercase tracking-widest">
+                    <span className="text-white/30">Process</span>
+                    <span className="text-white/70 font-mono">{agent.progress}%</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[9px] uppercase tracking-widest">
+                    <span className="text-white/30">State</span>
+                    <span className="text-white/70 font-mono italic">{agent.state}</span>
+                  </div>
+                </div>
+                <div className="pt-3 border-t border-white/5 mt-auto">
+                  <span className="text-[8px] uppercase tracking-widest text-white/40 group-hover:text-white/80 transition-colors block truncate">
+                    {agent.lastStatus || 'Awaiting Directive'}
+                  </span>
+                </div>
+              </motion.div>
+            )) : (
+              [...Array(5)].map((_, i) => (
+                <div key={i} className="p-5 rounded-xl border border-white/5 bg-black/5 flex flex-col animate-pulse min-h-[140px]" />
+              ))
+            )}
         </div>
       </div>
     </div>

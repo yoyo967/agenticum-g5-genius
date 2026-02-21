@@ -2,21 +2,53 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
+interface Story {
+  tag: string;
+  title: string;
+  author?: string;
+  authorAgent?: string;
+  excerpt: string;
+  slug?: string;
+  timestamp?: string;
+  content?: string;
+  pillarId?: string;
+}
+
 export const NexusFeed = () => {
   const navigate = useNavigate();
-  const [stories, setStories] = useState<any[]>([]);
+  const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const MOCK_STORIES = [
+  const MOCK_STORIES: Story[] = [
     { tag: 'DEPLOYMENT', title: 'The Automation Imperative', author: 'DA-03 Architect', excerpt: 'Why linear scaling is dead and how autonomous matrices provide the only viable...' },
     { tag: 'ANALYSIS', title: 'Predictive Market Synthesis', author: 'SP-01 Strategist', excerpt: 'Leveraging multi-agent consensus to map consumer verticals before they emerge.' },
     { tag: 'SECURITY', title: 'Zero-Trust Swarms', author: 'RA-01 Auditor', excerpt: 'Enforcing cryptographic boundaries within lateral agent communications.' }
   ];
 
   useEffect(() => {
-    // Immediate load with mock data (FIX-03)
-    setStories(MOCK_STORIES);
-    setLoading(false);
+    const fetchFeed = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+        const response = await fetch(`${baseUrl}/blog/feed`);
+        if (!response.ok) throw new Error('Nexus Sync Failed');
+        const data = await response.json();
+        
+        // Flatten pillars and clusters for the feed
+        const allStories: Story[] = [
+          ...data.pillars.map((p: { slug: string; [key: string]: any }) => ({ ...p, tag: 'STRATEGY', slug: p.slug })),
+          ...data.clusters.map((c: { slug: string; [key: string]: any }) => ({ ...c, tag: 'ANALYSIS', slug: c.slug }))
+        ].sort((a, b) => new Date(b.timestamp as string).getTime() - new Date(a.timestamp as string).getTime());
+
+        setStories(allStories);
+      } catch (err) {
+        console.error('Failed to sync Nexus Feed', err);
+        setStories(MOCK_STORIES); // Fallback to mock if backend fails
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeed();
   }, []);
 
   if (loading) {
@@ -80,7 +112,7 @@ export const NexusFeed = () => {
             >
               <div className="flex justify-between items-start mb-4">
                 <span className="text-[10px] font-black text-neural-blue uppercase tracking-widest">
-                  {new Date(story.timestamp).toLocaleDateString()} // {story.authorAgent}
+                  {story.timestamp ? new Date(story.timestamp).toLocaleDateString() : 'LIVE'} // {story.authorAgent || 'PM-07'}
                 </span>
                 <span className="text-[8px] font-black text-neural-gold border border-neural-gold/20 bg-neural-gold/5 px-2 py-0.5 rounded uppercase tracking-widest">
                   {story.pillarId ? 'Cluster' : 'Pillar'}
@@ -90,8 +122,7 @@ export const NexusFeed = () => {
                 {story.title}
               </h4>
               <p className="text-white/30 text-sm font-light leading-relaxed italic mb-6 line-clamp-3">
-                {/* Extract a brief excerpt from the markdown content if exists */}
-                {story.content?.substring(0, 120)}...
+                {story.excerpt || (story.content?.substring(0, 120) + '...')}
               </p>
               <div className="mt-auto">
                 <button className="text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-colors">

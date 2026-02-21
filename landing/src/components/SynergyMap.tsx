@@ -18,40 +18,32 @@ type Payload = {
   timestamp: string;
 };
 
-const PAYLOAD_TYPES = ['Strategic Brief', 'Image Prompt', 'Brand Copy', 'Safety Audit', 'Data Vector'];
 
 export function SynergyMap() {
   const [activePayloads, setActivePayloads] = useState<Payload[]>([]);
   const [logs, setLogs] = useState<Payload[]>([]);
 
-  // Simulate real-time payload transfers
   useEffect(() => {
-    const interval = setInterval(() => {
-      const fromIndex = Math.floor(Math.random() * AGENTS.length);
-      let toIndex = Math.floor(Math.random() * AGENTS.length);
-      while (toIndex === fromIndex) {
-        toIndex = Math.floor(Math.random() * AGENTS.length);
-      }
-
+    const handlePayload = (e: Event) => {
+      const payload = (e as CustomEvent).detail;
       const newPayload: Payload = {
         id: Date.now(),
-        from: AGENTS[fromIndex].id,
-        to: AGENTS[toIndex].id,
-        type: PAYLOAD_TYPES[Math.floor(Math.random() * PAYLOAD_TYPES.length)],
+        from: payload.from.toUpperCase(),
+        to: payload.to.toUpperCase(),
+        type: payload.payloadType,
         timestamp: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
 
-      setActivePayloads(prev => [...prev, newPayload]);
-      setLogs(prev => [newPayload, ...prev].slice(0, 15)); // Keep last 15 logs
+      setActivePayloads(prev => [...prev.slice(-4), newPayload]); // Limit active animations
+      setLogs(prev => [newPayload, ...prev].slice(0, 15));
       
-      // Remove payload after animation (2000ms duration)
       setTimeout(() => {
         setActivePayloads(prev => prev.filter(p => p.id !== newPayload.id));
       }, 2000);
+    };
 
-    }, 1500 + Math.random() * 2000); // Random interval between 1.5s and 3.5s
-
-    return () => clearInterval(interval);
+    window.addEventListener('swarm-payload', handlePayload);
+    return () => window.removeEventListener('swarm-payload', handlePayload);
   }, []);
 
   const getAgentColor = (agentId: string) => {

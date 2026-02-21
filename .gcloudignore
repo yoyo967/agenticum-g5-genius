@@ -1,0 +1,11 @@
+.gcloudignore
+.git
+.gitignore
+node_modules/
+dist/
+**/node_modules/
+**/dist/
+npm-debug.log
+yarn-error.log
+.firebase/
+.gemini/

@@ -2,29 +2,28 @@ import { Router, Request, Response } from 'express';
 import { db, Collections } from '../services/firestore';
 import { BlogFeedResponse, Pillar, Cluster } from '../types/blog';
 import { CC06Director } from '../agents/cc06-director';
+import { DA03Architect } from '../agents/da03-architect';
+import { StorageService } from '../services/storage';
 
 const router = Router();
 
 // GET /api/blog/feed - Retrieve all published articles
 router.get('/feed', async (_req: Request, res: Response) => {
   try {
-    const pillarsSnapshot = await db.collection(Collections.PILLARS)
-      .where('status', '==', 'published')
-      .orderBy('timestamp', 'desc')
-      .limit(10)
-      .get();
-      
-    const clustersSnapshot = await db.collection(Collections.CLUSTERS)
-      .where('status', '==', 'published')
-      .orderBy('timestamp', 'desc')
-      .limit(20)
-      .get();
+    const pillarsSnapshot = await db.collection(Collections.PILLARS).get();
+    const clustersSnapshot = await db.collection(Collections.CLUSTERS).get();
 
-    const pillars: Pillar[] = [];
-    pillarsSnapshot.forEach(doc => pillars.push({ id: doc.id, ...doc.data() } as Pillar));
+    const pillars: Pillar[] = pillarsSnapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() } as Pillar))
+      .filter(p => p.status === 'published')
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 10);
 
-    const clusters: Cluster[] = [];
-    clustersSnapshot.forEach(doc => clusters.push({ id: doc.id, ...doc.data() } as Cluster));
+    const clusters: Cluster[] = clustersSnapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() } as Cluster))
+      .filter(c => c.status === 'published')
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 20);
 
     const response: BlogFeedResponse = { pillars, clusters };
     res.json(response);
@@ -75,13 +74,61 @@ router.post('/agent-dispatch', async (req: Request, res: Response) => {
     });
 
     // Fire & Forget background generation
-    const cc06 = new CC06Director();
-    // Simulate some PM-07 scheduling buffer
-    setTimeout(() => {
-      cc06.forgeArticle(topic, type as 'pillar' | 'cluster', pillarId)
-        .then(slug => console.log(`[Neural Fabric] CC-06 finalized ${type} payload: ${slug}`))
-        .catch(err => console.error('[Neural Fabric] CC-06 failed forging article:', err));
-    }, 1000);
+    if (type === 'image' || type === 'video') {
+       const da03 = new DA03Architect();
+       setTimeout(async () => {
+         try {
+           const result = await da03.execute(topic);
+           // Look for the base64 output
+           const b64Match = result.match(/data:image\/[^;]+;base64,([a-zA-Z0-9+/=]+)/);
+           if (b64Match) {
+              const buffer = Buffer.from(b64Match[1], 'base64');
+              const filename = `DA03-Generated-${Date.now()}.${type === 'video' ? 'mp4' : 'jpg'}`;
+              
+              // We need to write this to a temp file or upload buffer directly
+              // Luckily StorageService relies on Multer, so for direct buffer save:
+              const path = require('path');
+              const fs = require('fs');
+              const filepath = path.join(process.cwd(), 'data', 'vault', filename);
+              fs.writeFileSync(filepath, buffer);
+              
+              // Add to Firestore to index it broadly
+              await db.collection(Collections.CLUSTERS).add({
+                title: topic.substring(0, 40) + '...',
+                slug: filename,
+                tag: type.toUpperCase(),
+                agent: 'DA-03',
+                status: 'published',
+                timestamp: new Date().toISOString()
+              });
+              
+              // Send WS payload to update UI
+              ((global as any).wss)?.clients?.forEach((client: any) => {
+                if (client.readyState === 1) {
+                   client.send(JSON.stringify({
+                     type: 'payload',
+                     from: 'DA-03',
+                     to: 'UI',
+                     payloadType: 'Asset Generation Complete'
+                   }));
+                }
+              });
+              
+              console.log(`[Neural Fabric] DA-03 successfully generated and saved asset: ${filename}`);
+           }
+         } catch(err) {
+           console.error('[Neural Fabric] DA-03 Image Generation failed:', err);
+         }
+       }, 500);
+    } else {
+       const cc06 = new CC06Director();
+       // Simulate some PM-07 scheduling buffer
+       setTimeout(() => {
+         cc06.forgeArticle(topic, type as 'pillar' | 'cluster', pillarId)
+           .then(slug => console.log(`[Neural Fabric] CC-06 finalized ${type} payload: ${slug}`))
+           .catch(err => console.error('[Neural Fabric] CC-06 failed forging article:', err));
+       }, 1000);
+    }
 
   } catch (error) {
     console.error('Error dispatching agent:', error);

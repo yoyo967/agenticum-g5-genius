@@ -1,7 +1,7 @@
 import { Storage } from '@google-cloud/storage';
 import { Logger } from '../utils/logger';
 import { join } from 'path';
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'fs';
 
 export class StorageService {
   private storage?: Storage;
@@ -60,6 +60,20 @@ export class StorageService {
       this.logger.error(`GCS Upload failed for ${filename}, returning local URL fallback.`, error);
       return localUrl;
     }
+  }
+
+  async listFiles(): Promise<{ name: string; url: string; timestamp: string }[]> {
+    if (!existsSync(this.localVaultPath)) return [];
+    
+    const files = readdirSync(this.localVaultPath);
+    return files.map((filename: string) => {
+      const stats = statSync(join(this.localVaultPath, filename));
+      return {
+        name: filename,
+        url: `http://localhost:8080/vault/${filename}`,
+        timestamp: stats.mtime.toLocaleTimeString()
+      };
+    });
   }
 }
 

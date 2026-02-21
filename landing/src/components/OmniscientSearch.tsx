@@ -6,7 +6,7 @@ interface SearchItem {
   id: string;
   title: string;
   type: 'module' | 'client' | 'asset' | 'vector';
-  icon: any;
+  icon: React.ElementType;
   route?: string;
   meta?: string;
   color: string;
@@ -33,11 +33,35 @@ const SEARCH_DATABASE: SearchItem[] = [
 export function OmniscientSearch({ isOpen, onClose, onNavigate }: { isOpen: boolean, onClose: () => void, onNavigate: (route: string) => void }) {
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [dynamicDb, setDynamicDb] = useState<SearchItem[]>(SEARCH_DATABASE);
+
+  useEffect(() => {
+    fetch('/api/blog/feed')
+      .then(res => res.json())
+      .then(data => {
+         const newItems: SearchItem[] = [];
+         if (data.pillars) {
+           data.pillars.forEach((p: { slug: string; title: string; tag?: string }) => {
+             newItems.push({
+               id: p.slug, title: p.title, type: 'asset', icon: FileText, route: `pillar-blog`, meta: p.tag || 'STRATEGY', color: 'text-pink-500'
+             });
+           });
+         }
+         if (data.clusters) {
+           data.clusters.forEach((c: { slug: string; title: string; tag?: string }) => {
+             newItems.push({
+               id: c.slug, title: c.title, type: 'vector', icon: Hash, route: `pillar-blog`, meta: c.tag || 'ANALYSIS', color: 'text-neural-blue'
+             });
+           });
+         }
+         setDynamicDb([...SEARCH_DATABASE, ...newItems]);
+      }).catch(() => {});
+  }, []);
 
   // Filter Logic
   const filteredResults = query === '' 
-    ? SEARCH_DATABASE.slice(0, 5) // Show top modules by default
-    : SEARCH_DATABASE.filter(item => 
+    ? dynamicDb.slice(0, 5) // Show top modules by default
+    : dynamicDb.filter(item => 
         item.title.toLowerCase().includes(query.toLowerCase()) || 
         item.type.toLowerCase().includes(query.toLowerCase()) ||
         (item.meta && item.meta.toLowerCase().includes(query.toLowerCase()))
@@ -72,10 +96,7 @@ export function OmniscientSearch({ isOpen, onClose, onNavigate }: { isOpen: bool
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, activeIndex, filteredResults, onNavigate, onClose]);
 
-  // Reset index when query changes
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [query]);
+  // No-op for direct state update in effect, handled by onChange or rendering
 
   // Focus input on open
   useEffect(() => {
@@ -83,9 +104,6 @@ export function OmniscientSearch({ isOpen, onClose, onNavigate }: { isOpen: bool
       setTimeout(() => {
         document.getElementById('omniscient-search-input')?.focus();
       }, 100);
-    } else {
-      setQuery('');
-      setActiveIndex(0);
     }
   }, [isOpen]);
 
@@ -115,7 +133,7 @@ export function OmniscientSearch({ isOpen, onClose, onNavigate }: { isOpen: bool
                  type="text"
                  placeholder="Search Swarm Modules, Vectors, & Assets..."
                  value={query}
-                 onChange={e => setQuery(e.target.value)}
+                  onChange={e => { setQuery(e.target.value); setActiveIndex(0); }}
                  className="flex-1 bg-transparent border-none text-lg text-white font-mono placeholder-white/30 focus:outline-none"
                  autoComplete="off"
                  spellCheck="false"
