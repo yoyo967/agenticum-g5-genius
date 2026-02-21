@@ -16,7 +16,7 @@ export class VertexAIService {
     
     this.vertexAI = new VertexAI({ project, location });
     this.model = this.vertexAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-001',
+      model: 'gemini-2.0-flash-thinking-exp-01-21',
     });
   }
 

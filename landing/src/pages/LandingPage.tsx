@@ -126,7 +126,7 @@ export function LandingPage() {
             className="w-full max-w-4xl floating-module glass p-1 rounded-xl shadow-[0_100px_200px_rgba(0,0,0,0.9)] border-white/5 relative overflow-hidden group cursor-pointer"
             onClick={() => navigate('/os')}
           >
-             <div className="absolute inset-0 bg-gradient-to-br from-neural-blue/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+             <div className="absolute inset-0 bg-linear-to-br from-neural-blue/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
              <div className="p-10 md:p-16 flex flex-col items-center justify-center text-center">
                <div className="w-24 h-24 rounded-full border border-neural-blue/30 flex items-center justify-center mb-8 relative">
                  <div className="absolute inset-0 bg-neural-blue/10 rounded-full animate-ping opacity-50" />
@@ -147,7 +147,7 @@ export function LandingPage() {
         </header>
 
         {/* The Project Nexus */}
-        <section id="nexus" className="py-40 px-6 border-t border-white/5 bg-white/[0.01]">
+        <section id="nexus" className="py-40 px-6 border-t border-white/5 bg-white/1">
           <div className="max-w-7xl mx-auto text-center mb-24">
             <h2 className="text-4xl md:text-[12rem] font-display font-black mb-6 uppercase italic tracking-tighter opacity-10 underline decoration-neural-blue decoration-2 underline-offset-16">The Codex</h2>
             <p className="text-neural-blue max-w-lg mx-auto uppercase tracking-[0.5em] font-black text-[10px]">Justifying the G5 Matrix</p>
@@ -183,7 +183,7 @@ export function LandingPage() {
               <div className="relative z-10 text-left">
                 <div className="flex items-center gap-3 mb-8">
                    <Bot size={24} className="text-neural-blue" />
-                   <span className="text-[10px] font-black uppercase tracking-widest text-neural-blue">G1.5P Substrate Engine</span>
+                   <span className="text-[10px] font-black uppercase tracking-widest text-neural-blue">G2.0 Substrate Engine</span>
                 </div>
                 <h3 className="text-6xl font-display font-black mb-8 uppercase tracking-tighter leading-none">Parallel <br/>Synergy.</h3>
                 <p className="text-white/30 text-2xl max-w-xl leading-relaxed font-light italic">
@@ -209,7 +209,7 @@ export function LandingPage() {
 
             <motion.div 
               variants={fadeInUp}
-              className="md:col-span-12 glass p-20 floating-module flex flex-col items-center text-center bg-neural-blue/[0.02] border border-neural-blue/10"
+              className="md:col-span-12 glass p-20 floating-module flex flex-col items-center text-center bg-neural-blue/2 border border-neural-blue/10"
             >
               <div className="w-20 h-20 rounded-full border border-neural-blue/20 flex items-center justify-center mb-10 overflow-hidden relative">
                 <div className="absolute inset-0 bg-neural-blue/10 animate-pulse" />

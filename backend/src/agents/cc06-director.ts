@@ -71,7 +71,7 @@ Framework: Ogilvy's Commandments + Aristotle's Rhetoric.
       If this is a "pillar" article, make it a broad, ultimate guide.
     `;
 
-    this.updateStatus(AgentState.WORKING, 'Consulting Vertex AI (Gemini 2.0 Flash) for generative payload...', 40);
+    this.updateStatus(AgentState.WORKING, 'Consulting Vertex AI (Gemini 2.0 Thinking) for generative payload...', 40);
     
     try {
       const ai = VertexAIService.getInstance();
