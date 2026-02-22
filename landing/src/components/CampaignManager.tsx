@@ -175,7 +175,7 @@ export function CampaignManager() {
                   </label>
                   <select 
                     value={biddingStrategy}
-                    onChange={(e) => setBiddingStrategy(e.target.value as any)}
+                    onChange={(e) => setBiddingStrategy(e.target.value as 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE')}
                     className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-sm font-mono text-white focus:outline-none focus:border-neural-green/50 transition-colors"
                   >
                      <option value="MAXIMIZE_CONVERSIONS">Max Conversions (Volume)</option>

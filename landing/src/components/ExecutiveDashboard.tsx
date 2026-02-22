@@ -41,7 +41,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: 'camp
     // Fetch real metrics
     const fetchAnalytics = async () => {
       try {
-        const [throughputRes, statsRes] = await Promise.all([
+        const [, statsRes] = await Promise.all([
           fetch(`${import.meta.env.VITE_API_URL}/api/analytics/throughput`),
           fetch(`${import.meta.env.VITE_API_URL}/api/analytics/stats`)
         ]);
