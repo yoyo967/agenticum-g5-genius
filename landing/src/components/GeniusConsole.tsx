@@ -8,18 +8,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export interface AgentStatus {
-  id: string;
-  name: string;
-  color: string;
-  state: string;
-  lastStatus: string;
-  progress: number;
-}
-
-export interface SwarmState extends AgentStatus {
-  subAgents: Record<string, AgentStatus>;
-}
+import { type SwarmState, type AgentStatus } from '../types';
 
 export function GeniusConsole() {
   const [swarm, setSwarm] = useState<SwarmState | null>(null);

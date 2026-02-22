@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Users, Database, Clock, TrendingUp, Play, CheckCircle, Settings, Network, FileText, Shield } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { SwarmState } from './GeniusConsole';
+import type { SwarmState } from '../types';
 
 const mockData7Days = [
   { day: 'Mon', outputs: 58, tokensK: 162, blocked: 1 },
