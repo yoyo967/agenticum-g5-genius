@@ -1,0 +1,77 @@
+Initiating SP-01 Strategist Test...
+[2026-02-21T13:03:16.678Z] [INFO] [sp-01] [THINKING] Grounding intelligence on live internet... (0%) 
+[SP-01 Status] thinking: undefined (0%)
+[2026-02-21T13:03:16.981Z] [INFO] [DiscoveryEngine] Discovery Engine client initialized (Fail-soft mode active) 
+[2026-02-21T13:03:16.981Z] [INFO] [GoogleWorkspace] Google Workspace Auth initialized successfully. 
+[2026-02-21T13:03:16.981Z] [INFO] [DiscoveryEngine] Searching knowledge for query: Research latest advertising trends for Volkswagen ... 
+[2026-02-21T13:03:17.017Z] [INFO] [sp-01] Vault Grounding successful for: Research latest advertising trends for Volkswagen EVs in Germany 2026 
+[2026-02-21T13:03:17.017Z] [INFO] [sp-01] [WORKING] Aggregating live competitor data & Behavioral Economics... (50%) 
+[SP-01 Status] working: undefined (50%)
+[2026-02-21T13:03:17.018Z] [INFO] [VertexAI] Generating grounded content for prompt: 
+      
+    IDENTITY: You are the GenIUS Strategic... 
+[2026-02-21T13:03:17.018Z] [ERROR] [VertexAI] Error generating grounded content, falling back to ungrounded Error: API key must be set when using the Gemini API.
+    at new GoogleGenAI (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google\genai\dist\node\index.cjs:20091:19)
+    at VertexAIService.generateGroundedContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\services\vertex-ai.ts:46:18)
+    at SP01Strategist.execute (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\agents\sp01-strategist.ts:56:37)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTest (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\test-sp01.ts:19:20)
+[2026-02-21T13:03:17.027Z] [INFO] [VertexAI] Generating content for prompt: 
+      
+    IDENTITY: You are the GenIUS Strategic... 
+[2026-02-21T13:03:19.764Z] [ERROR] [VertexAI] Error generating content ClientError: [VertexAI.ClientError]: got status: 404 Not Found. {"error":{"code":404,"message":"Publisher Model `projects/online-marketing-manager/locations/europe-west1/publishers/google/models/gemini-2.0-flash-thinking-exp-01-21` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions","status":"NOT_FOUND"}}
+    at throwErrorIfNotOK (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\post_fetch_processing.ts:47:21)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    ... 3 lines matching cause stack trace ...
+    at async runTest (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\test-sp01.ts:19:20) {
+  stackTrace: GoogleApiError: Publisher Model `projects/online-marketing-manager/locations/europe-west1/publishers/google/models/gemini-2.0-flash-thinking-exp-01-21` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions
+      at throwErrorIfNotOK (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\post_fetch_processing.ts:49:9)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\generate_content.ts:94:3)
+      at async VertexAIService.generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\services\vertex-ai.ts:33:22)
+      at async SP01Strategist.execute (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\agents\sp01-strategist.ts:56:22)
+      at async runTest (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\test-sp01.ts:19:20) {
+    code: 404,
+    status: 'NOT_FOUND',
+    errorDetails: undefined
+  },
+  [cause]: GoogleApiError: Publisher Model `projects/online-marketing-manager/locations/europe-west1/publishers/google/models/gemini-2.0-flash-thinking-exp-01-21` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions
+      at throwErrorIfNotOK (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\post_fetch_processing.ts:49:9)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\generate_content.ts:94:3)
+      at async VertexAIService.generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\services\vertex-ai.ts:33:22)
+      at async SP01Strategist.execute (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\agents\sp01-strategist.ts:56:22)
+      at async runTest (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\test-sp01.ts:19:20) {
+    code: 404,
+    status: 'NOT_FOUND',
+    errorDetails: undefined
+  }
+}
+Test failed: ClientError: [VertexAI.ClientError]: got status: 404 Not Found. {"error":{"code":404,"message":"Publisher Model `projects/online-marketing-manager/locations/europe-west1/publishers/google/models/gemini-2.0-flash-thinking-exp-01-21` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions","status":"NOT_FOUND"}}
+    at throwErrorIfNotOK (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\post_fetch_processing.ts:47:21)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    ... 3 lines matching cause stack trace ...
+    at async runTest (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\test-sp01.ts:19:20) {
+  stackTrace: GoogleApiError: Publisher Model `projects/online-marketing-manager/locations/europe-west1/publishers/google/models/gemini-2.0-flash-thinking-exp-01-21` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions
+      at throwErrorIfNotOK (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\post_fetch_processing.ts:49:9)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\generate_content.ts:94:3)
+      at async VertexAIService.generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\services\vertex-ai.ts:33:22)
+      at async SP01Strategist.execute (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\agents\sp01-strategist.ts:56:22)
+      at async runTest (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\test-sp01.ts:19:20) {
+    code: 404,
+    status: 'NOT_FOUND',
+    errorDetails: undefined
+  },
+  [cause]: GoogleApiError: Publisher Model `projects/online-marketing-manager/locations/europe-west1/publishers/google/models/gemini-2.0-flash-thinking-exp-01-21` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions
+      at throwErrorIfNotOK (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\post_fetch_processing.ts:49:9)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\generate_content.ts:94:3)
+      at async VertexAIService.generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\services\vertex-ai.ts:33:22)
+      at async SP01Strategist.execute (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\agents\sp01-strategist.ts:56:22)
+      at async runTest (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\test-sp01.ts:19:20) {
+    code: 404,
+    status: 'NOT_FOUND',
+    errorDetails: undefined
+  }
+}

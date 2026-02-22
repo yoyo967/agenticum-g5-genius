@@ -1,179 +1,244 @@
-import { useState } from 'react';
-import { Network, Cpu, Zap, BarChart3, Database } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Network, Cpu, Zap, BarChart3, Database, RefreshCw, Activity, Clock } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { API_BASE_URL } from '../config';
+import { ExportMenu } from './ui';
+import { downloadPDF, downloadCSV, downloadPNG } from '../utils/export';
+import type { SwarmState } from '../types';
 
-const mockAnalyticsData = [
-  { time: '00:00', load: 12, tokens: 400, errors: 0 },
-  { time: '04:00', load: 8, tokens: 250, errors: 0 },
-  { time: '08:00', load: 45, tokens: 1200, errors: 1 },
-  { time: '12:00', load: 88, tokens: 4500, errors: 0 },
-  { time: '16:00', load: 92, tokens: 5100, errors: 2 },
-  { time: '20:00', load: 56, tokens: 2100, errors: 0 },
-  { time: '23:59', load: 24, tokens: 800, errors: 0 },
-];
-
-interface AgentMetricsProps {
-  agent: string;
+interface AgentMetric {
+  id: string;
+  name: string;
   role: string;
-  tokens: string;
-  latency: number;
-  cost: string;
+  color: string;
+  tokensUsed: number;
+  latencyMs: number;
   successRate: number;
-  memory: string;
-  onClick: () => void;
+  state: string;
 }
 
-const AgentMetrics = ({ agent, role, tokens, latency, cost, successRate, memory, onClick }: AgentMetricsProps) => (
-  <div className="flex flex-col border border-white/5 bg-black/40 rounded-xl p-5 hover:border-neural-blue/30 transition-colors group cursor-pointer" onClick={onClick}>
-     <div className="flex items-center justify-between mb-4">
-       <div className="flex items-center gap-3">
-         <div className={`w-8 h-8 rounded border flex items-center justify-center font-black text-[10px] ${agent === 'SN-00' ? 'border-neural-blue text-neural-blue bg-neural-blue/10' : agent === 'SP-01' ? 'border-pink-500 text-pink-500 bg-pink-500/10' : agent === 'CC-06' ? 'border-orange-500 text-orange-500 bg-orange-500/10' : agent === 'DA-03' ? 'border-neural-purple text-neural-purple bg-neural-purple/10' : agent === 'PM-07' ? 'border-neural-gold text-neural-gold bg-neural-gold/10' : 'border-red-500 text-red-500 bg-red-500/10'}`}>
-           {agent.split('-')[1]}
-         </div>
-         <div>
-           <h4 className="text-white font-black tracking-widest uppercase text-xs">{agent}</h4>
-           <p className="text-white/40 text-[9px] uppercase tracking-widest">{role}</p>
-         </div>
-       </div>
-       <span className={`text-[10px] font-black tracking-widest ${successRate > 95 ? 'text-green-500' : 'text-neural-gold'}`}>{successRate}% SR</span>
-     </div>
-     
-     <div className="space-y-3">
-       <div className="flex justify-between items-center text-xs">
-         <span className="text-white/50 flex items-center gap-1.5"><Cpu size={12} /> Compute Layer</span>
-         <span className="text-white font-mono">{latency}ms avg</span>
-       </div>
-       <div className="flex justify-between items-center text-xs">
-         <span className="text-white/50 flex items-center gap-1.5"><Zap size={12} /> Live Tokens</span>
-         <span className="text-white font-mono">{tokens}</span>
-       </div>
-       <div className="flex justify-between items-center text-xs">
-         <span className="text-white/50 flex items-center gap-1.5"><Database size={12} /> Vector Malloc</span>
-         <span className="text-white font-mono">{memory}</span>
-       </div>
-       <div className="pt-3 border-t border-white/5 flex justify-between items-center mt-2">
-          <span className="text-[9px] uppercase tracking-widest text-white/30">OpEx Run Rate</span>
-          <span className="font-mono text-neural-blue text-xs">${cost} <span className="text-white/30">/mo</span></span>
-       </div>
-     </div>
-  </div>
-);
+const AGENTS: AgentMetric[] = [
+  { id: 'SN-00', name: 'NEXUS PRIME', role: 'Orchestrator', color: 'var(--color-agent-sn00)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+  { id: 'SP-01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: 'var(--color-agent-sp01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+  { id: 'CC-06', name: 'COGNITIVE CORE', role: 'Copywriter', color: 'var(--color-agent-cc06)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+  { id: 'DA-03', name: 'DESIGN ARCHITECT', role: 'Visual Artist', color: 'var(--color-agent-da03)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+  { id: 'RA-01', name: 'SECURITY CORTEX', role: 'Auditor', color: 'var(--color-agent-ra01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+];
 
 export function SwarmAnalytics() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'sn00' | 'sp01' | 'cc06' | 'da03' | 'ra01' | 'pm07'>('overview');
+  const [agents, setAgents] = useState<AgentMetric[]>(AGENTS);
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [throughput, setThroughput] = useState<{ time: string; tokens: number; load: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState<'1h' | '6h' | '24h' | '7d' | '30d'>('24h');
+
+  // Fetch analytics data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [analyticsRes, throughputRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/analytics/agents`).catch(() => null),
+          fetch(`${API_BASE_URL}/api/analytics/throughput`).catch(() => null),
+        ]);
+
+        if (analyticsRes?.ok) {
+          const data = await analyticsRes.json();
+          if (data.agents) {
+            setAgents(prev => prev.map(a => {
+              const live = data.agents.find((d: AgentMetric) => d.id === a.id);
+              return live ? { ...a, ...live } : a;
+            }));
+          }
+        }
+
+        if (throughputRes?.ok) {
+          const data = await throughputRes.json();
+          if (data.throughput) setThroughput(data.throughput);
+        }
+      } catch {
+        // Backend unavailable — use defaults
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Listen for live swarm state events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<SwarmState>).detail;
+      if (detail?.subAgents) {
+        setAgents(prev => prev.map(a => {
+          const sub = detail.subAgents[a.id];
+          if (sub) return { ...a, state: sub.state };
+          return a;
+        }));
+      }
+    };
+    window.addEventListener('swarm-state', handler);
+    return () => window.removeEventListener('swarm-state', handler);
+  }, []);
+
+  // Generate default throughput data if none from API
+  const chartData = throughput.length > 0 ? throughput : [
+    { time: '00:00', tokens: 0, load: 0 },
+    { time: '04:00', tokens: 120, load: 15 },
+    { time: '08:00', tokens: 890, load: 45 },
+    { time: '12:00', tokens: 2400, load: 72 },
+    { time: '16:00', tokens: 3200, load: 88 },
+    { time: '20:00', tokens: 1800, load: 55 },
+    { time: '23:59', tokens: 400, load: 20 },
+  ];
+
+  const totalTokens = agents.reduce((sum, a) => sum + a.tokensUsed, 0);
+  const avgLatency = agents.reduce((sum, a) => sum + a.latencyMs, 0) / agents.length || 0;
+  const avgSuccess = agents.reduce((sum, a) => sum + a.successRate, 0) / agents.length || 0;
+
+  const pieData = agents.map(a => ({ name: a.id, value: Math.max(a.tokensUsed, 1) }));
+  const PIE_COLORS = ['#00E5FF', '#7B2FBE', '#FF007A', '#FFD700', '#00FF88'];
+
+  const stateColor = (s: string) => {
+    switch (s) {
+      case 'working': case 'processing': return 'badge-processing';
+      case 'idle': return 'badge-online';
+      case 'error': return 'badge-error';
+      default: return 'badge-online';
+    }
+  };
 
   return (
-    <div className="h-full flex flex-col gap-6 overflow-y-auto scrollbar-none pb-6">
-      
-      {/* Header telemetry */}
-      <div className="flex items-center justify-between shrink-0 bg-black/40 border border-white/5 p-6 rounded-2xl glass">
-         <div>
-           <h2 className="text-xl font-display font-black uppercase italic tracking-tighter text-white flex items-center gap-2">
-             <Network size={20} className="text-neural-blue" />
-             Swarm Telemetry Overview
-           </h2>
-           <p className="text-white/40 font-light text-xs mt-1">Real-time resource utilization & token economics for the 5-Node Cluster.</p>
-         </div>
-         <div className="flex gap-4">
-            <div className="text-right">
-               <p className="text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">Global Compute</p>
-               <p className="text-2xl font-mono text-white flex items-center gap-2">
-                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                 98.4%
-               </p>
-            </div>
-            <div className="w-px h-10 bg-white/10" />
-            <div className="text-right">
-               <p className="text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">Total Vector DB Size</p>
-               <p className="text-2xl font-mono text-white">4.2 <span className="text-sm text-white/50">TB</span></p>
-            </div>
-         </div>
+    <div id="analytics-export-container" className="p-6 space-y-6 animate-in">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Network size={20} className="text-accent" />
+          <h2 className="font-display text-2xl font-bold uppercase tracking-tight">Swarm Analytics</h2>
+          <span className="label text-white/20 mt-1">Real-time Agent Intelligence</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setLoading(true)} className="btn-outline text-xs py-2 px-4 flex items-center gap-2">
+            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
+          </button>
+          <ExportMenu options={[
+            { label: 'PDF Report', format: 'PDF', onClick: () => downloadPDF('analytics-export-container', 'G5_Swarm_Analytics') },
+            { label: 'CSV Metrics', format: 'CSV', onClick: () => downloadCSV(agents.map(a => ({ id: a.id, name: a.name, role: a.role, tokensUsed: a.tokensUsed, latencyMs: a.latencyMs, successRate: a.successRate, state: a.state })), 'G5_Agent_Metrics') },
+            { label: 'PNG Screenshot', format: 'PNG', onClick: () => downloadPNG('analytics-export-container', 'G5_Swarm_Analytics') },
+          ]} />
+        </div>
       </div>
 
-      <div className="flex gap-6 flex-1 min-h-[500px]">
-        {/* Left: Agent Grid */}
-        <div className="w-1/3 flex flex-col gap-4 overflow-y-auto pr-2 scrollbar-none">
-           <AgentMetrics agent="SN-00" role="Orchestrator" tokens="4.2M" latency={42} cost="142.50" successRate={99.9} memory="850 MB" onClick={() => setActiveTab('sn00')} />
-           <AgentMetrics agent="SP-01" role="Strategist" tokens="8.1M" latency={120} cost="85.20" successRate={98.5} memory="1.2 GB" onClick={() => setActiveTab('sp01')} />
-           <AgentMetrics agent="CC-06" role="Director" tokens="12.4M" latency={85} cost="210.00" successRate={96.2} memory="420 MB" onClick={() => setActiveTab('cc06')} />
-           <AgentMetrics agent="DA-03" role="Architect" tokens="1.2M" latency={1400} cost="450.00" successRate={94.0} memory="2.1 GB" onClick={() => setActiveTab('da03')} />
-           <AgentMetrics agent="RA-01" role="Auditor" tokens="5.5M" latency={65} cost="45.00" successRate={100} memory="150 MB" onClick={() => setActiveTab('ra01')} />
-           <AgentMetrics agent="PM-07" role="Pillar Master" tokens="2.1M" latency={180} cost="55.00" successRate={99.1} memory="2.4 GB" onClick={() => setActiveTab('pm07')} />
+      {/* Time Range Filter */}
+      <div className="flex gap-1">
+        {(['1h', '6h', '24h', '7d', '30d'] as const).map(range => (
+          <button key={range} onClick={() => setTimeRange(range)}
+            className={`px-3 py-1 rounded-lg font-mono text-[10px] uppercase tracking-wider transition-colors ${timeRange === range ? 'bg-accent/15 text-accent border border-accent/30' : 'text-white/30 hover:text-white/60 border border-transparent'}`}>
+            {range}
+          </button>
+        ))}
+      </div>
+
+      {/* Top Metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { icon: <Cpu size={16} />, label: 'Active Agents', value: agents.filter(a => a.state !== 'idle').length + '/' + agents.length, color: 'var(--color-accent)' },
+          { icon: <Zap size={16} />, label: 'Total Tokens', value: totalTokens > 1000 ? (totalTokens / 1000).toFixed(1) + 'K' : String(totalTokens), color: 'var(--color-gold)' },
+          { icon: <Clock size={16} />, label: 'Avg Latency', value: avgLatency.toFixed(0) + 'ms', color: 'var(--color-magenta)' },
+          { icon: <Activity size={16} />, label: 'Success Rate', value: avgSuccess.toFixed(1) + '%', color: 'var(--color-emerald)' },
+        ].map(m => (
+          <div key={m.label} className="glass-card p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span style={{ color: m.color }}>{m.icon}</span>
+              <span className="label mb-0!">{m.label}</span>
+            </div>
+            <p className="font-mono text-2xl font-bold" style={{ color: m.color }}>{m.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Throughput Chart */}
+        <div className="md:col-span-2 glass-card p-6">
+          <h3 className="font-display text-lg font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+            <BarChart3 size={16} className="text-accent" /> Throughput Timeline
+          </h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="tokenGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#00E5FF" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#00E5FF" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="time" stroke="rgba(255,255,255,0.2)" fontSize={10} fontFamily="Roboto Mono" />
+              <YAxis stroke="rgba(255,255,255,0.2)" fontSize={10} fontFamily="Roboto Mono" />
+              <Tooltip contentStyle={{ background: 'rgba(10,1,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontFamily: 'Roboto Mono', fontSize: '11px' }} />
+              <Area type="monotone" dataKey="tokens" stroke="#00E5FF" fill="url(#tokenGrad)" strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Right: Deep Dive Terminal */}
-        <div className="w-2/3 flex flex-col border border-white/5 rounded-2xl bg-black/40 glass overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.5)]">
-           <div className="p-4 border-b border-white/5 flex items-center gap-4 bg-black/60 shrink-0">
-             <button className={`text-xs px-4 py-1.5 rounded-full font-black uppercase tracking-widest transition-colors ${activeTab === 'overview' ? 'bg-neural-blue text-black' : 'bg-white/5 text-white/50 hover:text-white'}`} onClick={() => setActiveTab('overview')}>Macro View</button>
-             <button className={`text-xs px-4 py-1.5 rounded-full font-black uppercase tracking-widest transition-colors ${activeTab !== 'overview' ? 'bg-white/20 text-white' : 'bg-transparent text-white/30 hover:text-white'}`} disabled>Micro Analysis: {activeTab === 'overview' ? 'Select Node' : activeTab.toUpperCase()}</button>
-           </div>
-           
-           <div className="flex-1 p-8 relative flex flex-col">
-              {/* Background Grid */}
-              <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'linear-gradient(to right, #444 1px, transparent 1px), linear-gradient(to bottom, #444 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        {/* Token Distribution */}
+        <div className="glass-card p-6">
+          <h3 className="font-display text-lg font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+            <Database size={16} className="text-gold" /> Token Distribution
+          </h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} strokeWidth={0}>
+                {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+              </Pie>
+              <Tooltip contentStyle={{ background: 'rgba(10,1,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontFamily: 'Roboto Mono', fontSize: '11px' }} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="flex flex-wrap gap-2 mt-2 justify-center">
+            {agents.map((a, i) => (
+              <span key={a.id} className="font-mono text-[9px] flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full" style={{ background: PIE_COLORS[i] }} />
+                {a.id}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
 
-              {/* Main Chart Area (Simulated Bloomberg Terminal density) */}
-              <div className="flex-1 border border-white/10 bg-black/50 rounded-lg p-6 flex flex-col relative z-10 backdrop-blur-sm">
-                 <div className="flex justify-between items-start mb-8">
-                    <div>
-                      <h3 className="text-white font-black uppercase tracking-widest text-sm flex items-center gap-2">
-                        <BarChart3 size={16} className="text-neural-blue" />
-                        Network Payload Distribution (T-30 Days)
-                      </h3>
-                      <p className="text-[10px] text-white/40 font-mono mt-1">Aggregated inference requests across all 5 Vertex AI models.</p>
-                    </div>
-                 </div>
-
-                 {/* Structured Recharts Area Chart */}
-                 <div className="flex-1 min-h-[300px] mt-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={mockAnalyticsData}>
-                        <defs>
-                          <linearGradient id="colorLoad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#00E5FF" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#00E5FF" stopOpacity={0}/>
-                          </linearGradient>
-                          <linearGradient id="colorTokens" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#7C3AED" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                        <XAxis dataKey="time" stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.5)" }} axisLine={false} tickLine={false} />
-                        <YAxis stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.5)" }} axisLine={false} tickLine={false} />
-                        <Tooltip 
-                          contentStyle={{ background: '#0a0a0a', border: '1px solid rgba(0,229,255,0.2)', borderRadius: '8px' }} 
-                          itemStyle={{ fontSize: '12px' }}
-                          labelStyle={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginBottom: '4px' }}
-                        />
-                        <Area type="monotone" dataKey="load" stroke="#00E5FF" fill="url(#colorLoad)" strokeWidth={2} name="Compute Load %" />
-                        <Area type="monotone" dataKey="tokens" stroke="#7C3AED" fill="url(#colorTokens)" strokeWidth={2} name="Tokens / Sec" />
-                        <ReferenceLine y={80} stroke="#EF4444" strokeDasharray="3 3" label={{ value: 'Peak Threshold', fill: '#EF4444', fontSize: 10, position: 'insideTopRight' }} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                 </div>
-
-                 {/* Telemetry Readouts */}
-                 <div className="grid grid-cols-4 gap-4 pt-6 border-t border-white/10">
-                    <div>
-                      <p className="text-[9px] uppercase font-black tracking-widest text-white/40 mb-1">Peak Tokens/Sec</p>
-                      <p className="text-lg font-mono text-white">4,096 <span className="text-[10px] text-red-500">⚠</span></p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase font-black tracking-widest text-white/40 mb-1">Memory Allocation</p>
-                      <p className="text-lg font-mono text-white">4.2 TB</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase font-black tracking-widest text-white/40 mb-1">Total Burn (USD)</p>
-                      <p className="text-lg font-mono text-neural-gold">$932.70</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase font-black tracking-widest text-white/40 mb-1">API Error Rate</p>
-                      <p className="text-lg font-mono text-green-500">0.02%</p>
-                    </div>
-                 </div>
+      {/* Agent Cards */}
+      <div className="space-y-3">
+        <h3 className="font-display text-lg font-bold uppercase tracking-tight flex items-center gap-2">
+          <Cpu size={16} className="text-accent" /> Agent Performance Matrix
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          {agents.map(agent => (
+            <motion.div key={agent.id} whileHover={{ y: -2 }}
+              onClick={() => setSelectedAgent(selectedAgent === agent.id ? null : agent.id)}
+              className={`glass-card p-5 cursor-pointer transition-all ${selectedAgent === agent.id ? 'border-accent/40 glow-cyan' : ''}`}>
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-mono text-sm font-bold" style={{ color: agent.color }}>{agent.id}</span>
+                <span className={`badge text-[8px] ${stateColor(agent.state)}`}>{agent.state}</span>
               </div>
-           </div>
+              <p className="font-mono text-[10px] text-white/30 uppercase tracking-wider mb-4">{agent.role}</p>
+              {/* Progress Bar */}
+              <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden mb-3">
+                <motion.div className="h-full rounded-full" style={{ background: agent.color }}
+                  initial={{ width: 0 }} animate={{ width: `${agent.successRate}%` }} transition={{ duration: 1 }} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <span className="font-mono text-[8px] text-white/20 uppercase">Tokens</span>
+                  <p className="font-mono text-xs font-bold">{agent.tokensUsed > 1000 ? (agent.tokensUsed/1000).toFixed(1)+'K' : agent.tokensUsed}</p>
+                </div>
+                <div>
+                  <span className="font-mono text-[8px] text-white/20 uppercase">Latency</span>
+                  <p className="font-mono text-xs font-bold">{agent.latencyMs}ms</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </div>

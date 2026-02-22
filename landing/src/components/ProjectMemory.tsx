@@ -1,183 +1,182 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Database, FolderHeart, Search, Clock, FileText, Image as ImageIcon, ChevronRight, Hash, Building2, Terminal } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Database, FolderHeart, FileText, Search, Target, RefreshCw, Clock, ChevronRight, Building2 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
+import { ExportMenu } from './ui';
+import { downloadJSON, downloadCSV } from '../utils/export';
 
-const MOCK_CLIENTS = [
-  {
-    id: 'c-01',
-    name: 'CyberDyne Systems',
-    status: 'Active',
-    vectors: 124,
-    lastActive: '2 mins ago',
-    campaigns: [
-      { id: 'camp-1', name: 'Q3 Product Launch: T-800', type: 'Omnichannel', date: '2026-08-15' },
-      { id: 'camp-2', name: 'Rebranding Initiative', type: 'Brand Identity', date: '2026-05-01' }
-    ],
-    memory: [
-      { id: 'm-1', name: 'Brand_Guidelines_2026.pdf', type: 'document', size: '2.4 MB' },
-      { id: 'm-2', name: 'Past_Performance_Data.csv', type: 'data', size: '840 KB' },
-      { id: 'm-3', name: 'CEO_Vision_Speech.mp3', type: 'audio', size: '12 MB' }
-    ]
-  },
-  {
-    id: 'c-02',
-    name: 'Neon Cortex Inc.',
-    status: 'Archived',
-    vectors: 42,
-    lastActive: '3 months ago',
-    campaigns: [
-      { id: 'camp-3', name: 'Neural Implant Promo', type: 'Social Media', date: '2025-11-20' }
-    ],
-    memory: [
-      { id: 'm-4', name: 'Logo_Pack.zip', type: 'asset', size: '45 MB' }
-    ]
-  }
-];
+interface Campaign {
+  id: string;
+  name: string;
+  status: string;
+  objective: string;
+  budget?: { dailyAmount: number; currency: string };
+  createdAt: string;
+}
+
+interface VaultFile {
+  name: string;
+  url: string;
+  timestamp?: string;
+}
 
 export function ProjectMemory() {
-  const [activeClient, setActiveClient] = useState(MOCK_CLIENTS[0]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [assets, setAssets] = useState<VaultFile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [campRes, vaultRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/pmax/campaigns`),
+        fetch(`${API_BASE_URL}/api/vault/list`),
+      ]);
+      if (campRes.ok) {
+        const data = await campRes.json();
+        setCampaigns(data.campaigns || []);
+      }
+      if (vaultRes.ok) {
+        const data = await vaultRes.json();
+        setAssets(data.files || []);
+      }
+    } catch (e) {
+      console.warn('[Memory] Backend unavailable:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const filteredCampaigns = campaigns.filter(c =>
+    !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.objective?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      
-      {/* Search Header */}
-      <div className="shrink-0 mb-6 flex gap-4">
-        <div className="flex-1 relative group">
-          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <Search size={16} className="text-white/40 group-focus-within:text-neural-blue transition-colors" />
+    <div className="h-full flex flex-col gap-5 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.1)' }}>
+            <Database size={20} className="text-purple-400" />
           </div>
-          <input 
-            type="text" 
-            placeholder="Omniscient Search: Query Memory Vectors, Clients, or Payloads..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-black/40 border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-neural-blue/50 focus:bg-black/60 transition-all shadow-[0_20px_40px_rgba(0,0,0,0.5)] glass"
-          />
-          <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-             <kbd className="hidden md:inline-flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-black uppercase text-white/40">
-               Cmd + K
-             </kbd>
+          <div>
+            <h2 className="font-display text-xl uppercase tracking-tight">Project Memory</h2>
+            <p className="font-mono text-[10px] text-white/30">Campaign History + Asset Archive</p>
           </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={fetchData} className="btn btn-ghost btn-sm">
+            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
+          </button>
+          <ExportMenu options={[
+            { label: 'JSON All', format: 'JSON', onClick: () => downloadJSON({ campaigns, assets }, 'G5_Project_Memory') },
+            { label: 'CSV Campaigns', format: 'CSV', onClick: () => downloadCSV(campaigns.map(c => ({ id: c.id, name: c.name, status: c.status, objective: c.objective, budget: c.budget?.dailyAmount ?? '', created: c.createdAt })), 'G5_Campaigns_Memory') },
+          ]} />
         </div>
       </div>
 
-      <div className="flex gap-6 flex-1 min-h-0">
-        
-        {/* Left: Client Roster */}
-        <div className="w-1/3 flex flex-col gap-4 overflow-y-auto scrollbar-none pb-6">
-          <div className="flex items-center justify-between px-2">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-white/50 flex items-center gap-2">
-              <FolderHeart size={14} className="text-pink-500" />
-              Client Roster
-            </h3>
-            <span className="text-[9px] font-mono text-white/30">{MOCK_CLIENTS.length} Indexed</span>
-          </div>
+      {/* Search */}
+      <div className="relative shrink-0">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+        <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Search campaigns, objectives..." className="input pl-10" />
+      </div>
 
-          <div className="flex flex-col gap-3">
-            {MOCK_CLIENTS.map(client => (
-              <div 
-                key={client.id}
-                onClick={() => setActiveClient(client)}
-                className={`p-5 rounded-2xl border cursor-pointer transition-all duration-300 relative overflow-hidden group ${activeClient.id === client.id ? 'bg-neural-blue/5 border-neural-blue/30 shadow-[0_0_30px_rgba(0,229,255,0.1)]' : 'bg-black/40 border-white/5 hover:border-white/20 glass'}`}
-              >
-                {activeClient.id === client.id && (
-                  <div className="absolute top-0 left-0 w-1 h-full bg-neural-blue shadow-[0_0_10px_#00e5ff]" />
-                )}
-                
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
-                    <Building2 size={20} className={activeClient.id === client.id ? 'text-neural-blue' : 'text-white/50'} />
+      <div className="flex flex-1 gap-5 min-h-0">
+        {/* Left: Campaign List */}
+        <div className="w-1/3 flex flex-col gap-3 overflow-y-auto">
+          <h3 className="label">Campaigns ({filteredCampaigns.length})</h3>
+          {loading ? (
+            [...Array(4)].map((_, i) => <div key={i} className="skeleton h-20 w-full" />)
+          ) : filteredCampaigns.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <FolderHeart size={40} className="text-white/10 mb-3" />
+              <p className="font-display text-sm uppercase text-white/20">No Campaigns</p>
+            </div>
+          ) : (
+            filteredCampaigns.map(camp => (
+              <motion.div key={camp.id}
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                className={`card cursor-pointer group hover:border-white/20 ${selectedCampaign?.id === camp.id ? 'border-accent/30' : ''}`}
+                onClick={() => setSelectedCampaign(camp)}>
+                <div className="flex items-center gap-3">
+                  <Target size={16} className="text-accent shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-display text-xs uppercase truncate">{camp.name}</p>
+                    <p className="font-mono text-[9px] text-white/25 mt-0.5">{camp.objective} · {camp.status}</p>
                   </div>
-                  <span className={`px-2 py-1 rounded border text-[9px] font-black uppercase tracking-widest ${client.status === 'Active' ? 'bg-green-500/10 border-green-500/30 text-green-500' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                    {client.status}
-                  </span>
+                  <ChevronRight size={12} className="text-white/15 group-hover:text-accent shrink-0" />
                 </div>
-
-                <h4 className="text-lg font-black text-white mb-1 group-hover:text-neural-blue transition-colors">{client.name}</h4>
-                <div className="flex items-center gap-4 text-[10px] uppercase font-mono tracking-widest text-white/40">
-                  <span className="flex items-center gap-1"><Hash size={10} /> {client.vectors} Vectors</span>
-                  <span className="flex items-center gap-1"><Clock size={10} /> {client.lastActive}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              </motion.div>
+            ))
+          )}
         </div>
 
-        {/* Right: Deep Client Catalog */}
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={activeClient.id}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            className="w-2/3 flex flex-col border border-white/5 rounded-2xl bg-black/40 glass overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.5)]"
-          >
-             {/* Header */}
-             <div className="p-8 border-b border-white/5 bg-linear-to-br from-neural-blue/10 via-transparent to-transparent flex items-start justify-between">
-                <div>
-                   <h2 className="text-3xl font-display font-black uppercase italic tracking-tighter text-white mb-2 shadow-neural-blue text-shadow-sm">
-                     {activeClient.name}
-                   </h2>
-                   <p className="text-white/40 font-mono text-xs flex items-center gap-2">
-                     ID: {activeClient.id} • Swarm Substrate: Gemini 2.0 Thinking
-                   </p>
+        {/* Center: Campaign Detail */}
+        <div className="flex-1 glass flex flex-col overflow-hidden">
+          {selectedCampaign ? (
+            <>
+              <div className="p-4 border-b border-white/5 shrink-0">
+                <h3 className="font-display text-lg uppercase">{selectedCampaign.name}</h3>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className={`badge ${selectedCampaign.status === 'ENABLED' ? 'badge-online' : 'badge-processing'}`}>{selectedCampaign.status}</span>
+                  <span className="font-mono text-[9px] text-white/25">{selectedCampaign.objective}</span>
                 </div>
-                <button className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest text-white flex items-center gap-2 transition-colors">
-                  <Terminal size={14} /> Open CLI
-                </button>
-             </div>
-
-             <div className="flex-1 overflow-y-auto scrollbar-none p-8 flex flex-col gap-8">
-                
-                {/* Active Campaigns */}
-                <div>
-                  <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2 mb-4">
-                    <Database size={14} className="text-neural-blue" />
-                    Neural Campaigns
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    {activeClient.campaigns.map(camp => (
-                      <div key={camp.id} className="p-4 rounded-xl border border-white/5 bg-black/50 hover:bg-white/5 transition-colors cursor-pointer group">
-                        <div className="flex justify-between items-start mb-3">
-                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neural-blue/70">{camp.type}</span>
-                          <ChevronRight size={14} className="text-white/20 group-hover:text-white transition-colors" />
-                        </div>
-                        <h4 className="text-sm font-bold text-white mb-2">{camp.name}</h4>
-                        <p className="text-[10px] font-mono text-white/40">Initiated: {camp.date}</p>
-                      </div>
-                    ))}
+              </div>
+              <div className="flex-1 p-4 overflow-y-auto space-y-4">
+                <div className="card">
+                  <h4 className="label mb-2">Campaign Details</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="font-mono text-[9px] text-white/25 block">Budget</span>
+                      <span className="font-mono text-sm text-white">${selectedCampaign.budget?.dailyAmount || 0}/day</span>
+                    </div>
+                    <div>
+                      <span className="font-mono text-[9px] text-white/25 block">Created</span>
+                      <span className="font-mono text-sm text-white">{new Date(selectedCampaign.createdAt).toLocaleDateString('en-US')}</span>
+                    </div>
                   </div>
                 </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+              <Building2 size={48} className="text-white/5 mb-4" />
+              <p className="font-display text-lg uppercase text-white/15">Select a Campaign</p>
+              <p className="font-mono text-xs text-white/10 mt-1">View campaign details and associated assets</p>
+            </div>
+          )}
+        </div>
 
-                {/* Memory Vectors (Context Base) */}
-                <div>
-                  <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2 mb-4">
-                    <Database size={14} className="text-neural-purple" />
-                    Memory Vectors (Context)
-                  </h3>
-                  <div className="flex flex-col gap-2">
-                    {activeClient.memory.map(mem => (
-                      <div key={mem.id} className="flex items-center justify-between p-3 rounded-lg border border-white/5 bg-black/30 hover:bg-white/5 transition-colors cursor-pointer">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-white/50">
-                            {mem.type === 'document' || mem.type === 'data' ? <FileText size={14} /> : <ImageIcon size={14} />}
-                          </div>
-                          <div>
-                            <p className="text-xs font-mono text-white/80">{mem.name}</p>
-                            <p className="text-[9px] font-black uppercase tracking-widest text-white/30">{mem.type}</p>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-mono text-white/20">{mem.size}</span>
-                      </div>
-                    ))}
-                  </div>
+        {/* Right: Asset Archive */}
+        <div className="w-1/4 flex flex-col gap-3 overflow-y-auto">
+          <h3 className="label">Vault Assets ({assets.length})</h3>
+          {assets.length === 0 ? (
+            <div className="text-center py-8">
+              <FileText size={24} className="text-white/10 mx-auto mb-2" />
+              <p className="font-mono text-[9px] text-white/15">No assets in vault</p>
+            </div>
+          ) : (
+            assets.slice(0, 20).map(file => (
+              <motion.div key={file.name} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="card p-3! flex items-center gap-2 group hover:border-white/15">
+                <FileText size={12} className="text-white/30 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-mono text-[9px] text-white/60 truncate">{file.name}</p>
                 </div>
-
-             </div>
-          </motion.div>
-        </AnimatePresence>
-
+                {file.timestamp && (
+                  <span className="font-mono text-[8px] text-white/15 shrink-0 flex items-center gap-1">
+                    <Clock size={8} />{new Date(file.timestamp).toLocaleDateString('en-US')}
+                  </span>
+                )}
+              </motion.div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

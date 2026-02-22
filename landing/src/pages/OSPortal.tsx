@@ -4,7 +4,9 @@ import {
   Terminal, Shield, 
   ChevronLeft, Command, Database, Users
 } from 'lucide-react';
+import { StatusBadge } from '../components/ui';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { MeshBackground } from '../components/NeuralSubstrate';
 import { GeniusConsole } from '../components/GeniusConsole';
 import { AssetVault } from '../components/AssetVault';
 import { CreativeStudio } from '../components/CreativeStudio';
@@ -21,11 +23,29 @@ import { NexusEngineV2 } from '../components/NexusEngineV2';
 import { PillarBlogEngine } from '../components/PillarBlogEngine';
 import { Palette, GitMerge, Activity, Settings, FolderHeart, Network, Search, Target, LayoutGrid, FileText } from 'lucide-react';
 
+type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign';
+
+const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
+  dashboard: { label: 'Executive Dashboard', subtitle: 'Global Metrics' },
+  campaign: { label: 'Campaign Hub', subtitle: 'Agency Directives' },
+  console: { label: 'Genius Console', subtitle: 'Live Agent Matrix' },
+  'nexus-engine': { label: 'Nexus Engine V2', subtitle: 'Autonomous Workflows' },
+  'pillar-blog': { label: 'Pillar Blog Engine', subtitle: 'Content Pipeline' },
+  studio: { label: 'Creative Studio', subtitle: 'Asset Forge' },
+  workflows: { label: 'Automated Workflows', subtitle: 'Agent Autopilot' },
+  vault: { label: 'Asset Vault', subtitle: 'Secure Storage' },
+  memory: { label: 'Project Memory', subtitle: 'Client Context' },
+  analytics: { label: 'Swarm Analytics', subtitle: 'Agent Telemetry' },
+  synergy: { label: 'Synergy Map', subtitle: 'Neural Network' },
+  senate: { label: 'Security Senate', subtitle: 'RA-01 Tribunal' },
+  settings: { label: 'Global Config', subtitle: 'System Parameters' },
+};
+
 export function OSPortal() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialModule = (searchParams.get('module') as 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign') || 'dashboard';
-  const [activeModule, setActiveModule] = useState<'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign'>(initialModule);
+  const initialModule = (searchParams.get('module') as ModuleKey) || 'dashboard';
+  const [activeModule, setActiveModule] = useState<ModuleKey>(initialModule);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
@@ -40,164 +60,95 @@ export function OSPortal() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-obsidian text-white font-body selection:bg-neural-blue/30 selection:text-neural-blue flex overflow-hidden">
-      
-      {/* OS Sidebar Sidebar */}
-      <aside className="w-20 md:w-64 border-r border-white/5 bg-black/50 backdrop-blur-xl flex flex-col pt-6 pb-6 shadow-[20px_0_50px_rgba(0,0,0,0.5)] z-20">
-        <div className="px-6 pb-8 flex items-center gap-3">
+    <div className="min-h-screen text-white flex overflow-hidden relative">
+      {/* Animated Mesh Gradient Background */}
+      <MeshBackground />
+
+      {/* OS Sidebar */}
+      <aside className="glass-sidebar w-20 md:w-64 flex flex-col pt-6 pb-6 z-20 relative shrink-0">
+        
+        {/* Logo */}
+        <div className="px-5 pb-6 flex items-center gap-3">
           <motion.div 
             whileHover={{ rotate: 180 }}
             transition={{ duration: 0.5 }}
-            className="w-8 h-8 rounded bg-neural-blue flex items-center justify-center font-bold text-obsidian text-xs shrink-0"
+            className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center font-display font-bold text-void text-xs shrink-0"
           >
             G5
           </motion.div>
-          <span className="font-display font-black tracking-tight text-xl uppercase italic hidden md:block">OS Portal</span>
+          <div className="hidden md:block">
+            <span className="font-display font-bold tracking-tight text-lg uppercase block leading-none">Agenticum</span>
+            <span className="font-mono text-[9px] text-white/30 uppercase tracking-[0.2em]">Enterprise OS</span>
+          </div>
         </div>
 
-        <div className="flex-1 flex flex-col gap-2 px-3">
-          <SidebarButton 
-            icon={<Activity size={18} />} 
-            label="Executive Dashboard" 
-            active={activeModule === 'dashboard'} 
-            onClick={() => setActiveModule('dashboard')}
-          />
-          <SidebarButton 
-            icon={<Target size={18} />} 
-            label="Campaign Hub" 
-            active={activeModule === 'campaign'} 
-            onClick={() => setActiveModule('campaign')}
-          />
-          <SidebarButton 
-            icon={<Terminal size={18} />} 
-            label="Genius Console" 
-            active={activeModule === 'console'} 
-            onClick={() => setActiveModule('console')}
-          />
-          <SidebarButton 
-            icon={<LayoutGrid size={18} />} 
-            label="Nexus Engine V2" 
-            active={activeModule === 'nexus-engine'} 
-            onClick={() => setActiveModule('nexus-engine')}
-          />
-          <SidebarButton 
-            icon={<FileText size={18} />} 
-            label="Pillar Blog Engine" 
-            active={activeModule === 'pillar-blog'} 
-            onClick={() => setActiveModule('pillar-blog')}
-          />
-          <SidebarButton 
-            icon={<Palette size={18} />} 
-            label="Creative Studio" 
-            active={activeModule === 'studio'} 
-            onClick={() => setActiveModule('studio')}
-          />
-          <SidebarButton 
-            icon={<GitMerge size={18} />} 
-            label="Automated Workflows" 
-            active={activeModule === 'workflows'} 
-            onClick={() => setActiveModule('workflows')}
-          />
-          <SidebarButton 
-            icon={<Database size={18} />} 
-            label="Asset Vault" 
-            active={activeModule === 'vault'} 
-            onClick={() => setActiveModule('vault')}
-          />
-          <SidebarButton 
-            icon={<FolderHeart size={18} />} 
-            label="Project Memory" 
-            active={activeModule === 'memory'} 
-            onClick={() => setActiveModule('memory')}
-          />
-          <SidebarButton 
-            icon={<Users size={18} />} 
-            label="Swarm Analytics" 
-            active={activeModule === 'analytics'} 
-            onClick={() => setActiveModule('analytics')}
-          />
-          <SidebarButton 
-            icon={<Network size={18} />} 
-            label="Synergy Map" 
-            active={activeModule === 'synergy'} 
-            onClick={() => setActiveModule('synergy')}
-          />
-          <SidebarButton 
-            icon={<Shield size={18} />} 
-            label="Security Senate" 
-            active={activeModule === 'senate'} 
-            onClick={() => setActiveModule('senate')}
-          />
-          <div className="w-full h-px bg-white/5 my-2 hidden md:block" />
-          <SidebarButton 
-            icon={<Settings size={18} />} 
-            label="Global Config" 
-            active={activeModule === 'settings'} 
-            onClick={() => setActiveModule('settings')}
-          />
-        </div>
+        {/* Navigation */}
+        <nav className="flex-1 flex flex-col gap-1 px-3 overflow-y-auto">
+          <SidebarButton icon={<Activity size={16} />} label="Dashboard" active={activeModule === 'dashboard'} onClick={() => setActiveModule('dashboard')} />
+          <SidebarButton icon={<Target size={16} />} label="Campaign Hub" active={activeModule === 'campaign'} onClick={() => setActiveModule('campaign')} />
+          <SidebarButton icon={<Terminal size={16} />} label="Genius Console" active={activeModule === 'console'} onClick={() => setActiveModule('console')} accent />
+          <SidebarButton icon={<LayoutGrid size={16} />} label="Nexus Engine" active={activeModule === 'nexus-engine'} onClick={() => setActiveModule('nexus-engine')} />
+          <SidebarButton icon={<FileText size={16} />} label="Blog Engine" active={activeModule === 'pillar-blog'} onClick={() => setActiveModule('pillar-blog')} />
+          <SidebarButton icon={<Palette size={16} />} label="Creative Studio" active={activeModule === 'studio'} onClick={() => setActiveModule('studio')} />
+          <SidebarButton icon={<GitMerge size={16} />} label="Workflows" active={activeModule === 'workflows'} onClick={() => setActiveModule('workflows')} />
+          <SidebarButton icon={<Database size={16} />} label="Asset Vault" active={activeModule === 'vault'} onClick={() => setActiveModule('vault')} />
+          <SidebarButton icon={<FolderHeart size={16} />} label="Project Memory" active={activeModule === 'memory'} onClick={() => setActiveModule('memory')} />
 
-        <div className="px-3 pt-6 border-t border-white/5">
+          <div className="w-full h-px bg-white/5 my-3 hidden md:block" />
+
+          <SidebarButton icon={<Users size={16} />} label="Swarm Analytics" active={activeModule === 'analytics'} onClick={() => setActiveModule('analytics')} />
+          <SidebarButton icon={<Network size={16} />} label="Synergy Map" active={activeModule === 'synergy'} onClick={() => setActiveModule('synergy')} />
+          <SidebarButton icon={<Shield size={16} />} label="Security Senate" active={activeModule === 'senate'} onClick={() => setActiveModule('senate')} />
+          
+          <div className="w-full h-px bg-white/5 my-3 hidden md:block" />
+          
+          <SidebarButton icon={<Settings size={16} />} label="Configuration" active={activeModule === 'settings'} onClick={() => setActiveModule('settings')} />
+        </nav>
+
+        {/* Exit */}
+        <div className="px-3 pt-4 border-t border-white/5">
           <button 
             onClick={() => navigate('/')}
-            className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-white/30 hover:text-white hover:bg-white/5 transition-colors group"
+            className="sidebar-item w-full group"
           >
-            <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-            <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">Exit to Landing</span>
+            <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="hidden md:block">Exit to Landing</span>
           </button>
         </div>
       </aside>
 
       {/* Main OS Content Area */}
-      <main className="flex-1 relative bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-neural-blue/10 via-obsidian to-obsidian h-screen overflow-hidden flex flex-col">
+      <main className="flex-1 relative h-screen overflow-hidden flex flex-col z-10">
         
-        {/* Top OS Header */}
-        <header className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-black/20 backdrop-blur-md z-10 shrink-0">
-          <div className="flex items-center gap-4">
-            <Command size={16} className="text-neural-blue opacity-50" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50">
-              {activeModule === 'dashboard' && 'Global Metrics'}
-              {activeModule === 'campaign' && 'Agency Directives Orchestrator'}
-              {activeModule === 'console' && 'Interactive Matrix'}
-              {activeModule === 'nexus-engine' && 'Autonomous Nexus Editor'}
-              {activeModule === 'pillar-blog' && 'Pillar Blog Network'}
-              {activeModule === 'vault' && 'Secure Storage'}
-              {activeModule === 'studio' && 'Interactive Creative Hub'}
-              {activeModule === 'workflows' && 'Agency Autopilot'}
-              {activeModule === 'analytics' && 'Swarm Telemetry'}
-              {activeModule === 'senate' && 'Tribunal Override'}
-              {activeModule === 'settings' && 'Core Configuration'}
-              {activeModule === 'memory' && 'Client Context Base'}
-              {activeModule === 'synergy' && 'Live Agent Neural Matrix'}
-            </span>
+        {/* Top Header Bar */}
+        <header className="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-black/20 backdrop-blur-md z-10 shrink-0">
+          <div className="flex items-center gap-3">
+            <Command size={14} className="text-accent opacity-50" />
+            <div className="flex flex-col">
+              <span className="font-display text-sm uppercase tracking-wide">{MODULE_META[activeModule]?.label}</span>
+              <span className="font-mono text-[9px] text-white/30 uppercase tracking-[0.15em] -mt-0.5">{MODULE_META[activeModule]?.subtitle}</span>
+            </div>
           </div>
           
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSearchOpen(true)}
-              className="hidden lg:flex items-center gap-2 bg-black/40 border border-white/5 px-4 py-2 rounded-lg text-white/40 hover:bg-white/5 hover:text-white transition-colors group mx-2"
+              className="hidden lg:flex items-center gap-2 bg-white/[0.03] border border-white/10 px-4 py-1.5 rounded-lg text-white/40 hover:bg-white/[0.06] hover:text-white transition-colors group"
             >
-              <Search size={14} className="group-hover:text-neural-blue transition-colors" />
-              <span className="text-[10px] uppercase font-black tracking-widest">Omniscient Search</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[9px] font-mono ml-4">⌘K</kbd>
+              <Search size={12} className="group-hover:text-accent transition-colors" />
+              <span className="font-mono text-[10px] uppercase tracking-widest">Search</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[9px] font-mono ml-3">⌘K</kbd>
             </button>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-neural-blue animate-pulse shadow-[0_0_10px_rgba(0,229,255,0.8)]" />
-              <span className="text-[9px] font-mono tracking-widest text-neural-blue uppercase">G2.0T Active</span>
-            </div>
-            <div className="flex items-center gap-2 border border-neural-gold/20 bg-neural-gold/5 px-3 py-1.5 rounded text-neural-gold">
-              <Shield size={12} />
-              <span className="text-[9px] font-black tracking-widest uppercase">Senate Watch</span>
-            </div>
+            <StatusBadge status="processing" label="Gemini 2.0 Active" size="md" />
           </div>
         </header>
 
         {/* Dynamic Module Rendering */}
-        <section className="flex-1 overflow-y-auto p-4 md:p-8 relative">
+        <section className="flex-1 overflow-y-auto p-4 md:p-6 relative">
           
-          {/* Persistent Background Console (Maintains WebSocket & Audio) */}
-          <div className="absolute inset-4 md:inset-8" style={{ display: activeModule === 'console' ? 'block' : 'none', zIndex: 10 }}>
-             <div className="h-full relative spatial-depth glass p-1 rounded-xl shadow-[0_50px_100px_rgba(0,0,0,0.5)] border-neural-blue/10 bg-black/40">
+          {/* Persistent Genius Console (Maintains WebSocket & Audio) */}
+          <div className="absolute inset-4 md:inset-6" style={{ display: activeModule === 'console' ? 'block' : 'none', zIndex: 10 }}>
+             <div className="h-full glass p-1 rounded-xl">
                <GeniusConsole />
              </div>
           </div>
@@ -206,13 +157,13 @@ export function OSPortal() {
             {activeModule !== 'console' && (
               <motion.div
                 key={activeModule}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
                 className="h-full relative z-20"
               >
-                {activeModule === 'dashboard' && <ExecutiveDashboard onNavigate={(route) => setActiveModule(route as Parameters<typeof setActiveModule>[0])} />}
+                {activeModule === 'dashboard' && <ExecutiveDashboard onNavigate={(route) => setActiveModule(route as ModuleKey)} />}
                 {activeModule === 'campaign' && <CampaignManager />}
                 {activeModule === 'nexus-engine' && <NexusEngineV2 />}
                 {activeModule === 'pillar-blog' && <PillarBlogEngine />}
@@ -234,28 +185,33 @@ export function OSPortal() {
       <OmniscientSearch 
         isOpen={isSearchOpen} 
         onClose={() => setIsSearchOpen(false)} 
-        onNavigate={(route) => setActiveModule(route as 'dashboard')} 
+        onNavigate={(route) => setActiveModule(route as ModuleKey)} 
       />
     </div>
   );
 }
 
-function SidebarButton({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
+function SidebarButton({ icon, label, active, onClick, accent }: { 
+  icon: React.ReactNode; 
+  label: string; 
+  active: boolean; 
+  onClick: () => void;
+  accent?: boolean;
+}) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 md:px-4 py-3 rounded-xl transition-all ${
-        active 
-          ? 'bg-neural-blue/10 text-neural-blue shadow-[inset_0_0_20px_rgba(0,229,255,0.1)] border border-neural-blue/20' 
-          : 'text-white/40 hover:bg-white/5 hover:text-white border border-transparent'
-      }`}
+      className={`sidebar-item w-full ${active ? 'active' : ''}`}
+      title={label}
     >
-      <div className={active ? 'text-neural-blue' : ''}>{icon}</div>
-      <span className={`text-[10px] font-black uppercase tracking-widest hidden md:block ${active ? 'text-neural-blue' : ''}`}>
-        {label}
-      </span>
+      <div className={active ? 'text-accent' : accent ? 'text-accent/60' : ''}>{icon}</div>
+      <span className="hidden md:block flex-1 text-left">{label}</span>
       {active && (
-        <motion.div layoutId="sidebar-active" className="ml-auto w-1 h-4 rounded-full bg-neural-blue hidden md:block shadow-[0_0_10px_rgba(0,229,255,0.8)]" />
+        <motion.div 
+          layoutId="sidebar-indicator" 
+          className="w-1.5 h-1.5 rounded-full bg-accent hidden md:block" 
+          style={{ boxShadow: '0 0 8px rgba(0, 229, 255, 0.6)' }}
+        />
       )}
     </button>
   );

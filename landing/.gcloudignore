@@ -1,0 +1,7 @@
+node_modules/
+src/
+public/
+.*
+!nginx.conf
+!Dockerfile
+!dist/

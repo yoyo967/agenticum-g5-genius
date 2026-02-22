@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Terminal, FileText, Database, Users, Shield, Compass, Image as ImageIcon, Briefcase, Hash } from 'lucide-react';
+import { Search, Terminal, FileText, Database, Users, Shield, Compass, Image as ImageIcon, Briefcase, Hash, Activity, Target, LayoutGrid, Palette, GitMerge, FolderHeart } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface SearchItem {
   id: string;
@@ -12,50 +13,85 @@ interface SearchItem {
   color: string;
 }
 
-const SEARCH_DATABASE: SearchItem[] = [
-  // Modules
-  { id: 'm-1', title: 'Global Configurations', type: 'module', icon: Terminal, route: 'settings', color: 'text-white' },
-  { id: 'm-2', title: 'Swarm Analytics', type: 'module', icon: Users, route: 'analytics', color: 'text-neural-blue' },
-  { id: 'm-3', title: 'Security Senate', type: 'module', icon: Shield, route: 'senate', color: 'text-neural-gold' },
-  { id: 'm-4', title: 'Project Memory', type: 'module', icon: Database, route: 'memory', color: 'text-pink-500' },
-  { id: 'm-5', title: 'Synergy Map', type: 'module', icon: Compass, route: 'synergy', color: 'text-green-500' },
-  
-  // Clients (Mock)
-  { id: 'c-1', title: 'CyberDyne Systems', type: 'client', icon: Briefcase, route: 'memory', meta: 'Active • 124 Vectors', color: 'text-white' },
-  { id: 'c-2', title: 'Neon Cortex Inc.', type: 'client', icon: Briefcase, route: 'memory', meta: 'Archived • 42 Vectors', color: 'text-white/50' },
-
-  // Assets/Vectors (Mock)
-  { id: 'v-1', title: 'Brand_Guidelines_2026.pdf', type: 'vector', icon: FileText, route: 'vault', meta: '2.4 MB • Context', color: 'text-neural-purple' },
-  { id: 'v-2', title: 'Neural Mesh Hero Concept', type: 'asset', icon: ImageIcon, route: 'studio', meta: 'DA-03 • Visual', color: 'text-yellow-500' },
-  { id: 'v-3', title: 'LinkedIn Campaign: G5 Launch', type: 'asset', icon: Hash, route: 'studio', meta: 'CC-06 • Copy', color: 'text-neural-blue' }
+const MODULE_DATABASE: SearchItem[] = [
+  { id: 'm-0', title: 'Executive Dashboard', type: 'module', icon: Activity, route: 'dashboard', color: 'text-accent' },
+  { id: 'm-1', title: 'Campaign Hub', type: 'module', icon: Target, route: 'campaign', color: 'text-gold' },
+  { id: 'm-2', title: 'Genius Console', type: 'module', icon: Terminal, route: 'console', color: 'text-accent' },
+  { id: 'm-3', title: 'Nexus Engine', type: 'module', icon: LayoutGrid, route: 'nexus-engine', color: 'text-neural-blue' },
+  { id: 'm-4', title: 'Blog Engine', type: 'module', icon: FileText, route: 'pillar-blog', color: 'text-pink-500' },
+  { id: 'm-5', title: 'Creative Studio', type: 'module', icon: Palette, route: 'studio', color: 'text-magenta' },
+  { id: 'm-6', title: 'Workflows', type: 'module', icon: GitMerge, route: 'workflows', color: 'text-emerald' },
+  { id: 'm-7', title: 'Asset Vault', type: 'module', icon: Database, route: 'vault', color: 'text-white' },
+  { id: 'm-8', title: 'Project Memory', type: 'module', icon: FolderHeart, route: 'memory', color: 'text-pink-500' },
+  { id: 'm-9', title: 'Swarm Analytics', type: 'module', icon: Users, route: 'analytics', color: 'text-neural-blue' },
+  { id: 'm-10', title: 'Synergy Map', type: 'module', icon: Compass, route: 'synergy', color: 'text-green-500' },
+  { id: 'm-11', title: 'Security Senate', type: 'module', icon: Shield, route: 'senate', color: 'text-neural-gold' },
+  { id: 'm-12', title: 'Global Configurations', type: 'module', icon: Terminal, route: 'settings', color: 'text-white' },
 ];
 
 export function OmniscientSearch({ isOpen, onClose, onNavigate }: { isOpen: boolean, onClose: () => void, onNavigate: (route: string) => void }) {
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
-  const [dynamicDb, setDynamicDb] = useState<SearchItem[]>(SEARCH_DATABASE);
+  const [dynamicDb, setDynamicDb] = useState<SearchItem[]>(MODULE_DATABASE);
 
   useEffect(() => {
-    fetch('/api/blog/feed')
-      .then(res => res.json())
-      .then(data => {
-         const newItems: SearchItem[] = [];
-         if (data.pillars) {
-           data.pillars.forEach((p: { slug: string; title: string; tag?: string }) => {
-             newItems.push({
-               id: p.slug, title: p.title, type: 'asset', icon: FileText, route: `pillar-blog`, meta: p.tag || 'STRATEGY', color: 'text-pink-500'
-             });
-           });
-         }
-         if (data.clusters) {
-           data.clusters.forEach((c: { slug: string; title: string; tag?: string }) => {
-             newItems.push({
-               id: c.slug, title: c.title, type: 'vector', icon: Hash, route: `pillar-blog`, meta: c.tag || 'ANALYSIS', color: 'text-neural-blue'
-             });
-           });
-         }
-         setDynamicDb([...SEARCH_DATABASE, ...newItems]);
-      }).catch(() => {});
+    // Fetch real data from all APIs in parallel
+    Promise.all([
+      fetch(`${API_BASE_URL}/api/blog/feed`).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(`${API_BASE_URL}/api/pmax/campaigns`).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(`${API_BASE_URL}/api/vault/list`).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([blogData, campaignsData, vaultData]) => {
+      const items: SearchItem[] = [];
+
+      // Real clients from campaigns (unique brands)
+      if (campaignsData?.campaigns) {
+        const brands = new Set<string>();
+        campaignsData.campaigns.forEach((c: { id: string; brand?: string; objective?: string; status?: string }) => {
+          const brand = c.brand || c.objective || c.id;
+          if (!brands.has(brand)) {
+            brands.add(brand);
+            items.push({
+              id: `client-${c.id}`, title: brand, type: 'client', icon: Briefcase,
+              route: 'campaign', meta: c.status || 'Campaign', color: 'text-white'
+            });
+          }
+        });
+      }
+
+      // Real assets from vault
+      if (vaultData?.files) {
+        vaultData.files.forEach((f: { name: string; url?: string; size?: number }) => {
+          const isImage = /\.(png|jpg|jpeg|webp|gif|svg)$/i.test(f.name);
+          const sizeStr = f.size ? `${(f.size / 1024).toFixed(0)} KB` : '';
+          items.push({
+            id: `vault-${f.name}`, title: f.name, type: isImage ? 'asset' : 'vector',
+            icon: isImage ? ImageIcon : FileText, route: 'vault',
+            meta: [sizeStr, isImage ? 'Visual' : 'Document'].filter(Boolean).join(' • '),
+            color: isImage ? 'text-yellow-500' : 'text-neural-purple'
+          });
+        });
+      }
+
+      // Real blog articles
+      if (blogData?.pillars) {
+        blogData.pillars.forEach((p: { slug: string; title: string; tag?: string }) => {
+          items.push({
+            id: `blog-${p.slug}`, title: p.title, type: 'asset', icon: FileText,
+            route: 'pillar-blog', meta: p.tag || 'PILLAR', color: 'text-pink-500'
+          });
+        });
+      }
+      if (blogData?.clusters) {
+        blogData.clusters.forEach((c: { slug: string; title: string; tag?: string }) => {
+          items.push({
+            id: `cluster-${c.slug}`, title: c.title, type: 'vector', icon: Hash,
+            route: 'pillar-blog', meta: c.tag || 'CLUSTER', color: 'text-neural-blue'
+          });
+        });
+      }
+
+      setDynamicDb([...MODULE_DATABASE, ...items]);
+    });
   }, []);
 
   // Filter Logic

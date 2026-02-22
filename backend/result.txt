@@ -1,0 +1,137 @@
+Initiating SP-01 Strategist Test...
+[2026-02-21T17:46:30.655Z] [INFO] [sp-01] [THINKING] Grounding intelligence on live internet... (0%) 
+[SP-01 Status] thinking: undefined (0%)
+[2026-02-21T17:46:31.071Z] [INFO] [DiscoveryEngine] Discovery Engine client initialized (Fail-soft mode active) 
+[2026-02-21T17:46:31.072Z] [INFO] [GoogleWorkspace] Google Workspace Auth initialized successfully. 
+[2026-02-21T17:46:31.072Z] [INFO] [DiscoveryEngine] Searching knowledge for query: Research latest advertising trends for Volkswagen ... 
+[2026-02-21T17:46:31.107Z] [INFO] [sp-01] Vault Grounding successful for: Research latest advertising trends for Volkswagen EVs in Germany 2026 
+[2026-02-21T17:46:31.108Z] [INFO] [sp-01] [WORKING] Aggregating live competitor data & Behavioral Economics... (50%) 
+[SP-01 Status] working: undefined (50%)
+[2026-02-21T17:46:31.108Z] [INFO] [VertexAI] Generating grounded content for prompt: 
+      
+    IDENTITY: You are the GenIUS Strategic... 
+[2026-02-21T17:46:31.108Z] [WARN] [VertexAI] No GEMINI_API_KEY found. Simulating grounded content response. 
+[2026-02-21T17:46:31.110Z] [INFO] [sp-01] [WORKING] Publishing Master Brief to Google Docs... (80%) 
+[SP-01 Status] working: undefined (80%)
+[2026-02-21T17:46:31.110Z] [INFO] [GoogleWorkspace] Creating new Google Doc: "G5 Master Brief: Research latest advertising trends for V" 
+[2026-02-21T17:46:33.580Z] [ERROR] [GoogleWorkspace] Error creating Google Doc GaxiosError: Request had insufficient authentication scopes.
+    at Gaxios._request (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\googleapis-common\node_modules\gaxios\src\gaxios.ts:213:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async UserRefreshClient.requestAsync (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\googleapis-common\node_modules\google-auth-library\build\src\auth\oauth2client.js:463:20)
+    at async createAPIRequestAsync (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\googleapis-common\build\src\apirequest.js:308:25)
+    at async GoogleWorkspaceService.createDocument (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\services\google-workspace.ts:53:30)
+    at async SP01Strategist.execute (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\agents\sp01-strategist.ts:63:22)
+[2026-02-21T17:46:33.583Z] [INFO] [sp-01] [DONE] Strategy synthesis & Docs publication complete (100%) 
+[SP-01 Status] done: undefined (100%)
+    at async runTest (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\test-sp01.ts:19:20) {
+  config: {
+    url: URL {
+      href: 'https://docs.googleapis.com/v1/documents',
+      origin: 'https://docs.googleapis.com',
+      protocol: 'https:',
+      username: '',
+      password: '',
+      host: 'docs.googleapis.com',
+      hostname: 'docs.googleapis.com',
+      port: '',
+      pathname: '/v1/documents',
+      search: '',
+      searchParams: URLSearchParams {},
+      hash: ''
+    },
+    method: 'POST',
+    apiVersion: '',
+    userAgentDirectives: [ [Object] ],
+    data: {
+      title: 'G5 Master Brief: Research latest advertising trends for V'
+    },
+    headers: Headers {
+      'accept-encoding': 'gzip',
+      authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+      'user-agent': 'google-api-nodejs-client/8.0.1 (gzip)',
+      'x-goog-api-client': 'gdcl/8.0.1 gl-node/22.17.0',
+      'x-goog-user-project': 'graphical-petal-481314-k3',
+      'content-type': 'application/json'
+    },
+
+--- FINAL RESULT ---
+    validateStatus: [Function (anonymous)],
+[View Live Master Brief on Google Docs](https://docs.google.com/document/d/error-creating-doc)
+
+[Mock Grounded Strategy]
+
+Based on mocked internet data for: 
+      
+    IDENTITY...
+    retry: true,
+    body: '{"title":"G5 Master Brief: Research latest advertising trends for V"}',
+    responseType: 'unknown',
+    errorRedactor: [Function: defaultErrorRedactor],
+    duplex: 'half',
+    retryConfig: {
+      currentRetryAttempt: 0,
+      retry: 3,
+      httpMethodsToRetry: [Array],
+      noResponseRetries: 2,
+      retryDelayMultiplier: 2,
+      timeOfFirstRequest: 1771695993579,
+      totalTimeout: 9007199254740991,
+      maxRetryDelay: 9007199254740991,
+      statusCodesToRetry: [Array]
+    }
+  },
+  response: Response {
+    size: 0,
+    data: { error: [Object] },
+    config: {
+      url: URL {},
+      method: 'POST',
+      apiVersion: '',
+      userAgentDirectives: [Array],
+      data: [Object],
+      headers: Headers {
+        'accept-encoding': 'gzip',
+        authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+        'user-agent': 'google-api-nodejs-client/8.0.1 (gzip)',
+--- END RESULT ---
+
+        'x-goog-api-client': 'gdcl/8.0.1 gl-node/22.17.0',
+        'x-goog-user-project': 'graphical-petal-481314-k3',
+        'content-type': 'application/json'
+      },
+      validateStatus: [Function (anonymous)],
+      retry: true,
+      body: '{"title":"G5 Master Brief: Research latest advertising trends for V"}',
+      responseType: 'unknown',
+      errorRedactor: [Function: defaultErrorRedactor],
+      duplex: 'half'
+    },
+    [Symbol(Body internals)]: {
+      body: [Gunzip],
+      stream: [Gunzip],
+      boundary: null,
+      disturbed: true,
+      error: null
+    },
+    [Symbol(Response internals)]: {
+      type: 'default',
+      url: 'https://docs.googleapis.com/v1/documents',
+      status: 403,
+      statusText: 'Forbidden',
+      headers: [Object],
+      counter: 0,
+      highWaterMark: 16384
+    }
+  },
+  code: 403,
+  status: 403,
+  error: undefined,
+  [Symbol(gaxios-gaxios-error)]: '7.1.3',
+  [cause]: {
+    message: 'Request had insufficient authentication scopes.',
+    code: 403,
+    status: 'PERMISSION_DENIED',
+    errors: [ [Object] ],
+    details: [ [Object] ]
+  }
+}

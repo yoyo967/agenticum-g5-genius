@@ -1,207 +1,225 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Cpu, Share2, GitMerge } from 'lucide-react';
+import { Activity, Share2, RefreshCw } from 'lucide-react';
+import type { SwarmState } from '../types';
+import { ExportMenu } from './ui';
+import { downloadSVG, downloadPNG } from '../utils/export';
 
-const AGENTS = [
-  { id: 'SN-00', name: 'Strategic Node', role: 'Orchestrator', color: '#00e5ff', x: 50, y: 15 },
-  { id: 'SP-01', name: 'Syntactic Processor', role: 'Data Analyst', color: '#8b5cf6', x: 80, y: 40 },
-  { id: 'DA-03', name: 'Diffusion Architect', role: 'Visuals', color: '#ec4899', x: 70, y: 80 },
-  { id: 'RA-01', name: 'Security Cortex', role: 'Ethics/Safety', color: '#ef4444', x: 70, y: 70 },
-  { id: 'CC-06', name: 'Cognitive Core', role: 'Copywriter', color: '#10b981', x: 20, y: 40 }
-];
+interface Agent {
+  id: string;
+  name: string;
+  role: string;
+  color: string;
+  cx: number;
+  cy: number;
+}
 
-type Payload = {
+interface DataFlow {
   id: number;
   from: string;
   to: string;
   type: string;
   timestamp: string;
-};
+}
 
+const AGENTS: Agent[] = [
+  { id: 'SN-00', name: 'NEXUS PRIME', role: 'Orchestrator', color: '#00E5FF', cx: 50, cy: 18 },
+  { id: 'SP-01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: '#7B2FBE', cx: 85, cy: 45 },
+  { id: 'CC-06', name: 'COGNITIVE CORE', role: 'Copywriter', color: '#FF007A', cx: 72, cy: 82 },
+  { id: 'DA-03', name: 'DESIGN ARCHITECT', role: 'Visual Artist', color: '#FFD700', cx: 28, cy: 82 },
+  { id: 'RA-01', name: 'SECURITY CORTEX', role: 'Auditor', color: '#00FF88', cx: 15, cy: 45 },
+];
+
+let flowIdCounter = 0;
 
 export function SynergyMap() {
-  const [activePayloads, setActivePayloads] = useState<Payload[]>([]);
-  const [logs, setLogs] = useState<Payload[]>([]);
+  const [agentStates, setAgentStates] = useState<Record<string, string>>({});
+  const [flows, setFlows] = useState<DataFlow[]>([]);
+  const [hoveredAgent, setHoveredAgent] = useState<string | null>(null);
+  const [totalFlows, setTotalFlows] = useState(0);
+  const svgRef = useRef<SVGSVGElement>(null);
 
+  // Listen for live swarm events
   useEffect(() => {
-    const handlePayload = (e: Event) => {
-      const payload = (e as CustomEvent).detail;
-      const newPayload: Payload = {
-        id: Date.now(),
-        from: payload.from.toUpperCase(),
-        to: payload.to.toUpperCase(),
-        type: payload.payloadType,
-        timestamp: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
-      };
-
-      setActivePayloads(prev => [...prev.slice(-4), newPayload]); // Limit active animations
-      setLogs(prev => [newPayload, ...prev].slice(0, 15));
-      
-      setTimeout(() => {
-        setActivePayloads(prev => prev.filter(p => p.id !== newPayload.id));
-      }, 2000);
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<SwarmState>).detail;
+      if (detail?.subAgents) {
+        const states: Record<string, string> = {};
+        Object.entries(detail.subAgents).forEach(([id, agent]) => {
+          states[id] = agent.state;
+        });
+        setAgentStates(states);
+      }
     };
-
-    window.addEventListener('swarm-payload', handlePayload);
-    return () => window.removeEventListener('swarm-payload', handlePayload);
+    window.addEventListener('swarm-state', handler);
+    return () => window.removeEventListener('swarm-state', handler);
   }, []);
 
-  const getAgentColor = (agentId: string) => {
-    const agent = AGENTS.find(a => a.id === agentId);
-    return agent ? agent.color : '#ffffff';
+  // Listen for payload events from GeniusConsole
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ from: string; to: string; type: string }>).detail;
+      if (detail) {
+        const newFlow: DataFlow = {
+          id: ++flowIdCounter,
+          from: detail.from,
+          to: detail.to,
+          type: detail.type || 'data',
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        };
+        setFlows(prev => [newFlow, ...prev].slice(0, 20));
+        setTotalFlows(prev => prev + 1);
+      }
+    };
+    window.addEventListener('agent-payload', handler);
+    return () => window.removeEventListener('agent-payload', handler);
+  }, []);
+
+  // No fake data — flows only come from real swarm-state and agent-payload events above
+
+  const getAgent = (id: string) => AGENTS.find(a => a.id === id);
+  const getStateClass = (id: string) => {
+    const state = agentStates[id];
+    if (state === 'working' || state === 'processing') return 'animate-glow-pulse';
+    return '';
   };
 
   return (
-    <div className="h-full flex gap-6 overflow-hidden">
-      
-      {/* Left: Interactive Node Map */}
-      <div className="w-2/3 flex flex-col border border-white/5 rounded-2xl bg-black/40 glass overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.5)] relative">
-        <div className="absolute top-6 left-6 z-10">
-          <h2 className="text-3xl font-display font-black uppercase italic tracking-tighter text-white flex items-center gap-3">
-             <Share2 size={24} className="text-neural-blue animate-pulse" />
-             Synergy Substrate
-          </h2>
-          <p className="text-white/40 font-mono text-[10px] mt-1 uppercase tracking-widest">
-            Live Vector Payload Transmission Layer
-          </p>
+    <div id="synergy-export-container" className="p-6 space-y-6 animate-in">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Share2 size={20} className="text-accent" />
+          <h2 className="font-display text-2xl font-bold uppercase tracking-tight">Synergy Map</h2>
+          <span className="label text-white/20 mt-1">Inter-Agent Data Flow</span>
         </div>
-
-        <div className="absolute top-6 right-6 z-10 flex gap-4">
-           <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded border border-white/10 backdrop-blur-md">
-             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]" />
-             <span className="text-[9px] font-black uppercase tracking-widest text-white/50">Swarm Sync Optimal</span>
-           </div>
-        </div>
-
-        {/* The Map */}
-        <div className="flex-1 relative w-full h-full bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-white/5 to-transparent flex items-center justify-center">
-          
-          {/* Static Background Lines (Pentagram shape) */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 hidden md:block">
-             {AGENTS.map((agent1, i) => (
-               AGENTS.slice(i + 1).map((agent2, j) => (
-                 <line 
-                   key={`line-${i}-${j}`}
-                   x1={`${agent1.x}%`} y1={`${agent1.y}%`}
-                   x2={`${agent2.x}%`} y2={`${agent2.y}%`}
-                   stroke="rgba(255,255,255,0.2)"
-                   strokeWidth="1"
-                   strokeDasharray="4 4"
-                 />
-               ))
-             ))}
-          </svg>
-
-          {/* Nodes */}
-          {AGENTS.map(agent => (
-            <div 
-              key={agent.id}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group z-20 cursor-crosshair"
-              style={{ left: `${agent.x}%`, top: `${agent.y}%` }}
-            >
-                <motion.div 
-                  animate={{ scale: [1, 1.05, 1], boxShadow: [`0 0 20px ${agent.color}40`, `0 0 40px ${agent.color}80`, `0 0 20px ${agent.color}40`] }}
-                  transition={{ repeat: Infinity, duration: agent.id === 'SN-00' ? 2.5 : agent.id === 'SP-01' ? 3 : 2 }}
-                 className="w-16 h-16 rounded-2xl glass border flex items-center justify-center backdrop-blur-md transition-all duration-300 group-hover:scale-110"
-                 style={{ borderColor: `${agent.color}80`, backgroundColor: `${agent.color}10` }}
-               >
-                 <Cpu size={24} color={agent.color} className="group-hover:opacity-100" />
-               </motion.div>
-               
-               <div className="mt-4 text-center glass px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-md">
-                 <p className="text-xs font-black uppercase tracking-widest" style={{ color: agent.color }}>
-                   {agent.id}
-                 </p>
-                 <p className="text-[8px] font-mono text-white/40 uppercase mt-0.5">
-                   {agent.name}
-                 </p>
-               </div>
-            </div>
-          ))}
-
-          {/* Animated Payloads */}
-          <AnimatePresence>
-            {activePayloads.map(payload => {
-              const fromAgent = AGENTS.find(a => a.id === payload.from);
-              const toAgent = AGENTS.find(a => a.id === payload.to);
-              if (!fromAgent || !toAgent) return null;
-
-              return (
-                <motion.div
-                  key={payload.id}
-                  initial={{ x: `${fromAgent.x}%`, y: `${fromAgent.y}%`, opacity: 0, scale: 0 }}
-                  animate={{ x: `${toAgent.x}%`, y: `${toAgent.y}%`, opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0 }}
-                  transition={{ duration: 1.5, ease: "easeInOut" }}
-                  className="absolute top-0 left-0 w-3 h-3 rounded-full z-30 transform -translate-x-1/2 -translate-y-1/2"
-                  style={{ 
-                    backgroundColor: getAgentColor(payload.from),
-                    boxShadow: `0 0 20px ${getAgentColor(payload.from)}, 0 0 40px ${getAgentColor(payload.to)}`
-                  }}
-                />
-              );
-            })}
-          </AnimatePresence>
-
+        <div className="flex items-center gap-3">
+          <span className="badge badge-processing"><Activity size={10} /> {totalFlows} flows</span>
+          <button onClick={() => { setFlows([]); setTotalFlows(0); }} className="btn-outline text-xs py-2 px-4 flex items-center gap-2">
+            <RefreshCw size={12} /> Reset
+          </button>
+          <ExportMenu options={[
+            { label: 'SVG Map', format: 'SVG', onClick: () => downloadSVG(svgRef.current, 'G5_Synergy_Map') },
+            { label: 'PNG Screenshot', format: 'PNG', onClick: () => downloadPNG('synergy-export-container', 'G5_Synergy_Map') },
+          ]} />
         </div>
       </div>
 
-      {/* Right: Live Log Feed */}
-      <div className="w-1/3 flex flex-col border border-white/5 rounded-2xl bg-black/40 glass overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.5)]">
-         <div className="p-6 border-b border-white/5 shrink-0 flex items-center justify-between">
-            <h3 className="text-sm font-black uppercase tracking-widest text-white flex items-center gap-2">
-              <Activity size={16} className="text-neural-purple" />
-              Network Telemetry
-            </h3>
-            <span className="flex items-center gap-1.5 px-2 py-1 bg-neural-blue/10 border border-neural-blue/30 rounded text-neural-blue text-[9px] font-black uppercase tracking-wider animate-pulse">
-              Live Stream
-            </span>
-         </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* SVG Network Map */}
+        <div className="lg:col-span-2 glass-card p-6">
+          <svg ref={svgRef} viewBox="0 0 100 100" className="w-full" style={{ minHeight: '400px' }}>
+            {/* Connection Lines */}
+            {AGENTS.map((from, i) =>
+              AGENTS.slice(i + 1).map(to => (
+                <line key={`${from.id}-${to.id}`}
+                  x1={from.cx} y1={from.cy} x2={to.cx} y2={to.cy}
+                  stroke="rgba(255,255,255,0.05)" strokeWidth="0.3" strokeDasharray="1,1" />
+              ))
+            )}
 
-         <div className="flex-1 overflow-y-auto scrollbar-none p-4 flex flex-col gap-2 relative">
-            <div className="absolute top-0 left-0 right-0 h-4 bg-linear-to-b from-black/40 to-transparent pointer-events-none z-10" />
-            
-            <AnimatePresence initial={false}>
-              {logs.map((log) => (
-                <motion.div 
-                  key={log.id}
-                  initial={{ opacity: 0, y: -20, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  className="p-3 rounded-lg border border-white/5 bg-black/50 backdrop-blur-md flex flex-col gap-2 border-l-2"
-                  style={{ borderLeftColor: getAgentColor(log.from) }}
-                >
-                   <div className="flex items-center justify-between">
-                     <div className="flex items-center gap-2">
-                       <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: getAgentColor(log.from) }}>
-                         {log.from}
-                       </span>
-                       <ChevronRight size={10} className="text-white/30" />
-                       <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: getAgentColor(log.to) }}>
-                         {log.to}
-                       </span>
-                     </div>
-                     <span className="text-[9px] font-mono text-white/40">{log.timestamp}</span>
-                   </div>
-                   
-                   <p className="text-xs text-white/80 font-light flex items-center gap-2">
-                     <GitMerge size={12} className="text-white/30" />
-                     Transmitting <span className="font-bold text-white">{log.type}</span> Payload
-                   </p>
-                </motion.div>
-              ))}
+            {/* Animated Flow Particles */}
+            <AnimatePresence>
+              {flows.slice(0, 5).map(flow => {
+                const from = getAgent(flow.from);
+                const to = getAgent(flow.to);
+                if (!from || !to) return null;
+                return (
+                  <motion.circle key={flow.id}
+                    cx={from.cx} cy={from.cy} r={0.8}
+                    fill={from.color}
+                    initial={{ cx: from.cx, cy: from.cy, opacity: 1 }}
+                    animate={{ cx: to.cx, cy: to.cy, opacity: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 2, ease: 'easeInOut' }}
+                  />
+                );
+              })}
             </AnimatePresence>
 
-         </div>
+            {/* Agent Nodes */}
+            {AGENTS.map(agent => (
+              <g key={agent.id}
+                onMouseEnter={() => setHoveredAgent(agent.id)}
+                onMouseLeave={() => setHoveredAgent(null)}
+                className="cursor-pointer">
+                {/* Glow */}
+                <circle cx={agent.cx} cy={agent.cy} r={6}
+                  fill={agent.color} opacity={0.15}
+                  className={getStateClass(agent.id)} />
+                {/* Core */}
+                <circle cx={agent.cx} cy={agent.cy} r={3.5}
+                  fill="rgba(10,1,24,0.8)" stroke={agent.color}
+                  strokeWidth={hoveredAgent === agent.id ? 0.6 : 0.3} />
+                {/* Inner */}
+                <circle cx={agent.cx} cy={agent.cy} r={1.5}
+                  fill={agent.color} opacity={agentStates[agent.id] === 'working' ? 1 : 0.6} />
+                {/* Label */}
+                <text x={agent.cx} y={agent.cy + 7} textAnchor="middle"
+                  fill={agent.color} fontSize="2.5" fontFamily="Oswald" fontWeight="600" letterSpacing="0.1">
+                  {agent.id}
+                </text>
+                <text x={agent.cx} y={agent.cy + 10} textAnchor="middle"
+                  fill="rgba(255,255,255,0.3)" fontSize="1.5" fontFamily="Roboto Mono">
+                  {agent.role}
+                </text>
+              </g>
+            ))}
+          </svg>
+        </div>
+
+        {/* Flow Log */}
+        <div className="glass-card p-5 flex flex-col">
+          <h3 className="font-display text-lg font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+            <Activity size={16} className="text-accent" /> Data Flow Log
+          </h3>
+          <div className="flex-1 overflow-y-auto space-y-2 max-h-[400px]">
+            <AnimatePresence>
+              {flows.map(flow => {
+                const from = getAgent(flow.from);
+                const to = getAgent(flow.to);
+                return (
+                  <motion.div key={flow.id}
+                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                    className="p-3 rounded-lg bg-white/2 border border-white/5 flex items-center gap-3">
+                    <span className="w-2 h-2 rounded-full" style={{ background: from?.color }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-mono text-[10px] text-white/60 truncate">
+                        <span style={{ color: from?.color }}>{flow.from}</span>
+                        {' → '}
+                        <span style={{ color: to?.color }}>{flow.to}</span>
+                      </p>
+                      <p className="font-mono text-[8px] text-white/20 uppercase">{flow.type} · {flow.timestamp}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+            {flows.length === 0 && (
+              <div className="h-full flex items-center justify-center">
+                <p className="label text-center">Waiting for agent activity...<br/>Connect via Genius Console to see live data.</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
+      {/* Agent Status Cards */}
+      <div className="grid grid-cols-5 gap-3">
+        {AGENTS.map(agent => (
+          <div key={agent.id} className="glass-card p-4 text-center">
+            <div className="w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center"
+              style={{ background: agent.color + '20', border: `1px solid ${agent.color}40` }}>
+              <div className="w-3 h-3 rounded-full" style={{ background: agent.color }} />
+            </div>
+            <p className="font-mono text-xs font-bold" style={{ color: agent.color }}>{agent.id}</p>
+            <p className="font-mono text-[9px] text-white/30 mt-1">{agent.name}</p>
+            <span className={`badge text-[7px] mt-2 ${agentStates[agent.id] === 'working' ? 'badge-processing' : 'badge-online'}`}>
+              {agentStates[agent.id] || 'standby'}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
-  );
-}
-
-function ChevronRight({ size, className }: { size: number, className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="m9 18 6-6-6-6"/>
-    </svg>
   );
 }

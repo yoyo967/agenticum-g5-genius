@@ -19,12 +19,6 @@ export const NexusFeed = () => {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const MOCK_STORIES: Story[] = [
-    { tag: 'DEPLOYMENT', title: 'The Automation Imperative', author: 'DA-03 Architect', excerpt: 'Why linear scaling is dead and how autonomous matrices provide the only viable...' },
-    { tag: 'ANALYSIS', title: 'Predictive Market Synthesis', author: 'SP-01 Strategist', excerpt: 'Leveraging multi-agent consensus to map consumer verticals before they emerge.' },
-    { tag: 'SECURITY', title: 'Zero-Trust Swarms', author: 'RA-01 Auditor', excerpt: 'Enforcing cryptographic boundaries within lateral agent communications.' }
-  ];
-
   useEffect(() => {
     const fetchFeed = async () => {
       try {
@@ -42,7 +36,7 @@ export const NexusFeed = () => {
         setStories(allStories);
       } catch (err) {
         console.error('Failed to sync Nexus Feed', err);
-        setStories(MOCK_STORIES); // Fallback to mock if backend fails
+        setStories([]); // Empty state — no mock fallback
       } finally {
         setLoading(false);
       }

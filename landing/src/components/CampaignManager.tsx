@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Terminal, Briefcase, Zap, Send, FileText, Image as ImageIcon, Cpu, Activity, CircleDashed, DollarSign, Crosshair, BarChart2 } from 'lucide-react';
+import { Target, Terminal, Briefcase, Zap, Send, FileText, Image as ImageIcon, Cpu, Activity, CircleDashed, DollarSign, Crosshair, BarChart2, Plus, ChevronRight, RefreshCw, Clock } from 'lucide-react';
+import { API_BASE_URL } from '../config';
+import { ExportMenu } from './ui';
+import { downloadJSON, downloadCSV } from '../utils/export';
+
+interface Campaign {
+  id: string;
+  name: string;
+  status: 'ENABLED' | 'PAUSED' | 'DRAFT';
+  objective: string;
+  budget: { dailyAmount: number; currency: string };
+  biddingStrategy: { type: string; targetCpa?: number; targetRoas?: number };
+  assetGroups?: { id: string; name: string; adStrength: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 type AgentDraft = {
   agent: string;
@@ -9,371 +24,400 @@ type AgentDraft = {
   output?: string;
 };
 
+type View = 'list' | 'create';
+
 export function CampaignManager() {
+  const [view, setView] = useState<View>('list');
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+
+  // Create form
   const [clientName, setClientName] = useState('');
   const [objective, setObjective] = useState('');
   const [directive, setDirective] = useState('');
+  const [budget, setBudget] = useState(100);
+  const [biddingStrategy, setBiddingStrategy] = useState<'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE'>('MAXIMIZE_CONVERSIONS');
+  const [targetValue, setTargetValue] = useState(0);
   const [isOrchestrating, setIsOrchestrating] = useState(false);
   const [launchStatus, setLaunchStatus] = useState<'idle' | 'launching' | 'success' | 'error'>('idle');
   const [launchReport, setLaunchReport] = useState<string | null>(null);
-  
-  // PMax Specific Settings Extensions
-  const [budget, setBudget] = useState<number>(100);
-  const [biddingStrategy, setBiddingStrategy] = useState<'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE'>('MAXIMIZE_CONVERSIONS');
-  const [targetValue, setTargetValue] = useState<number>(0);
-  
+
   const [agentTasks, setAgentTasks] = useState<AgentDraft[]>([
+    { agent: 'SN-00', role: 'Orchestrator', status: 'pending' },
+    { agent: 'SP-01', role: 'Strategy', status: 'pending' },
     { agent: 'CC-06', role: 'Copywriter', status: 'pending' },
     { agent: 'DA-03', role: 'Visuals', status: 'pending' },
-    { agent: 'PM-07', role: 'SEO Schema', status: 'pending' },
-    { agent: 'SN-00', role: 'Orchestrator', status: 'pending' }
+    { agent: 'RA-01', role: 'Audit', status: 'pending' },
   ]);
 
-  useEffect(() => {
-    const handleSwarmStatus = (e: CustomEvent<{ agent: string, status: string, output?: string }[]>) => {
-      const statuses = e.detail;
-      let allComplete = true;
-      let hasWorking = false;
-      
-      const newTasks = agentTasks.map(task => {
-         const backendStatus = statuses.find(s => s.agent === task.agent);
-         if (backendStatus) {
-            if (backendStatus.status !== 'complete') allComplete = false;
-            if (backendStatus.status === 'working') hasWorking = true;
-            return {
-               ...task,
-               status: backendStatus.status as 'pending' | 'working' | 'complete',
-               output: backendStatus.output
-            };
-         }
-         allComplete = false;
-         return task;
-      });
-      
-      setAgentTasks(newTasks);
-      
-      if (allComplete) {
-         setIsOrchestrating(false);
-      } else if (hasWorking) {
-         setIsOrchestrating(true);
+  // Fetch campaigns from backend
+  const fetchCampaigns = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/pmax/campaigns`);
+      if (res.ok) {
+        const data = await res.json();
+        setCampaigns(data.campaigns || []);
       }
-    };
-
-    window.addEventListener('swarm-status', handleSwarmStatus as unknown as EventListener);
-    return () => window.removeEventListener('swarm-status', handleSwarmStatus as unknown as EventListener);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentTasks]);
-
-  const handleDispatch = () => {
-    if (!directive.trim() && (!clientName.trim() || !objective.trim())) return;
-    
-    setIsOrchestrating(true);
-    
-    // Set initial working state optimistically
-    setAgentTasks(prev => prev.map(t => ({ ...t, status: 'working', output: undefined })));
-    
-    // Dispatch to the global connection orchestrator (GeniusConsole handles the physical WS send)
-    const payload = {
-       type: 'campaign_orchestration',
-       client: clientName,
-       objective: objective,
-       directive: directive,
-       pmaxConfig: {
-          budget,
-          biddingStrategy,
-          targetValue: targetValue > 0 ? targetValue : undefined
-       }
-    };
-    window.dispatchEvent(new CustomEvent('trigger-orchestration', { detail: payload }));
+    } catch (e) {
+      console.warn('[CampaignHub] Backend unavailable:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchCampaigns();
+  }, []);
+
+  // Listen for swarm status updates
+  useEffect(() => {
+    const handleSwarmStatus = (e: Event) => {
+      const customEvent = e as CustomEvent<{ agent: string; status: string; output?: string }[]>;
+      const statuses = customEvent.detail;
+      if (!Array.isArray(statuses)) return;
+
+      setAgentTasks(prev => {
+        const updated = prev.map(task => {
+          const s = statuses.find(st => st.agent === task.agent);
+          if (s) return { ...task, status: s.status as AgentDraft['status'], output: s.output };
+          return task;
+        });
+        if (updated.every(t => t.status === 'complete')) setIsOrchestrating(false);
+        return updated;
+      });
+    };
+
+    window.addEventListener('swarm-status', handleSwarmStatus);
+    return () => window.removeEventListener('swarm-status', handleSwarmStatus);
+  }, []);
+
+  const handleDispatch = async () => {
+    if (!directive.trim() && (!clientName.trim() || !objective.trim())) return;
+    setIsOrchestrating(true);
+    setAgentTasks(prev => prev.map(t => ({ ...t, status: 'working', output: undefined })));
+
+    // Save campaign to Firestore via API
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/pmax/campaigns`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: clientName ? `${clientName} — ${objective}` : directive.slice(0, 60),
+          status: 'DRAFT',
+          objective: objective || 'LEADS',
+          budget: { dailyAmount: budget, currency: 'USD' },
+          biddingStrategy: { type: biddingStrategy, targetCpa: biddingStrategy === 'MAXIMIZE_CONVERSIONS' ? targetValue : undefined, targetRoas: biddingStrategy === 'MAXIMIZE_CONVERSION_VALUE' ? targetValue : undefined },
+          settings: { finalUrlExpansion: true, locationTargeting: ['Global'], languageTargeting: ['en'] },
+          assetGroups: [],
+        }),
+      });
+      if (res.ok) {
+        const newCampaign = await res.json();
+        setCampaigns(prev => [newCampaign, ...prev]);
+      }
+    } catch (e) {
+      console.warn('[CampaignHub] Save failed, dispatching via WebSocket only:', e);
+    }
+
+    // Dispatch to the global WebSocket orchestrator
+    window.dispatchEvent(new CustomEvent('trigger-orchestration', {
+      detail: {
+        type: 'campaign_orchestration',
+        client: clientName,
+        objective,
+        directive,
+        pmaxConfig: { budget, biddingStrategy, targetValue: targetValue > 0 ? targetValue : undefined },
+      },
+    }));
+  };
+
+  const handleLaunch = async () => {
+    setIsOrchestrating(true);
+    setLaunchStatus('launching');
+    try {
+      const resp = await fetch(`${API_BASE_URL}/api/pmax/launch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaignId: selectedCampaign?.id || 'pmax-' + Date.now(),
+          config: { budget, biddingStrategy },
+        }),
+      });
+      const data = await resp.json();
+      setLaunchReport(data.report);
+      setLaunchStatus('success');
+      fetchCampaigns(); // Refresh list
+    } catch {
+      setLaunchStatus('error');
+    } finally {
+      setIsOrchestrating(false);
+    }
+  };
+
+  const resetForm = () => {
+    setClientName(''); setObjective(''); setDirective('');
+    setBudget(100); setTargetValue(0);
+    setAgentTasks(prev => prev.map(t => ({ ...t, status: 'pending', output: undefined })));
+    setLaunchStatus('idle'); setLaunchReport(null);
+    setSelectedCampaign(null);
+  };
+
+  // ──────────────── Campaign List View ────────────────
+  if (view === 'list') {
+    return (
+      <div className="h-full flex flex-col gap-5 overflow-y-auto pb-6">
+        {/* Header */}
+        <div className="flex items-center justify-between shrink-0">
+          <div>
+            <h2 className="font-display text-2xl uppercase tracking-tight flex items-center gap-3">
+              <Target size={24} className="text-accent" /> Campaign Hub
+            </h2>
+            <p className="font-mono text-xs text-white/40 mt-1">Multi-Agent PMax Campaign Orchestrator</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={fetchCampaigns} className="btn btn-ghost btn-sm">
+              <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
+            </button>
+            <ExportMenu options={[
+              { label: 'JSON All', format: 'JSON', onClick: () => downloadJSON({ campaigns }, 'G5_Campaigns') },
+              { label: 'CSV Summary', format: 'CSV', onClick: () => downloadCSV(campaigns.map(c => ({ name: c.name, status: c.status, objective: c.objective, budget: c.budget?.dailyAmount ?? '', currency: c.budget?.currency ?? '', created: c.createdAt })), 'G5_Campaigns_Summary') },
+            ]} />
+            <button onClick={() => { resetForm(); setView('create'); }} className="btn btn-primary">
+              <Plus size={14} /> New Campaign
+            </button>
+          </div>
+        </div>
+
+        {/* Campaign List */}
+        {loading ? (
+          <div className="grid gap-3">
+            {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-24 w-full" />)}
+          </div>
+        ) : campaigns.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <CircleDashed size={48} className="text-white/10 mb-4" />
+            <p className="font-display text-lg uppercase text-white/30">No Campaigns Yet</p>
+            <p className="font-mono text-xs text-white/20 mt-2 max-w-md">
+              Create your first campaign to dispatch the agent swarm. Each campaign will be saved to Firestore and tracked end-to-end.
+            </p>
+            <button onClick={() => setView('create')} className="btn btn-primary mt-6">
+              <Plus size={14} /> Create First Campaign
+            </button>
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            {campaigns.map(campaign => (
+              <motion.div
+                key={campaign.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="card flex items-center gap-4 cursor-pointer group hover:border-accent/30"
+                onClick={() => { setSelectedCampaign(campaign); setView('create'); }}
+              >
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0,229,255,0.08)' }}>
+                  <Target size={18} className="text-accent" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-display text-sm uppercase">{campaign.name}</p>
+                  <p className="font-mono text-[10px] text-white/30 mt-0.5">
+                    {campaign.objective} · ${campaign.budget?.dailyAmount}/day · {campaign.biddingStrategy?.type?.replace('MAXIMIZE_', 'Max ')}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`badge ${campaign.status === 'ENABLED' ? 'badge-online' : campaign.status === 'DRAFT' ? 'badge-processing' : 'badge-warning'}`}>
+                    {campaign.status}
+                  </span>
+                  {/* GenIUS Score — heuristic based on campaign completeness */}
+                  {(() => {
+                    let score = 40; // base
+                    if (campaign.status === 'ENABLED') score += 20;
+                    if (campaign.budget?.dailyAmount > 0) score += 15;
+                    if (campaign.assetGroups && campaign.assetGroups.length > 0) score += 15;
+                    if (campaign.biddingStrategy?.type) score += 10;
+                    score = Math.min(score, 100);
+                    const color = score >= 71 ? '#00FF88' : score >= 41 ? '#FFD700' : '#FF007A';
+                    return (
+                      <span className="font-mono text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${color}15`, color, border: `1px solid ${color}30` }}>
+                        G:{score}
+                      </span>
+                    );
+                  })()}
+                  <div className="flex items-center gap-1 text-white/20">
+                    <Clock size={10} />
+                    <span className="font-mono text-[9px]">{new Date(campaign.createdAt).toLocaleDateString('en-US')}</span>
+                  </div>
+                  <ChevronRight size={14} className="text-white/20 group-hover:text-accent transition-colors" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ──────────────── Create/Edit View ────────────────
   return (
-    <div className="h-full flex flex-col gap-6 overflow-hidden">
-      
+    <div className="h-full flex flex-col gap-5 overflow-hidden">
       {/* Header */}
-      <div className="shrink-0 flex items-center justify-between border border-white/5 rounded-2xl bg-black/40 glass p-6 shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
-        <div>
-          <h2 className="text-3xl font-display font-black uppercase italic tracking-tighter text-white flex items-center gap-3 shadow-neural-blue text-shadow-sm">
-            <Target className="text-neural-blue" size={32} />
-            Campaign Orchestrator
-          </h2>
-          <p className="text-white/40 font-mono text-xs mt-1">Multi-Agent PMax Parallel Dispatch Matrix</p>
-        </div>
-        
+      <div className="shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-4">
-           {isOrchestrating && (
-             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neural-blue/30 bg-neural-blue/10 animate-pulse">
-               <Activity size={14} className="text-neural-blue" />
-               <span className="text-[10px] uppercase font-black tracking-widest text-neural-blue">Swarm Active</span>
-             </div>
-           )}
-           <div className="text-right">
-             <div className="text-[10px] font-black uppercase tracking-widest text-white/50">Swarm Readiness</div>
-             <div className="text-xs font-mono text-green-400">100% OPTIMAL</div>
-           </div>
+          <button onClick={() => setView('list')} className="btn btn-ghost btn-sm">← Back</button>
+          <div>
+            <h2 className="font-display text-xl uppercase tracking-tight">
+              {selectedCampaign ? 'Edit Campaign' : 'New Campaign'}
+            </h2>
+            <p className="font-mono text-[10px] text-white/30">Configure parameters → Dispatch agents → Review → Launch</p>
+          </div>
         </div>
+        {isOrchestrating && (
+          <span className="badge badge-processing animate-pulse">
+            <Activity size={10} /> Swarm Active
+          </span>
+        )}
       </div>
 
-      <div className="flex-1 flex gap-6 min-h-0">
-        
-        {/* Left: Input & Directives */}
-        <div className="w-1/2 flex flex-col gap-6 overflow-y-auto scrollbar-none pb-6 pr-2">
+      <div className="flex-1 flex gap-5 min-h-0">
+        {/* Left: Campaign Configuration */}
+        <div className="w-1/2 flex flex-col gap-4 overflow-y-auto pb-6 pr-2">
           
           {/* Campaign Parameters */}
-          <div className="border border-white/5 rounded-2xl bg-black/40 glass p-6 shadow-lg">
-            <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2 mb-6">
-              <Briefcase size={14} className="text-neural-purple" />
-              Campaign Parameters
+          <div className="card">
+            <h3 className="font-display text-sm uppercase tracking-wide mb-4 flex items-center gap-2">
+              <Briefcase size={14} className="text-accent" /> Campaign Parameters
             </h3>
-            
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-[10px] uppercase font-black tracking-widest text-white/50 mb-2">Target Client / Brand</label>
-                <input 
-                  type="text"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="e.g. CyberDyne Systems"
-                  className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-neural-blue/50 transition-colors"
-                />
+                <label className="label">Target Client / Brand</label>
+                <input type="text" value={clientName} onChange={e => setClientName(e.target.value)}
+                  placeholder="e.g. CyberDyne Systems" className="input" />
               </div>
-              
               <div>
-                <label className="block text-[10px] uppercase font-black tracking-widest text-white/50 mb-2">Primary Objective</label>
-                <input 
-                  type="text"
-                  value={objective}
-                  onChange={(e) => setObjective(e.target.value)}
-                  placeholder="e.g. Launch the T-800 infiltration unit globally"
-                  className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-neural-purple/50 transition-colors"
-                />
+                <label className="label">Primary Objective</label>
+                <input type="text" value={objective} onChange={e => setObjective(e.target.value)}
+                  placeholder="e.g. Launch Q3 Lead Generation globally" className="input" />
               </div>
             </div>
           </div>
 
-          {/* Performance Max Engine Settings */}
-          <div className="border border-white/5 rounded-2xl bg-black/40 glass p-6 shadow-lg">
-             <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2 mb-6">
-               <Target size={14} className="text-neural-green" />
-               Performance Max Logic Engine
-             </h3>
-             <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-white/50 mb-2">
-                     <DollarSign size={12}/> Daily Budget (USD)
-                  </label>
-                  <input 
-                    type="number"
-                    value={budget || ''}
-                    onChange={(e) => setBudget(parseInt(e.target.value) || 0)}
-                    className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-neural-green/50 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-white/50 mb-2">
-                     <BarChart2 size={12}/> Bidding Strategy
-                  </label>
-                  <select 
-                    value={biddingStrategy}
-                    onChange={(e) => setBiddingStrategy(e.target.value as 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE')}
-                    className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-sm font-mono text-white focus:outline-none focus:border-neural-green/50 transition-colors"
-                  >
-                     <option value="MAXIMIZE_CONVERSIONS">Max Conversions (Volume)</option>
-                     <option value="MAXIMIZE_CONVERSION_VALUE">Max Value (ROAS)</option>
-                  </select>
-                </div>
-                <div className="col-span-2">
-                  <label className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-white/50 mb-2">
-                     <Crosshair size={12}/> {biddingStrategy === 'MAXIMIZE_CONVERSIONS' ? 'Target CPA ($) (Optional)' : 'Target ROAS (%) (Optional)'}
-                  </label>
-                  <input 
-                    type="number"
-                    value={targetValue || ''}
-                    onChange={(e) => setTargetValue(parseInt(e.target.value) || 0)}
-                    placeholder="Leave blank to rely solely on machine learning volume"
-                    className="w-full bg-black/50 border border-white/10 rounded-lg py-3 px-4 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-neural-green/50 transition-colors"
-                  />
-                </div>
-             </div>
-          </div>
-
-          {/* Global Directives Interface (Command Line) */}
-          <div className="border border-white/5 rounded-2xl bg-black/40 glass p-6 shadow-lg flex flex-col mb-4">
-            <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2 mb-2">
-              <Terminal size={14} className="text-neural-gold" />
-              Global Directives Interface
+          {/* PMax Settings */}
+          <div className="card">
+            <h3 className="font-display text-sm uppercase tracking-wide mb-4 flex items-center gap-2">
+              <Target size={14} className="text-emerald" /> PMax Configuration
             </h3>
-            <p className="text-[10px] font-mono text-white/40 mb-4">Unstructured natural language commands for the Swarm.</p>
-            
-            <div className="relative mb-4 h-32">
-              <textarea 
-                value={directive}
-                onChange={(e) => setDirective(e.target.value)}
-                placeholder="Command the Swarm... (e.g. 'CC-06, write 15 PMax Headlines. DA-03, generate 3 photorealistic landscape images.')"
-                className="w-full h-full bg-black/50 border border-white/10 rounded-lg p-4 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-neural-gold/50 transition-colors resize-none shadow-[inset_0_5px_20px_rgba(0,0,0,0.5)]"
-              />
-              <div className="absolute bottom-4 right-4 text-[10px] uppercase font-black text-white/20 flex items-center gap-2 pointer-events-none">
-                <Cpu size={12} />
-                Gemini 2.0 Thinking
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label"><DollarSign size={10} className="inline" /> Daily Budget (USD)</label>
+                <input type="number" value={budget || ''} onChange={e => setBudget(parseInt(e.target.value) || 0)} className="input" />
+              </div>
+              <div>
+                <label className="label"><BarChart2 size={10} className="inline" /> Bidding Strategy</label>
+                <select value={biddingStrategy} onChange={e => setBiddingStrategy(e.target.value as typeof biddingStrategy)} className="select">
+                  <option value="MAXIMIZE_CONVERSIONS">Max Conversions (Volume)</option>
+                  <option value="MAXIMIZE_CONVERSION_VALUE">Max Value (ROAS)</option>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="label"><Crosshair size={10} className="inline" /> {biddingStrategy === 'MAXIMIZE_CONVERSIONS' ? 'Target CPA ($)' : 'Target ROAS (%)'} (Optional)</label>
+                <input type="number" value={targetValue || ''} onChange={e => setTargetValue(parseInt(e.target.value) || 0)}
+                  placeholder="Leave blank for ML optimization" className="input" />
               </div>
             </div>
+          </div>
 
-            <button 
-              onClick={handleDispatch}
-              disabled={isOrchestrating}
-              className={`w-full py-4 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${
-                isOrchestrating 
-                  ? 'bg-white/5 text-white/30 border border-white/10 cursor-not-allowed'
-                  : 'bg-white text-black hover:bg-neural-blue hover:text-white border border-transparent shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(0,229,255,0.4)]'
-              }`}
-            >
-              <Zap size={16} className={isOrchestrating ? 'opacity-50' : ''} />
-              {isOrchestrating ? 'PMax Orchestration in Progress...' : 'Dispatch PMax Swarm'}
+          {/* Directive */}
+          <div className="card">
+            <h3 className="font-display text-sm uppercase tracking-wide mb-2 flex items-center gap-2">
+              <Terminal size={14} className="text-gold" /> Agent Directive
+            </h3>
+            <p className="font-mono text-[10px] text-white/30 mb-3">Natural language instructions for the swarm.</p>
+            <textarea value={directive} onChange={e => setDirective(e.target.value)}
+              placeholder="e.g. 'CC-06 write 15 PMax Headlines. DA-03 generate 3 landscape hero images. RA-01 audit all outputs for brand safety.'"
+              className="textarea h-28" />
+            <button onClick={handleDispatch} disabled={isOrchestrating}
+              className={`w-full mt-3 ${isOrchestrating ? 'btn btn-ghost opacity-50 cursor-not-allowed' : 'btn btn-primary'}`}>
+              <Zap size={14} /> {isOrchestrating ? 'Orchestration in Progress...' : 'Dispatch Agent Swarm'}
             </button>
           </div>
 
-          {/* Launch Control Plane */}
+          {/* Launch Control */}
           {agentTasks.every(t => t.status === 'complete') && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="border border-neural-gold/30 rounded-2xl bg-neural-gold/5 glass p-6 shadow-[0_0_30px_rgba(255,215,0,0.1)] flex flex-col gap-4"
-            >
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-widest text-neural-gold flex items-center gap-2">
-                  <Activity size={14} />
-                  Launch Control Plane
-                </h3>
-                <p className="text-[10px] font-mono text-neural-gold/60 mt-1">Swarm verification complete. Ready for ecosystem deployment.</p>
-              </div>
-
-              <div className="flex gap-3">
-                <button 
-                  onClick={async () => {
-                    setIsOrchestrating(true);
-                    setLaunchStatus('launching');
-                    try {
-                      const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/pmax/launch`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                          campaignId: 'pmax-' + Date.now(),
-                          config: { budget, biddingStrategy }
-                        })
-                      });
-                      const data = await resp.json();
-                      setLaunchReport(data.report);
-                      setLaunchStatus('success');
-                    } catch (error) {
-                      console.error('Launch failed:', error);
-                      setLaunchStatus('error');
-                    } finally {
-                      setIsOrchestrating(false);
-                    }
-                  }}
-                  disabled={isOrchestrating || launchStatus === 'success'}
-                  className="flex-1 py-4 rounded-xl bg-neural-gold text-black text-[10px] font-black uppercase tracking-widest hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  <Send size={14} />
-                  {launchStatus === 'launching' ? 'Deploying...' : launchStatus === 'success' ? 'Deployed' : 'Launch to Ecosystem'}
-                </button>
-              </div>
-
+            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+              className="card" style={{ borderLeftColor: 'var(--color-gold)', borderLeftWidth: '2px' }}>
+              <h3 className="font-display text-sm uppercase text-gold flex items-center gap-2 mb-2">
+                <Activity size={14} /> Launch Control
+              </h3>
+              <p className="font-mono text-[10px] text-white/30 mb-3">All agents completed. Ready for deployment.</p>
+              <button onClick={handleLaunch} disabled={isOrchestrating || launchStatus === 'success'}
+                className="btn btn-primary w-full" style={{ background: 'var(--color-gold)', borderColor: 'var(--color-gold)' }}>
+                <Send size={14} /> {launchStatus === 'launching' ? 'Deploying...' : launchStatus === 'success' ? 'Deployed ✓' : 'Launch to Ecosystem'}
+              </button>
               {launchReport && (
-                 <div className="mt-2 p-3 rounded-lg bg-black/40 border border-neural-gold/20 text-[9px] font-mono text-neural-gold/80 whitespace-pre-wrap leading-relaxed">
-                    {launchReport}
-                 </div>
+                <div className="mt-3 p-3 rounded-lg bg-black/40 border border-white/5 font-mono text-[10px] text-white/60 whitespace-pre-wrap">
+                  {launchReport}
+                </div>
               )}
             </motion.div>
           )}
-
         </div>
 
-        {/* Right: Real-time Output / Delegation */}
-        <div className="w-1/2 border border-white/5 rounded-2xl bg-black/40 glass shadow-lg flex flex-col overflow-hidden">
-          <div className="p-6 border-b border-white/5 shrink-0 flex items-center justify-between bg-black/20">
-             <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
-               <Send size={14} className="text-neural-blue" />
-               Live Delegation Matrix
-             </h3>
+        {/* Right: Live Agent Delegation Matrix */}
+        <div className="w-1/2 glass flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-white/5 shrink-0">
+            <h3 className="font-display text-sm uppercase tracking-wide flex items-center gap-2">
+              <Send size={14} className="text-accent" /> Agent Delegation Matrix
+            </h3>
           </div>
-
-          <div className="flex-1 p-6 overflow-y-auto scrollbar-none flex flex-col gap-4">
-            
-            {!isOrchestrating && agentTasks.every(t => t.status === 'pending') && (
-              <div className="h-full flex flex-col items-center justify-center text-center text-white/30">
-                <CircleDashed size={48} className="mb-4 opacity-50" />
-                <p className="text-sm font-mono uppercase tracking-widest">Awaiting PMax Directives</p>
+          <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-3">
+            {!isOrchestrating && agentTasks.every(t => t.status === 'pending') ? (
+              <div className="h-full flex flex-col items-center justify-center text-center">
+                <CircleDashed size={40} className="text-white/10 mb-3" />
+                <p className="font-display text-sm uppercase text-white/20">Awaiting Dispatch</p>
+                <p className="font-mono text-[10px] text-white/15 mt-1">Configure parameters and dispatch the swarm</p>
               </div>
-            )}
+            ) : (
+              <AnimatePresence>
+                {agentTasks.map((task, idx) => {
+                  if (task.status === 'pending' && !isOrchestrating) return null;
+                  const Icon = task.agent === 'CC-06' ? FileText : task.agent === 'DA-03' ? ImageIcon : task.agent === 'SN-00' ? Cpu : task.agent === 'RA-01' ? Briefcase : Briefcase;
 
-            <AnimatePresence>
-              {agentTasks.map((task, idx) => {
-                if (task.status === 'pending' && !isOrchestrating) return null;
-
-                const Icon = task.agent === 'CC-06' ? FileText : task.agent === 'DA-03' ? ImageIcon : task.agent === 'PM-07' ? Briefcase : Cpu;
-                const color = task.agent === 'CC-06' ? 'text-green-500' : task.agent === 'DA-03' ? 'text-pink-500' : task.agent === 'PM-07' ? 'text-yellow-500' : 'text-neural-blue';
-
-                return (
-                  <motion.div 
-                    key={task.agent}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    className={`p-4 rounded-xl border flex flex-col gap-3 transition-colors ${
-                      task.status === 'working' ? 'bg-neural-blue/10 border-neural-blue/30 shadow-[inset_0_0_15px_rgba(0,229,255,0.1)]' :
-                      task.status === 'complete' ? 'bg-green-500/10 border-green-500/30' :
-                      'bg-white/5 border-white/10'
-                    }`}
-                  >
-                     <div className="flex items-center justify-between">
+                  return (
+                    <motion.div key={task.agent}
+                      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.08 }}
+                      className={`card ${task.status === 'working' ? 'card-accent' : task.status === 'complete' ? 'card-magenta' : ''}`}
+                      style={{ borderLeftColor: task.status === 'complete' ? 'var(--color-emerald)' : undefined }}>
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg bg-black/50 border border-white/10 flex items-center justify-center ${color}`}>
+                          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-accent">
                             <Icon size={14} />
                           </div>
                           <div>
-                            <span className="text-xs font-black tracking-widest uppercase text-white">{task.agent}</span>
-                            <span className="text-[10px] uppercase font-mono text-white/40 block">{task.role}</span>
+                            <span className="font-display text-xs uppercase">{task.agent}</span>
+                            <span className="font-mono text-[10px] text-white/30 block">{task.role}</span>
                           </div>
                         </div>
-                        
-                        {task.status === 'working' && (
-                          <div className="px-2 py-1 rounded bg-neural-blue/20 border border-neural-blue/30 text-[9px] font-black uppercase tracking-widest text-neural-blue animate-pulse">
-                            Processing
-                          </div>
-                        )}
-                        {task.status === 'complete' && (
-                          <div className="px-2 py-1 rounded bg-green-500/20 border border-green-500/30 text-[9px] font-black uppercase tracking-widest text-green-400">
-                            Completed
-                          </div>
-                        )}
-                     </div>
-
+                        {task.status === 'working' && <span className="badge badge-processing animate-pulse">Processing</span>}
+                        {task.status === 'complete' && <span className="badge badge-online">Complete</span>}
+                      </div>
                       {task.output && (
-                        <motion.div 
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          className={`p-3 rounded-lg border mt-2 overflow-hidden ${
-                             task.output.includes('GENIUS SCORE') ? 'bg-neural-gold/10 border-neural-gold/30' : 'bg-black/40 border-white/5'
-                          }`}
-                        >
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                          className="mt-3 p-3 rounded-lg bg-black/30 border border-white/5 overflow-hidden">
                           {task.agent === 'DA-03' && task.output.startsWith('data:image') ? (
-                             <img src={task.output} alt="Generated Asset" className="w-full rounded-md border border-white/10 opacity-80 hover:opacity-100 transition-opacity" />
+                            <img src={task.output} alt="Generated" className="w-full rounded border border-white/10" />
                           ) : (
-                             <p className={`text-[10px] font-mono leading-relaxed ${task.output.includes('GENIUS SCORE') ? 'text-neural-gold' : 'text-white/70 italic'}`}>
-                                {task.output.includes('GENIUS SCORE') ? task.output : `"${task.output}"`}
-                             </p>
+                            <p className="font-mono text-[10px] text-white/60 leading-relaxed whitespace-pre-wrap">{task.output}</p>
                           )}
                         </motion.div>
                       )}
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            )}
           </div>
         </div>
-
       </div>
     </div>
   );

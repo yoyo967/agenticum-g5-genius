@@ -1,87 +1,668 @@
 @import "tailwindcss";
 
-@theme {
-  --color-obsidian: #050505;
-  --color-chrome: #1a1a1a;
-  --color-neural-blue: #00e5ff;
-  --color-neural-gold: #ffd700;
+/* ============================================================
+   AGENTICUM G5 — NEXUS MIDNIGHT DESIGN SYSTEM v3.0
+   Reference: biohack.berlin | Extracted & Extended
+   Philosophy: Everything lives. Glass over cosmos. Data as decoration.
+   ============================================================ */
 
-  --font-display: "Outfit", sans-serif;
+@theme {
+  /* === Background System === */
+  --color-midnight: #0a0118;
+  --color-midnight-50: #1a0533;
+  --color-midnight-100: #120228;
+  --color-midnight-200: #0d011e;
+  --color-midnight-900: #050010;
+  --color-void: #050510;
+  --color-abyss: #0a0118;
+
+  /* === Surface System (biohack.berlin exact) === */
+  --color-surface: rgba(25, 20, 85, 0.4);
+  --color-surface-hover: rgba(25, 20, 85, 0.55);
+  --color-surface-light: rgba(255, 255, 255, 0.08);
+  --color-surface-light-hover: rgba(255, 255, 255, 0.12);
+  --color-surface-overlay: rgba(0, 0, 0, 0.5);
+  --color-surface-overlay-light: rgba(0, 0, 0, 0.3);
+
+  /* === Border System === */
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-hover: rgba(255, 255, 255, 0.2);
+  --color-border-active: rgba(255, 255, 255, 0.3);
+  --color-border-accent: rgba(0, 229, 255, 0.4);
+
+  /* === Text System === */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.7);
+  --color-text-muted: rgba(255, 255, 255, 0.5);
+  --color-text-ghost: rgba(255, 255, 255, 0.3);
+
+  /* === Accent System === */
+  --color-accent: #00E5FF;
+  --color-accent-glow: rgba(0, 229, 255, 0.3);
+  --color-magenta: #FF007A;
+  --color-magenta-glow: rgba(255, 0, 122, 0.3);
+  --color-gold: #FFD700;
+  --color-gold-glow: rgba(255, 215, 0, 0.3);
+  --color-emerald: #00FF88;
+  --color-emerald-glow: rgba(0, 255, 136, 0.3);
+
+  /* === Agent Colors (unique per agent) === */
+  --color-agent-sn00: #00E5FF;
+  --color-agent-sp01: #7B2FBE;
+  --color-agent-cc06: #FF007A;
+  --color-agent-da03: #FFD700;
+  --color-agent-ra01: #00FF88;
+  --color-agent-pm07: #FF6B35;
+
+  /* === Status Colors === */
+  --color-status-online: #00FF88;
+  --color-status-offline: #FF4444;
+  --color-status-pending: #FFD700;
+  --color-status-processing: #00E5FF;
+
+  /* === Typography === */
+  --font-display: "Oswald", sans-serif;
+  --font-mono: "Roboto Mono", monospace;
   --font-body: "Inter", sans-serif;
+
+  /* === Spacing === */
+  --spacing-section: 120px;
+  --spacing-section-sm: 80px;
+  --spacing-card-pad: 24px;
+  --spacing-sidebar: 260px;
 }
+
+/* ============================================================
+   GLOBAL RESET & BASE
+   ============================================================ */
 
 :root {
-  background-color: var(--color-obsidian);
+  background-color: var(--color-midnight);
   color: white;
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1,
-h2,
-h3,
-h4 {
-  font-family: var(--font-display);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+}
+
+/* ============================================================
+   ANIMATED MESH GRADIENT BACKGROUND (biohack.berlin reference)
+   Living, breathing foundation — 4-point mesh with rotation
+   ============================================================ */
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--color-midnight);
+}
+
+.mesh-bg::before,
+.mesh-bg::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.5;
+  animation: meshFloat 20s ease-in-out infinite alternate;
+}
+
+.mesh-bg::before {
+  width: 60vw;
+  height: 60vh;
+  background: radial-gradient(circle, #001b4d 0%, transparent 70%);
+  top: -10%;
+  left: -10%;
+  animation-delay: 0s;
+}
+
+.mesh-bg::after {
+  width: 50vw;
+  height: 50vh;
+  background: radial-gradient(circle, #ff007a 0%, transparent 70%);
+  bottom: -10%;
+  right: -10%;
+  animation-delay: -10s;
+}
+
+.mesh-orb {
+  position: absolute;
+  width: 40vw;
+  height: 40vh;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.4;
+  background: radial-gradient(circle, #7b2fbe 0%, transparent 70%);
+  top: 40%;
+  left: 30%;
+  animation: meshFloat 25s ease-in-out infinite alternate-reverse;
+}
+
+/* Alt: CSS-only mesh (no JS) for landing page */
+.bg-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(0, 27, 77, 0.8) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 0, 122, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, rgba(123, 47, 190, 0.5) 0%, transparent 50%),
+    radial-gradient(ellipse at 10% 90%, rgba(0, 229, 255, 0.15) 0%, transparent 40%);
+  background-size: 200% 200%;
+  animation: meshRotate 20s ease-in-out infinite;
+}
+
+@keyframes meshFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(5vw, -3vh) scale(1.1); }
+  66%  { transform: translate(-3vw, 5vh) scale(0.95); }
+  100% { transform: translate(2vw, -2vh) scale(1.05); }
+}
+
+@keyframes meshRotate {
+  0%   { background-position: 0% 50%; }
+  25%  { background-position: 50% 0%; }
+  50%  { background-position: 100% 50%; }
+  75%  { background-position: 50% 100%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ============================================================
+   GLASSMORPHISM SYSTEM (biohack.berlin extraction)
+   Semi-transparent layers over the living mesh
+   ============================================================ */
 
 .glass {
-  background: rgba(10, 10, 10, 0.4);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7);
-  border-radius: 0.75rem; /* Sharp technical rim */
+  background: var(--color-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Sharp Accent for Ultimate Genius */
-.glass::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent 40%, rgba(0, 229, 255, 0.05));
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  pointer-events: none;
+.glass:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-hover);
 }
 
-.spatial-depth {
-  transform-style: preserve-3d;
-  perspective: 1000px;
+.glass-card {
+  background: var(--color-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.floating-module {
-  transition: transform 0.3s ease-out;
+.glass-card:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-hover);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.floating-module:hover {
-  transform: translateZ(50px) rotateX(2deg) rotateY(-2deg);
+.glass-strong {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
 }
 
-.neural-scanner {
-  position: absolute;
-  top: 0;
-  left: 0;
+.glass-sidebar {
+  background: var(--color-surface-overlay);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border-right: 1px solid var(--color-border);
+}
+
+/* ============================================================
+   BUTTON SYSTEM (biohack.berlin exact extraction)
+   Ghost as default, Primary for CTAs, Outline for secondary
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  padding: 13px 32px;
+  font-size: 14px;
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 1);
+  color: white;
+  padding: 13px 40px;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  border: none;
+  color: var(--color-midnight);
+  font-weight: 700;
+  padding: 14px 40px;
+  font-size: 16px;
+}
+
+.btn-primary:hover {
+  background: #33EBFF;
+  box-shadow: 0 0 30px var(--color-accent-glow);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 10px 24px;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+}
+
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.btn-danger {
+  background: rgba(255, 0, 122, 0.1);
+  border: 1px solid rgba(255, 0, 122, 0.4);
+  color: var(--color-magenta);
+}
+
+.btn-danger:hover {
+  background: rgba(255, 0, 122, 0.15);
+  border-color: var(--color-magenta);
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 11px;
+}
+
+.btn-lg {
+  padding: 16px 36px;
+  font-size: 14px;
+}
+
+/* ============================================================
+   CARD SYSTEM
+   Glass cards for OS modules, landing sections, data displays
+   ============================================================ */
+
+.card {
+  background: var(--color-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--spacing-card-pad);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.card-accent { border-left: 2px solid var(--color-accent); }
+.card-magenta { border-left: 2px solid var(--color-magenta); }
+.card-gold { border-left: 2px solid var(--color-gold); }
+.card-emerald { border-left: 2px solid var(--color-emerald); }
+
+/* Glow variants */
+.card-glow-cyan:hover   { box-shadow: 0 0 20px rgba(0, 229, 255, 0.3), 0 0 60px rgba(0, 229, 255, 0.1); }
+.card-glow-magenta:hover { box-shadow: 0 0 20px rgba(255, 0, 122, 0.3), 0 0 60px rgba(255, 0, 122, 0.1); }
+.card-glow-gold:hover    { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1); }
+
+.card-metric {
+  text-align: center;
+  padding: 20px;
+}
+
+.card-metric .metric-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1;
+  color: white;
+}
+
+.card-metric .metric-label {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-text-ghost);
+  margin-top: 8px;
+}
+
+/* ============================================================
+   OS SIDEBAR NAVIGATION
+   ============================================================ */
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 2px solid transparent;
+}
+
+.sidebar-item:hover {
+  color: var(--color-text-secondary);
+  background: var(--color-surface-light);
+}
+
+.sidebar-item.active {
+  color: var(--color-accent);
+  background: rgba(0, 229, 255, 0.06);
+  border-left-color: var(--color-accent);
+}
+
+/* ============================================================
+   DATA & STATUS ELEMENTS
+   ============================================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  border: 1px solid;
+}
+
+.badge-online {
+  background: rgba(0, 255, 136, 0.1);
+  border-color: rgba(0, 255, 136, 0.3);
+  color: var(--color-emerald);
+}
+
+.badge-processing {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.3);
+  color: var(--color-accent);
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.badge-warning {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+  color: var(--color-gold);
+}
+
+.badge-error {
+  background: rgba(255, 0, 122, 0.1);
+  border-color: rgba(255, 0, 122, 0.3);
+  color: var(--color-magenta);
+}
+
+.badge-offline {
+  background: rgba(255, 68, 68, 0.1);
+  border-color: rgba(255, 68, 68, 0.3);
+  color: #FF4444;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.online {
+  background: var(--color-status-online);
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+.status-dot.processing {
+  background: var(--color-status-processing);
+  box-shadow: 0 0 8px var(--color-accent-glow);
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.status-dot.offline {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================================
+   LABEL SYSTEM
+   ============================================================ */
+
+.label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+}
+
+.label-active { color: var(--color-accent); }
+.label-warning { color: var(--color-gold); }
+.label-error { color: var(--color-magenta); }
+
+/* ============================================================
+   FORM ELEMENTS — Glass-Styled
+   ============================================================ */
+
+.input {
   width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, transparent, rgba(0, 229, 255, 0.05), transparent);
-  animation: scan 8s linear infinite;
-  pointer-events: none;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
 }
 
-.holo-card {
-  position: relative;
-  overflow: hidden;
+.input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
 }
 
+.input::placeholder {
+  color: var(--color-text-ghost);
+}
+
+.select {
+  appearance: none;
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='rgba(255,255,255,0.5)' viewBox='0 0 16 16'%3E%3Cpath d='M8 12L2 6h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+  min-height: 120px;
+  transition: all 0.3s ease;
+}
+
+.textarea:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
+}
+
+/* ============================================================
+   SCROLLBAR — Minimal, glass-styled
+   ============================================================ */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes dataStream {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.animate-in {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.4s ease-out forwards;
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+/* ============================================================
+   GLOW EFFECTS — Agent & accent glows
+   ============================================================ */
+
+.glow-cyan    { box-shadow: 0 0 20px var(--color-accent-glow), 0 0 60px rgba(0, 229, 255, 0.1); }
+.glow-magenta { box-shadow: 0 0 20px var(--color-magenta-glow), 0 0 60px rgba(255, 0, 122, 0.1); }
+.glow-gold    { box-shadow: 0 0 20px var(--color-gold-glow), 0 0 60px rgba(255, 215, 0, 0.1); }
+.glow-emerald { box-shadow: 0 0 20px var(--color-emerald-glow), 0 0 60px rgba(0, 255, 136, 0.1); }
+
+/* ============================================================
+   LEGACY COMPAT (transitional)
+   ============================================================ */
+
+.spatial-depth { transform-style: preserve-3d; perspective: 1000px; }
+.floating-module { transition: transform 0.3s ease-out; }
+.floating-module:hover { transform: translateY(-2px); }
+.neural-scanner { display: none; }
+
+.holo-card { position: relative; overflow: hidden; }
 .holo-card::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(125deg, transparent 40%, rgba(255, 255, 255, 0.05) 50%, transparent 60%);
   transform: translateX(-100%);
   transition: transform 0.6s ease;
 }
-
-.holo-card:hover::after {
-  transform: translateX(100%);
-}
+.holo-card:hover::after { transform: translateX(100%); }

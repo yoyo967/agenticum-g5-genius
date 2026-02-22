@@ -4,6 +4,7 @@ import { RA01Auditor } from './ra01-auditor';
 import { DA03Architect } from './da03-architect';
 import { CC06Director } from './cc06-director';
 import { PM07Manager } from './pm07-manager';
+import { VE01Director } from './ve01-director';
 
 export class SN00Orchestrator extends BaseAgent {
   private readonly DIRECTIVES = `
@@ -20,6 +21,7 @@ export class SN00Orchestrator extends BaseAgent {
   private auditor: RA01Auditor;
   private architect: DA03Architect;
   private director: CC06Director;
+  private motionDirector: VE01Director;
   private manager: PM07Manager;
   public onBroadcast?: (message: any) => void;
 
@@ -33,6 +35,7 @@ export class SN00Orchestrator extends BaseAgent {
     this.auditor = new RA01Auditor();
     this.architect = new DA03Architect();
     this.director = new CC06Director();
+    this.motionDirector = new VE01Director();
     this.manager = new PM07Manager();
 
     // Wire up status propagation
@@ -44,6 +47,7 @@ export class SN00Orchestrator extends BaseAgent {
     this.auditor.onStatusUpdate = bubbleStatus;
     this.architect.onStatusUpdate = bubbleStatus;
     this.director.onStatusUpdate = bubbleStatus;
+    this.motionDirector.onStatusUpdate = bubbleStatus;
     this.manager.onStatusUpdate = bubbleStatus;
   }
 
@@ -171,6 +175,7 @@ ${auditStatus}
         strategist: this.strategist.getStatus(),
         director: this.director.getStatus(),
         architect: this.architect.getStatus(),
+        motionDirector: this.motionDirector.getStatus(),
         auditor: this.auditor.getStatus(),
         manager: this.manager.getStatus()
       }

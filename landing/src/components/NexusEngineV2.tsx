@@ -41,6 +41,8 @@ const WORKFLOWS: WorkflowTemplate[] = [
 export function NexusEngineV2() {
   const [activeWorkflowId, setActiveWorkflowId] = useState<string>(WORKFLOWS[0].id);
   const [toast, setToast] = useState<string | null>(null);
+  const [agentProgress, setAgentProgress] = useState<Record<string, 'idle' | 'processing' | 'complete'>>({});
+  const [isRunning, setIsRunning] = useState(false);
 
   const activeWorkflow = WORKFLOWS.find(w => w.id === activeWorkflowId) || WORKFLOWS[0];
 
@@ -69,8 +71,32 @@ export function NexusEngineV2() {
   };
 
   const runWorkflow = () => {
+    if (isRunning) return;
+    setIsRunning(true);
     setToast(`${activeWorkflow.name} Compilation Initiated. Swarm Engaged.`);
     
+    // Reset all agents to idle
+    const initialState: Record<string, 'idle' | 'processing' | 'complete'> = {};
+    activeWorkflow.agents.forEach(a => initialState[a] = 'idle');
+    setAgentProgress(initialState);
+
+    // Sequentially light up each agent
+    activeWorkflow.agents.forEach((agent, index) => {
+      setTimeout(() => {
+        setAgentProgress(prev => ({ ...prev, [agent]: 'processing' }));
+      }, index * 1200);
+      setTimeout(() => {
+        setAgentProgress(prev => ({ ...prev, [agent]: 'complete' }));
+      }, index * 1200 + 1000);
+    });
+
+    // Complete after all agents finish
+    setTimeout(() => {
+      setIsRunning(false);
+      setToast(`${activeWorkflow.name} — All agents completed successfully.`);
+      setTimeout(() => setToast(null), 3000);
+    }, activeWorkflow.agents.length * 1200 + 500);
+
     // Dispatch global event for GeniusConsole to pick up
     window.dispatchEvent(new CustomEvent('trigger-orchestration', { 
       detail: { 
@@ -78,8 +104,6 @@ export function NexusEngineV2() {
         workflowId: activeWorkflow.id 
       } 
     }));
-
-    setTimeout(() => setToast(null), 3000);
   };
 
   return (
@@ -152,13 +176,33 @@ export function NexusEngineV2() {
                     transition={{ delay: index * 0.1 }}
                     className="flex flex-col items-center gap-3 relative z-10"
                   >
-                    <div className="w-16 h-16 rounded-full border border-white/10 glass bg-black/40 flex items-center justify-center relative shadow-xl">
-                      <div className="absolute inset-0 rounded-full border border-neural-blue/20 blur-sm animate-pulse" />
-                      <div className={getAgentColor(agent)}>
-                        {getAgentIcon(agent)}
-                      </div>
+                    <div className={`w-16 h-16 rounded-full border glass bg-black/40 flex items-center justify-center relative shadow-xl transition-all duration-500 ${
+                      agentProgress[agent] === 'processing' ? 'border-neural-gold/60 shadow-[0_0_20px_rgba(255,215,0,0.4)] scale-110' :
+                      agentProgress[agent] === 'complete' ? 'border-green-500/60 shadow-[0_0_20px_rgba(34,197,94,0.4)]' :
+                      'border-white/10'
+                    }`}>
+                      <div className={`absolute inset-0 rounded-full border blur-sm ${
+                        agentProgress[agent] === 'processing' ? 'border-neural-gold/40 animate-pulse' :
+                        agentProgress[agent] === 'complete' ? 'border-green-500/30' :
+                        'border-neural-blue/20 animate-pulse'
+                      }`} />
+                      {agentProgress[agent] === 'complete' ? (
+                        <CheckCircle2 size={16} className="text-green-500" />
+                      ) : agentProgress[agent] === 'processing' ? (
+                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                          <Cpu size={16} className="text-neural-gold" />
+                        </motion.div>
+                      ) : (
+                        <div className={getAgentColor(agent)}>
+                          {getAgentIcon(agent)}
+                        </div>
+                      )}
                     </div>
-                    <span className={`text-[10px] font-black uppercase tracking-widest ${getAgentColor(agent)}`}>{agent}</span>
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${
+                      agentProgress[agent] === 'complete' ? 'text-green-500' :
+                      agentProgress[agent] === 'processing' ? 'text-neural-gold' :
+                      getAgentColor(agent)
+                    }`}>{agent}</span>
                   </motion.div>
 
                   {/* Arrow connecting to next */}
@@ -179,9 +223,12 @@ export function NexusEngineV2() {
           <div className="mt-8 flex justify-end">
             <button 
               onClick={runWorkflow}
-              className="px-6 py-3 rounded-xl bg-neural-blue text-obsidian hover:bg-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_20px_rgba(0,229,255,0.3)] active:scale-95"
+              disabled={isRunning}
+              className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2 active:scale-95 ${
+                isRunning ? 'bg-neural-gold/50 text-obsidian cursor-wait' : 'bg-neural-blue text-obsidian hover:bg-white shadow-[0_0_20px_rgba(0,229,255,0.3)]'
+              }`}
             >
-              <Play size={16} /> Run Workflow Blueprint
+              <Play size={16} /> {isRunning ? 'Executing...' : 'Run Workflow Blueprint'}
             </button>
           </div>
         </div>

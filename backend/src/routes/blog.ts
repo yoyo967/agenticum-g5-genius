@@ -136,4 +136,41 @@ router.post('/agent-dispatch', async (req: Request, res: Response) => {
   }
 });
 
+// PUT /api/blog/article/:slug - Update an article's content
+router.put('/article/:slug', async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const { title, content, status } = req.body;
+
+    if (!content && !title && !status) {
+      return res.status(400).json({ error: 'No update fields provided (title, content, status).' });
+    }
+
+    // Find the article in pillars first, then clusters
+    let snapshot = await db.collection(Collections.PILLARS).where('slug', '==', slug).limit(1).get();
+    let collection = Collections.PILLARS;
+
+    if (snapshot.empty) {
+      snapshot = await db.collection(Collections.CLUSTERS).where('slug', '==', slug).limit(1).get();
+      collection = Collections.CLUSTERS;
+    }
+
+    if (snapshot.empty) {
+      return res.status(404).json({ error: 'Article not found.' });
+    }
+
+    const doc = snapshot.docs[0];
+    const updateData: Record<string, unknown> = { updatedAt: new Date().toISOString() };
+    if (title) updateData.title = title;
+    if (content) updateData.content = content;
+    if (status) updateData.status = status;
+
+    await db.collection(collection).doc(doc.id).update(updateData);
+    res.json({ status: 'success', message: `Article "${slug}" updated successfully.` });
+  } catch (error) {
+    console.error('Error updating article:', error);
+    res.status(500).json({ error: 'Failed to update article.' });
+  }
+});
+
 export default router;

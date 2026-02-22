@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-02-22T05:23:04.595Z",
+  "status": "SIMULATED",
+  "campaign": {
+    "name": "Campaign_1771737784595",
+    "advertising_channel_type": "PERFORMANCE_MAX",
+    "bidding_strategy": "MAXIMIZE_CONVERSIONS",
+    "budget": {
+      "amount_micros": 100000000,
+      "delivery_method": "STANDARD"
+    },
+    "asset_group": {
+      "name": "Campaign_1771737784595 - Asset Group 1",
+      "final_urls": [
+        "https://agenticum-g5-genius.web.app"
+      ],
+      "headlines": [
+        "Next-Gen AI Agency",
+        "Autonomous Marketing Swarm"
+      ],
+      "descriptions": [
+        "The world first voice-activated AI agency."
+      ],
+      "image_assets": 0,
+      "video_assets": 0
+    }
+  }
+}

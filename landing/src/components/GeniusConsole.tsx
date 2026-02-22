@@ -7,12 +7,21 @@ import {
   Mic, MicOff, Volume2, Link2Off, AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ExportMenu } from './ui';
+import { downloadJSON, downloadTextFile } from '../utils/export';
 
-import { type SwarmState, type AgentStatus } from '../types';
+import { type SwarmState } from '../types';
+
+const SESSION_KEY = 'g5_console_session';
 
 export function GeniusConsole() {
   const [swarm, setSwarm] = useState<SwarmState | null>(null);
-  const [logs, setLogs] = useState<{ type: string; message: string; timestamp: string }[]>([]);
+  const [logs, setLogs] = useState<{ type: string; message: string; timestamp: string }[]>(() => {
+    try {
+      const saved = localStorage.getItem(SESSION_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [output, setOutput] = useState<string | null>(null);
   const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'active' | 'error'>('disconnected');
   const [isRecording, setIsRecording] = useState(false);
@@ -21,6 +30,19 @@ export function GeniusConsole() {
   const ws = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-save logs to localStorage
+  useEffect(() => {
+    if (logs.length > 0) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(logs.slice(-200)));
+    }
+  }, [logs]);
+
+  const startNewSession = () => {
+    setLogs([]);
+    setOutput(null);
+    localStorage.removeItem(SESSION_KEY);
+  };
 
   // Audio refs
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -298,6 +320,13 @@ export function GeniusConsole() {
         </div>
         
         <div className="flex items-center gap-6">
+          <ExportMenu label="Export Chat" options={[
+            { label: 'JSON History', format: 'JSON', onClick: () => downloadJSON(logs.map(l => ({ role: l.type, content: l.message, timestamp: l.timestamp })), 'G5_Chat_History') },
+            { label: 'Markdown Log', format: 'MD', onClick: () => downloadTextFile(logs.map(l => `**[${l.timestamp}] ${l.type}:**\n${l.message}`).join('\n\n---\n\n'), 'G5_Chat_Log', 'md') },
+          ]} />
+          <button onClick={startNewSession} className="text-[10px] uppercase tracking-widest font-bold text-white/30 hover:text-accent transition-colors px-3 py-1 border border-white/10 rounded hover:border-accent/30">
+            + New Session
+          </button>
           <div className="flex gap-2 text-[10px] uppercase font-black text-white/50 tracking-widest items-center mr-4">
              {isRecording ? (
                 <span className="flex items-center gap-2 text-neural-gold border border-neural-gold/30 px-3 py-1 rounded bg-neural-gold/10">
