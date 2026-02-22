@@ -1,6 +1,7 @@
 import { BaseAgent, AgentState } from './base-agent';
 import { DiscoveryEngineService } from '../services/discovery-engine';
 import { VertexAIService } from '../services/vertex-ai';
+import { GoogleWorkspaceService } from '../services/google-workspace';
 
 export class SP01Strategist extends BaseAgent {
   private readonly DIRECTIVES = `
@@ -23,36 +24,50 @@ export class SP01Strategist extends BaseAgent {
   }
 
   async execute(input: string): Promise<string> {
-    this.updateStatus(AgentState.THINKING, 'Analyzing market dynamics via McKinsey 7S...');
+    this.updateStatus(AgentState.THINKING, 'Grounding intelligence on live internet...');
     
     const vertexAI = VertexAIService.getInstance();
     const discoveryEngine = DiscoveryEngineService.getInstance();
+    const workspace = GoogleWorkspaceService.getInstance();
     
-    // 1. Grounding Search
+    // 1. Internal Vault Grounding (Optional fallback context)
     const groundingData = await discoveryEngine.searchKnowledge(input);
-    this.logger.info(`Grounding successful for: ${input}`);
+    this.logger.info(`Vault Grounding successful for: ${input}`);
 
-    // 2. Real Logic Generation
-    this.updateStatus(AgentState.WORKING, 'Applying Behavioral Economics & Narrative Strategy...', 50);
+    // 2. Real Logic Generation with Google Search
+    this.updateStatus(AgentState.WORKING, 'Aggregating live competitor data & Behavioral Economics...', 50);
     
     const prompt = `
       ${this.DIRECTIVES}
       TASK: Create a comprehensive strategic blueprint for the target: "${input}"
-      GROUNDING CONTEXT: ${groundingData}
+      INTERNAL GROUNDING CONTEXT: ${groundingData}
       
       REQUIREMENTS:
-      1. Use the StoryBrand Framework.
-      2. Apply Kahneman's 8 Biases to minimize frictional anxiety.
-      3. Recommend a budget allocation following the Binet & Field 60/40 rule.
+      1. Search the live internet for up-to-date context regarding the target brand or market.
+      2. Use the StoryBrand Framework.
+      3. Apply Kahneman's 8 Biases to minimize frictional anxiety.
+      4. Recommend a budget allocation following the Binet & Field 60/40 rule.
       
       OUTPUT FORMAT:
       ## STRATEGIC BLUEPRINT: ${input}
       ... (detailed analysis sections) ...
     `;
 
-    const strategy = await vertexAI.generateContent(prompt);
+    const strategy = await vertexAI.generateGroundedContent(prompt);
 
-    this.updateStatus(AgentState.DONE, 'Strategy synthesis complete', 100);
-    return strategy;
+    this.updateStatus(AgentState.WORKING, 'Publishing Master Brief to Google Docs...', 80);
+    
+    let responseText = strategy;
+    try {
+      const docTitle = `G5 Master Brief: ${input.substring(0, 40).replace(/[^a-zA-Z0-9 -]/g, '')}`;
+      const docUrl = await workspace.createDocument(docTitle, strategy);
+      // Prepend the clickable markdown link
+      responseText = `[View Live Master Brief on Google Docs](${docUrl})\n\n${strategy}`;
+    } catch (e: any) {
+      this.logger.error('Failed to publish brief to Google Docs', e);
+    }
+
+    this.updateStatus(AgentState.DONE, 'Strategy synthesis & Docs publication complete', 100);
+    return responseText;
   }
 }

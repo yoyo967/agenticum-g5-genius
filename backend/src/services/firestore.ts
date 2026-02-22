@@ -6,5 +6,7 @@ export const db = new Firestore();
 
 export const Collections = {
   PILLARS: 'pillars',
-  CLUSTERS: 'clusters'
+  CLUSTERS: 'clusters',
+  CAMPAIGNS: 'pmax_campaigns',
+  SENATE_DOCKET: 'senate_docket'
 };

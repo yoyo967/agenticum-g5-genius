@@ -54,6 +54,13 @@ export class CC06Director extends BaseAgent {
     }
 
     this.updateStatus(AgentState.DONE, 'Creative content forged. Ready for Senate audit.', 100);
+    
+    // Optional: Trigger Video Generation if "video" or "veo" is mentioned in the input or result
+    if (creativeAssets.toLowerCase().includes('veo') || creativeAssets.toLowerCase().includes('video prompt')) {
+        this.updateStatus(AgentState.WORKING, 'Synthesizing Veo video assets from prompts...', 90);
+        await ai.generateVideo(creativeAssets);
+    }
+
     return creativeAssets.trim();
   }
 

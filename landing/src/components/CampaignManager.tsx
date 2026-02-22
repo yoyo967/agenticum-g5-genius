@@ -14,6 +14,8 @@ export function CampaignManager() {
   const [objective, setObjective] = useState('');
   const [directive, setDirective] = useState('');
   const [isOrchestrating, setIsOrchestrating] = useState(false);
+  const [launchStatus, setLaunchStatus] = useState<'idle' | 'launching' | 'success' | 'error'>('idle');
+  const [launchReport, setLaunchReport] = useState<string | null>(null);
   
   // PMax Specific Settings Extensions
   const [budget, setBudget] = useState<number>(100);
@@ -230,6 +232,61 @@ export function CampaignManager() {
             </button>
           </div>
 
+          {/* Launch Control Plane */}
+          {agentTasks.every(t => t.status === 'complete') && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="border border-neural-gold/30 rounded-2xl bg-neural-gold/5 glass p-6 shadow-[0_0_30px_rgba(255,215,0,0.1)] flex flex-col gap-4"
+            >
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-widest text-neural-gold flex items-center gap-2">
+                  <Activity size={14} />
+                  Launch Control Plane
+                </h3>
+                <p className="text-[10px] font-mono text-neural-gold/60 mt-1">Swarm verification complete. Ready for ecosystem deployment.</p>
+              </div>
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={async () => {
+                    setIsOrchestrating(true);
+                    setLaunchStatus('launching');
+                    try {
+                      const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/pmax/launch`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                          campaignId: 'pmax-' + Date.now(),
+                          config: { budget, biddingStrategy }
+                        })
+                      });
+                      const data = await resp.json();
+                      setLaunchReport(data.report);
+                      setLaunchStatus('success');
+                    } catch (error) {
+                      console.error('Ecosystem launch failed:', error);
+                      setLaunchStatus('error');
+                    } finally {
+                      setIsOrchestrating(false);
+                    }
+                  }}
+                  disabled={isOrchestrating || launchStatus === 'success'}
+                  className="flex-1 py-4 rounded-xl bg-neural-gold text-black text-[10px] font-black uppercase tracking-widest hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <Send size={14} />
+                  {launchStatus === 'launching' ? 'Deploying...' : launchStatus === 'success' ? 'Deployed' : 'Launch to Ecosystem'}
+                </button>
+              </div>
+
+              {launchReport && (
+                 <div className="mt-2 p-3 rounded-lg bg-black/40 border border-neural-gold/20 text-[9px] font-mono text-neural-gold/80 whitespace-pre-wrap leading-relaxed">
+                    {launchReport}
+                 </div>
+              )}
+            </motion.div>
+          )}
+
         </div>
 
         {/* Right: Real-time Output / Delegation */}
@@ -292,19 +349,23 @@ export function CampaignManager() {
                         )}
                      </div>
 
-                     {task.output && (
-                       <motion.div 
-                         initial={{ opacity: 0, height: 0 }}
-                         animate={{ opacity: 1, height: 'auto' }}
-                         className="p-3 rounded-lg bg-black/40 border border-white/5 mt-2 overflow-hidden"
-                       >
-                         {task.agent === 'DA-03' && task.output.startsWith('data:image') ? (
-                            <img src={task.output} alt="Generated Asset" className="w-full rounded-md border border-white/10 opacity-80 hover:opacity-100 transition-opacity" />
-                         ) : (
-                            <p className="text-[10px] font-mono text-white/70 italic">"{task.output}"</p>
-                         )}
-                       </motion.div>
-                     )}
+                      {task.output && (
+                        <motion.div 
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className={`p-3 rounded-lg border mt-2 overflow-hidden ${
+                             task.output.includes('GENIUS SCORE') ? 'bg-neural-gold/10 border-neural-gold/30' : 'bg-black/40 border-white/5'
+                          }`}
+                        >
+                          {task.agent === 'DA-03' && task.output.startsWith('data:image') ? (
+                             <img src={task.output} alt="Generated Asset" className="w-full rounded-md border border-white/10 opacity-80 hover:opacity-100 transition-opacity" />
+                          ) : (
+                             <p className={`text-[10px] font-mono leading-relaxed ${task.output.includes('GENIUS SCORE') ? 'text-neural-gold' : 'text-white/70 italic'}`}>
+                                {task.output.includes('GENIUS SCORE') ? task.output : `"${task.output}"`}
+                             </p>
+                          )}
+                        </motion.div>
+                      )}
                   </motion.div>
                 );
               })}

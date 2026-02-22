@@ -1,8 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { db, Collections } from '../services/firestore';
 import { v4 as uuidv4 } from 'uuid';
+import { PM07Manager } from '../agents/pm07-manager';
 
 const router = Router();
+const pm07 = new PM07Manager();
 
 // PMax Complex Type Definitions mapping to Google Ads
 export interface PMaxCampaign {
@@ -172,6 +174,25 @@ router.put('/campaigns/:id', async (req: Request, res: Response) => {
     res.json({ status: 'success', id: req.params.id });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update campaign' });
+  }
+});
+
+router.post('/launch', async (req: Request, res: Response) => {
+  try {
+    const { campaignId, config } = req.body;
+    console.log(`[PMax Route] Initiating ecosystem launch for campaign: ${campaignId}`);
+    
+    // PM-07 handles the heavy lifting
+    const launchReport = await pm07.execute(`LAUNCH CAMPAIGN ${campaignId} WITH CONFIG: ${JSON.stringify(config)}`);
+    
+    res.json({
+      success: true,
+      report: launchReport,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Launch failed:', error);
+    res.status(500).json({ error: 'Ecosystem launch failed' });
   }
 });
 

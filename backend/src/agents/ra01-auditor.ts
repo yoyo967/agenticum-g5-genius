@@ -25,27 +25,36 @@ export class RA01Auditor extends BaseAgent {
     
     const vertexAI = VertexAIService.getInstance();
 
-    this.updateStatus(AgentState.WORKING, '⚖️ Ethics & Economy Senators: Checking FTC & ROI...', 50);
+    this.updateStatus(AgentState.WORKING, '⚖️ Ethics & Economy Senators: Checking FTC & ROI...', 30);
     
-    const prompt = `
+    const auditPrompt = `
       ${this.DIRECTIVES}
-      TASK: Audit the following campaign output:
+      TASK: Audit the following campaign output for compliance and brand safety:
       "${input}"
       
       REQUIREMENTS:
       1. Verify compliance with FTC Endorsement Guidelines.
       2. Check for Dark Pattern categories.
       3. Provide a clear GLOBAL VERDICT (APPROVED/REJECTED).
-      
-      OUTPUT FORMAT:
-      ## AUDIT REPORT: ALGORITHMIC SENATE VERDICT
-      ...
     `;
 
-    const auditResults = await vertexAI.generateContent(prompt);
+    const complianceAudit = await vertexAI.generateContent(auditPrompt);
+    
+    this.updateStatus(AgentState.WORKING, '🔮 Data Senators: Running Predictive Performance Scoring...', 70);
+    const performanceScore = await vertexAI.predictiveScoring(input);
 
     this.updateStatus(AgentState.DONE, 'Audit finalized. Senate decision delivered.', 100);
-    return auditResults;
+
+    return `
+## AUDIT REPORT: ALGORITHMIC SENATE VERDICT
+**STATUS**: ${complianceAudit.includes('APPROVED') ? '✅ APPROVED' : '❌ REJECTED'}
+
+### 🛡️ COMPLIANCE ANALYSIS
+${complianceAudit}
+
+### 🔮 GENIUS SCORE: ${performanceScore.score}/100
+**Reasoning**: ${performanceScore.reasoning}
+    `.trim();
   }
 }
 

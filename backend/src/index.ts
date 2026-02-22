@@ -9,6 +9,7 @@ import vaultRoutes from './routes/vault';
 import workflowRoutes from './routes/workflow';
 import settingsRoutes from './routes/settings';
 import pmaxRoutes from './routes/pmax';
+import analyticsRoutes from './routes/analytics';
 import { autopilotService } from './services/cron';
 import { join } from 'path';
 
@@ -29,6 +30,7 @@ app.use('/api/vault', vaultRoutes);
 app.use('/api/workflow', workflowRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/pmax', pmaxRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use('/vault', express.static(join(process.cwd(), 'data', 'vault')));
 
 wss.on('connection', (ws: WebSocket) => {

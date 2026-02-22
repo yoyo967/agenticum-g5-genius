@@ -1,0 +1,20 @@
+{
+  "projectId": "alphate-enterprise-g5",
+  "geminiKey": "AIzaSyB-REPLACE-IN-UI",
+  "gcsBucket": "g5-enterprise-vault-001",
+  "localFallback": "./data/vault/",
+  "localOverride": true,
+  "agentModel": "gemini-2.0-flash-exp",
+  "temperature": 70,
+  "topK": 40,
+  "tokenLimit": 8192,
+  "safetyThreshold": "BLOCK_MEDIUM_AND_ABOVE",
+  "swarms": {
+    "sn00": true,
+    "sp01": true,
+    "cc06": true,
+    "da03": true,
+    "ra01": true,
+    "pm07": true
+  }
+}
