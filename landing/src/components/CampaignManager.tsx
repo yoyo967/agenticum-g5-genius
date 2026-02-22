@@ -42,7 +42,7 @@ export function CampaignManager() {
             if (backendStatus.status === 'working') hasWorking = true;
             return {
                ...task,
-               status: backendStatus.status,
+               status: backendStatus.status as 'pending' | 'working' | 'complete',
                output: backendStatus.output
             };
          }
