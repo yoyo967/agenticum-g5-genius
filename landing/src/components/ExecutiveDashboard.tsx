@@ -46,7 +46,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: 'camp
           fetch(`${import.meta.env.VITE_API_URL}/api/analytics/stats`)
         ]);
         
-        const throughput = await throughputRes.json();
+        await throughputRes.json();
         const stats = await statsRes.json();
         
         // We could dynamically update mockData7Days here if RECHARTS supported direct state updates 

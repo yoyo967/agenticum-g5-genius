@@ -265,7 +265,7 @@ export function CampaignManager() {
                       setLaunchReport(data.report);
                       setLaunchStatus('success');
                     } catch (error) {
-                      console.error('Ecosystem launch failed:', error);
+                      console.error('Launch failed:', error);
                       setLaunchStatus('error');
                     } finally {
                       setIsOrchestrating(false);
