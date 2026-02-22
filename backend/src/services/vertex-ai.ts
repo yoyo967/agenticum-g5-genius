@@ -49,11 +49,21 @@ export class VertexAIService {
   }
 
   async generateContent(prompt: string): Promise<string> {
+    const apiKey = this.getApiKey();
     try {
       this.logger.info(`Generating content for prompt: ${prompt.substring(0, 50)}...`);
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.candidates?.[0].content.parts[0].text || '';
+      if (apiKey) {
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({
+           model: 'gemini-2.5-pro',
+           contents: prompt
+        });
+        return response.text || '';
+      } else {
+        const result = await this.model.generateContent(prompt);
+        const response = await result.response;
+        return response.candidates?.[0].content.parts[0].text || '';
+      }
     } catch (error) {
       this.logger.error('Error generating content', error as Error);
       throw error;

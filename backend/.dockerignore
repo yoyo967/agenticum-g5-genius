@@ -1,0 +1,7 @@
+node_modules
+dist
+.env
+build.log
+backend-build.log
+backend-build-2.log
+.DS_Store

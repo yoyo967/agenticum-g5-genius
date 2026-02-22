@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { WebSocket, WebSocketServer } from 'ws';
 import { createServer } from 'http';
+import { Logger } from './utils/logger';
 import { LiveApiManager } from './live-api/live-api-manager';
 import blogRoutes from './routes/blog';
 import vaultRoutes from './routes/vault';
@@ -17,10 +18,20 @@ import { join } from 'path';
 dotenv.config();
 
 const app = express();
+const logger = new Logger('System');
 const port = process.env.PORT || 8080;
 const httpServer = createServer(app);
 const wss = new WebSocketServer({ server: httpServer });
 const liveApi = new LiveApiManager();
+
+// Global Exception Handling
+process.on('uncaughtException', (err) => {
+  logger.error('CRITICAL: Uncaught Exception', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('CRITICAL: Unhandled Rejection at', reason as Error);
+});
 
 app.use(cors());
 app.use(express.json());
@@ -44,6 +55,6 @@ app.get('/health', (_req: express.Request, res: express.Response) => {
 });
 
 httpServer.listen(port, () => {
-  console.log(`GenIUS Backend listening at http://localhost:${port}`);
-  console.log(`Autopilot Active Jobs: ${autopilotService.getActiveTasks().length}`);
+  logger.info(`AGENTICUM G5 OS [GENIUS] active on port ${port}`);
+  logger.info(`Perfect Twin Archive initialized. Autopilot Jobs: ${autopilotService.getActiveTasks().length}`);
 });

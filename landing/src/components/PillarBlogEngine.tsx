@@ -4,6 +4,8 @@ import { Sparkles, Bot, Shield, Cpu, FileText, Plus, RefreshCw, ExternalLink, Ey
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadTextFile } from '../utils/export';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Article {
   id: string;
@@ -270,17 +272,36 @@ export function PillarBlogEngine() {
                     </a>
                   </div>
                 </div>
-                <div className="flex-1 p-6 overflow-y-auto">
+                <div className={`p-6 overflow-y-auto overflow-x-hidden ${isEditing ? 'flex-1 grid grid-cols-2 gap-6' : 'flex-1'}`}>
                   {isEditing ? (
-                    <textarea
-                      value={editContent}
-                      onChange={e => setEditContent(e.target.value)}
-                      className="w-full h-full bg-black/30 border border-white/10 rounded-lg p-4 font-mono text-sm text-white/70 leading-relaxed resize-none focus:outline-none focus:border-accent/30"
-                      placeholder="Write your article in Markdown..."
-                    />
+                    <>
+                      {/* Left: Editor */}
+                      <div className="flex flex-col h-[calc(100vh-250px)] lg:h-[600px] bg-black/30 border border-white/10 rounded-lg overflow-hidden relative">
+                        <div className="bg-white/5 px-4 py-2 text-[10px] font-mono uppercase text-white/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
+                          Markdown Editor (Drafting)
+                        </div>
+                        <textarea
+                          value={editContent}
+                          onChange={e => setEditContent(e.target.value)}
+                          className="flex-1 w-full p-4 bg-transparent font-mono text-xs text-white/80 leading-relaxed resize-none focus:outline-none custom-scrollbar"
+                          placeholder="Write your article in Markdown..."
+                        />
+                      </div>
+                      
+                      {/* Right: Live Preview */}
+                      <div className="flex flex-col h-[calc(100vh-250px)] lg:h-[600px] bg-black/40 border border-white/5 rounded-lg overflow-hidden relative">
+                        <div className="bg-emerald/5 px-4 py-2 text-[10px] font-mono uppercase text-emerald border-b border-emerald/10 flex items-center justify-between sticky top-0 z-10 backdrop-blur-md">
+                          <span>Live Preview</span>
+                          <span className="flex items-center gap-1 opacity-60"><Sparkles size={10} /> VE-02 Rendering Engine Active</span>
+                        </div>
+                        <div className="flex-1 p-6 overflow-y-auto prose prose-invert max-w-none text-sm break-words custom-scrollbar">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{editContent}</ReactMarkdown>
+                        </div>
+                      </div>
+                    </>
                   ) : selectedArticle.content ? (
-                    <div className="prose prose-invert max-w-none font-mono text-sm text-white/70 leading-relaxed whitespace-pre-wrap">
-                      {selectedArticle.content}
+                    <div className="prose prose-invert max-w-none font-sans text-sm text-white/80 leading-relaxed break-words pb-20">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedArticle.content}</ReactMarkdown>
                     </div>
                   ) : (
                     <div className="text-center py-12">

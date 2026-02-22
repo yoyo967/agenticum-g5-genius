@@ -5,6 +5,7 @@ import { DA03Architect } from './da03-architect';
 import { CC06Director } from './cc06-director';
 import { PM07Manager } from './pm07-manager';
 import { VE01Director } from './ve01-director';
+import { PillarGraphOrchestrator } from '../services/orchestrator';
 
 export class SN00Orchestrator extends BaseAgent {
   private readonly DIRECTIVES = `
@@ -109,6 +110,15 @@ export class SN00Orchestrator extends BaseAgent {
     // If Gemini built a plan, we can dynamically route. For Phase A, we still hardcode the dependencies 
     // but we use the dynamic descriptions from the plan to feed the agents.
     
+    // DETECT SPECIALIZED WORKFLOWS
+    if (input.toLowerCase().includes('pillar') || input.toLowerCase().includes('seo advertorial')) {
+      this.updateStatus(AgentState.WORKING, 'Routing to Specialized Pillar Graph Engine...', 15);
+      const pillarOrchestrator = PillarGraphOrchestrator.getInstance();
+      const result = await pillarOrchestrator.executePillarRun(input, { tags: ['sn-00-delegated'] });
+      this.updateStatus(AgentState.DONE, 'Specialized Pillar execution complete.', 100);
+      return `[SPECIALIZED PILLAR EXECUTION]\n\n${result.content}\n\nStatus: ${result.status}\nLive URL: ${result.liveUrl || 'Staged'}`;
+    }
+
     // Dispatch to SP-01
     this.updateStatus(AgentState.WORKING, 'Delegating Strategic Discovery (SP-01)...', 20);
     const spPlan = executionPlan?.tasks?.find((t: any) => t.agentId === 'sp-01')?.description || accumulatedContext;

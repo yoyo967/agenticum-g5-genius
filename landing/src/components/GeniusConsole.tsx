@@ -82,6 +82,15 @@ export function GeniusConsole() {
     }
   }
 
+  const requestMicrophone = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      setMicGranted(true);
+    } catch (e) {
+      console.error('Microphone permission denied', e);
+    }
+  };
+
   const connect = useCallback(() => {
     if (ws.current?.readyState === WebSocket.OPEN) return;
     

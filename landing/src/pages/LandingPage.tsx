@@ -6,7 +6,13 @@ import { MeshBackground } from '../components/NeuralSubstrate';
 import { NexusFeed } from '../components/NexusFeed';
 import { AgentShowcase } from '../components/AgentShowcase';
 import { ImagenGallery } from '../components/ImagenGallery';
-import { CTASection } from '../components/CTASection';
+import { SenateTerminalSection } from '../sections/SenateTerminalSection';
+import { ComplianceSection } from '../sections/ComplianceSection';
+import { PerfectTwinSection } from '../sections/PerfectTwinSection';
+import { ColumnaRadarSection } from '../sections/ColumnaRadarSection';
+import { DemoVideoSection } from '../sections/DemoVideoSection';
+import { PrizesSection } from '../sections/PrizesSection';
+import { FinalCTASection } from '../sections/FinalCTASection';
 
 export function LandingPage() {
   const { scrollYProgress } = useScroll();
@@ -30,8 +36,10 @@ export function LandingPage() {
     { label: 'Mission', id: 'mission' },
     { label: 'The Swarm', id: 'swarm' },
     { label: 'Tools', id: 'tools' },
-    { label: 'The Codex', id: 'codex' },
-    { label: 'Feed', id: 'feed' },
+    { label: 'Intelligence', id: 'columna-demo' },
+    { label: 'Senate', id: 'senate-demo' },
+    { label: 'Compliance', id: 'compliance-demo' },
+    { label: 'Demo', id: 'demo' },
   ];
 
   return (
@@ -330,9 +338,16 @@ export function LandingPage() {
         </section>
 
         {/* ============================================================
-           CTA — Final Conversion Block
+           PILLAR PAGE KONZEPTBUCH SECTIONS
            ============================================================ */}
-        <CTASection />
+        
+        <ColumnaRadarSection />
+        <SenateTerminalSection />
+        <PerfectTwinSection />
+        <ComplianceSection />
+        <DemoVideoSection />
+        <PrizesSection />
+        <FinalCTASection />
 
         {/* ============================================================
            FOOTER

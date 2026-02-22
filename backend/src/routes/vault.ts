@@ -23,8 +23,16 @@ router.post('/upload', upload.array('files'), async (req: Request, res: Response
       try {
         let text = '';
         if (file.mimetype === 'application/pdf') {
-          const pdfData = await pdfParse(file.buffer);
-          text = pdfData.text;
+          if (!file.buffer || file.buffer.length === 0) {
+            throw new Error('Empty PDF buffer provided.');
+          }
+          try {
+            const pdfData = await pdfParse(file.buffer);
+            text = pdfData.text || '';
+          } catch (pdfError) {
+            console.error('PDF parsing library threw a fatal error:', pdfError);
+            text = '[UNPARSABLE PDF CONTENT]';
+          }
         } else if (file.mimetype.includes('text')) {
           text = file.buffer.toString('utf-8');
         }

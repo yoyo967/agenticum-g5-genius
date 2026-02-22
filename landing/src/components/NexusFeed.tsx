@@ -22,8 +22,7 @@ export const NexusFeed = () => {
   useEffect(() => {
     const fetchFeed = async () => {
       try {
-        const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
-        const response = await fetch(`${baseUrl}/blog/feed`);
+        const response = await fetch(`${API_BASE_URL}/api/blog/feed`);
         if (!response.ok) throw new Error('Nexus Sync Failed');
         const data = await response.json();
         

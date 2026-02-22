@@ -21,9 +21,11 @@ import { OmniscientSearch } from '../components/OmniscientSearch';
 import { CampaignManager } from '../components/CampaignManager';
 import { NexusEngineV2 } from '../components/NexusEngineV2';
 import { PillarBlogEngine } from '../components/PillarBlogEngine';
-import { Palette, GitMerge, Activity, Settings, FolderHeart, Network, Search, Target, LayoutGrid, FileText } from 'lucide-react';
+import { ColumnaRadar } from '../components/os/ColumnaRadar';
+import { PerfectTwinInspector } from '../components/os/PerfectTwinInspector';
+import { Palette, GitMerge, Activity, Settings, FolderHeart, Network, Search, Target, LayoutGrid, FileText, Eye, Radar } from 'lucide-react';
 
-type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign';
+type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin';
 
 const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   dashboard: { label: 'Executive Dashboard', subtitle: 'Global Metrics' },
@@ -38,6 +40,8 @@ const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   analytics: { label: 'Swarm Analytics', subtitle: 'Agent Telemetry' },
   synergy: { label: 'Synergy Map', subtitle: 'Neural Network' },
   senate: { label: 'Security Senate', subtitle: 'RA-01 Tribunal' },
+  'columna-radar': { label: 'Columna Radar', subtitle: 'Competitive Intel' },
+  'perfect-twin': { label: 'Perfect Twin', subtitle: 'Real-time Audit' },
   settings: { label: 'Global Config', subtitle: 'System Parameters' },
 };
 
@@ -99,6 +103,8 @@ export function OSPortal() {
           <SidebarButton icon={<Users size={16} />} label="Swarm Analytics" active={activeModule === 'analytics'} onClick={() => setActiveModule('analytics')} />
           <SidebarButton icon={<Network size={16} />} label="Synergy Map" active={activeModule === 'synergy'} onClick={() => setActiveModule('synergy')} />
           <SidebarButton icon={<Shield size={16} />} label="Security Senate" active={activeModule === 'senate'} onClick={() => setActiveModule('senate')} />
+          <SidebarButton icon={<Radar size={16} />} label="Columna Radar" active={activeModule === 'columna-radar'} onClick={() => setActiveModule('columna-radar')} />
+          <SidebarButton icon={<Eye size={16} />} label="Perfect Twin" active={activeModule === 'perfect-twin'} onClick={() => setActiveModule('perfect-twin')} />
           
           <div className="w-full h-px bg-white/5 my-3 hidden md:block" />
           
@@ -172,6 +178,8 @@ export function OSPortal() {
                 {activeModule === 'workflows' && <WorkflowBuilder />}
                 {activeModule === 'analytics' && <SwarmAnalytics />}
                 {activeModule === 'senate' && <SecuritySenate />}
+                {activeModule === 'columna-radar' && <ColumnaRadar />}
+                {activeModule === 'perfect-twin' && <PerfectTwinInspector />}
                 {activeModule === 'settings' && <GlobalControlPlane />}
                 {activeModule === 'memory' && <ProjectMemory />}
                 {activeModule === 'synergy' && <SynergyMap />}

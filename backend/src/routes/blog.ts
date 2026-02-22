@@ -4,6 +4,7 @@ import { BlogFeedResponse, Pillar, Cluster } from '../types/blog';
 import { CC06Director } from '../agents/cc06-director';
 import { DA03Architect } from '../agents/da03-architect';
 import { StorageService } from '../services/storage';
+import { PillarGraphOrchestrator } from '../services/orchestrator';
 
 const router = Router();
 
@@ -121,13 +122,11 @@ router.post('/agent-dispatch', async (req: Request, res: Response) => {
          }
        }, 500);
     } else {
-       const cc06 = new CC06Director();
-       // Simulate some PM-07 scheduling buffer
-       setTimeout(() => {
-         cc06.forgeArticle(topic, type as 'pillar' | 'cluster', pillarId)
-           .then(slug => console.log(`[Neural Fabric] CC-06 finalized ${type} payload: ${slug}`))
-           .catch(err => console.error('[Neural Fabric] CC-06 failed forging article:', err));
-       }, 1000);
+       const orchestrator = PillarGraphOrchestrator.getInstance();
+       // Autonomous, grounded, audit-trailed execution
+       orchestrator.executePillarRun(topic, { type })
+         .then(result => console.log(`[Neural Fabric] Pillar Graph Run complete: ${result.runId}`))
+         .catch(err => console.error('[Neural Fabric] Pillar Graph Execution failed:', err));
     }
 
   } catch (error) {
