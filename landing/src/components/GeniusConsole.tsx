@@ -82,14 +82,6 @@ export function GeniusConsole() {
     }
   }
 
-  const requestMicrophone = async () => {
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      setMicGranted(true);
-    } catch (e) {
-      console.error('Microphone permission denied', e);
-    }
-  };
 
   const connect = useCallback(() => {
     if (ws.current?.readyState === WebSocket.OPEN) return;
@@ -122,13 +114,15 @@ export function GeniusConsole() {
         if (data.type === 'payload') {
           // Dispatch global event for SynergyMap telemetry
           window.dispatchEvent(new CustomEvent('swarm-payload', { detail: data }));
-          addLog('action', `Data Transfer: ${String(data.from).toUpperCase()} → ${String(data.to).toUpperCase()} [${data.payloadType}]`);
+          addLog('action', `Data Transfer: ${String(data.from).toUpperCase()} → ${String(data.to).toUpperCase()}`);
+          addLog('system', `Payload: [${data.payloadType}]`);
         }
 
         if (data.type === 'senate') {
           // Dispatch global event for SecuritySenate
           window.dispatchEvent(new CustomEvent('swarm-senate', { detail: data }));
           addLog('error', `SENATE VETO: RA-01 has haulted orchestration.`);
+          addLog('system', `Reason: ${data.payload}`);
         }
 
         if (data.type === 'output') {
@@ -184,7 +178,9 @@ export function GeniusConsole() {
       if (currentReconnect) {
         clearTimeout(currentReconnect);
       }
-      ws.current?.close();
+      if (ws.current) {
+        ws.current.close();
+      }
     };
   }, [connectionState, addLog]);
 
@@ -387,7 +383,7 @@ export function GeniusConsole() {
                 key={agent.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className={`p-3 rounded-lg border transition-all ${agent.state !== 'idle' ? 'bg-white/[0.03]' : 'opacity-40'}`}
+                className={`p-3 rounded-lg border transition-all ${agent.state !== 'idle' ? 'bg-white/3' : 'opacity-40'}`}
                 style={{ borderColor: agent.state !== 'idle' ? `${agent.color}33` : 'transparent' }}
               >
                 <div className="flex items-center justify-between mb-2">

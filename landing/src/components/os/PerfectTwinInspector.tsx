@@ -7,11 +7,12 @@ import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestor
 interface AuditLog {
   id: string;
   run_id: string;
-  type: 'grounding' | 'senate' | 'audit';
+  type: 'grounding' | 'senate' | 'audit' | 'lifecycle';
   agent: string;
   message: string;
   sources?: string[];
   score?: number;
+  latency?: number;
   timestamp: any;
   severity: 'info' | 'success' | 'warning' | 'error';
 }
@@ -111,7 +112,7 @@ export function PerfectTwinInspector() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-mono text-[10px] uppercase tracking-wider text-accent">{log.agent}</span>
                       <span className="font-mono text-[8px] text-white/20">
-                        {log.timestamp?.toDate ? log.timestamp.toDate().toLocaleTimeString() : 'RECENT'}
+                        {log.latency ? `${log.latency}ms` : (log.timestamp?.toDate ? log.timestamp.toDate().toLocaleTimeString() : 'RECENT')}
                       </span>
                     </div>
                     <p className="text-xs text-white/70 leading-relaxed mb-2">{log.message}</p>
@@ -143,6 +144,15 @@ export function PerfectTwinInspector() {
                         </div>
                         <span className="font-mono text-[9px] text-white/40">{log.score}% Quality</span>
                       </div>
+                    )}
+
+                    {log.type === 'senate' && (
+                      <button 
+                        onClick={() => alert(JSON.stringify(log, null, 2))}
+                        className="mt-2 text-[8px] font-mono text-white/20 hover:text-white transition-colors"
+                      >
+                        [VIEW_RAW_DATA]
+                      </button>
                     )}
                   </div>
                 </motion.div>

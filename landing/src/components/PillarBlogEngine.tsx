@@ -14,6 +14,7 @@ interface Article {
   status: 'draft' | 'optimizing' | 'published';
   timestamp: string;
   agent?: string;
+  excerpt?: string;
   content?: string;
   tag?: string;
   type?: string;
@@ -232,6 +233,35 @@ export function PillarBlogEngine() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button
+                      onClick={async () => {
+                        if (!selectedArticle) return;
+                        try {
+                          const res = await fetch(`${API_BASE_URL}/api/senate/submit`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              agent: 'Manual-Editor',
+                              title: `Audit: ${selectedArticle.slug}...`,
+                              payload: selectedArticle.content,
+                              risk: 'MEDIUM'
+                            }),
+                          });
+                          if (res.ok) {
+                            setGenerateResult('Senate Audit Request Submitted.');
+                             setSelectedArticle({ ...selectedArticle, status: 'optimizing' });
+                             // Update in local state list as well
+                             setArticles(prev => prev.map(a => a.id === selectedArticle.id ? { ...a, status: 'optimizing' } : a));
+                          }
+                        } catch (e) {
+                          console.error('Audit submission failed:', e);
+                        }
+                      }}
+                      disabled={selectedArticle.status !== 'draft'}
+                      className="btn btn-ghost btn-sm text-gold border-gold/20 hover:bg-gold/10"
+                    >
+                      🛡️ Request Audit
+                    </button>
+                    <button
                       onClick={() => {
                         if (!isEditing) {
                           setEditContent(selectedArticle.content || '');
@@ -294,13 +324,13 @@ export function PillarBlogEngine() {
                           <span>Live Preview</span>
                           <span className="flex items-center gap-1 opacity-60"><Sparkles size={10} /> VE-02 Rendering Engine Active</span>
                         </div>
-                        <div className="flex-1 p-6 overflow-y-auto prose prose-invert max-w-none text-sm break-words custom-scrollbar">
+                        <div className="flex-1 p-6 overflow-y-auto prose prose-invert max-w-none text-sm wrap-break-word custom-scrollbar">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{editContent}</ReactMarkdown>
                         </div>
                       </div>
                     </>
                   ) : selectedArticle.content ? (
-                    <div className="prose prose-invert max-w-none font-sans text-sm text-white/80 leading-relaxed break-words pb-20">
+                    <div className="prose prose-invert max-w-none font-sans text-sm text-white/80 leading-relaxed wrap-break-word pb-20">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedArticle.content}</ReactMarkdown>
                     </div>
                   ) : (

@@ -218,9 +218,9 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
           </div>
           
           <div className="flex-1 p-6 flex flex-col">
-            <div className="flex-1 min-h-[200px]">
+            <div className="flex-1 min-h-[220px]">
               {throughput.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={220}>
                   <AreaChart data={throughput} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorOutputs" x1="0" y1="0" x2="0" y2="1">

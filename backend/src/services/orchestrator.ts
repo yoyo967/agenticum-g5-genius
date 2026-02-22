@@ -36,18 +36,36 @@ export class PillarGraphOrchestrator {
 
   async executePillarRun(topic: string, config: any) {
     const runId = `run_${uuidv4().substring(0, 8)}`;
+    const startTime = Date.now();
     this.logger.info(`[${runId}] Starting Pillar Graph execution for: ${topic}`);
     const engineUrl = 'http://127.0.0.1:8000'; // Target the Python Engine (IPv4)
     
+    const logPhase = async (phase: string, msg: string, severity: 'info' | 'success' | 'warning' | 'error' = 'info') => {
+      await db.collection('perfect_twin_logs').add({
+        run_id: runId,
+        timestamp: new Date(),
+        type: 'lifecycle',
+        agent: 'SN-00 Orchestrator',
+        severity,
+        message: `[${phase}] ${msg}`,
+        latency: Date.now() - startTime
+      });
+    };
+
     try {
+      await logPhase('INIT', `Pillar Workflow initialized for: ${topic}`);
+
       // 1. COLUMNA LAYER: Counter-Strike (Competitor Intelligence)
-      this.logger.info(`[${runId}] Scanning for competitor overlap...`);
+      const step1Start = Date.now();
+      await logPhase('COLUMNA', 'Scanning competitor landscape...');
       const overlapResponse = await fetch(`${engineUrl}/engine/counter-strike?topic=${encodeURIComponent(topic)}`);
       const overlapData = await overlapResponse.json();
       const overlap = overlapData.overlap || [];
+      await logPhase('COLUMNA', `Detected ${overlap.length} competitive overlaps.`, 'success');
       
       // 2. RESEARCH LAYER: Grounding & Entity Arbiter (Python)
-      this.logger.info(`[${runId}] Activating Grounding & Entity Arbiter...`);
+      const step2Start = Date.now();
+      await logPhase('RESEARCH', 'Activating Grounding Arbiter (Gemini 1.5 Pro)...');
       const groundingReq = {
         topic: `TOPIC: ${topic}\nCOMPETITOR_INTEL: ${JSON.stringify(overlap)}`,
         context_tags: config.tags || ['pillar-engine']
@@ -59,9 +77,11 @@ export class PillarGraphOrchestrator {
         body: JSON.stringify(groundingReq)
       });
       const groundingResult = await groundingResponse.json();
+      await logPhase('RESEARCH', 'Fact-checking & Grounding complete.', 'success');
       
       // 3. QUALITY LAYER: Compliance Senate Gate (EU AI Act & WCAG)
-      this.logger.info(`[${runId}] Auditing content via Compliance Senate Gate...`);
+      const step3Start = Date.now();
+      await logPhase('COMPLIANCE', 'Initiating Algorithmic Senate Audit...');
       const auditResponse = await fetch(`${engineUrl}/senate/evaluate-advertorial`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,7 +89,8 @@ export class PillarGraphOrchestrator {
           run_id: groundingResult.run_id,
           html_content: groundingResult.content,
           company_name: config.company || 'AGENTICUM G5',
-          target_market: config.market || 'B2B SaaS'
+          target_market: config.market || 'B2B SaaS',
+          primary_keyword: topic
         })
       });
       const auditResult = await auditResponse.json();
@@ -78,7 +99,7 @@ export class PillarGraphOrchestrator {
       let liveUrl = null;
 
       if (auditResult.status === 'APPROVED') {
-        this.logger.info(`[${runId}] Senate APPROVED. Triggering Firebase Deployment...`);
+        await logPhase('DEPLOY', 'Senate APPROVED. Packaging for release...');
         // 4. DEPLOYMENT LAYER: Firebase Hosting REST API
         const publishResponse = await fetch(`${engineUrl}/publish/advertorial`, {
           method: 'POST',
@@ -94,12 +115,15 @@ export class PillarGraphOrchestrator {
         if (publishResult.status === 'success') {
           publishStatus = 'published';
           liveUrl = publishResult.live_url;
+          await logPhase('DEPLOY', `Pillar Page LIVE at ${liveUrl}`, 'success');
         } else {
           publishStatus = 'deployment_failed';
+          await logPhase('DEPLOY', 'Firebase REST API upload failed.', 'error');
         }
       } else {
          this.logger.warn(`[${runId}] Senate VETO triggered! Feedback: ${auditResult.reason}`);
          publishStatus = 'vetoed';
+         await logPhase('COMPLIANCE', `Senate VETO: ${auditResult.reason}`, 'error');
       }
 
       const finalOutcome = {
@@ -110,7 +134,15 @@ export class PillarGraphOrchestrator {
         status: publishStatus,
         liveUrl,
         agent: 'CC-06 Director (Grounded)',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        telemetry: {
+          total_latency: Date.now() - startTime,
+          steps: {
+            columna: step2Start - step1Start,
+            research: step3Start - step2Start,
+            compliance: Date.now() - step3Start
+          }
+        }
       };
 
       // PERSIST TO FIRESTORE (THE MISSING LINK)
@@ -125,7 +157,10 @@ export class PillarGraphOrchestrator {
         status: finalOutcome.status,
         liveUrl: finalOutcome.liveUrl,
         timestamp: finalOutcome.timestamp,
-        telemetry: groundingResult.sources,
+        telemetry: {
+          sources: groundingResult.sources,
+          performance: finalOutcome.telemetry
+        },
         audit_report: finalOutcome.audit
       });
 

@@ -23,6 +23,7 @@ import { NexusEngineV2 } from '../components/NexusEngineV2';
 import { PillarBlogEngine } from '../components/PillarBlogEngine';
 import { ColumnaRadar } from '../components/os/ColumnaRadar';
 import { PerfectTwinInspector } from '../components/os/PerfectTwinInspector';
+import { SystemHeartbeat } from '../components/os/SystemHeartbeat';
 import { Palette, GitMerge, Activity, Settings, FolderHeart, Network, Search, Target, LayoutGrid, FileText, Eye, Radar } from 'lucide-react';
 
 type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin';
@@ -109,6 +110,10 @@ export function OSPortal() {
           <div className="w-full h-px bg-white/5 my-3 hidden md:block" />
           
           <SidebarButton icon={<Settings size={16} />} label="Configuration" active={activeModule === 'settings'} onClick={() => setActiveModule('settings')} />
+
+          <div className="mt-auto px-3 hidden md:block">
+            <SystemHeartbeat />
+          </div>
         </nav>
 
         {/* Exit */}

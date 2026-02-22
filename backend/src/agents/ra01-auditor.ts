@@ -1,5 +1,6 @@
 import { BaseAgent, AgentState } from './base-agent';
 import { VertexAIService } from '../services/vertex-ai';
+import { db, Collections } from '../services/firestore';
 
 export class RA01Auditor extends BaseAgent {
   private readonly DIRECTIVES = `
@@ -43,11 +44,30 @@ export class RA01Auditor extends BaseAgent {
     this.updateStatus(AgentState.WORKING, '🔮 Data Senators: Running Predictive Performance Scoring...', 70);
     const performanceScore = await vertexAI.predictiveScoring(input);
 
+    const verdict = complianceAudit.includes('APPROVED') ? 'APPROVED' : 'REJECTED';
+    
+    // Phase 2: Functional Senate Docket Integration
+    try {
+      await db.collection(Collections.SENATE_DOCKET).add({
+        agent: 'RA-01',
+        type: 'CONTENT_REVIEW',
+        risk: performanceScore.score < 60 ? 'HIGH' : 'MEDIUM',
+        title: `Audit: ${input.substring(0, 40)}...`,
+        payload: `SCORE: ${performanceScore.score}/100\nREASONING: ${performanceScore.reasoning}\n\n${complianceAudit}`,
+        verdict: 'PENDING', // Initial state for human-in-the-loop
+        aiVerdict: verdict,
+        timestamp: new Date(),
+        createdAt: new Date()
+      });
+    } catch (e) {
+      console.error('Failed to submit RA-01 case to docket:', e);
+    }
+
     this.updateStatus(AgentState.DONE, 'Audit finalized. Senate decision delivered.', 100);
 
     return `
 ## AUDIT REPORT: ALGORITHMIC SENATE VERDICT
-**STATUS**: ${complianceAudit.includes('APPROVED') ? '✅ APPROVED' : '❌ REJECTED'}
+**STATUS**: ${verdict === 'APPROVED' ? '✅ APPROVED' : '❌ REJECTED'}
 
 ### 🛡️ COMPLIANCE ANALYSIS
 ${complianceAudit}

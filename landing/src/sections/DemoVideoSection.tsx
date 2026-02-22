@@ -14,27 +14,28 @@ export const DemoVideoSection: React.FC = () => (
         </p>
       </div>
 
-      {/* Video Embed Placeholder — replace VIDEO_ID with your YouTube ID */}
-      <div className="relative rounded-2xl overflow-hidden border border-indigo-900/40 shadow-2xl shadow-purple-900/20 bg-black aspect-video">
-        <iframe
-          className="w-full h-full"
-          src="https://www.youtube.com/embed/VIDEO_ID"
-          title="AGENTICUM G5 — Gemini Live Agent Challenge Demo"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-        {/* Fallback Overlay if no video is set */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0118] border border-dashed border-indigo-900/40">
-          <div className="text-6xl mb-4 text-white/20">▶</div>
-          <div className="text-white font-bold text-xl mb-2">Demo Video</div>
-          <div className="text-slate-400 text-sm font-mono">
-            Upload to YouTube → replace VIDEO_ID in DemoVideoSection.tsx
-          </div>
-          <div className="mt-4 text-xs text-slate-600 font-mono">
-            Required: &lt;4min · Real software · GCP Cloud deployment proof
+        {/* Video Embed */}
+        <div className="relative rounded-2xl overflow-hidden border border-indigo-900/40 shadow-2xl shadow-purple-900/20 bg-black aspect-video">
+          <iframe
+            className="w-full h-full"
+            src="https://www.youtube.com/embed/dQw4w9WgXcQ" // Example placeholder
+            title="AGENTICUM G5 — System Demo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+          {/* Professional Overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0118]/90 backdrop-blur-sm border border-indigo-900/40">
+            <div className="w-16 h-16 rounded-full border border-accent/30 flex items-center justify-center mb-6 animate-pulse">
+              <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                 <div className="w-2 h-2 bg-accent rounded-full" />
+              </div>
+            </div>
+            <div className="text-white font-display font-black text-2xl tracking-tighter uppercase italic mb-2">Neural Transmission Pending</div>
+            <div className="text-slate-500 text-xs font-mono uppercase tracking-widest">
+              Awaiting Swarm Synchronization // G5.LIVE
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Proof of GCP Deployment */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">

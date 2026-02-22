@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 interface Story {
   tag: string;
@@ -28,8 +29,8 @@ export const NexusFeed = () => {
         
         // Flatten pillars and clusters for the feed
         const allStories: Story[] = [
-          ...data.pillars.map((p: { slug: string; [key: string]: any }) => ({ ...p, tag: 'STRATEGY', slug: p.slug })),
-          ...data.clusters.map((c: { slug: string; [key: string]: any }) => ({ ...c, tag: 'ANALYSIS', slug: c.slug }))
+          ...data.pillars.map((p: Story) => ({ ...p, tag: 'STRATEGY', slug: p.slug })),
+          ...data.clusters.map((c: Story) => ({ ...c, tag: 'ANALYSIS', slug: c.slug }))
         ].sort((a, b) => new Date(b.timestamp as string).getTime() - new Date(a.timestamp as string).getTime());
 
         setStories(allStories);

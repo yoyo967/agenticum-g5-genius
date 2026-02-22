@@ -1,5 +1,7 @@
 import { BaseAgent, AgentState } from './base-agent';
 import { VertexAIService } from '../services/vertex-ai';
+import fs from 'fs';
+import path from 'path';
 
 export class DA03Architect extends BaseAgent {
   private readonly DIRECTIVES = `
@@ -27,8 +29,26 @@ export class DA03Architect extends BaseAgent {
     const vertexAI = VertexAIService.getInstance();
 
     this.updateStatus(AgentState.WORKING, 'Applying Bauhaus Principles & Golden Ratio...', 40);
-    const imageUrl = await vertexAI.generateImage(input);
-    this.logger.info(`Generated Image byte-stream for: ${input}`);
+    let imageUrl = await vertexAI.generateImage(input);
+    
+    // Phase 2: Functional Asset Persistence
+    if (imageUrl.startsWith('data:image')) {
+      try {
+        const base64Data = imageUrl.split(',')[1];
+        const filename = `DA03-${Date.now()}.jpg`;
+        const vaultPath = path.join(process.cwd(), 'data', 'vault');
+        
+        if (!fs.existsSync(vaultPath)) fs.mkdirSync(vaultPath, { recursive: true });
+        
+        fs.writeFileSync(path.join(vaultPath, filename), base64Data, 'base64');
+        this.logger.info(`Saved asset to vault: ${filename}`);
+        imageUrl = `http://localhost:8080/vault/${filename}`;
+      } catch (e) {
+        this.logger.error('Failed to save image to vault', e as Error);
+      }
+    }
+
+    this.logger.info(`Asset finalized for: ${input}`);
 
     this.updateStatus(AgentState.WORKING, 'Optimizing for Cognitive Load & Fitts Law...', 75);
     

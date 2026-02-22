@@ -71,4 +71,14 @@ router.get('/list', async (_req: Request, res: Response) => {
   }
 });
 
+router.get('/files', async (_req: Request, res: Response) => {
+  try {
+    const files = await storageService.listFiles();
+    res.json({ files });
+  } catch (error) {
+    console.error('Failed to list vault files:', error);
+    res.status(500).json({ error: 'Failed to list vault files.' });
+  }
+});
+
 export default router;

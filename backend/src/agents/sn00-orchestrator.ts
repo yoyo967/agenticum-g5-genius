@@ -107,10 +107,9 @@ export class SN00Orchestrator extends BaseAgent {
     let design = '';
     let auditStatus = '';
 
-    // If Gemini built a plan, we can dynamically route. For Phase A, we still hardcode the dependencies 
-    // but we use the dynamic descriptions from the plan to feed the agents.
+    // If Gemini built a plan, we can dynamically route. 
     
-    // DETECT SPECIALIZED WORKFLOWS
+    // DETECT SPECIALIZED WORKFLOWS (Pillar Graph)
     if (input.toLowerCase().includes('pillar') || input.toLowerCase().includes('seo advertorial')) {
       this.updateStatus(AgentState.WORKING, 'Routing to Specialized Pillar Graph Engine...', 15);
       const pillarOrchestrator = PillarGraphOrchestrator.getInstance();
@@ -119,24 +118,46 @@ export class SN00Orchestrator extends BaseAgent {
       return `[SPECIALIZED PILLAR EXECUTION]\n\n${result.content}\n\nStatus: ${result.status}\nLive URL: ${result.liveUrl || 'Staged'}`;
     }
 
-    // Dispatch to SP-01
+    // BROADCAST: Transition to Discovery
+    if (this.onBroadcast) {
+      this.onBroadcast({ type: 'payload', from: 'sn-00', to: 'sp-01', payloadType: 'Discovery Directive', payload: input });
+    }
+
+    // 1. Dispatch to SP-01 (STRATEGY)
     this.updateStatus(AgentState.WORKING, 'Delegating Strategic Discovery (SP-01)...', 20);
-    const spPlan = executionPlan?.tasks?.find((t: any) => t.agentId === 'sp-01')?.description || accumulatedContext;
+    const spTask = executionPlan?.tasks?.find((t: any) => t.agentId === 'sp-01');
+    const spPlan = spTask ? `${spTask.description}\nCONTEXT: ${input}` : accumulatedContext;
     strategy = await this.strategist.execute(spPlan);
     
-    // Parallel Execute CC-06 & DA-03
-    this.updateStatus(AgentState.WORKING, 'Orchestrating Creative Core (CC-06 & DA-03) in parallel...', 50);
-    const ccPlan = executionPlan?.tasks?.find((t: any) => t.agentId === 'cc-06')?.description || strategy;
-    const daPlan = executionPlan?.tasks?.find((t: any) => t.agentId === 'da-03')?.description || strategy;
-    
-    [creative, design] = await Promise.all([
-      this.director.execute(ccPlan),
-      this.architect.execute(daPlan)
-    ]);
+    if (this.onBroadcast) {
+      this.onBroadcast({ type: 'payload', from: 'sp-01', to: 'cc-06', payloadType: 'Strategic Blueprint', payload: strategy });
+      this.onBroadcast({ type: 'payload', from: 'sp-01', to: 'da-03', payloadType: 'Design Constraints', payload: strategy });
+    }
 
-    // RA-01 Oversight
+    // 2. Parallel Execute CC-06 & DA-03 (CREATIVE & DESIGN)
+    this.updateStatus(AgentState.WORKING, 'Orchestrating Creative Core (CC-06 & DA-03) in parallel...', 50);
+    const ccTask = executionPlan?.tasks?.find((t: any) => t.agentId === 'cc-06');
+    const daTask = executionPlan?.tasks?.find((t: any) => t.agentId === 'da-03');
+    
+    // Check if we should use the specialized forgeArticle for deep content
+    const isDeepContent = input.toLowerCase().includes('guide') || input.toLowerCase().includes('article') || input.toLowerCase().includes('blog');
+
+    const creativePromise = isDeepContent 
+      ? this.director.forgeArticle(input, 'pillar') 
+      : this.director.execute(ccTask ? `${ccTask.description}\nSTRATEGY: ${strategy}` : strategy);
+
+    const designPromise = this.architect.execute(daTask ? `${daTask.description}\nSTRATEGY: ${strategy}` : strategy);
+
+    [creative, design] = await Promise.all([creativePromise, designPromise]);
+
+    if (this.onBroadcast) {
+      this.onBroadcast({ type: 'payload', from: 'cc-06', to: 'ra-01', payloadType: 'Copy Draft', payload: creative });
+      this.onBroadcast({ type: 'payload', from: 'da-03', to: 'ra-01', payloadType: 'Visual Matrix', payload: design });
+    }
+
+    // 3. RA-01 Oversight (COMPLIANCE)
     this.updateStatus(AgentState.WORKING, 'Initiating Algorithmic Senate Oversight (RA-01)...', 75);
-    auditStatus = await this.auditor.execute(`${creative}\n${design}`);
+    auditStatus = await this.auditor.execute(`COPY:\n${creative}\n\nDESIGN:\n${design}`);
     
     if (auditStatus.includes('REJECTED') || auditStatus.includes('VETO')) {
       if (this.onBroadcast) {
@@ -147,11 +168,20 @@ export class SN00Orchestrator extends BaseAgent {
           payload: auditStatus
         });
       }
+    } else {
+      if (this.onBroadcast) {
+        this.onBroadcast({ type: 'payload', from: 'ra-01', to: 'pm-07', payloadType: 'Compliance Approval', payload: auditStatus });
+      }
     }
 
-    // PM-07 Persistence
+    // 4. PM-07 Persistence (MANAGEMENT)
     this.updateStatus(AgentState.WORKING, 'Syncing with Persistent Vault (PM-07)...', 90);
-    await this.manager.execute(`Original Directive: ${input}\nStrategy: ${strategy}\nCreative: [Generated]`);
+    const pmTask = executionPlan?.tasks?.find((t: any) => t.agentId === 'pm-07');
+    await this.manager.execute(pmTask ? `${pmTask.description}\nOUTCOME: ${auditStatus}` : `Original Directive: ${input}\nStrategy: ${strategy}\nCreative: [Generated]`);
+
+    if (this.onBroadcast) {
+      this.onBroadcast({ type: 'payload', from: 'pm-07', to: 'os-core', payloadType: 'Ecosystem Sync', payload: 'Persistence Layer Synchronized.' });
+    }
 
     this.updateStatus(AgentState.DONE, 'Full campaign generated and verified.', 100);
 
@@ -162,10 +192,10 @@ export class SN00Orchestrator extends BaseAgent {
 ${executionPlan ? executionPlan.reasoning : 'Standard execution pipeline engaged.'}
 
 ## 📊 Strategic Blueprint
-${strategy.substring(0, 1000)}...
+${strategy.substring(0, 800)}...
 
 ## ✍️ Content Generation
-${creative.substring(0, 1000)}...
+${creative}
 
 ## 🎨 Asset Matrix (DA-03)
 ${design}

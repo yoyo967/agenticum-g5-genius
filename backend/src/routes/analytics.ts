@@ -21,4 +21,13 @@ router.get('/stats', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/agents', async (req: Request, res: Response) => {
+  try {
+    const agents = await analyticsService.getAgentsData();
+    res.json({ agents });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch agent analytics' });
+  }
+});
+
 export default router;

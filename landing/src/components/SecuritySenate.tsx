@@ -61,7 +61,23 @@ export function SecuritySenate() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ verdict, reason: verdictReason }),
       });
+      
       if (res.ok) {
+        // If approved, find if there's a related article to publish
+        if (verdict === 'APPROVED' && selectedCase) {
+          // Extract slug from payload if possible (format: "Audit: slug...")
+          const slugMatch = selectedCase.title.match(/Audit: (.*)\.\.\./);
+          const slug = slugMatch ? slugMatch[1].trim() : null;
+          
+          if (slug) {
+            await fetch(`${API_BASE_URL}/api/blog/article/${slug}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: 'published' }),
+            });
+          }
+        }
+
         setCases(prev => prev.map(c => c.id === caseId ? { ...c, verdict, reason: verdictReason, reviewedAt: new Date().toISOString() } : c));
         setSelectedCase(null);
         setVerdictReason('');

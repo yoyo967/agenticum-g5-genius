@@ -1,9 +1,10 @@
-export type BlogStatus = 'draft' | 'published';
+export type BlogStatus = 'draft' | 'optimizing' | 'published';
 
 export interface Pillar {
   id: string;
   title: string;
   slug: string;
+  excerpt?: string;
   content: string;
   authorAgent: string; // "CC-06 Director"
   timestamp: any; // Firestore Timestamp
@@ -15,6 +16,7 @@ export interface Cluster {
   pillarId: string; // Reference to the parent pillar
   title: string;
   slug: string;
+  excerpt?: string;
   content: string;
   authorAgent: string; // "CC-06 Director"
   timestamp: any; // Firestore Timestamp

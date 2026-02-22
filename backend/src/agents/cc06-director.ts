@@ -119,10 +119,24 @@ export class CC06Director extends BaseAgent {
       ${kbContext}
 
       You are writing a comprehensive, enterprise-grade SEO ${type} article on the topic: "${topic}".
-      The article must be formatted in beautiful Markdown (using h1, h2, h3, bullet points, structured tables, and code blocks if applicable).
-      Ensure the tone is highly authoritative, bleeding-edge tech, and aligns with the AGENTICUM G5 brand.
-      If this is a "cluster" article, make it hyper-specific and actionable (500-1000 words).
-      If this is a "pillar" article, make it a broad, ultimate guide exceeding 2000+ words. Do not hallucinate filler content; use deep insights from the provided KNOWLEDGE BASE EXTRACTS to build out substantial sections.
+      The article MUST be formatted in high-fidelity Markdown. 
+      STYLE GUIDE:
+      - Use "Obsidian & Gold" technical aesthetic in your descriptions.
+      - Contrast "Neural Fabric" efficiency with "Legacy Infrastructure" latency.
+      - Tone: Technical, visionary, authoritative, and precise.
+      - Use Mermaid diagrams if explaining architectures.
+      - Use blockquotes for "Strategic Insights".
+      
+      STRUCTURE:
+      1. H1: Visionary Title
+      2. Executive Summary (Bento Box style highlights)
+      3. Deep Technical Analysis
+      4. The G5 Advantage (Directives & Execution)
+      5. Conclusion: The Autonomous Future
+      
+      If this is a "cluster" article, make it hyper-specific and actionable (800-1200 words).
+      If this is a "pillar" article, make it a broad, ultimate guide exceeding 2500+ words. 
+      Use deep insights from the provided KNOWLEDGE BASE EXTRACTS to build out substantial sections.
     `;
 
     this.updateStatus(AgentState.WORKING, 'Consulting Vertex AI (Gemini 2.0 Thinking) for generative payload...', 40);
@@ -130,6 +144,12 @@ export class CC06Director extends BaseAgent {
     try {
       const ai = VertexAIService.getInstance();
       markdownContent = await ai.generateContent(prompt);
+      
+      // Ensure we have a high-fidelity header if missing
+      if (!markdownContent.startsWith('# ')) {
+        markdownContent = `# The Definitive Guide to ${topic}\n\n${markdownContent}`;
+      }
+      
       this.updateStatus(AgentState.WORKING, 'AI generation complete. Parsing taxonomy...', 70);
     } catch (error) {
       console.error('Vertex AI failed or API Key 403 Forbidden. Yielding to Knowledge Base Fallback Engine..', error);
@@ -180,12 +200,11 @@ In the coming months, ${topic} will become a foundational necessity rather than 
       `.trim();
     }
 
-    this.updateStatus(AgentState.WORKING, 'Injecting resulting asset into Firestore database...', 90);
+    this.updateStatus(AgentState.WORKING, 'Injecting resulting asset into Firestore database (STAGED)...', 90);
 
     const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     const timestamp = new Date().toISOString(); 
-    // Note: Using ISO string here for simplicity across client/server without needing Firestore Timestamp object injection in simple types, 
-    // or we can just send it as an ISO string.
+    const excerpt = markdownContent.split('\n').find(l => l.length > 50 && !l.startsWith('#'))?.substring(0, 160) + '...';
 
     try {
       if (type === 'pillar') {
@@ -193,10 +212,11 @@ In the coming months, ${topic} will become a foundational necessity rather than 
           id: 'pillar-' + Date.now(),
           title: topic,
           slug,
+          excerpt,
           content: markdownContent,
           authorAgent: 'CC-06 Director',
           timestamp,
-          status: 'published'
+          status: 'draft' // Initial state for Phase 2: Audit Required
         };
         const docRef = db.collection(Collections.PILLARS).doc(pillarData.slug);
         await docRef.set(pillarData);
@@ -206,10 +226,11 @@ In the coming months, ${topic} will become a foundational necessity rather than 
           pillarId: pillarId || 'orphan',
           title: topic,
           slug,
+          excerpt,
           content: markdownContent,
           authorAgent: 'CC-06 Director',
           timestamp,
-          status: 'published'
+          status: 'draft' // Initial state for Phase 2: Audit Required
         };
         const docRef = db.collection(Collections.CLUSTERS).doc(clusterData.slug);
         await docRef.set(clusterData);
