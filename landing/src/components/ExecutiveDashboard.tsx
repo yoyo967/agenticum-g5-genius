@@ -45,9 +45,10 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: 'camp
           fetch(`${import.meta.env.VITE_API_URL}/api/analytics/throughput`),
           fetch(`${import.meta.env.VITE_API_URL}/api/analytics/stats`)
         ]);
-        
-        await throughputRes.json();
-        const stats = await statsRes.json();
+        const stats = await statsRes.json() as { totalOutputs: number };
+        if (stats && typeof stats.totalOutputs === 'number') {
+          setTotalOutputs(stats.totalOutputs);
+        }
         
         // We could dynamically update mockData7Days here if RECHARTS supported direct state updates 
         // for simplicity in this hackathon, we'll keep the mock array for structure but update the counts.
