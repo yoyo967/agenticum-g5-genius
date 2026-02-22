@@ -107,7 +107,7 @@ export function CreativeStudio() {
         
         const vaultAssets: CreativeAsset[] = data.files.map((f: { name: string; url: string; timestamp: string }) => ({
           id: f.name,
-          type: f.name.match(/\.(mp4|webm)$/i) ? 'video' : f.name.match(/\.(jpg|jpeg|png|gif)$/i) ? 'image' : 'copy',
+          type: (f.name.match(/\.(mp4|webm)$/i) ? 'video' : f.name.match(/\.(jpg|jpeg|png|gif)$/i) ? 'image' : 'copy') as 'video' | 'image' | 'copy',
           title: f.name,
           agent: 'DA-03',
           timestamp: f.timestamp,
