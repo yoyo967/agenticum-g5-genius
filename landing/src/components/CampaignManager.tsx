@@ -59,8 +59,8 @@ export function CampaignManager() {
       }
     };
 
-    window.addEventListener('swarm-status', handleSwarmStatus as EventListener);
-    return () => window.removeEventListener('swarm-status', handleSwarmStatus as EventListener);
+    window.addEventListener('swarm-status', handleSwarmStatus as unknown as EventListener);
+    return () => window.removeEventListener('swarm-status', handleSwarmStatus as unknown as EventListener);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentTasks]);
 

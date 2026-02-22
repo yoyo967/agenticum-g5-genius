@@ -26,9 +26,16 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: 'camp
   const [totalOutputs, setTotalOutputs] = useState(0);
 
   useEffect(() => {
-    const handleStatus = (e: Event) => setSwarmState((e as CustomEvent).detail);
+    const handleStatus = (e: Event) => {
+      const customEvent = e as CustomEvent<SwarmState>;
+      if (customEvent.detail) setSwarmState(customEvent.detail);
+    };
+    
     const handlePayload = (e: Event) => {
-      const payload = (e as CustomEvent).detail;
+      const customEvent = e as CustomEvent<{ from: string; to: string; payloadType: string }>;
+      const payload = customEvent.detail;
+      if (!payload) return;
+
       setLogs(prev => [{
         id: Date.now().toString(),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -41,18 +48,16 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: 'camp
     // Fetch real metrics
     const fetchAnalytics = async () => {
       try {
-        const [, statsRes] = await Promise.all([
+        const fetchRes = await Promise.all([
           fetch(`${import.meta.env.VITE_API_URL}/api/analytics/throughput`),
           fetch(`${import.meta.env.VITE_API_URL}/api/analytics/stats`)
         ]);
+        
+        const statsRes = fetchRes[1];
         const stats = await statsRes.json() as { totalOutputs: number };
         if (stats && typeof stats.totalOutputs === 'number') {
           setTotalOutputs(stats.totalOutputs);
         }
-        
-        // We could dynamically update mockData7Days here if RECHARTS supported direct state updates 
-        // for simplicity in this hackathon, we'll keep the mock array for structure but update the counts.
-        setTotalOutputs(stats.totalOutputs);
         // Note: Real Recharts data binding would go here in production
       } catch (e) {
          console.warn('Analytics fetch failed:', e);
