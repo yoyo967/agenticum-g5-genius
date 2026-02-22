@@ -30,7 +30,7 @@ export function CampaignManager() {
   ]);
 
   useEffect(() => {
-    const handleSwarmStatus = (e: CustomEvent<any[]>) => {
+    const handleSwarmStatus = (e: CustomEvent<{ agent: string, status: string, output?: string }[]>) => {
       const statuses = e.detail;
       let allComplete = true;
       let hasWorking = false;
