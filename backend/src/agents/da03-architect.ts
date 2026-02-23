@@ -1,5 +1,6 @@
 import { BaseAgent, AgentState } from './base-agent';
 import { VertexAIService } from '../services/vertex-ai';
+import { eventFabric } from '../services/event-fabric';
 import fs from 'fs';
 import path from 'path';
 
@@ -54,7 +55,12 @@ export class DA03Architect extends BaseAgent {
         
         fs.writeFileSync(path.join(vaultPath, filename), base64Data, 'base64');
         this.logger.info(`Saved asset to vault: ${filename}`);
-        imageUrl = `http://localhost:8080/vault/${filename}`;
+        const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
+        imageUrl = `${backendUrl}/vault/${filename}`;
+
+        // Broadcast live image to all connected frontend clients (Interleaved Output)
+        eventFabric.broadcastPayload('DA-03', 'CONSOLE', 'IMAGE_ASSET', imageUrl);
+        this.logger.info(`Live image broadcast to frontend: ${imageUrl}`);
       } catch (e) {
         this.logger.error('Failed to save image to vault', e as Error);
       }

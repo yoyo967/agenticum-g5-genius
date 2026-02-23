@@ -1,0 +1,45 @@
+
+> agenticum-g5-landingpage@0.0.0 lint
+> eslint .
+
+
+C:\Users\HP\Desktop\agenticum g5 landingpage\landing\src\components\CreativeStudio.tsx
+    3:92  error  'CheckSquare' is defined but never used            @typescript-eslint/no-unused-vars
+  171:9   error  'toggleSelect' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\HP\Desktop\agenticum g5 landingpage\landing\src\components\LivingAgents.tsx
+  38:25  error  '_i' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\HP\Desktop\agenticum g5 landingpage\landing\src\components\NexusEngineV2.tsx
+  112:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\Desktop\agenticum g5 landingpage\landing\src\components\os\ColumnaRadar.tsx
+   3:40  error  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+   3:71  error  'Trash2' is defined but never used        @typescript-eslint/no-unused-vars
+  14:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\Desktop\agenticum g5 landingpage\landing\src\components\os\PerfectTwinInspector.tsx
+  16:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  67:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\Desktop\agenticum g5 landingpage\landing\src\pages\ArticleView.tsx
+  10:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\Desktop\agenticum g5 landingpage\landing\src\pages\LandingPage.tsx
+  4:28  error  'Sparkles' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\HP\Desktop\agenticum g5 landingpage\landing\src\pages\OSPortal.tsx
+  4:3   error  'LayoutDashboard' is defined but never used  @typescript-eslint/no-unused-vars
+  4:30  error  'FolderOpen' is defined but never used       @typescript-eslint/no-unused-vars
+  4:51  error  'Share2' is defined but never used           @typescript-eslint/no-unused-vars
+  5:13  error  'Zap' is defined but never used              @typescript-eslint/no-unused-vars
+  5:52  error  'Bell' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Users\HP\Desktop\agenticum g5 landingpage\landing\src\sections\VoiceFlowSection.tsx
+   99:9   error  'currentStep' is never reassigned. Use 'const' instead  prefer-const
+   99:9   error  'currentStep' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  157:21  error  'isPending' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+Ô£û 19 problems (19 errors, 0 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

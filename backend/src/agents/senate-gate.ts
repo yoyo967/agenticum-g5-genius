@@ -50,13 +50,16 @@ export class SenateGateAgent {
       4. SEO Excellence: Is the entity density and H1/H2 structure professional?
       5. Brand Voice: Is it "Maximum Excellence" / Obsidian Style?
       6. Hallucination Check: Does every claim feel grounded?
+      7. Sustainability Node: Does the content reflect G5's commitment to energy-efficient AI orchestration?
+      8. Ethical Guardrails: No bias or unintended socio-economic exclusionary language.
       
-      OUTPUT FORMAT: JSON
+      OUTPUT FORMAT: JSON (Strict)
       {
         "score": number (0-100),
         "approved": boolean,
-        "feedback": "detailed reasoning",
-        "violations": ["list or empty"]
+        "feedback": "detailed reasoning emphasizing the G5 mission",
+        "violations": ["list or empty"],
+        "governance_tag": "string (e.g. EU-AI-ACT-COMPLIANT)"
       }
     `;
 

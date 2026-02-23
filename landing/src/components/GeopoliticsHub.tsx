@@ -99,7 +99,7 @@ export function GeopoliticsHub() {
 
         {/* Global Node Map (Simulated) */}
         <div className="lg:col-span-3 space-y-6">
-          <div className="glass-card p-1 border-white/5 aspect-16/8 relative overflow-hidden bg-black/40">
+          <div className="glass holo-card p-1 border-white/5 aspect-16/8 relative overflow-hidden bg-black/40">
             {/* Simple simulated world map visualization */}
             <div className="absolute inset-0 opacity-10 pointer-events-none">
                 <div className="w-full h-full bg-[radial-gradient(circle_at_center,var(--color-accent)_0%,transparent_70%)] opacity-20" />
@@ -126,7 +126,7 @@ export function GeopoliticsHub() {
               <div className="relative flex-1">
                  {/* Europe */}
                  <div className="absolute top-[30%] left-[45%] group cursor-pointer">
-                    <div className="w-2 h-2 rounded-full bg-accent animate-ping absolute" />
+                    <div className="w-2 h-2 rounded-full bg-accent absolute" style={{ animation: 'neuralPulse 2s infinite' }} />
                     <div className="w-2 h-2 rounded-full bg-accent relative" />
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/80 border border-accent/30 p-2 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         <p className="text-[10px] font-bold text-accent uppercase">EU-CENTRAL-1</p>

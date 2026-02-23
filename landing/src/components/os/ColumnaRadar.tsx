@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Zap, Activity, Globe, ChevronRight, BarChart3, Plus, Trash2, Cpu } from 'lucide-react';
+import { Target, Zap, Activity, Globe, BarChart3, Plus, Cpu } from 'lucide-react';
 import { db } from '../../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 
@@ -11,7 +11,7 @@ interface CompetitorIntel {
   threat_score: number;
   skeleton?: string[];
   status: 'monitoring' | 'decompiling' | 'archived';
-  timestamp: any;
+  timestamp: unknown;
 }
 
 export function ColumnaRadar() {
@@ -123,7 +123,7 @@ export function ColumnaRadar() {
 
         {/* Right: Intel Detail / Skeleton View */}
         <div className="flex-1 glass border-white/5 rounded-2xl flex flex-col overflow-hidden">
-          <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+          <div className="p-4 border-b border-white/5 bg-white/2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap size={14} className="text-gold" />
               <span className="font-mono text-[10px] uppercase tracking-widest">Decompiled Data Structure</span>

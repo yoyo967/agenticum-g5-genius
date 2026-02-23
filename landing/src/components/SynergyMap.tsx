@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Share2, RefreshCw } from 'lucide-react';
+import { Activity, Share2, RefreshCw, Palette } from 'lucide-react';
 import type { SwarmState } from '../types';
 import { ExportMenu } from './ui';
 import { downloadSVG, downloadPNG } from '../utils/export';
@@ -37,6 +37,7 @@ export function SynergyMap() {
   const [flows, setFlows] = useState<DataFlow[]>([]);
   const [hoveredAgent, setHoveredAgent] = useState<string | null>(null);
   const [totalFlows, setTotalFlows] = useState(0);
+  const [liveImages, setLiveImages] = useState<{ url: string; timestamp: string }[]>([]);
   const svgRef = useRef<SVGSVGElement>(null);
 
   // Listen for live swarm events
@@ -69,6 +70,21 @@ export function SynergyMap() {
         };
         setFlows(prev => [newFlow, ...prev].slice(0, 20));
         setTotalFlows(prev => prev + 1);
+      }
+    };
+    window.addEventListener('swarm-payload', handler);
+    return () => window.removeEventListener('swarm-payload', handler);
+  }, []);
+
+  // Listen for live image assets from DA-03
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.payloadType === 'IMAGE_ASSET' && detail?.payload) {
+        setLiveImages(prev => [
+          { url: detail.payload, timestamp: new Date().toLocaleTimeString() },
+          ...prev
+        ].slice(0, 6));
       }
     };
     window.addEventListener('swarm-payload', handler);
@@ -242,6 +258,43 @@ export function SynergyMap() {
           </div>
         ))}
       </div>
+
+      {/* Live Asset Gallery — DA-03 Interleaved Output */}
+      <AnimatePresence>
+        {liveImages.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card p-5"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Palette size={16} className="text-[#FFD700]" />
+              <h3 className="font-display text-lg font-bold uppercase tracking-tight">Live Visual Output</h3>
+              <span className="badge badge-processing text-[8px] ml-auto">DA-03 · Imagen 3</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {liveImages.map((img, i) => (
+                <motion.div
+                  key={img.url}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="relative rounded-xl overflow-hidden border border-[#FFD700]/20 group"
+                >
+                  <img
+                    src={img.url}
+                    alt={`DA-03 asset ${i + 1}`}
+                    className="w-full h-40 object-cover"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="font-mono text-[8px] text-[#FFD700]/80 uppercase">{img.timestamp}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

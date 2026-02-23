@@ -7,6 +7,7 @@ import { API_BASE_URL } from '../config';
 export function ArticleView() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [article, setArticle] = useState<any>(null);
   const [error, setError] = useState(false);
 

@@ -35,7 +35,7 @@ export const NexusFeed = () => {
 
         setStories(allStories);
       } catch (err) {
-        console.error('Failed to sync Nexus Feed', err);
+        console.error(`[Neural Fabric] Nexus Feed Sync Failed: Backend at ${API_BASE_URL} may be offline.`, err);
         setStories([]); // Empty state — no mock fallback
       } finally {
         setLoading(false);

@@ -20,6 +20,7 @@ export function AssetVault() {
   const [uploading, setUploading] = useState(false);
   const [category, setCategory] = useState<'all' | 'images' | 'documents' | 'videos' | 'other'>('all');
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
+  const [isOrchestrating, setIsOrchestrating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchFiles = async () => {
@@ -90,8 +91,17 @@ export function AssetVault() {
   const handleBatchZIP = async () => {
     const selected = files.filter(f => selectedNames.has(f.name));
     if (selected.length === 0) return;
-    const zipFiles = selected.map(f => ({ name: f.name, content: f.url }));
-    await downloadZIP(zipFiles, 'G5_Vault_Assets');
+    
+    setIsOrchestrating(true); // Reuse a local state or use loading
+    try {
+      const zipFiles = selected.map(f => ({ 
+        name: f.name, 
+        content: f.url 
+      }));
+      await downloadZIP(zipFiles, `G5_Vault_Export_${Date.now()}`);
+    } finally {
+      setIsOrchestrating(false);
+    }
   };
 
   return (
@@ -114,7 +124,7 @@ export function AssetVault() {
         <div className="flex items-center gap-3">
           <span className="font-mono text-xs text-white/20">{filteredFiles.length}/{files.length} files</span>
           <button onClick={fetchFiles} className="btn btn-ghost btn-sm">
-            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={12} className={loading || isOrchestrating ? 'animate-spin' : ''} />
           </button>
           <ExportMenu options={[
             { label: 'JSON Manifest', format: 'JSON', onClick: () => downloadJSON({ files: filteredFiles.map(f => ({ name: f.name, url: f.url, timestamp: f.timestamp, size: f.size })) }, 'G5_Vault_Manifest') },
@@ -132,7 +142,7 @@ export function AssetVault() {
           <button onClick={() => fileInputRef.current?.click()} className="btn btn-primary">
             <UploadCloud size={14} /> Upload Files
           </button>
-          <input ref={fileInputRef} type="file" multiple hidden onChange={e => e.target.files && uploadFiles(e.target.files)} />
+          <input ref={fileInputRef} type="file" multiple hidden onChange={_e => _e.target.files && uploadFiles(_e.target.files)} />
         </div>
       </div>
 
@@ -162,9 +172,10 @@ export function AssetVault() {
           </AnimatePresence>
           
           {uploading && (
-            <div className="card flex items-center gap-3">
-              <RefreshCw size={14} className="animate-spin text-accent" />
-              <span className="font-mono text-xs text-accent">Uploading and ingesting files...</span>
+            <div className="card holo-card flex items-center gap-3 overflow-hidden relative">
+              <div className="absolute inset-0 bg-accent/5" style={{ animation: 'dataStream 2s linear infinite' }} />
+              <RefreshCw size={14} className="animate-spin text-accent relative z-10" />
+              <span className="font-mono text-xs text-accent relative z-10">Uploading and ingesting files...</span>
             </div>
           )}
 
@@ -183,7 +194,7 @@ export function AssetVault() {
               {filteredFiles.map(file => (
                 <motion.div key={file.name}
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                  className={`card flex items-center gap-3 cursor-pointer group hover:border-white/20 ${selectedFile?.name === file.name ? 'border-accent/30' : ''} ${selectedNames.has(file.name) ? 'border-accent/20 bg-accent/5' : ''}`}
+                  className={`card holo-card flex items-center gap-3 cursor-pointer group hover:border-white/20 ${selectedFile?.name === file.name ? 'border-accent/30' : ''} ${selectedNames.has(file.name) ? 'border-accent/20 bg-accent/5' : ''}`}
                   onClick={() => setSelectedFile(file)}>
                   <button onClick={e => { e.stopPropagation(); toggleFileSelect(file.name); }}
                     className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-all ${selectedNames.has(file.name) ? 'bg-accent text-midnight' : 'border border-white/10 opacity-0 group-hover:opacity-100'}`}>

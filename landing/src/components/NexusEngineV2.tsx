@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Workflow, Play, CheckCircle2, Cpu, Zap, Film, Palette, Shield, Bot, ChevronRight } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
-type AgentId = 'SN-00' | 'SP-01' | 'CC-06' | 'DA-03' | 'RA-01' | 'PM-07';
+type AgentId = 'SN-00' | 'SP-01' | 'CC-06' | 'DA-03' | 'RA-01' | 'PM-07' | 'trigger';
 
 interface WorkflowTemplate {
   name: string;
@@ -95,9 +95,9 @@ export function NexusEngineV2() {
           })).concat([{
             id: 'trigger-0',
             type: 'triggerNode',
-            data: { title: 'Manual Trigger', config: activeWorkflow.desc }
+            data: { agentId: 'trigger', title: 'trigger' as AgentId, config: activeWorkflow.desc }
           }]),
-          edges: activeWorkflow.agents.map((id, i) => ({
+          edges: activeWorkflow.agents.map((_, i) => ({
             id: `edge-${i}`,
             source: i === 0 ? 'trigger-0' : `node-${i-1}`,
             target: `node-${i}`
@@ -109,8 +109,9 @@ export function NexusEngineV2() {
       
       setToast(`${activeWorkflow.name} — Dispatched to Swarm Cluster.`);
       
-    } catch (err: any) {
-      setToast(`Error: ${err.message}`);
+    } catch (err) {
+      const error = err as Error;
+      setToast(`Error: ${error.message}`);
       setIsRunning(false);
     }
 

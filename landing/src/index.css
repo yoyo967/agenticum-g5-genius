@@ -15,6 +15,7 @@
   --color-midnight-900: #050010;
   --color-void: #050510;
   --color-abyss: #0a0118;
+  --color-obsidian: #050510;
 
   /* === Surface System (biohack.berlin exact) === */
   --color-surface: rgba(25, 20, 85, 0.4);
@@ -606,8 +607,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes dataStream {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  50%  { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+@keyframes neuralPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4); }
+  70%  { box-shadow: 0 0 0 15px rgba(0, 229, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+}
+
+@keyframes scanline {
   0%   { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
+  100% { transform: translateY(1000%); }
 }
 
 .animate-in {

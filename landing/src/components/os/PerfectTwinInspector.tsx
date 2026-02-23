@@ -13,7 +13,7 @@ interface AuditLog {
   sources?: string[];
   score?: number;
   latency?: number;
-  timestamp: any;
+  timestamp: unknown;
   severity: 'info' | 'success' | 'warning' | 'error';
 }
 
@@ -64,7 +64,7 @@ export function PerfectTwinInspector() {
           {['live', 'grounding', 'senate'].map(tab => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab as any)}
+              onClick={() => setActiveTab(tab as 'live' | 'grounding' | 'senate')}
               className={`px-3 py-1 rounded-md font-mono text-[9px] uppercase transition-colors ${activeTab === tab ? 'bg-accent text-void' : 'text-white/40 hover:text-white'}`}
             >
               {tab}
@@ -112,7 +112,7 @@ export function PerfectTwinInspector() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-mono text-[10px] uppercase tracking-wider text-accent">{log.agent}</span>
                       <span className="font-mono text-[8px] text-white/20">
-                        {log.latency ? `${log.latency}ms` : (log.timestamp?.toDate ? log.timestamp.toDate().toLocaleTimeString() : 'RECENT')}
+                        {log.latency ? `${log.latency}ms` : ((log.timestamp as any)?.toDate ? (log.timestamp as any).toDate().toLocaleTimeString() : 'RECENT')}
                       </span>
                     </div>
                     <p className="text-xs text-white/70 leading-relaxed mb-2">{log.message}</p>

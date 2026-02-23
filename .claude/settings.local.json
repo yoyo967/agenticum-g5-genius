@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(GCLOUD=\"/c/Program Files \\(x86\\)/Google/Cloud SDK/google-cloud-sdk/bin/gcloud\")",
+      "Bash(\"$GCLOUD\" version)",
+      "Bash(\"$NPM\" run build)",
+      "Read(//c/Users/HP/AppData/Local/Programs/**)",
+      "Read(//c/Users/HP/**)"
+    ]
+  }
+}

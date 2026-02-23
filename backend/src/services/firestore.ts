@@ -2,7 +2,7 @@ import { Firestore } from '@google-cloud/firestore';
 import path from 'path';
 import fs from 'fs';
 
-let projectId = 'online-marketing-manager';
+let projectId = process.env.GOOGLE_CLOUD_PROJECT || 'online-marketing-manager';
 
 try {
   const settingsPath = path.join(process.cwd(), 'data', 'settings.json');
@@ -16,7 +16,10 @@ try {
   console.error('Failed to read Firestore project ID from settings', e);
 }
 
-export const db = new Firestore({ projectId });
+export const db = new Firestore({ 
+  projectId,
+  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS 
+});
 
 export const Collections = {
   PILLARS: 'pillars',

@@ -10,6 +10,7 @@ import { distributionService } from '../services/distribution';
 import { autopilotService } from '../services/cron';
 import { approvalWorkflow } from '../services/approval-workflow';
 import { cinematicService } from '../services/cinematic-service';
+import { eventFabric } from '../services/event-fabric';
 
 const router = Router();
 
@@ -83,7 +84,13 @@ router.post('/agent-dispatch', async (req: Request, res: Response) => {
     if (type === 'image' || type === 'video') {
        const da03 = new DA03Architect();
        da03.execute(topic)
-         .then(result => console.log(`[Neural Fabric] DA-03 Asset Generation complete.`))
+         .then(result => {
+           console.log(`[Neural Fabric] DA-03 Asset Generation complete.`);
+           eventFabric.broadcast({ 
+             type: 'swarm-status', 
+             data: { id: 'DA-03', state: 'idle', lastStatus: result } 
+           });
+         })
          .catch(err => console.error('[Neural Fabric] DA-03 failed:', err));
     } else {
        const orchestrator = PillarGraphOrchestrator.getInstance();
@@ -223,6 +230,26 @@ router.post('/cinematic/forge', async (req: Request, res: Response) => {
     res.json(cinematic);
   } catch (error) {
     res.status(500).json({ error: 'Cinematic Forge failed.' });
+  }
+});
+
+router.post('/cinematic/generate-visual', async (req: Request, res: Response) => {
+  try {
+    const { assetId, shotNumber } = req.body;
+    const imageUrl = await cinematicService.generateShotVisual(assetId, shotNumber);
+    res.json({ imageUrl });
+  } catch (error) {
+    res.status(500).json({ error: 'Visual generation failed.' });
+  }
+});
+
+router.post('/cinematic/synthesize-video', async (req: Request, res: Response) => {
+  try {
+    const { assetId } = req.body;
+    const result = await cinematicService.synthesizeVideo(assetId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Video synthesis failed.' });
   }
 });
 

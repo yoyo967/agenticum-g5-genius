@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  LayoutDashboard, Terminal, FolderOpen, Palette, Share2, 
-  Settings, Zap, Shield, Eye, Film, Globe, Search, Bell, User,
+  Terminal, Palette, 
+  Settings, Shield, Eye, Film, Globe, Search, 
   ChevronLeft, Command, Database, Users, GitMerge, Activity, 
   FolderHeart, Network, Target, LayoutGrid, FileText, Radar
 } from 'lucide-react';

@@ -35,7 +35,7 @@ export const LivingAgents = () => {
   return (
     <div className="fixed bottom-10 left-10 z-50 w-80 pointer-events-none">
       <AnimatePresence>
-        {logs.map((log, _i) => {
+        {logs.map((log) => {
           const agent = AGENTS.find(a => a.id === log.agent);
           const Icon = agent?.icon || Bot;
           

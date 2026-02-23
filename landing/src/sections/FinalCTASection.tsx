@@ -1,43 +1,69 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Mic2, Terminal, ArrowRight, Sparkles } from 'lucide-react';
 
 export const FinalCTASection: React.FC = () => {
   const navigate = useNavigate();
   
   return (
-    <section id="final-cta" className="py-40 px-6 bg-[#030009] relative overflow-hidden">
-      {/* Glow Background */}
+    <section id="final-cta" className="py-60 px-6 border-t border-white/5 relative overflow-hidden">
+      {/* Dynamic Background Elements */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-3xl" />
-        <div className="w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-3xl" />
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.1, 0.05] }}
+          transition={{ repeat: Infinity, duration: 8 }}
+          className="w-[800px] h-[800px] bg-accent/20 rounded-full blur-[150px]" 
+        />
+        <div className="absolute top-0 left-0 w-full h-full opacity-10"
+          style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       </div>
 
-      <div className="relative max-w-4xl mx-auto text-center">
-        <span className="text-xs uppercase tracking-widest text-cyan-400 font-mono">Maximum Excellence</span>
-        <h2 className="text-6xl md:text-7xl font-black text-white mt-6 leading-none uppercase">
-          INITIALIZE<br />
-          <span className="text-cyan-400">THE FUTURE.</span>
-        </h2>
-        <p className="text-slate-400 mt-8 text-lg font-mono max-w-2xl mx-auto leading-relaxed">
-          Five specialized AI agents. One voice command. Autonomous publishing.
-          EU-first compliance. Perfect Twin audit trail.
-          This is not a tool. This is an organism.
-        </p>
+      <div className="relative max-w-5xl mx-auto text-center z-10">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+          className="flex justify-center mb-10">
+          <div className="px-5 py-2 rounded-full border border-accent/20 bg-accent/5 flex items-center gap-3">
+            <Sparkles size={14} className="text-accent" />
+            <span className="font-mono text-[10px] font-black uppercase tracking-[0.3em] text-accent">Maximum Excellence</span>
+          </div>
+        </motion.div>
 
-        <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
+        <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="font-display font-black uppercase tracking-tight leading-[0.85] mb-8"
+          style={{ fontSize: 'clamp(48px, 9vw, 130px)' }}>
+          INITIALIZE<br />
+          <span className="text-accent">THE FUTURE.</span>
+        </motion.h2>
+
+        <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
+          className="text-white/40 mb-14 text-lg md:text-xl font-mono max-w-2xl mx-auto leading-relaxed">
+          Fünf spezialisierte Agenten. Ein Sprachbefehl. Autonome Synergie.
+          EU-Compliance-by-Design. Perfect Twin Audit Ledger.<br />
+          <span className="text-white/60">Dies ist kein Tool. Dies ist Agenticum G5.</span>
+        </motion.p>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.5 }}
+          className="flex flex-col sm:flex-row gap-6 justify-center items-center">
           <button
-            onClick={() => navigate('/os?module=campaign')}
-            className="bg-cyan-500 hover:bg-cyan-400 text-black font-black px-10 py-5 rounded-xl text-lg transition-all shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40"
+            onClick={() => navigate('/os')}
+            className="btn-primary flex items-center gap-3 px-10 py-5 text-lg shadow-[0_0_50px_rgba(0,229,255,0.4)] hover:shadow-[0_0_70px_rgba(0,229,255,0.6)]"
           >
-            Initialize Swarm →
+            <Mic2 size={20} /> Swarm Initialisieren <ArrowRight size={20} />
           </button>
           <button
             onClick={() => navigate('/os')}
-            className="bg-white/5 hover:bg-white/10 text-white font-bold px-10 py-5 rounded-xl text-lg transition-all border border-white/10"
+            className="btn-outline flex items-center gap-3 px-10 py-5 text-lg border-white/20! hover:border-accent/50! group"
           >
-            Enter OS Portal
+            <Terminal size={20} className="group-hover:text-accent transition-colors" /> OS Portal Betreten
           </button>
-        </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.8 }}
+          className="mt-20 flex flex-wrap justify-center gap-8 opacity-20 transition-opacity hover:opacity-40">
+          {['G5-REVISION-00009', 'WEBSOCKET-FABRIC-LIVE', 'VAULT-PERSISTENCE-ON', 'SENATE-ACTIVE'].map(s => (
+            <span key={s} className="font-mono text-[9px] font-black tracking-widest uppercase">{s}</span>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

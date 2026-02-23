@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Palette, Type, Image as ImageIcon, Download, RefreshCw, X, Sparkles, Cpu, Upload, CheckSquare, Film } from 'lucide-react';
+import { Palette, Type, Image as ImageIcon, Download, RefreshCw, X, Sparkles, Cpu, Upload, Film } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
-import { convertImageFormat, downloadZIP } from '../utils/export';
+import { convertImageFormat } from '../utils/export';
 
 interface CreativeAsset {
   id: string;
@@ -23,7 +23,7 @@ export function CreativeStudio() {
   const [selectedAsset, setSelectedAsset] = useState<CreativeAsset | null>(null);
 
   // Generation
-  const [generatingType, setGeneratingType] = useState<'image' | 'copy' | null>(null);
+  const [generatingType, setGeneratingType] = useState<'image' | 'copy' | 'video' | null>(null);
   const [mediaPrompt, setMediaPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [generationResult, setGenerationResult] = useState<string | null>(null);
@@ -62,6 +62,34 @@ export function CreativeStudio() {
 
   useEffect(() => { fetchAssets(); }, []);
 
+  // Listen for swarm status updates
+  useEffect(() => {
+    const handleSwarmStatus = (e: Event) => {
+      const customEvent = e as CustomEvent<{ id: string; state: string; progress: number; lastStatus: string; payload?: Record<string, unknown> }>;
+      const agentUpdate = customEvent.detail;
+      if (!agentUpdate || !agentUpdate.id) return;
+
+      if (agentUpdate.state === 'idle' && agentUpdate.lastStatus) {
+        // If it's a new asset, add it to the list
+        const isImage = agentUpdate.lastStatus.startsWith('data:image') || agentUpdate.lastStatus.match(/\.(jpg|jpeg|png|webp)$/i);
+        const newAsset: CreativeAsset = {
+          id: `gen-${Date.now()}`,
+          type: isImage ? 'image' : 'copy',
+          title: `AI Generated ${isImage ? 'Visual' : 'Copy'}`,
+          agent: agentUpdate.id,
+          timestamp: new Date().toISOString(),
+          content: agentUpdate.lastStatus,
+        };
+        setAssets(prev => [newAsset, ...prev]);
+        setGenerationResult(null);
+        setIsProcessing(false);
+      }
+    };
+
+    window.addEventListener('swarm-status', handleSwarmStatus);
+    return () => window.removeEventListener('swarm-status', handleSwarmStatus);
+  }, []);
+
   // Generate image/copy via DA-03/CC-06
   const handleGenerate = async () => {
     if (!mediaPrompt.trim()) return;
@@ -78,12 +106,44 @@ export function CreativeStudio() {
       });
       if (res.ok) {
         const data = await res.json();
-        setGenerationResult(data.message || 'Agent dispatched.');
+        setGenerationResult(data.message || 'Agent dispatched. Processing...');
         setMediaPrompt('');
-        setTimeout(fetchAssets, 5000); // Refresh after agent finishes
       }
     } catch {
       setGenerationResult('Failed to dispatch. Is the backend running?');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSynthesizeVideo = async (topic: string) => {
+    setIsProcessing(true);
+    setGenerationResult('Initiating Veo-X Cinematic Production...');
+    try {
+      // Step 1: Forge Storyboard
+      const forgeRes = await fetch(`${API_BASE_URL}/api/blog/cinematic/forge`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic })
+      });
+      
+      if (forgeRes.ok) {
+        const asset = await forgeRes.json();
+        // Step 2: Request Video Synthesis
+        const synthRes = await fetch(`${API_BASE_URL}/api/blog/cinematic/synthesize-video`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assetId: asset.id })
+        });
+        
+        if (synthRes.ok) {
+          setGenerationResult('Video Synthesis Complete. Check the Vault.');
+          setMediaPrompt('');
+          fetchAssets();
+        }
+      }
+    } catch {
+      setGenerationResult('Cinematic production failed.');
     } finally {
       setIsProcessing(false);
     }
@@ -101,21 +161,22 @@ export function CreativeStudio() {
       if (res.ok) {
         fetchAssets();
       }
-    } catch (e) {
-      console.warn('[CreativeStudio] Upload failed:', e);
+    } catch {
+      console.warn('[CreativeStudio] Upload failed');
     }
   };
 
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const toggleSelect = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  /* 
+  const toggleSelect = (id: string, _e: React.MouseEvent) => {
+    _e.stopPropagation();
     setSelectedIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   };
+  */
 
   const handleDownload = async (url: string, title: string, format: string = 'jpg') => {
     const safeName = title.replace(/\s+/g, '_');
@@ -135,15 +196,7 @@ export function CreativeStudio() {
     document.body.removeChild(a);
   };
 
-  const handleBatchZIP = async () => {
-    const selected = assets.filter(a => selectedIds.has(a.id));
-    if (selected.length === 0) return;
-    const files: { name: string; content: string | Blob }[] = selected.map(a => ({
-      name: a.type === 'image' ? `${a.title}.jpg` : `${a.title}.txt`,
-      content: a.content,
-    }));
-    await downloadZIP(files, 'G5_Creative_Assets');
-  };
+
 
   return (
     <div className="h-full flex flex-col gap-5 overflow-hidden">
@@ -162,24 +215,19 @@ export function CreativeStudio() {
         <div className="flex items-center gap-3">
           {/* Tab Filters */}
           <div className="flex bg-white/5 rounded-lg p-1 gap-1">
-            {(['all', 'image', 'copy'] as TabFilter[]).map(tab => (
+            {(['all', 'image', 'copy', 'video'] as TabFilter[]).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-3 py-1.5 rounded-md font-mono text-[10px] uppercase tracking-wider transition-colors ${activeTab === tab ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}>
-                {tab === 'all' ? 'All' : tab === 'image' ? 'Images' : 'Copy'}
+                {tab === 'all' ? 'All' : tab === 'image' ? 'Images' : tab === 'video' ? 'Videos' : 'Copy'}
               </button>
             ))}
           </div>
           <button onClick={fetchAssets} className="btn btn-ghost btn-sm">
-            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={12} className={loading || isProcessing ? 'animate-spin' : ''} />
           </button>
           <button onClick={() => fileInputRef.current?.click()} className="btn btn-ghost btn-sm">
             <Upload size={12} /> Upload
           </button>
-          {selectedIds.size > 0 && (
-            <button onClick={handleBatchZIP} className="btn btn-ghost btn-sm text-accent">
-              <Download size={12} /> ZIP ({selectedIds.size})
-            </button>
-          )}
           <input ref={fileInputRef} type="file" multiple hidden onChange={e => e.target.files && handleUpload(e.target.files)} />
         </div>
       </div>
@@ -197,8 +245,8 @@ export function CreativeStudio() {
             <button onClick={() => setGeneratingType('copy')} className="btn btn-ghost gap-2">
               <Type size={14} className="text-emerald" /> Generate Copy (CC-06)
             </button>
-            <button onClick={() => {}} className="btn btn-ghost gap-2 border-magenta/20 col-span-2">
-              <Film size={14} className="text-magenta" /> Create Cinematic Storyboard (Veo)
+            <button onClick={() => setGeneratingType('video')} className="btn btn-ghost gap-2 border-magenta/20 col-span-2">
+              <Film size={14} className="text-magenta" /> Create Cinematic Storyboard (Veo-X)
             </button>
           </div>
 
@@ -237,13 +285,18 @@ export function CreativeStudio() {
                         <ExportMenu label="" options={[
                           { label: 'JPG', format: 'JPG', onClick: () => handleDownload(asset.content, asset.title, 'jpg') },
                           { label: 'PNG', format: 'PNG', onClick: () => handleDownload(asset.content, asset.title, 'png') },
-                          { label: 'WebP', format: 'WebP', onClick: () => handleDownload(asset.content, asset.title, 'webp') },
                         ]} />
                       </div>
-                      <button onClick={e => toggleSelect(asset.id, e)}
-                        className={`absolute top-2 left-2 w-5 h-5 rounded flex items-center justify-center transition-all ${selectedIds.has(asset.id) ? 'bg-accent text-midnight' : 'bg-black/40 text-white/30 opacity-0 group-hover:opacity-100'}`}>
-                        <CheckSquare size={10} />
-                      </button>
+                    </div>
+                  ) : asset.type === 'video' ? (
+                    <div className="relative aspect-4/3 -m-4 mb-3 overflow-hidden rounded-t-lg bg-black/40 flex flex-col items-center justify-center p-4">
+                       <Film size={24} className="text-magenta mb-2" />
+                       <p className="font-mono text-[8px] text-white/50 text-center uppercase">Cinematic Synthesis Complete</p>
+                       <div className="absolute bottom-2 right-2">
+                        <a href={asset.content} download className="btn btn-ghost btn-xs text-white/40 hover:text-white">
+                          <Download size={10} />
+                        </a>
+                      </div>
                     </div>
                   ) : (
                     <div className="p-3 bg-white/2 rounded-lg -m-1 mb-2 max-h-32 overflow-hidden">
@@ -274,8 +327,8 @@ export function CreativeStudio() {
                 <>
                   <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
                     <h3 className="font-display text-sm uppercase flex items-center gap-2">
-                      {generatingType === 'image' ? <ImageIcon size={14} className="text-purple-400" /> : <Type size={14} className="text-emerald" />}
-                      {generatingType === 'image' ? 'Imagen 3 Generator' : 'CC-06 Copywriter'}
+                      {generatingType === 'image' ? <ImageIcon size={14} className="text-purple-400" /> : generatingType === 'video' ? <Film size={14} className="text-magenta" /> : <Type size={14} className="text-emerald" />}
+                      {generatingType === 'image' ? 'Imagen 3 Generator' : generatingType === 'video' ? 'Veo-X Cinematic Production' : 'CC-06 Copywriter'}
                     </h3>
                     <button onClick={() => { setGeneratingType(null); setGenerationResult(null); }} className="text-white/30 hover:text-white">
                       <X size={16} />
@@ -289,11 +342,13 @@ export function CreativeStudio() {
                       <textarea value={mediaPrompt} onChange={e => setMediaPrompt(e.target.value)} className="textarea h-28"
                         placeholder={generatingType === 'image' 
                           ? 'e.g. Futuristic cyberpunk office with neural networks visualized as glowing blue pathways, dark atmosphere, high detail'
+                          : generatingType === 'video'
+                          ? 'e.g. A 30rd anniversary brand video for a leading AI agency, high energy, technical excellence'
                           : 'e.g. LinkedIn announcement post for the new AI orchestration platform launch'} />
                     </div>
-                    <button onClick={handleGenerate} disabled={isProcessing || !mediaPrompt.trim()}
-                      className="btn btn-primary w-full" style={{ background: generatingType === 'image' ? 'var(--color-magenta)' : 'var(--color-emerald)' }}>
-                      <Cpu size={14} /> {isProcessing ? 'Agent Active...' : `Generate with ${generatingType === 'image' ? 'DA-03' : 'CC-06'}`}
+                    <button onClick={() => generatingType === 'video' ? handleSynthesizeVideo(mediaPrompt) : handleGenerate()} disabled={isProcessing || !mediaPrompt.trim()}
+                      className="btn btn-primary w-full" style={{ background: generatingType === 'image' ? 'var(--color-magenta)' : generatingType === 'video' ? 'var(--color-accent)' : 'var(--color-emerald)' }}>
+                      <Cpu size={14} /> {isProcessing ? 'Agent Active...' : `Generate with ${generatingType === 'image' ? 'DA-03' : generatingType === 'video' ? 'Veo-X' : 'CC-06'}`}
                     </button>
                     {generationResult && (
                       <div className="p-3 rounded-lg bg-black/30 border border-white/5 font-mono text-xs text-accent">

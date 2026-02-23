@@ -35,16 +35,37 @@ export class LiveApiManager {
 
       geminiWs.on('open', () => {
         this.logger.info('Upstream Gemini Live WS Opened.');
-        // Send initial setup
+        // Send initial setup with Function Calling declarations
         geminiWs?.send(JSON.stringify({
           setup: {
             model: 'models/gemini-2.0-flash-exp',
             systemInstruction: {
-              parts: [{ text: "You are the Agenticum G5 GENIUS Orchestrator. Keep your spoken responses concise, highly intelligent, and authoritative. Respond enthusiastically to creative marketing briefs." }]
+              parts: [{ text: "You are SN-00, the master orchestrator of the Agenticum G5 GENIUS swarm — a J.A.R.V.I.S.-grade AI for enterprise marketing. Keep spoken responses concise and authoritative. When the user requests any campaign, content creation, competitor analysis, audit, or agent workflow, ALWAYS call the launch_swarm function. Confirm the action verbally after calling it." }]
             },
             generationConfig: {
               responseModalities: ["AUDIO"]
-            }
+            },
+            tools: [{
+              functionDeclarations: [{
+                name: "launch_swarm",
+                description: "Launches the Agenticum G5 agent swarm with a specific marketing directive. Call this whenever the user requests campaigns, content creation, competitor analysis, audits, or any agent-based marketing workflow.",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    intent: {
+                      type: "string",
+                      description: "The full marketing directive or goal the user wants to execute"
+                    },
+                    campaign_type: {
+                      type: "string",
+                      enum: ["counter_strike", "content_campaign", "audit", "strategy_analysis", "pillar_page"],
+                      description: "The type of workflow to launch"
+                    }
+                  },
+                  required: ["intent"]
+                }
+              }]
+            }]
           }
         }));
       });
@@ -52,6 +73,8 @@ export class LiveApiManager {
       geminiWs.on('message', (data: any) => {
         try {
           const response = JSON.parse(data.toString());
+
+          // Forward audio output to frontend
           if (response.serverContent?.modelTurn?.parts) {
             const parts = response.serverContent.modelTurn.parts;
             for (const part of parts) {
@@ -60,7 +83,50 @@ export class LiveApiManager {
                   clientWs.send(JSON.stringify({
                     type: 'realtime_output',
                     mimeType: part.inlineData.mimeType,
-                    data: part.inlineData.data // base64
+                    data: part.inlineData.data
+                  }));
+                }
+              }
+            }
+          }
+
+          // J.A.R.V.I.S. TRIGGER: Handle function calls from Gemini
+          if (response.toolCall?.functionCalls?.length > 0) {
+            for (const call of response.toolCall.functionCalls) {
+              if (call.name === 'launch_swarm') {
+                const intent: string = call.args?.intent || 'Run marketing workflow';
+                const campaignType: string = call.args?.campaign_type || 'content_campaign';
+                this.logger.info(`Voice directive received: "${intent}" [${campaignType}]`);
+
+                // Notify frontend: voice command was recognized
+                if (clientWs.readyState === WebSocket.OPEN) {
+                  clientWs.send(JSON.stringify({
+                    type: 'transcript',
+                    role: 'user',
+                    text: intent,
+                    campaignType
+                  }));
+                }
+
+                // Fire the swarm — non-blocking
+                this.orchestrator.execute(intent).then(result => {
+                  if (clientWs.readyState === WebSocket.OPEN) {
+                    clientWs.send(JSON.stringify({ type: 'output', agentId: 'sn-00', data: result }));
+                  }
+                }).catch(err => {
+                  this.logger.error('Swarm execution failed', err);
+                });
+
+                // Respond to Gemini so it continues speaking
+                if (geminiWs && geminiWs.readyState === WebSocket.OPEN) {
+                  geminiWs.send(JSON.stringify({
+                    toolResponse: {
+                      functionResponses: [{
+                        id: call.id,
+                        name: call.name,
+                        response: { output: `Swarm activated. Executing directive: ${intent}` }
+                      }]
+                    }
                   }));
                 }
               }

@@ -16,7 +16,7 @@ const SESSION_KEY = 'g5_console_session';
 
 export function GeniusConsole() {
   const [swarm, setSwarm] = useState<SwarmState | null>(null);
-  const [logs, setLogs] = useState<{ type: string; message: string; timestamp: string }[]>(() => {
+  const [logs, setLogs] = useState<{ type: string; message: string; timestamp: string; imageUrl?: string }[]>(() => {
     try {
       const saved = localStorage.getItem(SESSION_KEY);
       return saved ? JSON.parse(saved) : [];
@@ -49,8 +49,8 @@ export function GeniusConsole() {
   const streamRef = useRef<MediaStream | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
 
-  const addLog = useCallback((type: string, message: string) => {
-    setLogs(prev => [...prev.slice(-19), { type, message, timestamp: new Date().toLocaleTimeString() }]);
+  const addLog = useCallback((type: string, message: string, imageUrl?: string) => {
+    setLogs(prev => [...prev.slice(-19), { type, message, timestamp: new Date().toLocaleTimeString(), imageUrl }]);
   }, []);
 
   // Audio processing functions isolated for mock phase
@@ -115,7 +115,19 @@ export function GeniusConsole() {
           // Dispatch global event for SynergyMap telemetry
           window.dispatchEvent(new CustomEvent('swarm-payload', { detail: data }));
           addLog('action', `Data Transfer: ${String(data.from).toUpperCase()} → ${String(data.to).toUpperCase()}`);
-          addLog('system', `Payload: [${data.payloadType}]`);
+          // Render live image inline when DA-03 delivers an asset
+          if (data.payloadType === 'IMAGE_ASSET' && data.payload) {
+            addLog('agent', `[DA-03] Visual asset generated`, data.payload);
+          } else {
+            addLog('system', `Payload: [${data.payloadType}]`);
+          }
+        }
+
+        if (data.type === 'transcript') {
+          // Show recognized voice command in console
+          addLog('action', `[VOICE] "${data.text}"`);
+          addLog('system', `Directive type: ${data.campaignType || 'auto'} — Swarm activating...`);
+          setConnectionState('active');
         }
 
         if (data.type === 'senate') {
@@ -617,13 +629,25 @@ export function GeniusConsole() {
                               className="flex gap-4 items-start"
                             >
                               <span className="text-[9px] opacity-20 font-black tabular-nums">[{log.timestamp}]</span>
-                              <span className={`text-[10px] font-black uppercase tracking-tighter w-16 ${
-                                log.type === 'system' ? 'text-white/30' : 
-                                log.type === 'error' ? 'text-red-500' : 
+                              <span className={`text-[10px] font-black uppercase tracking-tighter w-16 shrink-0 ${
+                                log.type === 'system' ? 'text-white/30' :
+                                log.type === 'error' ? 'text-red-500' :
                                 log.type === 'action' ? 'text-neural-gold' :
                                 log.type === 'success' ? 'text-green-500' : 'text-neural-blue'
                               }`}>{log.type}</span>
-                              <p className="text-[11px] opacity-80 flex-1 leading-normal">{log.message}</p>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[11px] opacity-80 leading-normal">{log.message}</p>
+                                {log.imageUrl && (
+                                  <motion.img
+                                    src={log.imageUrl}
+                                    alt="DA-03 generated asset"
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.4 }}
+                                    className="mt-3 rounded-xl w-full max-h-72 object-cover border border-neural-gold/30 shadow-[0_0_30px_rgba(251,188,4,0.15)]"
+                                  />
+                                )}
+                              </div>
                             </motion.div>
                           ))}
                           {(swarm?.state !== 'idle' && swarm?.state !== 'done') && (

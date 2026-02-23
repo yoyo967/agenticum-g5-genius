@@ -73,13 +73,15 @@ export class CC06Director extends BaseAgent {
           INPUT:
           ${input}
           
-          DIRECTIVES:
-          1. Use the GROUNDING_DATA as the factual spine.
-          2. Structure with Semantic H1/H2 (Obsidian/Gold style).
-          3. Tone: "Maximum Excellence", visionary, yet grounded in real data.
-          4. Include a "Strategic Insight" callout for each major section.
-          5. Length: Atomic expansion (ensure depth).
-       `;
+           DIRECTIVES:
+           1. Use the GROUNDING_DATA as the factual spine.
+           2. Structure with Semantic H1/H2 (Obsidian/Gold style).
+           3. Tone: "Maximum Excellence", visionary, yet grounded in real data.
+           4. Include a "Strategic Insight" callout for each major section.
+           5. Length: Atomic expansion (ensure depth).
+           6. CRITICAL: Remove all [DOCUMENT_START] and [DOCUMENT_END] tags.
+           7. CRITICAL: No placeholders like "DECRYPTING..." or "SYNCING..." in the final output.
+        `;
     } else {
        prompt = `
           ${this.DIRECTIVES}
@@ -137,6 +139,7 @@ export class CC06Director extends BaseAgent {
       CRITICAL: 
       - DO NOT include any text like "KNOWLEDGE BASE EXTRACTS" or "DOCUMENT_START" in the output.
       - DO NOT include your instructions or meta-talk.
+      - DO NOT use placeholders like [TOPIC], [DATE], or [INSERT CONTENT HERE].
       - Provide ONLY the final Markdown content.
       
       If this is a "cluster" article, make it hyper-specific and actionable (800-1200 words).

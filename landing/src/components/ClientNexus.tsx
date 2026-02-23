@@ -24,15 +24,18 @@ export function ClientNexus() {
       if (res.ok) {
         setDockets(await res.json());
       }
-    } catch (error) {
-      console.error('Failed to fetch dockets', error);
+    } catch {
+      console.error('Failed to fetch dockets');
     }
   }, [clientId]);
 
   useEffect(() => {
-    fetchDockets();
+    const timer = setTimeout(fetchDockets, 0);
     const interval = setInterval(fetchDockets, 10000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, [fetchDockets]);
 
   const handleAction = async (docketId: string, status: 'approved' | 'rejected', comment: string) => {
@@ -45,8 +48,8 @@ export function ClientNexus() {
       if (res.ok) {
         fetchDockets();
       }
-    } catch (error) {
-      console.error('Action failed', error);
+    } catch {
+      console.error('Action failed');
     }
   };
 
