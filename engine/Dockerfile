@@ -1,11 +1,13 @@
 # Dockerfile — Agenticum G5 Backend + BA-07 Chromium Layer
-FROM python:3.11-slim
+FROM python:3.11-slim-bookworm
 
 # === System Dependencies für Playwright/Chromium ===
 RUN apt-get update && apt-get install -y \
-    # Chromium Core
+    # Chromium Core & Fonts
     chromium \
-    chromium-driver \
+    fonts-liberation \
+    fonts-noto-color-emoji \
+    fonts-unifont \
     # Playwright System Deps
     libnss3 \
     libnspr4 \
@@ -33,8 +35,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # === Playwright Chromium Installation ===
-# WICHTIG: Nach pip install playwright, VOR COPY . .
-RUN playwright install-deps chromium && playwright install chromium
+# WICHTIG: Wir nutzen die system-internen Deps und laden nur die Binaries
+RUN playwright install chromium
 
 # === Application Code ===
 COPY . ./engine
@@ -43,7 +45,6 @@ COPY . ./engine
 EXPOSE 8080
 
 # === Startup ===
-# BA07_HEADLESS=true ist mandatory für Cloud Run (kein Display)
 ENV BA07_HEADLESS=true
 ENV BA07_SCREEN_WIDTH=1280
 ENV BA07_SCREEN_HEIGHT=936
