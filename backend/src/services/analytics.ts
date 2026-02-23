@@ -220,7 +220,7 @@ export class AnalyticsService {
     }
   }
 
-  async getAgentsData(): Promise<any[]> {
+  async getAgentsData(): Promise<{ id: string; name: string; role: string; color: string; tokensUsed: number; latencyMs: number; successRate: number; state: string }[]> {
     const agents = [
       { id: 'SN-00', name: 'NEXUS PRIME', role: 'Orchestrator', color: 'var(--color-agent-sn00)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
       { id: 'SP-01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: 'var(--color-agent-sp01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
@@ -230,13 +230,12 @@ export class AnalyticsService {
     ];
 
     try {
-      // Fetch some real token usage from Firestore if possible, otherwise we keep them at 0 or small variations
       const campaigns = await db.collection(Collections.CAMPAIGNS).get();
       const totalOutputs = campaigns.size;
 
       return agents.map(a => ({
         ...a,
-        tokensUsed: Math.floor(Math.random() * 50) + (totalOutputs * 10), // Some variation
+        tokensUsed: Math.floor(Math.random() * 50) + (totalOutputs * 10),
         latencyMs: Math.floor(Math.random() * 200) + 100,
         successRate: 98 + Math.random() * 2
       }));
@@ -245,7 +244,7 @@ export class AnalyticsService {
     }
   }
 
-  async getPerformanceKPIs(): Promise<any> {
+  async getPerformanceKPIs(): Promise<{ clicks: number; conversions: number; views: number; ctr: number; conversionRate: number }> {
     try {
       this.logger.info('Calculating cross-campaign KPI aggregates...');
       const snapshot = await db.collection(Collections.KPI_METRICS).get();
@@ -275,11 +274,11 @@ export class AnalyticsService {
     }
   }
 
-  async analyzeABTests(): Promise<any[]> {
+  async analyzeABTests(): Promise<{ id: string; campaignId: string; status: string; metrics: Record<string, { name: string; clicks: number; conversions: number }> }[]> {
     try {
       this.logger.info('Running A/B variant statistical analysis...');
       const tests = await db.collection(Collections.AB_TESTS).get();
-      const results: any[] = [];
+      const results: { id: string; campaignId: string; status: string; metrics: Record<string, { name: string; clicks: number; conversions: number }> }[] = [];
 
       for (const doc of tests.docs) {
         const testData = doc.data();
@@ -287,8 +286,8 @@ export class AnalyticsService {
           .where('campaignId', '==', testData.campaignId)
           .get();
 
-        const variantMetrics: any = {};
-        testData.variants.forEach((v: any) => {
+        const variantMetrics: Record<string, { name: string; clicks: number; conversions: number }> = {};
+        testData.variants.forEach((v: { id: string; name: string }) => {
           variantMetrics[v.id] = { name: v.name, clicks: 0, conversions: 0 };
         });
 
@@ -315,7 +314,7 @@ export class AnalyticsService {
     }
   }
 
-  async getSEORankings(): Promise<any> {
+  async getSEORankings(): Promise<{ domainAuthority: number; indexedPages: number; keywordClarity: number; rankings: { term: string; rank: number }[] }> {
     this.logger.info('Performing Neural SEO Visibility check...');
     
     // In Phase 3, we pull real data if GA4 is configured

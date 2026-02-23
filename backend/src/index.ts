@@ -98,20 +98,25 @@ app.get('/health', (_req: express.Request, res: express.Response) => {
   res.json({ status: 'Neural Fabric Active', project: 'AGENTICUM G5 GENIUS' });
 });
 
-httpServer.listen(port, () => {
+httpServer.listen(port, async () => {
   logger.info(`AGENTICUM G5 OS [GENIUS] active on port ${port}`);
   
-  // Initialize Global Settings
-  SettingsService.getInstance().getSettings().then(() => {
-    logger.info('Global Configuration synchronzed.');
-  });
+  try {
+    // 1. Initialize Global Settings FIRST
+    await SettingsService.getInstance().getSettings();
+    logger.info('Global Configuration synchronized.');
 
-  logger.info(`Perfect Twin Archive initialized. Autopilot Jobs: ${autopilotService.getActiveTasks().length}`);
-  
-  // Initialize Vault Grounding
-  const vaultManager = VaultManager.getInstance();
-  vaultManager.scanAndIngest().then(() => vaultManager.watchVault());
+    // 2. Initialize Vault Grounding
+    const vaultManager = VaultManager.getInstance();
+    await vaultManager.scanAndIngest();
+    vaultManager.watchVault();
 
-  // Set up default client for Phase 7
-  clientManager.setupDefaultClient();
+    // 3. Set up default client
+    clientManager.setupDefaultClient();
+
+    logger.info(`Perfect Twin Archive initialized. Autopilot Jobs: ${autopilotService.getActiveTasks().length}`);
+    logger.info('Neural Fabric fully operational.');
+  } catch (err) {
+    logger.error('Failed to initialize system services', err as Error);
+  }
 });

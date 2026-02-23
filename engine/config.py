@@ -1,4 +1,5 @@
 import json
+import os
 
 # DYNAMIC SETTINGS RESOLUTION
 PROJECT_ID = "online-marketing-manager"
@@ -39,37 +40,42 @@ def resolve_settings():
         except Exception as e:
             print(f"WARNING: Failed to read settings.json for Python: {e}")
 
+def initialize_firebase():
+    global PROJECT_ID
+    # Verify/Set GCP Credentials
+    if not os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+        potential_key = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend", "data", "firebase-key.json"))
+        if os.path.exists(potential_key):
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = potential_key
+            print(f"INFO: Using service account key from {potential_key}")
+        else:
+            os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
+            print(f"WARNING: GOOGLE_APPLICATION_CREDENTIALS not set. Forcing GOOGLE_CLOUD_PROJECT={PROJECT_ID}")
+
+    import firebase_admin
+    from firebase_admin import credentials, firestore
+    
+    try:
+        firebase_admin.get_app()
+    except ValueError:
+        key_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+        if key_path and os.path.exists(key_path):
+            cred = credentials.Certificate(key_path)
+            firebase_admin.initialize_app(cred)
+        else:
+            firebase_admin.initialize_app()
+        print("INFO: Firebase Admin SDK initialized.")
+
+# Initial resolution from local settings
+resolve_settings()
+# Boot firebase
+initialize_firebase()
+# Try to refresh from cloud after boot
 resolve_settings()
 
+# Environment variables for other GCP SDKs (Vertex AI)
 os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
 os.environ["PROJECT_ID"] = PROJECT_ID
 os.environ["GOOGLE_CLOUD_QUOTA_PROJECT"] = PROJECT_ID
 
 REGION = "europe-west1"
-
-# Verify GCP Credentials
-if not os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
-    # Attempt to find firebase-key.json in the parent data folder
-    potential_key = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend", "data", "firebase-key.json"))
-    if os.path.exists(potential_key):
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = potential_key
-        print(f"INFO: Using service account key from {potential_key}")
-    else:
-        # If no key, we rely on gcloud ADC but we MUST force the project
-        os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
-        print(f"WARNING: GOOGLE_APPLICATION_CREDENTIALS not set. Forcing GOOGLE_CLOUD_PROJECT={PROJECT_ID}")
-
-# INITIALIZE FIREBASE ADMIN SDK
-import firebase_admin
-from firebase_admin import credentials
-
-try:
-    firebase_admin.get_app()
-except ValueError:
-    key_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    if key_path and os.path.exists(key_path):
-        cred = credentials.Certificate(key_path)
-        firebase_admin.initialize_app(cred)
-    else:
-        firebase_admin.initialize_app()
-    print("INFO: Firebase Admin SDK initialized.")

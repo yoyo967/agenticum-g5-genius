@@ -1,4 +1,4 @@
-import { db } from './firestore';
+import { db, reinitializeFirestore } from './firestore';
 import fs from 'fs';
 import path from 'path';
 import { Logger } from '../utils/logger';
@@ -52,6 +52,12 @@ export class SettingsService {
       if (fs.existsSync(SETTINGS_FILE)) {
         const data = fs.readFileSync(SETTINGS_FILE, 'utf-8');
         this.currentSettings = JSON.parse(data);
+        
+        // Re-initialize Firestore with the project ID from the local fallback
+        if (this.currentSettings.projectId) {
+          reinitializeFirestore(this.currentSettings.projectId);
+        }
+        
         return this.currentSettings;
       }
     } catch (err) {
@@ -81,6 +87,11 @@ export class SettingsService {
     }
 
     this.currentSettings = { ...this.currentSettings, ...settings };
+    
+    // If project ID changed, re-initialize Firestore
+    if (settings.projectId) {
+      reinitializeFirestore(settings.projectId);
+    }
   }
 
   getCachedSettings(): Partial<SystemSettings> {
