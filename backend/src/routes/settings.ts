@@ -1,17 +1,4 @@
 import { Router, Request, Response } from 'express';
-import fs from 'fs';
-import path from 'path';
-
-const router = Router();
-const SETTINGS_FILE = path.join(process.cwd(), 'data', 'settings.json');
-
-// Ensure data directory exists
-const dataDir = path.join(process.cwd(), 'data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-import { Router, Request, Response } from 'express';
 import { SettingsService } from '../services/settings-service';
 
 const router = Router();
