@@ -36,7 +36,7 @@ export class StorageService {
     // Always save locally first for immediate preview reliability
     const localPath = join(this.localVaultPath, filename);
     writeFileSync(localPath, buffer);
-    const localUrl = `http://localhost:8080/vault/${filename}`;
+    const localUrl = `${process.env.BACKEND_URL || ''}/vault/${filename}`;
 
     if (this.useLocalFallback) {
       this.logger.info(`Saved ${filename} to local vault.`);
@@ -70,7 +70,7 @@ export class StorageService {
       const stats = statSync(join(this.localVaultPath, filename));
       return {
         name: filename,
-        url: `http://localhost:8080/vault/${filename}`,
+        url: `${process.env.BACKEND_URL || ''}/vault/${filename}`,
         timestamp: stats.mtime.toLocaleTimeString()
       };
     });

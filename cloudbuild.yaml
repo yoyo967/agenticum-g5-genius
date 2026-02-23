@@ -103,6 +103,7 @@ steps:
       - "managed"
       - "--allow-unauthenticated"
       - "--set-secrets=GEMINI_API_KEY=GEMINI_API_KEY:latest"
+      - "--set-env-vars=BACKEND_URL=https://agenticum-backend-697051612685.europe-west1.run.app,ENGINE_URL=https://agenticum-g5-backend-697051612685.europe-west1.run.app"
 
   # Deploy Engine (G5)
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"

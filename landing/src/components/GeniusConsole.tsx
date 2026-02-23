@@ -9,7 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadTextFile } from '../utils/export';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL, WS_BASE_URL } from '../config';
 
 import { type SwarmState } from '../types';
 
@@ -98,9 +98,8 @@ export function GeniusConsole() {
     setConnectionState('connecting');
     setLogs([]);
     
-    // Real WebSocket Init
-    const wsUrl = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8080`;
-    const socket = new WebSocket(wsUrl);
+    // Unified Cloud WebSocket Endpoint
+    const socket = new WebSocket(WS_BASE_URL);
     ws.current = socket;
 
     socket.onopen = () => {

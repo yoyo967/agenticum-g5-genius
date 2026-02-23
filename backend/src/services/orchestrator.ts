@@ -39,7 +39,7 @@ export class PillarGraphOrchestrator {
     const runId = `run_${uuidv4().substring(0, 8)}`;
     const startTime = Date.now();
     this.logger.info(`[${runId}] Starting Pillar Graph execution for: ${topic}`);
-    const engineUrl = 'http://127.0.0.1:8000'; // Target the Python Engine (IPv4)
+    const engineUrl = process.env.ENGINE_URL || 'https://agenticum-g5-backend-697051612685.europe-west1.run.app';
     
     const logPhase = async (phase: string, msg: string, severity: 'info' | 'success' | 'warning' | 'error' = 'info') => {
       await db.collection('perfect_twin_logs').add({
@@ -214,7 +214,7 @@ export class PillarGraphOrchestrator {
       }
       
       let publishStatus = 'published';
-      let liveUrl = `http://localhost:8080/blog/${topic.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+      let liveUrl = `${process.env.BACKEND_URL || ''}/blog/${topic.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
       const finalOutcome = {
         runId,
