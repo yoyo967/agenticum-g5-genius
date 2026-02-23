@@ -38,27 +38,55 @@ export class CronScheduler {
 
   private scheduleTask(task: ScheduledTask) {
     const job = cron.schedule(task.schedule, () => {
-      this.logger.info(`[AUTOPILOT] Triggering Workflow [${task.workflowId}] for task: ${task.name}`);
-      this.executeWorkflow(task.workflowId);
+      this.logger.info(`[AUTOPILOT] Triggering Mission Cycle: ${task.name}`);
+      this.executeMissionCycle(task);
     });
 
     this.tasks.set(task.id, job);
   }
 
-  private async executeWorkflow(workflowId: string) {
-    this.logger.info(`Executing workflow blueprint ${workflowId}...`);
-    
-    if (workflowId === 'wf_001') {
+  private async executeMissionCycle(task: ScheduledTask) {
+    try {
+      const topics = [
+        'Autonomous AI Marketing Swarms in 2026',
+        'Ethical AI Design: The Bauhaus of GenAI',
+        'Predictive Performance Max: Zero-Wait Attribution',
+        'The Geopolitics of Sovereign AI Clouds'
+      ];
+      const selectedTopic = topics[Math.floor(Math.random() * topics.length)];
+      
+      this.logger.info(`[AUTOPILOT] Mission selected: ${selectedTopic}`);
+      const { eventFabric } = require('./event-fabric');
+      eventFabric.broadcast({ 
+        type: 'autopilot-trigger', 
+        name: task.name,
+        topic: selectedTopic 
+      });
+
       const orchestrator = PillarGraphOrchestrator.getInstance();
-      orchestrator.executePillarRun('Autopilot: AI Agents Ecosystem', { type: 'pillar' })
-        .then(res => this.logger.info(`[AUTOPILOT] Workflow ${workflowId} completed: ${res.runId}`))
-        .catch(err => this.logger.error(`[AUTOPILOT] Workflow ${workflowId} failed`, err));
-    } else {
-      // Original simulation for other IDs
-      setTimeout(() => {
-        this.logger.info(`[WORKFLOW-${workflowId}] SN-00 initialized. Loading context from Vault...`);
-      }, 1000);
+      await orchestrator.executePillarRun(selectedTopic, { type: 'pillar', source: 'autopilot' });
+
+      this.logger.info(`[AUTOPILOT] Mission Cycle for ${task.id} complete.`);
+    } catch (error) {
+      this.logger.error(`[AUTOPILOT] Mission Cycle for ${task.id} failed`, error as Error);
     }
+  }
+
+  public scheduleOneOffTask(name: string, date: Date, action: () => Promise<void>) {
+    const now = new Date();
+    const delay = date.getTime() - now.getTime();
+    
+    if (delay <= 0) {
+      this.logger.warn(`Schedule date for ${name} is in the past. Executing immediately.`);
+      action();
+      return;
+    }
+
+    this.logger.info(`Scheduled one-off task [${name}] for ${date.toISOString()}`);
+    setTimeout(async () => {
+      this.logger.info(`[AUTOPILOT] Triggering One-Off Task: ${name}`);
+      await action();
+    }, delay);
   }
 
   public getActiveTasks() {

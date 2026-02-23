@@ -74,18 +74,23 @@ export function CampaignManager() {
   // Listen for swarm status updates
   useEffect(() => {
     const handleSwarmStatus = (e: Event) => {
-      const customEvent = e as CustomEvent<{ agent: string; status: string; output?: string }[]>;
-      const statuses = customEvent.detail;
-      if (!Array.isArray(statuses)) return;
+      const customEvent = e as CustomEvent<{ id: string; state: string; progress: number; lastStatus: string }>;
+      const agentUpdate = customEvent.detail;
+      if (!agentUpdate || !agentUpdate.id) return;
 
       setAgentTasks(prev => {
-        const updated = prev.map(task => {
-          const s = statuses.find(st => st.agent === task.agent);
-          if (s) return { ...task, status: s.status as AgentDraft['status'], output: s.output };
+        return prev.map(task => {
+          // Normalize IDs (some use CC-06, others cc-06)
+          if (task.agent.toUpperCase() === agentUpdate.id.toUpperCase()) {
+            return { 
+              ...task, 
+              status: agentUpdate.state === 'working' ? 'working' : 
+                      agentUpdate.state === 'idle' ? 'complete' : 'pending',
+              output: agentUpdate.lastStatus 
+            };
+          }
           return task;
         });
-        if (updated.every(t => t.status === 'complete')) setIsOrchestrating(false);
-        return updated;
       });
     };
 

@@ -1,8 +1,22 @@
 import { Firestore } from '@google-cloud/firestore';
+import path from 'path';
+import fs from 'fs';
 
-// Initialize the Google Cloud Firestore instance.
-// It will automatically use the Application Default Credentials.
-export const db = new Firestore();
+let projectId = 'online-marketing-manager';
+
+try {
+  const settingsPath = path.join(process.cwd(), 'data', 'settings.json');
+  if (fs.existsSync(settingsPath)) {
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    if (settings.projectId) {
+      projectId = settings.projectId;
+    }
+  }
+} catch (e) {
+  console.error('Failed to read Firestore project ID from settings', e);
+}
+
+export const db = new Firestore({ projectId });
 
 export const Collections = {
   PILLARS: 'pillars',

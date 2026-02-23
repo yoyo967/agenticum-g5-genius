@@ -22,7 +22,7 @@ export const SystemHeartbeat: React.FC = () => {
   }, []);
 
   const [intervals, setIntervals] = useState<{ engine: number; backend: number }>({
-    engine: 60000, // 1 minute base
+    engine: 120000, // 2 minutes base
     backend: 60000
   });
 

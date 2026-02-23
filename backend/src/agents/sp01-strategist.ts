@@ -42,20 +42,23 @@ export class SP01Strategist extends BaseAgent {
     const prompt = `
       ${this.DIRECTIVES}
       TASK: Create a comprehensive strategic blueprint for the target: "${input}"
-      INTERNAL GROUNDING CONTEXT (THE VAULT): ${groundingData}
+      
+      VAULT INTELLIGENCE HUB (RAG DATA): 
+      ${groundingData}
       
       CRITICAL INSTRUCTIONS:
-      1. SEARCH & CITE: Use the live internet to find current market trends, competitor pricing, and news relevant to "${input}".
-      2. EVIDENCE: You MUST include a "SOURCES & EVIDENCE" section at the end of the brief, citing at least 3 distinct URLs or data points found.
-      3. FRAMEWORK: Apply the StoryBrand Framework to define the Customer as the Hero.
-      4. PSYCHOLOGY: Integrate Kahneman's "Availability Heuristic" and "Loss Aversion" to structure the offer's value proposition.
-      5. ALLOCATION: Propose a budget split following the Binet & Field 60:40 Rule (Brand building : Sales activation).
+      1. INTEGRATE VAULT: You MUST prioritize the "VAULT INTELLIGENCE" provided above. Cite specific files (e.g., DA03_DESIGN_THEORY.md) if they appear in the snippets.
+      2. SEARCH & CITE: Use the live internet to find current market trends, competitor pricing, and news relevant to "${input}".
+      3. EVIDENCE: You MUST include a "SOURCES & EVIDENCE" section, citing both Vault snippets and live URLs.
+      4. FRAMEWORK: Apply the StoryBrand Framework to define the Customer as the Hero.
+      5. PSYCHOLOGY: Integrate Kahneman's "Availability Heuristic" and "Loss Aversion" into the narrative.
+      6. DESIGN: Propose a "Bauhaus-Inspired" visual direction for this strategy.
       
       OUTPUT FORMAT (MARKDOWN):
       # STRATEGIC MASTER BRIEF: ${input}
       
       ## 🎯 Market Pulse & Competitor Landscape
-      (Detailed analysis based on live research)
+      (Detailed analysis based on live research and Vault alignment)
       
       ## 🗺️ StoryBrand Matrix (Customer Journey)
       ...
@@ -67,7 +70,7 @@ export class SP01Strategist extends BaseAgent {
       ...
       
       ## 📌 SOURCES & EVIDENCE
-      - [Source 1](URL) - Key finding...
+      - [Source] ...
     `;
 
     const strategy = await vertexAI.generateGroundedContent(prompt);
@@ -78,7 +81,6 @@ export class SP01Strategist extends BaseAgent {
     try {
       const docTitle = `G5 Master Brief: ${input.substring(0, 40).replace(/[^a-zA-Z0-9 -]/g, '')}`;
       const docUrl = await workspace.createDocument(docTitle, strategy);
-      // Prepend the clickable markdown link
       responseText = `[View Live Master Brief on Google Docs](${docUrl})\n\n${strategy}`;
     } catch (e: any) {
       this.logger.error('Failed to publish brief to Google Docs', e);

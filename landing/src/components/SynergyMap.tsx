@@ -75,12 +75,34 @@ export function SynergyMap() {
     return () => window.removeEventListener('swarm-payload', handler);
   }, []);
 
+  // Listen for senate veto events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ type: string; verdict?: string; payload?: string }>).detail;
+      if (detail?.type === 'senate' || detail?.verdict === 'REJECTED') {
+         const newFlow: DataFlow = {
+           id: ++flowIdCounter,
+           from: 'RA-01',
+           to: 'SN-00',
+           type: 'VETO_ALERT',
+           timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+         };
+         setFlows(prev => [newFlow, ...prev].slice(0, 20));
+         // Update RA-01 state to error-like visually
+         setAgentStates(prev => ({ ...prev, 'ra-01': 'error' }));
+      }
+    };
+    window.addEventListener('swarm-senate', handler);
+    return () => window.removeEventListener('swarm-senate', handler);
+  }, []);
+
   // No fake data — flows only come from real swarm-state and agent-payload events above
 
   const getAgent = (id: string) => AGENTS.find(a => a.id === id);
   const getStateClass = (id: string) => {
     const state = agentStates[id];
     if (state === 'working' || state === 'processing') return 'animate-glow-pulse';
+    if (state === 'error') return 'animate-ping text-red-500';
     return '';
   };
 

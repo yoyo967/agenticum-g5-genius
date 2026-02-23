@@ -52,8 +52,11 @@ export class SN00Orchestrator extends BaseAgent {
       const pillarEngine = PillarGraphOrchestrator.getInstance();
       const pillarResult = await pillarEngine.executePillarRun(input, { type: 'pillar' });
       
-      this.updateStatus(AgentState.DONE, 'Pillar Content Forge complete and persisted.', 100);
+      this.updateStatus(AgentState.DONE, `Pillar Content Forge complete. Status: ${pillarResult.status}`, 100);
       
+      const contentSnippet = (pillarResult as any).content?.substring(0, 1000) || 'No content generated (Vetoed or Error).';
+      const liveUrl = (pillarResult as any).liveUrl || 'N/A';
+
       return `
 # NEURAL FABRIC OUTPUT: ${input}
 
@@ -61,15 +64,23 @@ export class SN00Orchestrator extends BaseAgent {
 The directive has been processed via the specialized **PillarGraphOrchestrator**. 
 
 ### Status: ${pillarResult.status.toUpperCase()}
-### Live URL: [${pillarResult.liveUrl}](${pillarResult.liveUrl})
+### Live URL: ${liveUrl !== 'N/A' ? `[${liveUrl}](${liveUrl})` : 'N/A'}
 
 ## 🧠 Forged Content Extract
-${pillarResult.content.substring(0, 1000)}...
+${contentSnippet}...
 
 ---
 *Autonomous Mesh OS Status: Verified, Grounded & Persisted.*
       `;
     }
+
+    // 0. Swarm Memory Integration
+    let swarmMemory = 'No previous logs found.';
+    try {
+      const { db } = require('../services/firestore');
+      const logs = await db.collection('perfect_twin_logs').orderBy('timestamp', 'desc').limit(10).get();
+      swarmMemory = logs.docs.map((d: any) => `- ${d.data().message || d.data().step}`).join('\n');
+    } catch (e) {}
 
     // 1. Generate Swarm Protocol using Google GenAI (Generic Flow)
     let executionPlan: any = null;
@@ -78,7 +89,14 @@ ${pillarResult.content.substring(0, 1000)}...
        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
        const response = await ai.models.generateContent({
           model: 'gemini-2.0-flash-exp',
-          contents: `Create a Swarm Execution Plan for the following directive:\n${input}\n\nAvailable agents: 'sp-01', 'cc-06', 'da-03', 'ra-01', 'pm-07'.`,
+          contents: `
+            IDENTITY: You are SN-00 Neural Orchestrator.
+            TASK: Create a Swarm Execution Plan for the following directive: "${input}"
+            SWARM_MEMORY (Past Logs):
+            ${swarmMemory}
+            
+            Available agents: 'sp-01', 'cc-06', 'da-03', 'ra-01', 'pm-07'.
+          `,
           config: {
              responseMimeType: 'application/json',
              responseSchema: {

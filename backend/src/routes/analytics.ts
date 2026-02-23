@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { analyticsService } from '../services/analytics';
+import { roiEngine } from '../services/roi-engine';
+import { abTestingService } from '../services/ab-testing';
 
 const router = Router();
 
@@ -24,8 +26,12 @@ router.get('/stats', async (req: Request, res: Response) => {
 router.get('/agents', async (req: Request, res: Response) => {
   try {
     const agents = await analyticsService.getAgentsData();
-    res.json(agents); // Frontend expects the array directly or wrapped depending on implementation
+    if (!agents || agents.length === 0) {
+      return res.status(200).json([]);
+    }
+    res.json(agents); 
   } catch (error) {
+    console.error('CRITICAL: Failed to fetch agent analytics', error);
     res.status(500).json({ error: 'Failed to fetch agent analytics' });
   }
 });
@@ -54,6 +60,25 @@ router.get('/seo-rankings', async (req: Request, res: Response) => {
     res.json(rankings);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch SEO rankings' });
+  }
+});
+
+router.post('/roi/optimize', async (_req: Request, res: Response) => {
+  try {
+    const optimization = await roiEngine.analyzeAndOptimize();
+    res.json(optimization);
+  } catch (error) {
+    res.status(500).json({ error: 'ROI Optimization failed' });
+  }
+});
+
+router.post('/ab/generate', async (req: Request, res: Response) => {
+  try {
+    const { original, type, count } = req.body;
+    const variants = await abTestingService.generateVariants(original, type, count);
+    res.json(variants);
+  } catch (error) {
+    res.status(500).json({ error: 'A/B Variant generation failed' });
   }
 });
 

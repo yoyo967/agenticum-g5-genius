@@ -1,6 +1,9 @@
 const getOrigin = () => {
-  if (typeof window !== 'undefined') return window.location.origin;
-  return 'http://localhost:8080';
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost') return 'http://localhost:3001';
+    return window.location.origin;
+  }
+  return 'http://localhost:3001';
 };
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || getOrigin();

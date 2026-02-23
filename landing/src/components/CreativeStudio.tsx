@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Palette, Type, Image as ImageIcon, Download, RefreshCw, X, Sparkles, Cpu, Upload, CheckSquare } from 'lucide-react';
+import { Palette, Type, Image as ImageIcon, Download, RefreshCw, X, Sparkles, Cpu, Upload, CheckSquare, Film } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { convertImageFormat, downloadZIP } from '../utils/export';
@@ -14,7 +14,7 @@ interface CreativeAsset {
   content: string;
 }
 
-type TabFilter = 'all' | 'copy' | 'image' | 'video';
+type TabFilter = 'all' | 'copy' | 'image' | 'video' | 'cinematic';
 
 export function CreativeStudio() {
   const [activeTab, setActiveTab] = useState<TabFilter>('all');
@@ -196,6 +196,9 @@ export function CreativeStudio() {
             </button>
             <button onClick={() => setGeneratingType('copy')} className="btn btn-ghost gap-2">
               <Type size={14} className="text-emerald" /> Generate Copy (CC-06)
+            </button>
+            <button onClick={() => {}} className="btn btn-ghost gap-2 border-magenta/20 col-span-2">
+              <Film size={14} className="text-magenta" /> Create Cinematic Storyboard (Veo)
             </button>
           </div>
 

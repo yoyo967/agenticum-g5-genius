@@ -141,6 +141,16 @@ export function GeniusConsole() {
           addLog('error', data.message);
           setConnectionState('error');
         }
+
+        if (data.type === 'metric') {
+          addLog('system', `Metric Update: ${data.metric} = ${data.value}`);
+          window.dispatchEvent(new CustomEvent('swarm-metric', { detail: data }));
+        }
+
+        if (data.type === 'telemetry') {
+          addLog('system', `Neural Latency: ${data.stats.total_latency}ms across nodes.`);
+          window.dispatchEvent(new CustomEvent('swarm-telemetry', { detail: data }));
+        }
       } catch (err) {
         console.error('Failed to parse socket message', err);
       }

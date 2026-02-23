@@ -1,0 +1,76 @@
+[2026-02-23T09:42:42.873Z] [INFO] [CronScheduler] Initializing Agency Autopilot (CronService)... 
+[2026-02-23T09:42:42.903Z] [INFO] [CronScheduler] Loaded 2 autopilot sequences. 1 currently active. 
+[2026-02-23T09:42:42.906Z] [INFO] [Intelligence-Verification] --- AGENTICUM G5 INTELLIGENCE AUDIT --- 
+[2026-02-23T09:42:42.906Z] [INFO] [Intelligence-Verification] Test 1: Multi-File RAG Scanning... 
+[2026-02-23T09:42:43.230Z] [INFO] [DiscoveryEngine] Discovery Engine client initialized (Fail-soft mode active) 
+[2026-02-23T09:42:43.230Z] [INFO] [DiscoveryEngine] Searching knowledge for query: Bauhaus design principles... 
+[2026-02-23T09:42:43.233Z] [INFO] [DiscoveryEngine] RAG: Found 9 relevant fragments in Vault. 
+[2026-02-23T09:42:43.268Z] [INFO] [Intelligence-Verification] SUCCESS: RAG successfully identified relevant document in Vault. 
+[2026-02-23T09:42:43.268Z] [INFO] [Intelligence-Verification] Test 2: SP-01 Strategist Grounding... 
+[2026-02-23T09:42:43.268Z] [INFO] [sp-01] [THINKING] Grounding intelligence on live internet... (0%) 
+[2026-02-23T09:42:43.268Z] [WARN] [EventFabric] Broadcast attempted before initialization 
+[2026-02-23T09:42:43.269Z] [WARN] [EventFabric] Broadcast attempted before initialization 
+[2026-02-23T09:42:43.270Z] [INFO] [GoogleWorkspace] Google Workspace Auth initialized successfully. 
+[2026-02-23T09:42:43.270Z] [INFO] [DiscoveryEngine] Searching knowledge for query: Autonomous Marketing Swarms for Hackathons... 
+[2026-02-23T09:42:43.274Z] [INFO] [DiscoveryEngine] RAG: Found 10 relevant fragments in Vault. 
+[2026-02-23T09:42:43.276Z] [INFO] [sp-01] Vault Grounding successful for: Autonomous Marketing Swarms for Hackathons 
+[2026-02-23T09:42:43.276Z] [INFO] [sp-01] [WORKING] Aggregating live competitor data & Behavioral Economics... (50%) 
+[2026-02-23T09:42:43.276Z] [WARN] [EventFabric] Broadcast attempted before initialization 
+[2026-02-23T09:42:43.276Z] [INFO] [VertexAI] Generating grounded content for prompt: 
+      
+    IDENTITY: You are the GenIUS Strategic... 
+[2026-02-23T09:42:43.442Z] [WARN] [VertexAI] Grounding (Google Search) is restricted. Falling back to core reasoning via Vertex AI SDK. 
+[2026-02-23T09:42:44.431Z] [ERROR] [VertexAI] Final fallback to ungrounded Vertex AI failed ClientError: [VertexAI.ClientError]: got status: 404 Not Found. {"error":{"code":404,"message":"Publisher Model `projects/online-marketing-manager/locations/us-central1/publishers/google/models/gemini-1.5-flash` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions","status":"NOT_FOUND"}}
+    at throwErrorIfNotOK (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\post_fetch_processing.ts:47:21)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    ... 3 lines matching cause stack trace ...
+    at async runVerification (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\scripts\verify_intelligence.ts:31:22) {
+  stackTrace: GoogleApiError: Publisher Model `projects/online-marketing-manager/locations/us-central1/publishers/google/models/gemini-1.5-flash` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions
+      at throwErrorIfNotOK (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\post_fetch_processing.ts:49:9)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\generate_content.ts:94:3)
+      at async VertexAIService.generateGroundedContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\services\vertex-ai.ts:103:27)
+      at async SP01Strategist.execute (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\agents\sp01-strategist.ts:76:22)
+      at async runVerification (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\scripts\verify_intelligence.ts:31:22) {
+    code: 404,
+    status: 'NOT_FOUND',
+    errorDetails: undefined
+  },
+  [cause]: GoogleApiError: Publisher Model `projects/online-marketing-manager/locations/us-central1/publishers/google/models/gemini-1.5-flash` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions
+      at throwErrorIfNotOK (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\post_fetch_processing.ts:49:9)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google-cloud\vertexai\src\functions\generate_content.ts:94:3)
+      at async VertexAIService.generateGroundedContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\services\vertex-ai.ts:103:27)
+      at async SP01Strategist.execute (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\agents\sp01-strategist.ts:76:22)
+      at async runVerification (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\scripts\verify_intelligence.ts:31:22) {
+    code: 404,
+    status: 'NOT_FOUND',
+    errorDetails: undefined
+  }
+}
+[2026-02-23T09:42:44.435Z] [INFO] [VertexAI] Generating content for prompt: 
+      
+    IDENTITY: You are the GenIUS Strategic... 
+[2026-02-23T09:42:44.485Z] [ERROR] [VertexAI] Error generating content ApiError: {"error":{"code":403,"message":"Requests to this API generativelanguage.googleapis.com method google.ai.generativelanguage.v1beta.GenerativeService.GenerateContent are blocked.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_SERVICE_BLOCKED","domain":"googleapis.com","metadata":{"apiName":"generativelanguage.googleapis.com","methodName":"google.ai.generativelanguage.v1beta.GenerativeService.GenerateContent","consumer":"projects/697051612685","service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Requests to this API generativelanguage.googleapis.com method google.ai.generativelanguage.v1beta.GenerativeService.GenerateContent are blocked."}]}}
+    at throwErrorIfNotOK (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google\genai\dist\node\index.cjs:12352:30)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google\genai\dist\node\index.cjs:12055:13
+    at async Models.generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google\genai\dist\node\index.cjs:13456:24)
+    at async VertexAIService.generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\services\vertex-ai.ts:57:26)
+    at async SP01Strategist.execute (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\agents\sp01-strategist.ts:76:22)
+    at async runVerification (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\scripts\verify_intelligence.ts:31:22) {
+  status: 403
+}
+[2026-02-23T09:42:44.489Z] [ERROR] [Intelligence-Verification] FAILURE: SP-01 execution failed ApiError: {"error":{"code":403,"message":"Requests to this API generativelanguage.googleapis.com method google.ai.generativelanguage.v1beta.GenerativeService.GenerateContent are blocked.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_SERVICE_BLOCKED","domain":"googleapis.com","metadata":{"apiName":"generativelanguage.googleapis.com","methodName":"google.ai.generativelanguage.v1beta.GenerativeService.GenerateContent","consumer":"projects/697051612685","service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Requests to this API generativelanguage.googleapis.com method google.ai.generativelanguage.v1beta.GenerativeService.GenerateContent are blocked."}]}}
+    at throwErrorIfNotOK (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google\genai\dist\node\index.cjs:12352:30)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google\genai\dist\node\index.cjs:12055:13
+    at async Models.generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\node_modules\@google\genai\dist\node\index.cjs:13456:24)
+    at async VertexAIService.generateContent (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\services\vertex-ai.ts:57:26)
+    at async SP01Strategist.execute (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\agents\sp01-strategist.ts:76:22)
+    at async runVerification (C:\Users\HP\Desktop\agenticum g5 landingpage\backend\src\scripts\verify_intelligence.ts:31:22) {
+  status: 403
+}
+[2026-02-23T09:42:44.489Z] [INFO] [Intelligence-Verification] Test 3: Autopilot mission status... 
+[2026-02-23T09:42:44.489Z] [INFO] [Intelligence-Verification] SUCCESS: Autopilot has 2 active mission sequences. 
+[2026-02-23T09:42:44.489Z] [INFO] [Intelligence-Verification] Intelligence Verification Completed. 

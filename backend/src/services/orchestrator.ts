@@ -57,6 +57,29 @@ export class PillarGraphOrchestrator {
       eventFabric.broadcastStatus({ id: 'SN-00', state: 'working', progress: 5, lastStatus: 'Initializing Pillar Graph' });
       await logPhase('INIT', `Pillar Workflow initialized for: ${topic}`);
 
+      // 0. SWARM MEMORY: Lookup past runs for this topic
+      let memoryInsights = '';
+      try {
+        this.logger.info(`[${runId}] Consulting Swarm Memory for: ${topic}`);
+        const pastLogs = await db.collection('perfect_twin_logs')
+          .where('type', '==', 'lifecycle')
+          .orderBy('timestamp', 'desc')
+          .limit(20)
+          .get();
+        
+        const relevantLogs = pastLogs.docs
+          .map(d => d.data())
+          .filter(l => l.message.toLowerCase().includes(topic.toLowerCase().substring(0, 5)))
+          .slice(0, 5);
+        
+        if (relevantLogs.length > 0) {
+          memoryInsights = `SWARM_MEMORY_INSIGHTS:\n${relevantLogs.map(l => `- ${l.message}`).join('\n')}`;
+          this.logger.info(`[${runId}] Memory Insights retrieved: ${relevantLogs.length} items`);
+        }
+      } catch (e) {
+        this.logger.warn(`[${runId}] Swarm Memory lookup failed: ${(e as Error).message}`);
+      }
+
       // 1. COLUMNA LAYER (Simulated for now, would return competitor URLs)
       const step1Start = Date.now();
       eventFabric.broadcastStatus({ id: 'SN-00', state: 'working', progress: 15, lastStatus: 'Competitor Scanning' });
@@ -72,7 +95,53 @@ export class PillarGraphOrchestrator {
       const step2Start = Date.now();
       eventFabric.broadcastStatus({ id: 'RA-01', state: 'working', progress: 30, lastStatus: 'Grounding Verification' });
       await logPhase('RESEARCH', 'Activating Grounding Arbiter (Gemini 1.5 Flash)...');
-      const groundedContent = await this.arbiter.validateAndGround(topic, runId);
+      const groundedContent = await this.arbiter.validateAndGround(`${topic}\n\n${memoryInsights}`, runId);
+      this.logger.info(`[${runId}] Arbiter Output Snippet: ${groundedContent.substring(0, 100)}`);
+      
+      if (groundedContent.includes('UNETHICAL_TOPIC')) {
+        this.logger.warn(`[${runId}] Arbiter Blocked Unethical Topic: ${groundedContent}`);
+        
+        const auditResult = { 
+          status: 'VETOED', 
+          reason: groundedContent,
+          score: 0,
+          violations: ['ETHICS_VIOLATION']
+        };
+
+        const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        await db.collection(Collections.PILLARS).doc(slug).set({
+          id: runId,
+          title: topic,
+          slug,
+          status: 'VETOED',
+          timestamp: new Date().toISOString(),
+          audit_report: auditResult
+        });
+
+        eventFabric.broadcast({
+          type: 'senate',
+          verdict: 'REJECTED',
+          topic,
+          reason: groundedContent,
+          runId
+        });
+
+        // PUSH TO SENATE DOCKET (Human-in-the-Loop)
+        await db.collection(Collections.SENATE_DOCKET).add({
+          agent: 'RA-01',
+          type: 'ETHICS_VETO',
+          risk: 'HIGH',
+          title: `VETO: ${topic}`,
+          payload: `GROUNDING ARBITER VETO: ${groundedContent}`,
+          verdict: 'REJECTED',
+          timestamp: new Date(),
+          runId
+        });
+
+        eventFabric.broadcastStatus({ id: 'SN-00', state: 'idle', progress: 100, lastStatus: 'VETOED by Grounding Arbiter' });
+        return { runId, status: 'VETOED', audit: auditResult };
+      }
+
       eventFabric.broadcastPayload('RA-01', 'SN-00', 'grounding_data', { length: groundedContent.length });
       await logPhase('RESEARCH', 'Fact-checking & Grounding complete.', 'success');
       eventFabric.broadcastStatus({ id: 'RA-01', state: 'idle', progress: 100 });
@@ -81,7 +150,7 @@ export class PillarGraphOrchestrator {
       const step3Start = Date.now();
       eventFabric.broadcastStatus({ id: 'CC-06', state: 'working', progress: 50, lastStatus: 'Forging Content' });
       await logPhase('FORGE', 'Directing CC-06 to forge pillar content based on grounding...');
-      const forgePrompt = `TOPIC: ${topic}\nGROUNDING_DATA: ${groundedContent}\nTYPE: ${config.type || 'pillar'}`;
+      const forgePrompt = `TOPIC: ${topic}\nGROUNDING_DATA: ${groundedContent}\nMEMORY_INSIGHTS: ${memoryInsights}\nTYPE: ${config.type || 'pillar'}`;
       const forgedMarkdown = await this.cc06.execute(forgePrompt);
       eventFabric.broadcastPayload('CC-06', 'SN-00', 'article_markdown', { title: topic });
       await logPhase('FORGE', 'Article forging complete.', 'success');
@@ -106,7 +175,42 @@ export class PillarGraphOrchestrator {
       eventFabric.broadcastStatus({ id: 'RA-01', state: 'idle', progress: 100 });
       
       if (!isApproved) {
-        throw new Error(`RA-01 Senate VETO: ${auditResult.reason}`);
+        this.logger.warn(`[${runId}] RA-01 Senate VETO: ${auditResult.reason}`);
+        
+        // PERSIST VETOED STATE
+        const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        await db.collection(Collections.PILLARS).doc(slug).set({
+          id: runId,
+          title: topic,
+          slug,
+          content: forgedMarkdown,
+          status: 'VETOED',
+          timestamp: new Date().toISOString(),
+          audit_report: auditResult
+        });
+
+        eventFabric.broadcast({
+          type: 'senate',
+          verdict: 'REJECTED',
+          topic,
+          reason: auditResult.reason,
+          runId
+        });
+
+        // PUSH TO SENATE DOCKET (Human-in-the-Loop)
+        await db.collection(Collections.SENATE_DOCKET).add({
+          agent: 'RA-01',
+          type: 'QUALITY_VETO',
+          risk: auditResult.score < 40 ? 'HIGH' : 'MEDIUM',
+          title: `VETO: ${topic}`,
+          payload: `SCORE: ${auditResult.score}\nREASON: ${auditResult.reason}\n\nVIOLATIONS: ${JSON.stringify(auditResult.violations)}`,
+          verdict: 'REJECTED',
+          timestamp: new Date(),
+          runId
+        });
+
+        eventFabric.broadcastStatus({ id: 'SN-00', state: 'idle', progress: 100, lastStatus: 'VETOED by Security Senate' });
+        return { runId, status: 'VETOED', audit: auditResult };
       }
       
       let publishStatus = 'published';
@@ -152,6 +256,11 @@ export class PillarGraphOrchestrator {
       });
 
       this.logger.info(`[${runId}] Pillar Graph execution finalized. Status: ${finalOutcome.status}`);
+      
+      // BROADCAST FINAL TELEMETRY
+      eventFabric.broadcastTelemetry(finalOutcome.telemetry);
+      eventFabric.broadcastMetric('token_usage', finalOutcome.telemetry.total_latency / 10); // Simulated usage metric
+      
       eventFabric.broadcastStatus({ id: 'SN-00', state: 'idle', progress: 100, lastStatus: 'Execution Finalized' });
       return finalOutcome;
 

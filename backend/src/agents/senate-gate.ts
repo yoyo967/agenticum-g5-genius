@@ -1,6 +1,20 @@
 import { VertexAIService } from '../services/vertex-ai';
 import { Logger } from '../utils/logger';
 import { PerfectTwinService } from '../services/perfect-twin';
+import fs from 'fs';
+import path from 'path';
+
+function getSenateIntelligence(): string {
+  try {
+    const vaultPath = path.join(process.cwd(), 'data', 'vault', 'RA01_ETHICS_COMPLIANCE.md');
+    if (fs.existsSync(vaultPath)) {
+      return fs.readFileSync(vaultPath, 'utf8');
+    }
+    return '';
+  } catch (e) {
+    return '';
+  }
+}
 
 export interface SenateEvaluation {
   score: number;
@@ -22,13 +36,20 @@ export class SenateGateAgent {
   async audit(content: string, runId: string): Promise<SenateEvaluation> {
     this.logger.info(`[${runId}] Algorithmischer Senat is auditing content...`);
     
+    const senateIntel = getSenateIntelligence();
+    
     const rubric = `
       IDENTITY: You are the AGENTICUM G5 Security Senate (Quality Gate).
+      INTELLEGENCE_BASE:
+      ${senateIntel}
+
       CRITERIA:
-      1. EU-First Policy: Does it respect European B2B SaaS standards?
-      2. SEO Excellence: Is the entity density and H1/H2 structure professional?
-      3. Brand Voice: Is it "Maximum Excellence" / Obsidian Style?
-      4. Hallucination Check: Does every claim feel grounded?
+      1. EU-First Policy: Does it respect European B2B SaaS standards & Green Claims Directive 2024?
+      2. FTC Compliance: No deceptive claims, clear disclosures.
+      3. Dark Patterns: Verify UX/copy does not use psychological manipulation.
+      4. SEO Excellence: Is the entity density and H1/H2 structure professional?
+      5. Brand Voice: Is it "Maximum Excellence" / Obsidian Style?
+      6. Hallucination Check: Does every claim feel grounded?
       
       OUTPUT FORMAT: JSON
       {

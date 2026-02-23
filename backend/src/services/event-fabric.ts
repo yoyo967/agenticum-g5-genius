@@ -65,6 +65,23 @@ export class EventFabric {
       payload
     });
   }
+
+  public broadcastMetric(metric: string, value: any) {
+    this.broadcast({
+      type: 'metric',
+      metric,
+      value,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  public broadcastTelemetry(stats: any) {
+    this.broadcast({
+      type: 'telemetry',
+      stats,
+      timestamp: new Date().toISOString()
+    });
+  }
 }
 
 export const eventFabric = EventFabric.getInstance();

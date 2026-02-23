@@ -298,7 +298,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
             <div className="w-1/2 glass overflow-hidden flex flex-col">
               <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
                 <h3 className="font-display text-sm uppercase tracking-wide flex items-center gap-2">
-                  <Shield size={14} className="text-accent" /> Global Deployment
+                  <Shield size={14} className="text-accent" /> Global Deployment & Intelligence
                 </h3>
               </div>
               <div className="p-4 flex flex-col gap-3">
@@ -307,14 +307,28 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
                   <span className="text-emerald">online-marketing-manager</span>
                 </div>
                 {seo && (
-                  <div className="bg-white/5 rounded p-2 flex justify-between items-center">
-                    <span className="label text-[8px]">SEO Authority</span>
-                    <span className="font-mono text-[10px] text-accent">{seo.domainAuthority}</span>
+                  <div className="bg-white/5 rounded p-2 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="label text-[8px]">SEO Authority</span>
+                      <span className="font-mono text-[10px] text-accent">{seo.domainAuthority}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="label text-[8px]">Indexed Pages</span>
+                      <span className="font-mono text-[10px] text-emerald">{seo.indexedPages}</span>
+                    </div>
                   </div>
                 )}
+                <div className="mt-2">
+                  <p className="label text-[8px] uppercase text-white/40 mb-1">Swarm Memory Utilization</p>
+                  <div className="p-2 rounded bg-accent/5 border border-accent/10">
+                    <p className="font-mono text-[9px] text-accent/80 italic leading-tight">
+                      "Utilizing 20+ past lifecycle logs for contextual optimization..."
+                    </p>
+                  </div>
+                </div>
                 <div className="space-y-1 mt-1">
                   <div className="flex items-center gap-2 text-[10px] font-mono text-white/60">
-                    <CheckCircle size={10} className="text-emerald" /> CDN Core Synchronized
+                    <CheckCircle size={10} className="text-emerald" /> GA4 Real-time Streaming Active
                   </div>
                   <div className="flex items-center gap-2 text-[10px] font-mono text-white/60">
                     <CheckCircle size={10} className="text-emerald" /> SSL Cert: Genius Edge Active
@@ -332,7 +346,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
           <Network size={14} className="text-accent" /> Live Swarm Telemetry
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {swarmState ? [swarmState, ...Object.values(swarmState.subAgents || {})].map((agent: any, i) => (
+          {swarmState ? [swarmState, ...Object.values(swarmState.subAgents || {})].map((agent, i) => (
             <motion.div 
               key={agent.id} 
               initial={{ opacity: 0, y: 12 }}

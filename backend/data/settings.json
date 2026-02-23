@@ -1,7 +1,7 @@
 {
-  "projectId": "alphate-enterprise-g5",
+  "projectId": "online-marketing-manager",
   "geminiKey": "AIzaSyB-REPLACE-IN-UI",
-  "gcsBucket": "g5-enterprise-vault-001",
+  "gcsBucket": "online-marketing-manager-genius-assets",
   "localFallback": "./data/vault/",
   "localOverride": true,
   "agentModel": "gemini-2.0-flash-exp",

@@ -1,6 +1,20 @@
 import { BaseAgent, AgentState } from './base-agent';
 import { VertexAIService } from '../services/vertex-ai';
 import { db, Collections } from '../services/firestore';
+import fs from 'fs';
+import path from 'path';
+
+function getSenateIntelligence(): string {
+  try {
+    const vaultPath = path.join(process.cwd(), 'data', 'vault', 'RA01_ETHICS_COMPLIANCE.md');
+    if (fs.existsSync(vaultPath)) {
+      return fs.readFileSync(vaultPath, 'utf8');
+    }
+    return '';
+  } catch (e) {
+    return '';
+  }
+}
 
 export class RA01Auditor extends BaseAgent {
   private readonly DIRECTIVES = `
@@ -28,15 +42,22 @@ export class RA01Auditor extends BaseAgent {
 
     this.updateStatus(AgentState.WORKING, '⚖️ Ethics & Economy Senators: Checking FTC & ROI...', 30);
     
+    const senateIntel = getSenateIntelligence();
+    
     const auditPrompt = `
       ${this.DIRECTIVES}
+      SENATE_INTELLIGENCE: 
+      ${senateIntel}
+
       TASK: Audit the following campaign output for compliance and brand safety:
       "${input}"
       
       REQUIREMENTS:
-      1. Verify compliance with FTC Endorsement Guidelines.
-      2. Check for Dark Pattern categories.
-      3. Provide a clear GLOBAL VERDICT (APPROVED/REJECTED).
+      1. Strictly verify compliance with FTC Endorsement Guidelines & EU Green Claims Directive 2024.
+      2. Check for the 10 Dark Pattern categories.
+      3. Identify any "7 Sins of Greenwashing".
+      4. Provide a clear GLOBAL VERDICT (APPROVED/REJECTED).
+      5. Tone: "Security Senate" — rigorous, unyielding, professional.
     `;
 
     const complianceAudit = await vertexAI.generateContent(auditPrompt);

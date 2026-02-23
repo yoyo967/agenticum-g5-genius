@@ -38,6 +38,11 @@ export function PillarBlogEngine() {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
 
+  // Distribution state
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishStatus, setPublishStatus] = useState('');
+  const [scheduleDate, setScheduleDate] = useState('');
+
   const fetchArticles = async () => {
     setLoading(true);
     try {
@@ -232,76 +237,151 @@ export function PillarBlogEngine() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={async () => {
-                        if (!selectedArticle) return;
-                        try {
-                          const res = await fetch(`${API_BASE_URL}/api/senate/submit`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              agent: 'Manual-Editor',
-                              title: `Audit: ${selectedArticle.slug}...`,
-                              payload: selectedArticle.content,
-                              risk: 'MEDIUM'
-                            }),
-                          });
-                          if (res.ok) {
-                            setGenerateResult('Senate Audit Request Submitted.');
-                             setSelectedArticle({ ...selectedArticle, status: 'optimizing' });
-                             // Update in local state list as well
-                             setArticles(prev => prev.map(a => a.id === selectedArticle.id ? { ...a, status: 'optimizing' } : a));
-                          }
-                        } catch (e) {
-                          console.error('Audit submission failed:', e);
-                        }
-                      }}
-                      disabled={selectedArticle.status !== 'draft'}
-                      className="btn btn-ghost btn-sm text-gold border-gold/20 hover:bg-gold/10"
-                    >
-                      🛡️ Request Audit
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (!isEditing) {
-                          setEditContent(selectedArticle.content || '');
-                          setIsEditing(true);
-                        } else {
-                          setIsEditing(false);
-                        }
-                      }}
-                      className={`btn btn-ghost btn-sm ${isEditing ? 'text-accent' : ''}`}
-                    >
-                      {isEditing ? '← Read Mode' : '✏️ Edit'}
-                    </button>
-                    {isEditing && (
+                    <div className="flex gap-2">
                       <button
                         onClick={async () => {
+                          if (!selectedArticle) return;
+                          setIsPublishing(true);
                           try {
-                            const res = await fetch(`${API_BASE_URL}/api/blog/article/${selectedArticle.slug}`, {
-                              method: 'PUT',
+                            const res = await fetch(`${API_BASE_URL}/api/blog/publish/wordpress/${selectedArticle.id}`, {
+                              method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ content: editContent }),
+                              body: JSON.stringify({ type: selectedArticle.type || 'pillar' }),
                             });
                             if (res.ok) {
-                              setSelectedArticle({ ...selectedArticle, content: editContent });
-                              setIsEditing(false);
-                              fetchArticles();
+                              const result = await res.json();
+                              setPublishStatus(`Success: ${result.url}`);
                             }
                           } catch (e) {
-                            console.error('Save failed:', e);
+                            console.error('Publish failed:', e);
+                          } finally {
+                            setIsPublishing(false);
                           }
                         }}
-                        className="btn btn-primary btn-sm" style={{ background: 'var(--color-emerald)', borderColor: 'var(--color-emerald)' }}
+                        className="btn btn-ghost btn-sm text-emerald border-emerald/20 hover:bg-emerald/10"
                       >
-                        💾 Save
+                        {isPublishing ? <RefreshCw size={12} className="animate-spin" /> : '🌐 WordPress'}
                       </button>
-                    )}
-                    <a href={`/nexus/${selectedArticle.slug}`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">
-                      <ExternalLink size={12} /> View Public
+                      <button
+                        onClick={async () => {
+                          if (!selectedArticle) return;
+                          setIsPublishing(true);
+                          try {
+                            const res = await fetch(`${API_BASE_URL}/api/blog/publish/linkedin/${selectedArticle.id}`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ type: selectedArticle.type || 'pillar' }),
+                            });
+                            if (res.ok) {
+                              const result = await res.json();
+                              setPublishStatus(`Success: ${result.url}`);
+                            }
+                          } catch (e) {
+                            console.error('LinkedIn failed:', e);
+                          } finally {
+                            setIsPublishing(false);
+                          }
+                        }}
+                        className="btn btn-ghost btn-sm text-blue-400 border-blue-400/20 hover:bg-blue-400/10"
+                      >
+                        {isPublishing ? <RefreshCw size={12} className="animate-spin" /> : '💼 LinkedIn'}
+                      </button>
+                    </div>
+
+                    <div className="h-8 w-px bg-white/5 mx-2" />
+
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="datetime-local" 
+                        className="input btn-sm text-[10px] w-40" 
+                        onChange={(e) => setScheduleDate(e.target.value)}
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!selectedArticle || !scheduleDate) return;
+                          try {
+                            const res = await fetch(`${API_BASE_URL}/api/blog/schedule/wordpress/${selectedArticle.id}`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ 
+                                type: selectedArticle.type || 'pillar',
+                                scheduledAt: scheduleDate
+                              }),
+                            });
+                            if (res.ok) {
+                              setPublishStatus(`Scheduled for ${new Date(scheduleDate).toLocaleString()}`);
+                            }
+                          } catch (e) {
+                            console.error('Schedule failed:', e);
+                          }
+                        }}
+                        disabled={!scheduleDate}
+                        className="btn btn-primary btn-sm px-3"
+                        style={{ background: 'var(--color-obsidian)', border: '1px solid var(--color-emerald)' }}
+                      >
+                        <Clock size={12} className="mr-1" /> Schedule
+                      </button>
+                    </div>
+
+                    <div className="h-8 w-px bg-white/5 mx-2" />
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={async () => {
+                          if (!selectedArticle) return;
+                          try {
+                            const res = await fetch(`${API_BASE_URL}/api/senate/submit`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                agent: 'Manual-Editor',
+                                title: `Audit: ${selectedArticle.slug}...`,
+                                payload: selectedArticle.content,
+                                risk: 'MEDIUM'
+                              }),
+                            });
+                            if (res.ok) {
+                              setPublishStatus('Senate Audit Request Submitted.');
+                               setSelectedArticle({ ...selectedArticle, status: 'optimizing' });
+                               setArticles(prev => prev.map(a => a.id === selectedArticle.id ? { ...a, status: 'optimizing' } : a));
+                            }
+                          } catch (e) {
+                            console.error('Audit submission failed:', e);
+                          }
+                        }}
+                        disabled={selectedArticle.status !== 'draft'}
+                        className="btn btn-ghost btn-sm text-gold border-gold/20 hover:bg-gold/10"
+                      >
+                        🛡️ Audit
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (!isEditing) {
+                            setEditContent(selectedArticle.content || '');
+                            setIsEditing(true);
+                          } else {
+                            setIsEditing(false);
+                          }
+                        }}
+                        className={`btn btn-ghost btn-sm ${isEditing ? 'text-accent border-accent/20' : ''}`}
+                      >
+                        {isEditing ? '← Read' : '✏️ Edit'}
+                      </button>
+                    </div>
+
+                    <div className="h-8 w-px bg-white/5 mx-2" />
+
+                    <a href={`/nexus/${selectedArticle.slug}`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm text-white/50 hover:text-white">
+                      <ExternalLink size={12} />
                     </a>
                   </div>
                 </div>
+                {publishStatus && (
+                  <div className="bg-emerald/10 border-b border-emerald/20 px-4 py-1 text-[9px] font-mono text-emerald flex items-center justify-between shrink-0">
+                    <span>{publishStatus}</span>
+                    <button onClick={() => setPublishStatus('')} className="hover:text-white">✕</button>
+                  </div>
+                )}
                 <div className={`p-6 overflow-y-auto overflow-x-hidden ${isEditing ? 'flex-1 grid grid-cols-2 gap-6' : 'flex-1'}`}>
                   {isEditing ? (
                     <>

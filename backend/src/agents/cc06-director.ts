@@ -27,7 +27,7 @@ function getKnowledgeBaseContext(): string {
     let context = '';
     let fileCount = 0;
     for (const file of mdFiles) {
-       if (file.includes('vault')) continue;
+       // We now WANT the vault files as they contain the premium intelligence
        const content = fs.readFileSync(file, 'utf8');
        context += `\n[DOCUMENT_START:${path.basename(file)}]\n${content}\n[DOCUMENT_END:${path.basename(file)}]\n`;
        fileCount++;

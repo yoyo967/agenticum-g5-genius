@@ -6,6 +6,11 @@ import { DA03Architect } from '../agents/da03-architect';
 import { StorageService } from '../services/storage';
 import { PillarGraphOrchestrator } from '../services/orchestrator';
 
+import { distributionService } from '../services/distribution';
+import { autopilotService } from '../services/cron';
+import { approvalWorkflow } from '../services/approval-workflow';
+import { cinematicService } from '../services/cinematic-service';
+
 const router = Router();
 
 // GET /api/blog/feed - Retrieve all published articles
@@ -77,15 +82,17 @@ router.post('/agent-dispatch', async (req: Request, res: Response) => {
     // Fire & Forget background generation
     if (type === 'image' || type === 'video') {
        const da03 = new DA03Architect();
-       // DA-03 handles its own persistence to /vault in its execute method
        da03.execute(topic)
          .then(result => console.log(`[Neural Fabric] DA-03 Asset Generation complete.`))
          .catch(err => console.error('[Neural Fabric] DA-03 failed:', err));
     } else {
        const orchestrator = PillarGraphOrchestrator.getInstance();
-       // Autonomous, grounded, audit-trailed execution
        orchestrator.executePillarRun(topic, { type })
-         .then(result => console.log(`[Neural Fabric] Pillar Graph Run complete: ${result.runId}`))
+         .then(async (result) => {
+           console.log(`[Neural Fabric] Pillar Graph Run complete: ${result.runId}`);
+           // Automatically create an approval docket for the new article
+           await approvalWorkflow.createDocket('default-client', result.runId, 'article');
+         })
          .catch(err => console.error('[Neural Fabric] Pillar Graph Execution failed:', err));
     }
 
@@ -105,7 +112,6 @@ router.put('/article/:slug', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'No update fields provided (title, content, status).' });
     }
 
-    // Find the article in pillars first, then clusters
     let snapshot = await db.collection(Collections.PILLARS).where('slug', '==', slug).limit(1).get();
     let collection = Collections.PILLARS;
 
@@ -129,6 +135,94 @@ router.put('/article/:slug', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error updating article:', error);
     res.status(500).json({ error: 'Failed to update article.' });
+  }
+});
+
+// --- NEW DISTRIBUTION & SCHEDULING ROUTES ---
+
+// POST /api/blog/publish/:channel/:id - Publish an existing article to a channel
+router.post('/publish/:channel/:id', async (req: Request, res: Response) => {
+  try {
+    const { channel, id } = req.params;
+    const { type } = req.body;
+
+    const collection = type === 'cluster' ? Collections.CLUSTERS : Collections.PILLARS;
+    const doc = await db.collection(collection).doc(id).get();
+
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Article not found.' });
+    }
+
+    const data = doc.data()!;
+    let result;
+
+    if (channel === 'wordpress') {
+      result = await distributionService.publishToWordPress({ title: data.title, body: data.content });
+    } else if (channel === 'linkedin') {
+      result = await distributionService.publishToLinkedIn(data.content.substring(0, 500));
+    } else {
+      return res.status(400).json({ error: 'Invalid channel.' });
+    }
+
+    res.json(result);
+  } catch (error) {
+    console.error('Error publishing article:', error);
+    res.status(500).json({ error: 'Failed to publish article.' });
+  }
+});
+
+// POST /api/blog/schedule/:channel/:id - Schedule an article for future publication
+router.post('/schedule/:channel/:id', async (req: Request, res: Response) => {
+  try {
+    const { channel, id } = req.params;
+    const { type, scheduledAt } = req.body;
+
+    if (!scheduledAt) {
+      return res.status(400).json({ error: 'Missing scheduledAt timestamp.' });
+    }
+
+    const date = new Date(scheduledAt);
+    const collection = type === 'cluster' ? Collections.CLUSTERS : Collections.PILLARS;
+    const doc = await db.collection(collection).doc(id).get();
+
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Article not found.' });
+    }
+
+    autopilotService.scheduleOneOffTask(`Publish ${id} to ${channel}`, date, async () => {
+      const data = doc.data()!;
+      if (channel === 'wordpress') {
+        await distributionService.publishToWordPress({ title: data.title, body: data.content });
+      } else if (channel === 'linkedin') {
+        await distributionService.publishToLinkedIn(data.content.substring(0, 500));
+      }
+    });
+
+    res.json({ status: 'success', message: `Article scheduled for ${date.toISOString()}` });
+  } catch (error) {
+    console.error('Error scheduling article:', error);
+    res.status(500).json({ error: 'Failed to schedule article.' });
+  }
+});
+
+// --- CINEMATIC FORGE ROUTES ---
+
+router.get('/cinematic/:clientId', async (req: Request, res: Response) => {
+  try {
+    const assets = await cinematicService.getCinematicAssets(req.params.clientId);
+    res.json(assets);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch cinematic assets.' });
+  }
+});
+
+router.post('/cinematic/forge', async (req: Request, res: Response) => {
+  try {
+    const { topic, clientId } = req.body;
+    const cinematic = await cinematicService.forgeStoryboard(topic, clientId || 'default-client');
+    res.json(cinematic);
+  } catch (error) {
+    res.status(500).json({ error: 'Cinematic Forge failed.' });
   }
 });
 

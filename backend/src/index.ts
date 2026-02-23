@@ -13,7 +13,10 @@ import pmaxRoutes from './routes/pmax';
 import analyticsRoutes from './routes/analytics';
 import senateRoutes from './routes/senate';
 import deploymentRoutes from './routes/deployment';
+import clientsRouter from './routes/clients';
+import { sovereignService } from './services/sovereign-service';
 import { autopilotService } from './services/cron';
+import { clientManager } from './services/client-manager';
 import { join } from 'path';
 import { VaultManager } from './services/vault-manager';
 
@@ -51,8 +54,39 @@ app.use('/api/pmax', pmaxRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/senate', senateRoutes);
 app.use('/api/deploy', deploymentRoutes);
+app.use('/api/clients', clientsRouter);
 
-logger.info('API Routes Registered: /api/blog, /api/vault, /api/workflow, /api/settings, /api/pmax, /api/analytics, /api/senate, /api/deploy');
+// --- SOVEREIGN AI / GEOPOLITICS ROUTES ---
+
+app.get('/api/sovereign/nodes', async (req, res) => {
+  try {
+    const nodes = await sovereignService.getGlobalNodes();
+    res.json(nodes);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch global nodes.' });
+  }
+});
+
+app.post('/api/sovereign/sync', async (req, res) => {
+  try {
+    const result = await sovereignService.initiateFederatedSync();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Federated sync failed.' });
+  }
+});
+
+app.post('/api/sovereign/audit', async (req, res) => {
+  try {
+    const { content, zone } = req.body;
+    const audit = await sovereignService.auditCompliance(content, zone);
+    res.json(audit);
+  } catch (error) {
+    res.status(500).json({ error: 'Compliance audit failed.' });
+  }
+});
+
+logger.info('API Routes Registered: /api/blog, /api/vault, /api/workflow, /api/settings, /api/pmax, /api/analytics, /api/senate, /api/deploy, /api/clients, /api/sovereign');
 app.use('/vault', express.static(join(process.cwd(), 'data', 'vault')));
 
 wss.on('connection', (ws: WebSocket) => {
@@ -70,4 +104,7 @@ httpServer.listen(port, () => {
   // Initialize Vault Grounding
   const vaultManager = VaultManager.getInstance();
   vaultManager.scanAndIngest().then(() => vaultManager.watchVault());
+
+  // Set up default client for Phase 7
+  clientManager.setupDefaultClient();
 });

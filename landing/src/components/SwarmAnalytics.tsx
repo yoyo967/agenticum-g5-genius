@@ -31,6 +31,25 @@ interface SEORanking {
   rankings: { term: string; rank: number }[];
 }
 
+interface ROIChannel {
+  channel: string;
+  roi: number;
+  revenue: number;
+}
+
+interface ROIData {
+  current: ROIChannel[];
+  suggestions: string[];
+}
+
+interface AssetVariant {
+  id: string;
+  content: string;
+  type: string;
+  score: number;
+  reasoning?: string;
+}
+
 const AGENTS: AgentMetric[] = [
   { id: 'SN-00', name: 'NEXUS PRIME', role: 'Orchestrator', color: 'var(--color-agent-sn00)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
   { id: 'SP-01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: 'var(--color-agent-sp01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
@@ -51,6 +70,12 @@ export function SwarmAnalytics() {
   const [kpis, setKpis] = useState({ clicks: 0, conversions: 0, views: 0, ctr: 0, conversionRate: 0 });
   const [abTests, setAbTests] = useState<ABTest[]>([]);
   const [seo, setSeo] = useState<SEORanking | null>(null);
+
+  // Phase 6: ROI & AB State
+  const [roiData, setRoiData] = useState<ROIData | null>(null);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [variantInput, setVariantInput] = useState('');
+  const [variants, setVariants] = useState<AssetVariant[]>([]);
 
   // Fetch analytics data from API
   useEffect(() => {
@@ -92,6 +117,39 @@ export function SwarmAnalytics() {
     const interval = setInterval(fetchData, 15000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleOptimizeROI = async () => {
+    setIsOptimizing(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/analytics/roi/optimize`, { method: 'POST' });
+      if (res.ok) {
+        setRoiData(await res.json());
+      }
+    } catch (e) {
+      console.error('ROI Optimization failed', e);
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
+
+  const handleGenerateVariants = async () => {
+    if (!variantInput) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/analytics/ab/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ original: variantInput, type: 'headline', count: 3 })
+      });
+      if (res.ok) {
+        setVariants(await res.json());
+      }
+    } catch (e) {
+      console.error('Variant generation failed', e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Listen for live swarm state events
   useEffect(() => {
@@ -285,57 +343,117 @@ export function SwarmAnalytics() {
         </>
       ) : (
         <div className="space-y-6">
-          {/* Performance KPIs */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="glass-card p-5">
-              <span className="label">Total Clicks</span>
-              <p className="text-3xl font-mono font-bold text-accent">{kpis.clicks}</p>
+          {/* Executive Intelligence: Phase 6 Core */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* ROI Optimization Panel */}
+            <div className="lg:col-span-2 glass-card p-6 border-gold/20">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-display text-lg font-bold uppercase flex items-center gap-2">
+                  <Activity size={18} className="text-gold" /> ROI Optimization Engine
+                </h3>
+                <button 
+                  onClick={handleOptimizeROI}
+                  disabled={isOptimizing}
+                  className="btn btn-primary btn-sm px-4"
+                  style={{ background: 'var(--color-obsidian)', border: '1px solid var(--color-gold)' }}
+                >
+                  {isOptimizing ? <RefreshCw size={12} className="animate-spin" /> : 'Analyze & Reallocate'}
+                </button>
+              </div>
+
+              {roiData ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <p className="font-mono text-[10px] text-white/40 uppercase tracking-widest">Performance Matrix</p>
+                    {roiData.current.map((ch) => (
+                      <div key={ch.channel} className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold">{ch.channel}</p>
+                          <p className="text-[9px] font-mono text-white/30">ROI: {ch.roi}x | Rev: ${ch.revenue}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className={`badge text-[9px] ${ch.roi > 3 ? 'badge-online' : ch.roi < 2 ? 'badge-error' : 'badge-processing'}`}>
+                            {ch.roi > 3 ? 'SCALING' : ch.roi < 2 ? 'INEFFICIENT' : 'STABLE'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-3">
+                    <p className="font-mono text-[10px] text-white/40 uppercase tracking-widest">Optimization Strategy</p>
+                    {roiData.suggestions.map((s, i) => (
+                      <div key={i} className="p-3 bg-gold/5 rounded-lg border border-gold/10 flex gap-3 items-start">
+                        <Zap size={14} className="text-gold shrink-0 mt-0.5" />
+                        <p className="text-[11px] leading-relaxed text-white/80">{s}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 border border-dashed border-white/10 rounded-xl">
+                  <BarChart3 size={32} className="text-white/5 mx-auto mb-3" />
+                  <p className="font-mono text-xs text-white/20">Awaiting ROI simulation pulse...</p>
+                </div>
+              )}
             </div>
-            <div className="glass-card p-5">
-              <span className="label">Conversions</span>
-              <p className="text-3xl font-mono font-bold text-emerald-400">{kpis.conversions}</p>
-            </div>
-            <div className="glass-card p-5">
-              <span className="label">Avg CTR</span>
-              <p className="text-3xl font-mono font-bold text-gold">{kpis.ctr.toFixed(2)}%</p>
-            </div>
-            <div className="glass-card p-5">
-              <span className="label">Conv. Rate</span>
-              <p className="text-3xl font-mono font-bold text-pink-400">{kpis.conversionRate.toFixed(1)}%</p>
+
+            {/* A/B Creation Forge */}
+            <div className="glass-card p-6 border-accent/20">
+              <h3 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
+                <Network size={18} className="text-accent" /> A/B Creation Forge
+              </h3>
+              <div className="space-y-4">
+                <div className="relative">
+                  <textarea 
+                    value={variantInput}
+                    onChange={(e) => setVariantInput(e.target.value)}
+                    placeholder="Input headline or CTA to scale..."
+                    className="w-full p-4 bg-white/5 border border-white/10 rounded-xl font-mono text-xs text-white/80 focus:outline-none focus:border-accent/40 h-24 resize-none"
+                  />
+                  <button 
+                    onClick={handleGenerateVariants}
+                    className="absolute bottom-3 right-3 p-2 bg-accent/20 text-accent rounded-lg border border-accent/30 hover:bg-accent/30 transition-colors"
+                  >
+                    <RefreshCw size={14} className={loading && variantInput ? 'animate-spin' : ''} />
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="font-mono text-[10px] text-white/40 uppercase tracking-widest">Scored Variants</p>
+                  {variants.length > 0 ? variants.map((v) => (
+                    <div key={v.id} className="p-3 bg-white/5 rounded-lg border border-white/5 group hover:border-accent/30 transition-colors">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-mono text-[10px] text-accent">SCORE: {v.score}</span>
+                        <div className="flex h-1 w-12 bg-white/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-accent" style={{ width: `${v.score}%` }} />
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-white/70 italic leading-snug">"{v.content}"</p>
+                    </div>
+                  )) : (
+                    <p className="text-[10px] text-white/10 text-center py-4">Input text to trigger CC-06 Forge</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* A/B Tests */}
-            <div className="glass-card p-6">
-              <h3 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
-                <Activity size={18} className="text-accent" /> A/B Variant experiments
-              </h3>
-              <div className="space-y-4">
-                {abTests.map(test => (
-                  <div key={test.id} className="p-4 bg-white/5 rounded-xl border border-white/5">
-                    <p className="font-mono text-[10px] text-white/40 mb-2 uppercase">EXPERIMENT ID: {test.id}</p>
-                    <div className="grid grid-cols-1 gap-3">
-                      {Object.entries(test.metrics).map(([vid, v]) => (
-                        <div key={vid} className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="text-xs font-bold">{v.name}</p>
-                            <div className="w-full h-1 bg-white/5 rounded-full mt-1">
-                              <div className="h-full bg-accent rounded-full" style={{ width: `${(v.clicks / 100) * 100}%` }} />
-                            </div>
-                          </div>
-                          <div className="text-right pl-4">
-                            <p className="text-xs font-mono font-bold">{v.clicks} Clicks</p>
-                            <p className="text-[10px] text-emerald-400 font-mono">{v.conversions} Conv</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+          {/* Performance KPIs - Lower Priority in Hub */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Total Clicks', value: kpis.clicks, color: 'text-accent' },
+              { label: 'Conversions', value: kpis.conversions, color: 'text-emerald-400' },
+              { label: 'Avg CTR', value: `${kpis.ctr.toFixed(2)}%`, color: 'text-gold' },
+              { label: 'Conv. Rate', value: `${kpis.conversionRate.toFixed(1)}%`, color: 'text-pink-400' },
+            ].map((k) => (
+              <div key={k.label} className="glass-card p-4">
+                <span className="font-mono text-[9px] text-white/30 uppercase">{k.label}</span>
+                <p className={`text-xl font-mono font-bold ${k.color}`}>{k.value}</p>
               </div>
-            </div>
+            ))}
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* SEO Rankings */}
             <div className="glass-card p-6">
               <h3 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
@@ -363,6 +481,35 @@ export function SwarmAnalytics() {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* A/B Historical Data */}
+            <div className="glass-card p-6">
+              <h3 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
+                <Activity size={18} className="text-magenta" /> Network Experiments
+              </h3>
+              <div className="space-y-4">
+                {abTests.map(test => (
+                  <div key={test.id} className="p-4 bg-white/5 rounded-xl border border-white/5">
+                    <p className="font-mono text-[10px] text-white/40 mb-2 uppercase">ID: {test.id}</p>
+                    <div className="grid grid-cols-1 gap-3">
+                      {Object.entries(test.metrics).map(([vid, v]) => (
+                        <div key={vid} className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <p className="text-xs font-bold">{v.name}</p>
+                            <div className="w-full h-1 bg-white/5 rounded-full mt-1">
+                              <div className="h-full bg-magenta/40 rounded-full" style={{ width: `${(v.clicks / 100) * 100}%` }} />
+                            </div>
+                          </div>
+                          <div className="text-right pl-4">
+                            <p className="text-xs font-mono font-bold">{v.clicks} CLK</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

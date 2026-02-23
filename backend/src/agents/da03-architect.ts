@@ -3,6 +3,18 @@ import { VertexAIService } from '../services/vertex-ai';
 import fs from 'fs';
 import path from 'path';
 
+function getDesignIntelligence(): string {
+  try {
+    const vaultPath = path.join(process.cwd(), 'data', 'vault', 'DA03_DESIGN_THEORY.md');
+    if (fs.existsSync(vaultPath)) {
+      return fs.readFileSync(vaultPath, 'utf8');
+    }
+    return '';
+  } catch (e) {
+    return '';
+  }
+}
+
 export class DA03Architect extends BaseAgent {
   private readonly DIRECTIVES = `
     IDENTITY: You are the GenIUS Design Architect (DA-03).
@@ -52,16 +64,22 @@ export class DA03Architect extends BaseAgent {
 
     this.updateStatus(AgentState.WORKING, 'Optimizing for Cognitive Load & Fitts Law...', 75);
     
+    const designIntel = getDesignIntelligence();
+    
     const prompt = `
       ${this.DIRECTIVES}
+      DESIGN_INTELLIGENCE: 
+      ${designIntel}
+
       TASK: Create a design manifesto for: "${input}"
       NOTE: An image has already been generated using Imagen 3.
       
       REQUIREMENTS:
-      1. Reference Itten's 7 Color Contrasts.
-      2. Explain the Golden Ratio grid application.
+      1. Reference Itten's 7 Color Contrasts and specific Bauhaus principles from the intelligence documents.
+      2. Explain the Golden Ratio grid application and how it reduces cognitive load.
       3. Use G5 BRAND TOKENS: Obsidian, Tech-Gold, Neural Blue.
       4. Format as a clean, authoritative technical manifesto.
+      5. Tone: "Design Architect" — precise, aesthetic, theory-driven.
     `;
 
     const manifesto = await vertexAI.generateContent(prompt);
