@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from engine.columna_decompiler import router as columna_router
 from pydantic import BaseModel
 from typing import List, Optional
+from engine.routers.browser_action import router as browser_action_router
 
 # Lazy imports to ensure environment is set first
 def get_grounding_arbiter():
@@ -27,6 +28,7 @@ from engine.deployment_agent import router as deployment_router
 
 app.include_router(senate_router, tags=["Security Senate"])
 app.include_router(deployment_router, tags=["Deployment Agent"])
+app.include_router(browser_action_router)
 
 class PillarRequest(BaseModel):
     topic: str
@@ -45,6 +47,15 @@ async def run_grounding(req: PillarRequest):
 async def run_audit(req: AuditRequest):
     audit = get_senate_evaluator()
     return await audit(req.run_id, req.content)
+
+@app.get("/health")
+async def health():
+    return {
+        "status": "healthy",
+        "swarm_nodes": ["sn_00", "sp_01", "cc_06", "da_03", "ra_01", "ba_07"],
+        "ba07_status": "operational",
+        "region": "europe-west1"
+    }
 
 @app.get("/engine/counter-strike")
 async def run_counter_strike(topic: str):

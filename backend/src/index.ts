@@ -14,6 +14,7 @@ import analyticsRoutes from './routes/analytics';
 import senateRoutes from './routes/senate';
 import deploymentRoutes from './routes/deployment';
 import clientsRouter from './routes/clients';
+import bridgeRoutes from './routes/bridge';
 import { sovereignService } from './services/sovereign-service';
 import { autopilotService } from './services/cron';
 import { clientManager } from './services/client-manager';
@@ -56,6 +57,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/senate', senateRoutes);
 app.use('/api/deploy', deploymentRoutes);
 app.use('/api/clients', clientsRouter);
+app.use('/api/bridge', bridgeRoutes);
 
 // --- SOVEREIGN AI / GEOPOLITICS ROUTES ---
 
@@ -87,7 +89,7 @@ app.post('/api/sovereign/audit', async (req, res) => {
   }
 });
 
-logger.info('API Routes Registered: /api/blog, /api/vault, /api/workflow, /api/settings, /api/pmax, /api/analytics, /api/senate, /api/deploy, /api/clients, /api/sovereign');
+logger.info('API Routes Registered: /api/blog, /api/vault, /api/workflow, /api/settings, /api/pmax, /api/analytics, /api/senate, /api/deploy, /api/clients, /api/sovereign, /api/bridge');
 app.use('/vault', express.static(join(process.cwd(), 'data', 'vault')));
 
 wss.on('connection', (ws: WebSocket) => {

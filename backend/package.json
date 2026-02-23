@@ -12,6 +12,7 @@
   "dependencies": {
     "@google-analytics/data": "^5.2.1",
     "@google-cloud/discoveryengine": "^0.3.1",
+    "axios": "^1.6.0",
     "@google-cloud/firestore": "^7.0.0",
     "@google-cloud/storage": "^7.0.0",
     "@google-cloud/vertexai": "^1.10.0",

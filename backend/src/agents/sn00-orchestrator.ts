@@ -5,6 +5,7 @@ import { DA03Architect } from './da03-architect';
 import { CC06Director } from './cc06-director';
 import { PM07Manager } from './pm07-manager';
 import { VE01Director } from './ve01-director';
+import { BA07BrowserArchitect } from './ba07-browser-architect';
 import { PillarGraphOrchestrator } from '../services/orchestrator';
 import { ChainManager } from '../services/chain-manager';
 import { TaskState, SwarmProtocol } from '../types/swarm-protocol';
@@ -25,6 +26,7 @@ export class SN00Orchestrator extends BaseAgent {
   private architect: DA03Architect;
   private director: CC06Director;
   private motionDirector: VE01Director;
+  private browserArchitect: BA07BrowserArchitect;
   private manager: PM07Manager;
   private chainManager: ChainManager;
 
@@ -39,6 +41,7 @@ export class SN00Orchestrator extends BaseAgent {
     this.architect = new DA03Architect();
     this.director = new CC06Director();
     this.motionDirector = new VE01Director();
+    this.browserArchitect = new BA07BrowserArchitect();
     this.manager = new PM07Manager();
     this.chainManager = new ChainManager();
   }
@@ -95,7 +98,13 @@ ${contentSnippet}...
             SWARM_MEMORY (Past Logs):
             ${swarmMemory}
             
-            Available agents: 'sp-01', 'cc-06', 'da-03', 'ra-01', 'pm-07'.
+            Available agents: 'sp-01', 'cc-06', 'da-03', 'ra-01', 'pm-07', 'ba-07'.
+            
+            BA-07 BROWSER INTELLIGENCE:
+            Wenn ein User Competitor-Analyse, Live-Seiten-Analyse oder visuelle Website-Auswertung anfragt:
+            1. Extrahiere die Ziel-URL aus dem User-Intent.
+            2. Formuliere einen präzisen task-String.
+            3. Nutze 'ba-07' für launch_browser_agent.
           `,
           config: {
              responseMimeType: 'application/json',

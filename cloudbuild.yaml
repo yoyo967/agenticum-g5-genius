@@ -4,7 +4,7 @@ steps:
   # Install backend dependencies
   - name: "node:20"
     entrypoint: "npm"
-    args: ["install"]
+    args: ["install", "axios"]
     dir: "backend"
 
   # Build the backend project
@@ -119,6 +119,11 @@ steps:
       - "--platform"
       - "managed"
       - "--allow-unauthenticated"
+      - "--memory=4Gi"
+      - "--cpu=2"
+      - "--timeout=300"
+      - "--set-secrets=GEMINI_API_KEY=GEMINI_API_KEY:latest,BROWSERBASE_API_KEY=BROWSERBASE_API_KEY:latest"
+      - "--set-env-vars=BACKEND_URL=https://agenticum-backend-697051612685.europe-west1.run.app,BA07_HEADLESS=true,BA07_SCREEN_WIDTH=1280,BA07_SCREEN_HEIGHT=936"
 
   # Deploy Frontend
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
