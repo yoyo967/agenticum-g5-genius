@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies for Playwright and GCP
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -12,21 +12,16 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers (needed for SP-01 grounding)
+# Install Playwright
 RUN playwright install --with-deps chromium
 
-# Copy the engine code into an 'engine' directory to support module imports
+# Copy the engine folder as a package
 COPY . ./engine
 
-# Create empty data directory to avoid errors if settings-service isn't mounted
-RUN mkdir -p /app/backend/data
-
-# Expose the Cloud Run port
+# Expose port
 EXPOSE 8080
-
-# Environment variables
-ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
+ENV PYTHONUNBUFFERED=1
 
-# Run uvicorn from the root so 'from engine.main import ...' works
-CMD ["uvicorn", "engine.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Run as a module to handle imports correctly
+CMD ["python", "-m", "engine.main"]

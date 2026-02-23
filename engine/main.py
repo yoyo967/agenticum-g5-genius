@@ -1,3 +1,4 @@
+import os
 from engine.config import PROJECT_ID, REGION
 from fastapi import FastAPI
 from engine.columna_decompiler import router as columna_router
@@ -52,4 +53,5 @@ async def run_counter_strike(topic: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=port)

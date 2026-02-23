@@ -1,6 +1,9 @@
 import json
 import asyncio
 import subprocess
+import os
+from datetime import datetime
+from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from .auth_middleware import verify_firebase_token
@@ -196,5 +199,3 @@ async def evaluate_advertorial(draft: ComplianceRequest, user: dict = Depends(ve
         "html_ready_for_deploy": compliant_html,
         "run_id": draft.run_id
     }
-
-import os # Ensure os is available for the temp file cleanup

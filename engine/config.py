@@ -2,7 +2,7 @@ import json
 import os
 
 # DYNAMIC SETTINGS RESOLUTION
-PROJECT_ID = "online-marketing-manager"
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "online-marketing-manager")
 SETTINGS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend", "data", "settings.json"))
 
 # 1. Try Firestore (Cloud Truth)
