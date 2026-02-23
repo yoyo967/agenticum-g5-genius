@@ -80,11 +80,24 @@ def extract_pillar_skeleton(html: str) -> dict:
     }
 
 @router.post("/columna/decompile")
-async def decompile_competitor(url: str, competitor_name: str):
+async def decompile_competitor(url: str, competitor_name: str, session_id: Optional[str] = None):
     """
     API Endpunkt: Zieht die Seite, berechnet Embeddings und speichert
-    sie in Firestore für den späteren Vector Search Counter-Strike.
+    sie via SwarmBus für den gesamten Swarm.
     """
+    run_id = session_id or f"columna_{int(time.time())}"
+    
+    # --- SWARM BUS INITIALIZATION ---
+    from engine.swarm.swarm_bus import SwarmBus
+    from engine.swarm.entities import CompetitorIntelEntity, CompetitorProfile
+    from google.adk.sessions import Session
+    from unittest.mock import MagicMock
+    
+    mock_session = Session(app_name="agenticum_g5", user_id="swarm_internal", session_id=run_id)
+    mock_ctx = MagicMock()
+    mock_ctx.session = mock_session
+    bus = SwarmBus(mock_ctx)
+
     # 1. HTML via Playwright ziehen
     html_content = await fetch_competitor_dom(url)
     
@@ -96,21 +109,34 @@ async def decompile_competitor(url: str, competitor_name: str):
     embeddings = model.get_embeddings([skeleton["raw_text"]])
     vector_values = embeddings[0].values
     
-    # 4. In Firestore Vector Database speichern
+    # 4. In SwarmBus schreiben
+    profile = CompetitorProfile(
+        url=url,
+        threat_score=80, # Base threat for direct competitors
+        value_props=skeleton.get("headings", []),
+        tech_stack=skeleton.get("outbound_links", [])
+    )
+    
+    bus.write_intel(CompetitorIntelEntity(
+        competitors=[profile],
+        counter_strike_angle="Analyze gaps in their SEO skeleton and H1-H3 hierarchy.",
+        grounding_sources=[url]
+    ))
+    
+    # Vector DB fallback
     db = get_db()
-    doc_ref = db.collection("columna_intelligence").document()
-    doc_ref.set({
+    db.collection("columna_intelligence").add({
         "url": url,
         "competitor": competitor_name,
-        "scraped_at": firestore.SERVER_TIMESTAMP,
-        "skeleton": skeleton,
-        # Vector Field für native Firestore find_nearest() Queries
-        "embedding_field": Vector(vector_values)
+        "embedding_field": Vector(vector_values),
+        "run_id": run_id
     })
+
+    await bus.persist()
     
     return {
         "status": "success",
-        "message": f"Competitor '{competitor_name}' decompiled and vectorized.",
-        "doc_id": doc_ref.id,
+        "message": f"Competitor '{competitor_name}' decompiled and synchronized to SwarmBus.",
+        "run_id": run_id,
         "data_points_extracted": len(skeleton["headings"])
     }

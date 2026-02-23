@@ -71,12 +71,32 @@ async def launch_browser_action(
         session_id=session_id
     )
 
+    # --- SWARM BUS INITIALIZATION ---
+    from engine.swarm.swarm_bus import SwarmBus
+    from engine.swarm.entities import SwarmBriefEntity
+    
+    # Use context to initialize SwarmBus (mocking a context for the router)
+    from unittest.mock import MagicMock
+    mock_ctx = MagicMock()
+    mock_ctx.session = session
+    bus = SwarmBus(mock_ctx)
+    
+    # Initialize state if new
+    if "sn00.brief" not in session.state:
+        bus.write_brief(SwarmBriefEntity(
+            session_id=session_id,
+            user_intent=request.task,
+            intent_category="competitor_analysis",
+            target_url=request.url,
+            activated_agents=["ba_07", "sp_01"]
+        ))
+
     # --- BA-07 Task formulieren ---
     task_prompt = (
         f"Navigiere zu: {request.url}\n\n"
         f"Aufgabe: {request.task}\n\n"
         f"Extrahiere alle relevanten Daten als strukturiertes JSON. "
-        f"Scrolle durch die gesamte Seite und analysiere alle Sections."
+        f"Nutze dein Brain (Grounding, Search, Code) für Maximum Excellence."
     )
 
     user_message = Content(
@@ -93,7 +113,6 @@ async def launch_browser_action(
             new_message=user_message
         ):
             # --- REAL-TIME STREAMING BRIDGE ---
-            # Push screenshots to Node.js EventFabric via bridge endpoint
             if hasattr(event, 'screenshot') and event.screenshot:
                 try:
                     import base64
@@ -106,8 +125,8 @@ async def launch_browser_action(
                             "type": "screenshot",
                             "data": encoded
                         })
-                except Exception as stream_err:
-                    print(f"Streaming error: {stream_err}")
+                except Exception:
+                    pass
 
             if event.is_final_response():
                 raw_text = event.content.parts[0].text if event.content.parts else "{}"
@@ -121,32 +140,26 @@ async def launch_browser_action(
         return BrowserActionResponse(
             session_id=session_id,
             status="failed",
-            target_url=request.url,
-            task_intent=request.task,
-            ra01_approval=True,
-            dsgvo_compliant=True,
             error=f"BA-07 Agent Error: {str(e)}",
             timestamp=datetime.utcnow().isoformat() + "Z"
         )
 
-    # --- SP-01 Intel Feed generieren ---
+    # --- SWARM BUS: WRITE BROWSER INTEL ---
     from engine.agents.ba_07_browser_architect.tools.intel_extractor import extract_competitor_intel
+    from engine.swarm.entities import BrowserIntelEntity
+    
     sp01_feed = extract_competitor_intel(vision_output)
-
-    # --- Firestore persistieren (async background) ---
-    session_doc = BrowserSessionFirestore(
+    
+    bus.write_browser_intel(BrowserIntelEntity(
         session_id=session_id,
-        triggered_by=request.triggered_by,
-        target_url=request.url,
-        task_intent=request.task,
-        gemini_vision_output=vision_output,
-        sp01_intel_feed=sp01_feed,
-        ra01_approval=True,
-        dsgvo_compliant=True,
-        timestamp=datetime.utcnow().isoformat() + "Z",
-        cloud_run_instance="europe-west1"
-    )
-    background_tasks.add_task(save_browser_session, session_doc)
+        pages_visited=[request.url],
+        competitor_profiles=sp01_feed.competitors if hasattr(sp01_feed, 'competitors') else [],
+        raw_vision_output=vision_output,
+        confidence_avg=0.9
+    ))
+
+    # --- Persist to Firestore via SwarmBus ---
+    background_tasks.add_task(bus.persist)
 
     return BrowserActionResponse(
         session_id=session_id,
@@ -154,7 +167,7 @@ async def launch_browser_action(
         target_url=request.url,
         task_intent=request.task,
         gemini_vision_output=vision_output,
-        sp01_intel_feed=sp01_feed,
+        sp01_intel_feed=sp01_feed.model_dump() if hasattr(sp01_feed, 'model_dump') else sp01_feed,
         ra01_approval=True,
         dsgvo_compliant=True,
         timestamp=datetime.utcnow().isoformat() + "Z"

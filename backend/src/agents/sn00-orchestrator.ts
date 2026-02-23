@@ -98,6 +98,12 @@ ${contentSnippet}...
             SWARM_MEMORY (Past Logs):
             ${swarmMemory}
             
+            SWARM_SYNCHRONIZATION (SwarmBus):
+            Alle Agenten nutzen den SwarmBus (Shared Session State).
+            - Schreibe 'sn00.brief' als erstes Entity.
+            - BA-07 liefert 'ba07.browser_intel' direkt an SP-01.
+            - RA-01 auditiert alle Entities vor dem finalen Output.
+            
             Available agents: 'sp-01', 'cc-06', 'da-03', 'ra-01', 'pm-07', 'ba-07'.
             
             BA-07 BROWSER INTELLIGENCE:

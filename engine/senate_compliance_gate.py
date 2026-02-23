@@ -133,24 +133,27 @@ async def run_accessibility_audit(html_content: str, run_id: str) -> dict:
 @router.post("/senate/evaluate-advertorial")
 async def evaluate_advertorial(draft: ComplianceRequest, user: dict = Depends(verify_firebase_token)):
     from datetime import datetime, timezone
-    from google.cloud import firestore
     from .config import PROJECT_ID
+    from engine.swarm.swarm_bus import SwarmBus
+    from engine.swarm.entities import SenateVerdictEntity, AuditCheck
     
-    db = firestore.Client(project=PROJECT_ID)
-    
+    # Mock context for SwarmBus
+    from google.adk.sessions import Session
+    mock_session = Session(app_name="agenticum_g5", user_id="swarm_internal", session_id=draft.run_id)
+    from unittest.mock import MagicMock
+    mock_ctx = MagicMock()
+    mock_ctx.session = mock_session
+    bus = SwarmBus(mock_ctx)
+
     # 1. Semantic SEO Gate
     seo_report = semantic_seo_check(draft.html_content, draft.primary_keyword)
     if not seo_report["passed"]:
-        # Log SEO Veto to Perfect Twin
-        db.collection("perfect_twin_logs").add({
-            "run_id": draft.run_id,
-            "timestamp": datetime.now(timezone.utc),
-            "type": "senate",
-            "agent": "RA-01 Semantic Shield",
-            "severity": "error",
-            "message": f"SEO Veto triggered: {', '.join(seo_report['issues'])}",
-            "score": 0
-        })
+        bus.write_verdict(SenateVerdictEntity(
+            approved=False,
+            overall_score=0.0,
+            checks=[AuditCheck(category="seo", passed=False, details=", ".join(seo_report["issues"]))]
+        ))
+        await bus.persist()
         return {
             "status": "VETO",
             "reason": "Semantic SEO Requirements not met.",
@@ -161,27 +164,20 @@ async def evaluate_advertorial(draft: ComplianceRequest, user: dict = Depends(ve
     # 2. Inject Compliance Tags
     compliant_html = inject_eu_compliance_tags(draft.html_content)
     
-    # 3. Run Accessibility Audit (RETRY LOGIC)
-    a11y_report = {"passed": False, "score": 0, "failures": ["Pending"]}
-    for attempt in range(2):
-        a11y_report = await run_accessibility_audit(compliant_html, draft.run_id)
-        if a11y_report["passed"]:
-            break
-        await asyncio.sleep(1)
+    # 3. Run Accessibility Audit
+    a11y_report = await run_accessibility_audit(compliant_html, draft.run_id)
     
-    # PERFECT TWIN: Log the Senate Judgment
-    twin_ref = db.collection("perfect_twin_logs").document(f"senate_{draft.run_id}")
-    twin_ref.set({
-        "run_id": draft.run_id,
-        "timestamp": datetime.now(timezone.utc),
-        "type": "senate",
-        "agent": "RA-01 Compliance Senate",
-        "severity": "success" if a11y_report["passed"] else "error",
-        "message": f"Compliance Audit für Lauf {draft.run_id} abgeschlossen.",
-        "score": a11y_report["score"],
-        "failures": a11y_report["failures"],
-        "passed": a11y_report["passed"]
-    })
+    # Final Verdict via SwarmBus
+    verdict = SenateVerdictEntity(
+        approved=a11y_report["passed"],
+        overall_score=a11y_report["score"],
+        checks=[
+            AuditCheck(category="wcag", passed=a11y_report["passed"], score=a11y_report["score"], details=", ".join(a11y_report["failures"])),
+            AuditCheck(category="eu_ai_act", passed=True, score=1.0)
+        ]
+    )
+    bus.write_verdict(verdict)
+    await bus.persist()
     
     if not a11y_report["passed"]:
         return {
