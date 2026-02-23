@@ -131,6 +131,7 @@ steps:
       - "--region"
       - "europe-west1"
       - "--platform"
+      - "managed"
       - "--allow-unauthenticated"
 
 images:
