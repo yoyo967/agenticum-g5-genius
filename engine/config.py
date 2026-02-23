@@ -1,17 +1,50 @@
-import os
+import json
 
-# FORCE PROJECT ID BEFORE ANY GCP IMPORTS
-os.environ["GOOGLE_CLOUD_PROJECT"] = "online-marketing-manager"
-os.environ["PROJECT_ID"] = "online-marketing-manager"
-os.environ["GOOGLE_CLOUD_QUOTA_PROJECT"] = "online-marketing-manager"
+# DYNAMIC SETTINGS RESOLUTION
+PROJECT_ID = "online-marketing-manager"
+SETTINGS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend", "data", "settings.json"))
 
-from dotenv import load_dotenv
+# 1. Try Firestore (Cloud Truth)
+try:
+    import firebase_admin
+    from firebase_admin import firestore
+    # Note: Firebase is initialized below, so we may need a lazy fetch or double-init check
+except ImportError:
+    pass
 
-# Load .env from backend folder
-env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend", ".env"))
-load_dotenv(env_path)
+def resolve_settings():
+    global PROJECT_ID
+    # A. Check Firestore
+    try:
+        if firebase_admin._apps:
+            db = firestore.client()
+            doc = db.collection('system_config').document('global').get()
+            if doc.exists:
+                data = doc.to_dict()
+                if 'projectId' in data:
+                    PROJECT_ID = data['projectId']
+                    print(f"INFO: Python Engine adopting Cloud Project ID: {PROJECT_ID}")
+                    return
+    except Exception as e:
+        print(f"DEBUG: Firestore config fetch skipped: {e}")
 
-PROJECT_ID = "online-marketing-manager" 
+    # B. Fallback to Local Settings
+    if os.path.exists(SETTINGS_PATH):
+        try:
+            with open(SETTINGS_PATH, 'r') as f:
+                settings_data = json.load(f)
+                if 'projectId' in settings_data:
+                    PROJECT_ID = settings_data['projectId']
+                    print(f"INFO: Python Engine adopting Local Project ID: {PROJECT_ID}")
+        except Exception as e:
+            print(f"WARNING: Failed to read settings.json for Python: {e}")
+
+resolve_settings()
+
+os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
+os.environ["PROJECT_ID"] = PROJECT_ID
+os.environ["GOOGLE_CLOUD_QUOTA_PROJECT"] = PROJECT_ID
+
 REGION = "europe-west1"
 
 # Verify GCP Credentials

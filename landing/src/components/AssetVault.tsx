@@ -203,7 +203,17 @@ export function AssetVault() {
                   {getIcon(file.name)}
                   <div className="flex-1 min-w-0">
                     <p className="font-mono text-xs text-white truncate">{file.name}</p>
-                    {file.timestamp && <p className="font-mono text-[9px] text-white/20">{new Date(file.timestamp).toLocaleDateString('en-US')}</p>}
+                    {file.timestamp && (
+                      <p className="font-mono text-[9px] text-white/20">
+                        {(() => {
+                          const ts = file.timestamp as { seconds: number; nanoseconds: number } | string | Date | undefined;
+                          if (!ts) return '';
+                          if (typeof ts === 'object' && 'seconds' in ts) return new Date(ts.seconds * 1000).toLocaleDateString();
+                          const d = new Date(ts as string);
+                          return isNaN(d.getTime()) ? 'Recently' : d.toLocaleDateString();
+                        })()}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     {isImage(file.name) && <Eye size={12} className="text-white/30" />}
@@ -241,7 +251,13 @@ export function AssetVault() {
               </div>
               <div className="p-3 border-t border-white/5 flex items-center justify-between">
                 <span className="font-mono text-[9px] text-white/20">
-                  {selectedFile.timestamp ? new Date(selectedFile.timestamp).toLocaleString('en-US') : 'No timestamp'}
+                  {(() => {
+                    const ts = selectedFile.timestamp as { seconds: number; nanoseconds: number } | string | Date | undefined;
+                    if (!ts) return 'No timestamp';
+                    if (typeof ts === 'object' && 'seconds' in ts) return new Date(ts.seconds * 1000).toLocaleString();
+                    const d = new Date(ts as string);
+                    return isNaN(d.getTime()) ? 'Recently' : d.toLocaleString();
+                  })()}
                 </span>
                 <CheckCircle size={12} className="text-emerald" />
               </div>

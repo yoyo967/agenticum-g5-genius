@@ -3,6 +3,7 @@ import { VertexAI, GenerativeModel } from '@google-cloud/vertexai';
 import { Logger } from '../utils/logger';
 import fs from 'fs';
 import path from 'path';
+import { SettingsService } from './settings-service';
 
 export class VertexAIService {
   private vertexAI: VertexAI;
@@ -18,7 +19,7 @@ export class VertexAIService {
     
     this.vertexAI = new VertexAI({ project, location });
     this.model = this.vertexAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
     });
   }
 
@@ -30,21 +31,17 @@ export class VertexAIService {
   }
 
   private getApiKey(): string | undefined {
+    // 1. Check environment variable override
     if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'AIzaSyB-REPLACE-IN-UI') {
       return process.env.GEMINI_API_KEY;
     }
     
-    try {
-      const settingsPath = path.join(process.cwd(), 'data', 'settings.json');
-      if (fs.existsSync(settingsPath)) {
-        const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-        if (settings.geminiKey && settings.geminiKey !== 'AIzaSyB-REPLACE-IN-UI') {
-          return settings.geminiKey;
-        }
-      }
-    } catch (e) {
-      this.logger.error('Failed to read settings for API key', e as Error);
+    // 2. Use SettingsService (Firestore/Local Sync)
+    const settings = SettingsService.getInstance().getCachedSettings();
+    if (settings.geminiKey && settings.geminiKey !== 'AIzaSyB-REPLACE-IN-UI') {
+      return settings.geminiKey;
     }
+    
     return undefined;
   }
 
@@ -56,7 +53,7 @@ export class VertexAIService {
         try {
           const ai = new GoogleGenAI({ apiKey });
           const response = await ai.models.generateContent({
-             model: 'gemini-1.5-flash',
+             model: 'gemini-2.0-flash',
              contents: prompt
           });
           return response.text || '';
@@ -103,7 +100,7 @@ export class VertexAIService {
       if (apiKey) {
         const ai = new GoogleGenAI({ apiKey });
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-2.0-flash',
             contents: prompt,
             config: {
                tools: [{ googleSearch: {} }] as any

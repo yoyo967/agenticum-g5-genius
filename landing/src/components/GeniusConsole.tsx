@@ -9,6 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadTextFile } from '../utils/export';
+import { API_BASE_URL } from '../config';
 
 import { type SwarmState } from '../types';
 
@@ -25,6 +26,7 @@ export function GeniusConsole() {
   const [output, setOutput] = useState<string | null>(null);
   const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'active' | 'error'>('disconnected');
   const [isRecording, setIsRecording] = useState(false);
+  const [settings, setSettings] = useState<{ projectId?: string; geminiKey?: string }>({});
   
   const navigate = useNavigate();
   const ws = useRef<WebSocket | null>(null);
@@ -43,6 +45,13 @@ export function GeniusConsole() {
     setOutput(null);
     localStorage.removeItem(SESSION_KEY);
   };
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/settings`)
+      .then(res => res.json())
+      .then(data => setSettings(data))
+      .catch(() => {});
+  }, []);
 
   // Audio refs
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -584,24 +593,31 @@ export function GeniusConsole() {
                          <h3 className="text-2xl font-display font-black text-red-500 uppercase tracking-tighter mb-2">Neural Fabric Offline</h3>
                          <p className="text-white/40 text-xs mb-8 max-w-sm text-center">System awaiting explicit connection directive.</p>
                          
-                         <div className="flex flex-col gap-3 w-full max-w-sm mb-8">
-                           <div className="flex items-center justify-between p-3 rounded glass border-white/5">
-                             <span className="text-xs uppercase font-black text-white/60">GCP Project</span>
-                             <span className="flex items-center gap-1 text-[10px] text-green-500 uppercase font-bold"><CheckCircle2 size={12}/> online-marketing-manager</span>
-                           </div>
-                           <div className="flex items-center justify-between p-3 rounded glass border-red-500/20 bg-red-500/5">
-                             <span className="text-xs uppercase font-black text-white/60">Gemini API Key</span>
-                             <button onClick={() => navigate('/os?module=global-config')} className="flex items-center gap-1 text-[10px] text-red-500 uppercase font-bold hover:text-red-400 transition-colors">
-                               <AlertCircle size={12}/> Not Configured →
-                             </button>
-                           </div>
-                           <div className="flex items-center justify-between p-3 rounded glass border-neural-gold/20 bg-neural-gold/5">
-                             <span className="text-xs uppercase font-black text-white/60">Microphone</span>
-                             <button onClick={() => navigator.mediaDevices.getUserMedia({ audio: true })} className="flex items-center gap-1 text-[10px] text-neural-gold uppercase font-bold hover:text-neural-gold/80 transition-colors">
-                               ⚠ Not Requested → Grant Permission
-                             </button>
-                           </div>
-                         </div>
+                          <div className="flex flex-col gap-3 w-full max-w-sm mb-8">
+                            <div className="flex items-center justify-between p-3 rounded glass border-white/5">
+                              <span className="text-xs uppercase font-black text-white/60">GCP Project</span>
+                              <span className={`flex items-center gap-1 text-[10px] uppercase font-bold ${settings.projectId ? 'text-green-500' : 'text-red-500'}`}>
+                                {settings.projectId ? <CheckCircle2 size={12}/> : <AlertCircle size={12}/>}
+                                {settings.projectId || 'Not Configured'}
+                              </span>
+                            </div>
+                            <div className={`flex items-center justify-between p-3 rounded glass border-white/5 ${!settings.geminiKey ? 'border-red-500/20 bg-red-500/5' : ''}`}>
+                              <span className="text-xs uppercase font-black text-white/60">Gemini API Key</span>
+                              {settings.geminiKey ? (
+                                <span className="flex items-center gap-1 text-[10px] text-green-500 uppercase font-bold"><CheckCircle2 size={12}/> Configured</span>
+                              ) : (
+                                <button onClick={() => navigate('/os?module=settings')} className="flex items-center gap-1 text-[10px] text-red-500 uppercase font-bold hover:text-red-400 transition-colors">
+                                  <AlertCircle size={12}/> Not Configured →
+                                </button>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded glass border-neural-gold/20 bg-neural-gold/5">
+                              <span className="text-xs uppercase font-black text-white/60">Microphone</span>
+                              <button onClick={() => navigator.mediaDevices.getUserMedia({ audio: true })} className="flex items-center gap-1 text-[10px] text-neural-gold uppercase font-bold hover:text-neural-gold/80 transition-colors">
+                                ⚠ Check Permission →
+                              </button>
+                            </div>
+                          </div>
 
                          <div className="flex gap-4">
                            <button onClick={() => connect()} className="px-6 py-2 rounded bg-neural-blue text-obsidian hover:bg-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(0,229,255,0.3)]">

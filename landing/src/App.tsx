@@ -3,6 +3,7 @@ import { LandingPage } from './pages/LandingPage';
 import { OSPortal } from './pages/OSPortal';
 import { ArticleView } from './pages/ArticleView';
 import { PrivacyPage } from './pages/PrivacyPage';
+import { ArchivesPage } from './pages/ArchivesPage';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/os" element={<OSPortal />} />
         <Route path="/article/:slug" element={<ArticleView />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/archives" element={<ArchivesPage />} />
       </Routes>
     </BrowserRouter>
   );

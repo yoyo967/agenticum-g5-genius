@@ -17,6 +17,7 @@ import clientsRouter from './routes/clients';
 import { sovereignService } from './services/sovereign-service';
 import { autopilotService } from './services/cron';
 import { clientManager } from './services/client-manager';
+import { SettingsService } from './services/settings-service';
 import { join } from 'path';
 import { VaultManager } from './services/vault-manager';
 
@@ -99,6 +100,12 @@ app.get('/health', (_req: express.Request, res: express.Response) => {
 
 httpServer.listen(port, () => {
   logger.info(`AGENTICUM G5 OS [GENIUS] active on port ${port}`);
+  
+  // Initialize Global Settings
+  SettingsService.getInstance().getSettings().then(() => {
+    logger.info('Global Configuration synchronzed.');
+  });
+
   logger.info(`Perfect Twin Archive initialized. Autopilot Jobs: ${autopilotService.getActiveTasks().length}`);
   
   // Initialize Vault Grounding

@@ -11,22 +11,24 @@ if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-router.get('/', (req: Request, res: Response) => {
+import { Router, Request, Response } from 'express';
+import { SettingsService } from '../services/settings-service';
+
+const router = Router();
+const settingsService = SettingsService.getInstance();
+
+router.get('/', async (req: Request, res: Response) => {
   try {
-    if (fs.existsSync(SETTINGS_FILE)) {
-      const data = fs.readFileSync(SETTINGS_FILE, 'utf-8');
-      res.json(JSON.parse(data));
-    } else {
-      res.json({}); // Return empty if doesn't exist yet
-    }
+    const settings = await settingsService.getSettings();
+    res.json(settings);
   } catch (err) {
     res.status(500).json({ error: 'Failed to read settings' });
   }
 });
 
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   try {
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(req.body, null, 2));
+    await settingsService.saveSettings(req.body);
     res.json({ status: 'success' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to write settings' });

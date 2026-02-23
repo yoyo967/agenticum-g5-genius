@@ -136,6 +136,18 @@ export function CampaignManager() {
         pmaxConfig: { budget, biddingStrategy, targetValue: targetValue > 0 ? targetValue : undefined },
       },
     }));
+
+    // RELEASE-READY: Dispatch Timeout to prevent infinite loops
+    setTimeout(() => {
+      setIsOrchestrating((current) => {
+        if (current) {
+          console.warn('[CampaignHub] Orchestration timeout reached.');
+          setAgentTasks(prev => prev.map(t => t.status === 'working' ? { ...t, status: 'pending', output: 'System Timeout: Check Backend Engine Status' } : t));
+          return false;
+        }
+        return current;
+      });
+    }, 15000); 
   };
   
   const handleDownloadPackage = async (campaign: Campaign) => {
