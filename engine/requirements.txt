@@ -1,13 +1,14 @@
 # === CORE ===
-fastapi==0.115.0
-uvicorn[standard]==0.30.6
-pydantic==2.7.0
-python-dotenv==1.0.1
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
 
 # === GOOGLE ADK (mindestens v1.17.0 — ComputerUseToolset ab hier) ===
 google-adk>=1.17.0
 
 # === BA-07: COMPUTER USE — EXAKTE VERSIONEN (nicht ändern!) ===
+# Note: termcolor, playwright, browserbase are critical for ADK
 termcolor==3.1.0
 playwright==1.52.0
 browserbase==1.3.0
