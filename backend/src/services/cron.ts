@@ -1,5 +1,6 @@
 import cron, { ScheduledTask as CronTask } from 'node-cron';
 import { Logger } from '../utils/logger';
+import { PillarGraphOrchestrator } from './orchestrator';
 
 interface ScheduledTask {
   id: string;
@@ -47,21 +48,17 @@ export class CronScheduler {
   private async executeWorkflow(workflowId: string) {
     this.logger.info(`Executing workflow blueprint ${workflowId}...`);
     
-    // Simulate complex background multi-agent sequence
-    setTimeout(() => {
-      this.logger.info(`[WORKFLOW-${workflowId}] SN-00 initialized. Loading context from Vault...`);
-    }, 1000);
-
-    setTimeout(() => {
-      this.logger.info(`[WORKFLOW-${workflowId}] SN-00 completed analysis. Dispatching findings to SP-01...`);
-    }, 3500);
-
-    setTimeout(() => {
-      this.logger.info(`[WORKFLOW-${workflowId}] SP-01 strategy locked. Spawning CC-06 and DA-03 instances dynamically...`);
-    }, 6000);
-
-    setTimeout(() => {
-    }, 9000);
+    if (workflowId === 'wf_001') {
+      const orchestrator = PillarGraphOrchestrator.getInstance();
+      orchestrator.executePillarRun('Autopilot: AI Agents Ecosystem', { type: 'pillar' })
+        .then(res => this.logger.info(`[AUTOPILOT] Workflow ${workflowId} completed: ${res.runId}`))
+        .catch(err => this.logger.error(`[AUTOPILOT] Workflow ${workflowId} failed`, err));
+    } else {
+      // Original simulation for other IDs
+      setTimeout(() => {
+        this.logger.info(`[WORKFLOW-${workflowId}] SN-00 initialized. Loading context from Vault...`);
+      }, 1000);
+    }
   }
 
   public getActiveTasks() {

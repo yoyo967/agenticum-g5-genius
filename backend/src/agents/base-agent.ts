@@ -48,10 +48,16 @@ export abstract class BaseAgent {
     this.lastStatus = status;
     this.progress = progress;
     this.logger.info(`[${state.toUpperCase()}] ${status} (${progress}%)`);
+    
+    const currentStatus = this.getStatus();
+    
+    // Phase 1: Real-time Event Fabric Broadcast
+    const { eventFabric } = require('../services/event-fabric');
+    eventFabric.broadcastStatus(currentStatus);
+
     if (this.onStatusUpdate) {
-      this.onStatusUpdate(this.getStatus());
+      this.onStatusUpdate(currentStatus);
     }
-    // Future: Emit to Firestore for real-time console updates
   }
 
   public get id(): string {

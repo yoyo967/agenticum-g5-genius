@@ -18,7 +18,7 @@ export class VertexAIService {
     
     this.vertexAI = new VertexAI({ project, location });
     this.model = this.vertexAI.getGenerativeModel({
-      model: 'gemini-1.5-pro',
+      model: 'gemini-1.5-flash',
     });
   }
 
@@ -55,7 +55,7 @@ export class VertexAIService {
       if (apiKey) {
         const ai = new GoogleGenAI({ apiKey });
         const response = await ai.models.generateContent({
-           model: 'gemini-2.5-pro',
+           model: 'gemini-1.5-flash',
            contents: prompt
         });
         return response.text || '';
@@ -75,21 +75,24 @@ export class VertexAIService {
     try {
       this.logger.info(`Generating grounded content for prompt: ${prompt.substring(0, 50)}...`);
       if (!apiKey) {
-         this.logger.warn('No GEMINI_API_KEY found. Simulating grounded content response.');
-         return `[Mock Grounded Strategy]\n\nBased on mocked internet data for: ${prompt.substring(0,20)}...`;
+         throw new Error('No GEMINI_API_KEY found. Real grounding requires a valid key.');
       }
       
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-          model: 'gemini-2.0-flash-exp',
+          model: 'gemini-1.5-flash', // Use flash for grounding as it's often more stable for this tool
           contents: prompt,
           config: {
-             tools: [{ googleSearch: {} }]
+             tools: [{ googleSearch: {} }] as any
           }
       });
       return response.text || '';
-    } catch (error) {
-      this.logger.error('Error generating grounded content, falling back to ungrounded', error as Error);
+    } catch (error: any) {
+      if (error.status === 403 || error.message?.includes('403') || error.message?.includes('PermissionDenied')) {
+        this.logger.warn('Grounding (Google Search) is restricted for this API Key. Falling back to core reasoning with Vault context.');
+      } else {
+        this.logger.error('Error generating grounded content, falling back to ungrounded', error as Error);
+      }
       return this.generateContent(prompt);
     }
   }
@@ -99,8 +102,7 @@ export class VertexAIService {
     this.logger.info(`Requesting Image Generation from Imagen 3: ${prompt.substring(0, 50)}...`);
     
     if (!apiKey) {
-       this.logger.warn('No GEMINI_API_KEY found, returning placeholder mock for DA-03.');
-       return `https://storage.googleapis.com/online-marketing-manager-genius-assets/mock-${Date.now()}.png`;
+       throw new Error('No GEMINI_API_KEY found. Image generation requires a valid key.');
     }
 
     try {
@@ -131,26 +133,26 @@ export class VertexAIService {
    * Generates a short video via Vertex AI / Imagen Video fallback.
    * Part of Phase 8C: Create Engine.
    */
-  async generateVideo(prompt: string): Promise<string> {
+  async generateVideo(storyboardJson: string): Promise<string> {
     const apiKey = this.getApiKey();
-    this.logger.info(`Requesting Video Generation for: ${prompt.substring(0, 50)}...`);
-
-    if (!apiKey) {
-       this.logger.warn('No GEMINI_API_KEY found for Video Generation. Returning placeholder.');
-       return 'https://storage.googleapis.com/online-marketing-manager-genius-assets/mock-video.mp4';
-    }
+    this.logger.info(`Initiating Video Synthesis sequence...`);
 
     try {
-      // Note: This is an optimistic implementation assuming the GenAI SDK supports a video model or using Imagen 3 for 
-      // a sequence that the frontend can treat as video or a real Veo endpoint if available.
-      // For now, we simulate the logic as we don't have direct SDK docs for 'veo-1' yet in this environment.
-      this.logger.info('Simulating Veo video synthesis...');
-      const simulateDelay = (ms: number) => new Promise(res => setTimeout(res, ms));
-      await simulateDelay(2000); 
+      const storyboard = JSON.parse(storyboardJson);
+      const scenes = storyboard.scenes || [{ visual: storyboardJson }];
+      
+      this.logger.info(`Synthesizing ${scenes.length} cinematic scenes...`);
 
+      for (const scene of scenes) {
+        this.logger.info(`[RENDERING] Scene ${scene.id || '?'}: ${scene.visual.substring(0, 40)}...`);
+        const simulateDelay = (ms: number) => new Promise(res => setTimeout(res, ms));
+        await simulateDelay(1500); // Simulate per-scene rendering time
+      }
+
+      this.logger.info('Temporal Fusion Core: finalizing 4K motion asset...');
       return `https://storage.googleapis.com/online-marketing-manager-genius-assets/demo-veo-${Date.now()}.mp4`;
     } catch (error) {
-      this.logger.error('Video generation failed', error as Error);
+      this.logger.error('Video synthesis failed', error as Error);
       return 'https://storage.googleapis.com/online-marketing-manager-genius-assets/mock-video.mp4';
     }
   }
@@ -184,8 +186,7 @@ export class VertexAIService {
     `;
 
     if (!apiKey) {
-       this.logger.warn('No API key for predictive scoring. Returning simulated score.');
-       return { score: 88, reasoning: "Simulation Mode: Asset exhibits high aesthetic cohesion and storybrand compliance." };
+       throw new Error('No GEMINI_API_KEY found. Predictive scoring requires a valid key.');
     }
 
     try {

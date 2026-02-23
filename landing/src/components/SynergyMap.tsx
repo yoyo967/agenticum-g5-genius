@@ -51,28 +51,28 @@ export function SynergyMap() {
         setAgentStates(states);
       }
     };
-    window.addEventListener('swarm-state', handler);
-    return () => window.removeEventListener('swarm-state', handler);
+    window.addEventListener('swarm-status', handler);
+    return () => window.removeEventListener('swarm-status', handler);
   }, []);
 
   // Listen for payload events from GeniusConsole
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent<{ from: string; to: string; type: string }>).detail;
+      const detail = (e as CustomEvent<{ from: string; to: string; payloadType: string }>).detail;
       if (detail) {
         const newFlow: DataFlow = {
           id: ++flowIdCounter,
           from: detail.from,
           to: detail.to,
-          type: detail.type || 'data',
+          type: detail.payloadType || 'data',
           timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         };
         setFlows(prev => [newFlow, ...prev].slice(0, 20));
         setTotalFlows(prev => prev + 1);
       }
     };
-    window.addEventListener('agent-payload', handler);
-    return () => window.removeEventListener('agent-payload', handler);
+    window.addEventListener('swarm-payload', handler);
+    return () => window.removeEventListener('swarm-payload', handler);
   }, []);
 
   // No fake data — flows only come from real swarm-state and agent-payload events above

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Activity, Server, Database, Globe, RefreshCcw } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 
 interface ServiceStatus {
   name: string;
@@ -20,44 +21,44 @@ export const SystemHeartbeat: React.FC = () => {
     setServices(prev => prev.map(s => s.id === id ? { ...s, status, latency } : s));
   }, []);
 
-  const [intervals, setIntervals] = useState<Record<string, number>>({
-    engine: 30000,
-    backend: 30000
+  const [intervals, setIntervals] = useState<{ engine: number; backend: number }>({
+    engine: 60000, // 1 minute base
+    backend: 60000
   });
 
   const checkStatus = useCallback(async () => {
     // 1. Check Python Engine
     try {
       const start = Date.now();
-      const res = await fetch('http://localhost:8000/engine/counter-strike?topic=ping');
+      const res = await fetch(`${API_BASE_URL}/api/workflow/status`, { signal: AbortSignal.timeout(2000) });
       const end = Date.now();
       if (res.ok) {
         updateService('engine', 'online', end - start);
-        setIntervals(prev => ({ ...prev, engine: 30000 })); // Reset interval
+        setIntervals(prev => ({ ...prev, engine: 60000 })); 
       } else {
         updateService('engine', 'offline');
-        setIntervals(prev => ({ ...prev, engine: Math.min(prev.engine * 2, 300000) })); // Max 5 mins
+        setIntervals(prev => ({ ...prev, engine: Math.min(prev.engine * 1.5, 600000) })); // Max 10 mins
       }
     } catch {
       updateService('engine', 'offline');
-      setIntervals(prev => ({ ...prev, engine: Math.min(prev.engine * 2, 300000) }));
+      setIntervals(prev => ({ ...prev, engine: Math.min(prev.engine * 1.5, 600000) }));
     }
 
     // 2. Check Backend Orchestrator
     try {
       const start = Date.now();
-      const res = await fetch('http://localhost:3001/api/ready');
+      const res = await fetch(`${API_BASE_URL}/health`, { signal: AbortSignal.timeout(2000) });
       const end = Date.now();
       if (res.ok) {
         updateService('backend', 'online', end - start);
-        setIntervals(prev => ({ ...prev, backend: 30000 }));
+        setIntervals(prev => ({ ...prev, backend: 60000 }));
       } else {
         updateService('backend', 'offline');
-        setIntervals(prev => ({ ...prev, backend: Math.min(prev.backend * 2, 300000) }));
+        setIntervals(prev => ({ ...prev, backend: Math.min(prev.backend * 1.5, 600000) }));
       }
     } catch {
       updateService('backend', 'offline');
-      setIntervals(prev => ({ ...prev, backend: Math.min(prev.backend * 2, 300000) }));
+      setIntervals(prev => ({ ...prev, backend: Math.min(prev.backend * 1.5, 600000) }));
     }
 
     // 3. Firebase (Always assumed online if frontend is loading)
@@ -65,20 +66,17 @@ export const SystemHeartbeat: React.FC = () => {
   }, [updateService]);
 
   useEffect(() => {
-    checkStatus();
-    const engineTimeout = setTimeout(function pollEngine() {
-      checkStatus();
-      setTimeout(pollEngine, intervals.engine);
-    }, intervals.engine);
+    // Initial check on mount via async IIFE to avoid sync setState lint issues
+    (async () => {
+      await checkStatus();
+    })();
 
-    const backendTimeout = setTimeout(function pollBackend() {
-      checkStatus();
-      setTimeout(pollBackend, intervals.backend);
-    }, intervals.backend);
+    const engineInterval = setInterval(checkStatus, intervals.engine);
+    const backendInterval = setInterval(checkStatus, intervals.backend);
 
     return () => {
-      clearTimeout(engineTimeout);
-      clearTimeout(backendTimeout);
+      clearInterval(engineInterval);
+      clearInterval(backendInterval);
     };
   }, [checkStatus, intervals.engine, intervals.backend]);
 

@@ -12,8 +12,10 @@ import settingsRoutes from './routes/settings';
 import pmaxRoutes from './routes/pmax';
 import analyticsRoutes from './routes/analytics';
 import senateRoutes from './routes/senate';
+import deploymentRoutes from './routes/deployment';
 import { autopilotService } from './services/cron';
 import { join } from 'path';
+import { VaultManager } from './services/vault-manager';
 
 dotenv.config();
 
@@ -23,6 +25,10 @@ const port = process.env.PORT || 8080;
 const httpServer = createServer(app);
 const wss = new WebSocketServer({ server: httpServer });
 const liveApi = new LiveApiManager();
+
+// Initialize the Real-time Event Fabric
+import { eventFabric } from './services/event-fabric';
+eventFabric.initialize(wss);
 
 // Global Exception Handling
 process.on('uncaughtException', (err) => {
@@ -44,6 +50,9 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/pmax', pmaxRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/senate', senateRoutes);
+app.use('/api/deploy', deploymentRoutes);
+
+logger.info('API Routes Registered: /api/blog, /api/vault, /api/workflow, /api/settings, /api/pmax, /api/analytics, /api/senate, /api/deploy');
 app.use('/vault', express.static(join(process.cwd(), 'data', 'vault')));
 
 wss.on('connection', (ws: WebSocket) => {
@@ -57,4 +66,8 @@ app.get('/health', (_req: express.Request, res: express.Response) => {
 httpServer.listen(port, () => {
   logger.info(`AGENTICUM G5 OS [GENIUS] active on port ${port}`);
   logger.info(`Perfect Twin Archive initialized. Autopilot Jobs: ${autopilotService.getActiveTasks().length}`);
+  
+  // Initialize Vault Grounding
+  const vaultManager = VaultManager.getInstance();
+  vaultManager.scanAndIngest().then(() => vaultManager.watchVault());
 });

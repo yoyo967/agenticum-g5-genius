@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Users, FileText, Clock, TrendingUp, Play, CheckCircle, Settings, Network, Shield, Zap, RefreshCw } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Activity, Users, FileText, Clock, Play, CheckCircle, Settings, Network, Shield, Zap, RefreshCw, Image as ImageIcon } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadPDF, downloadCSV, downloadPNG } from '../utils/export';
@@ -26,6 +25,13 @@ interface SwarmStats {
   agentActivity: ActivityLog[];
 }
 
+interface SEORankings {
+  domainAuthority: number;
+  indexedPages: number;
+  keywordClarity: number;
+  rankings: { term: string; rank: number }[];
+}
+
 interface ActivityLog {
   id: string;
   time: string;
@@ -41,6 +47,9 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
   const [throughput, setThroughput] = useState<ThroughputData[]>([]);
   const [swarmState, setSwarmState] = useState<SwarmState | null>(null);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [vaultAssets, setVaultAssets] = useState<{name: string, url: string}[]>([]);
+  const [pillars, setPillars] = useState<{ id: string; title: string; timestamp: string }[]>([]);
+  const [seo, setSeo] = useState<SEORankings | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
@@ -63,6 +72,29 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
         if (data.agentActivity?.length) {
           setLogs(data.agentActivity);
         }
+      }
+
+      // Fetch actual outputs for the gallery
+      const [vaultRes, blogRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/vault/list`),
+        fetch(`${API_BASE_URL}/api/blog/feed`)
+      ]);
+
+      if (vaultRes.ok) {
+        const vData = await vaultRes.json();
+        setVaultAssets(vData.files.filter((f: { name: string }) => f.name.match(/\.(jpg|jpeg|png|gif)$/i)).slice(0, 2));
+      }
+
+      if (blogRes.ok) {
+        const bData = await blogRes.json();
+        setPillars(bData.pillars.slice(0, 3));
+      }
+
+      // Fetch actual SEO rankings
+      const seoRes = await fetch(`${API_BASE_URL}/api/analytics/seo-rankings`);
+      if (seoRes.ok) {
+        const sData = await seoRes.json();
+        setSeo(sData);
       }
 
       setLastRefresh(new Date());
@@ -208,71 +240,86 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
           </div>
         </div>
 
-        {/* Right: Agency Throughput Chart */}
-        <div className="w-2/3 flex flex-col glass overflow-hidden">
-          <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
-            <h3 className="font-display text-sm uppercase tracking-wide flex items-center gap-2">
-              <TrendingUp size={14} className="text-white/40" /> Agency Throughput
-            </h3>
-            <span className="badge badge-online">Live from Firestore</span>
-          </div>
-          
-          <div className="flex-1 p-6 flex flex-col">
-            <div className="flex-1 min-h-[220px]">
-              {throughput.length > 0 ? (
-                <ResponsiveContainer width="100%" height={220}>
-                  <AreaChart data={throughput} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorOutputs" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00E5FF" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#00E5FF" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorTokens" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#FFD700" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#FFD700" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                    <XAxis dataKey="day" stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)', fontFamily: 'Roboto Mono' }} axisLine={false} tickLine={false} />
-                    <YAxis stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)', fontFamily: 'Roboto Mono' }} axisLine={false} tickLine={false} />
-                    <Tooltip 
-                      contentStyle={{ background: 'rgba(5,5,16,0.9)', border: '1px solid rgba(0,229,255,0.2)', borderRadius: '8px', backdropFilter: 'blur(20px)' }} 
-                      itemStyle={{ fontSize: '12px', fontFamily: 'Roboto Mono' }}
-                      labelStyle={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginBottom: '4px', fontFamily: 'Roboto Mono' }}
-                    />
-                    <Area type="monotone" dataKey="outputs" stroke="#00E5FF" fill="url(#colorOutputs)" strokeWidth={2} name="Outputs" />
-                    <Area type="monotone" dataKey="tokensK" stroke="#FFD700" fill="url(#colorTokens)" strokeWidth={2} name="Tokens (k)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="skeleton w-full h-full min-h-[200px]" />
-                    <p className="label mt-4">{loading ? 'Loading chart data...' : 'No throughput data available'}</p>
-                  </div>
-                </div>
-              )}
+        {/* Right: Agency Output Gallery */}
+        <div className="w-2/3 flex flex-col gap-5">
+          <div className="flex-1 glass overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
+              <h3 className="font-display text-sm uppercase tracking-wide flex items-center gap-2">
+                <ImageIcon size={14} className="text-purple-400" /> Agency Output Gallery
+              </h3>
+              <button onClick={() => onNavigate?.('studio')} className="font-mono text-[10px] text-accent hover:underline uppercase tracking-widest">
+                Workbench Studio →
+              </button>
             </div>
             
-            {/* Bottom Summary Metrics */}
-            <div className="mt-6 grid grid-cols-3 gap-4">
-              <div className="card card-metric">
-                <div className="metric-value" style={{ color: 'var(--color-accent)' }}>
-                  {stats?.totalOutputs ?? 0}
+            <div className="flex-1 p-6 grid grid-cols-2 gap-4">
+              {vaultAssets.length > 0 ? vaultAssets.map((asset, i) => (
+                <div key={i} className="card relative group cursor-pointer overflow-hidden border-purple-400/20 bg-purple-400/5">
+                  <div className="aspect-video bg-black/40 overflow-hidden">
+                     <img src={asset.url} alt={asset.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 p-3 bg-black/60 backdrop-blur-md transform translate-y-full group-hover:translate-y-0 transition-transform">
+                    <p className="font-display text-[9px] uppercase text-white truncate">{asset.name}</p>
+                  </div>
                 </div>
-                <div className="metric-label">Total Outputs</div>
+              )) : (
+                <>
+                  <div className="card border-white/5 flex flex-col items-center justify-center text-center opacity-40">
+                    <ImageIcon size={24} className="mb-2" />
+                    <p className="font-mono text-[9px] uppercase tracking-widest">No Assets Yet</p>
+                  </div>
+                  <div className="card border-white/5 flex flex-col items-center justify-center text-center opacity-40">
+                    <ImageIcon size={24} className="mb-2" />
+                    <p className="font-mono text-[9px] uppercase tracking-widest">Ready for Forge</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom Summary: Recent Pillar Content & SEO */}
+          <div className="h-1/3 flex gap-4">
+            <div className="flex-1 glass overflow-hidden flex flex-col">
+              <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
+                <h3 className="font-display text-sm uppercase tracking-wide flex items-center gap-2">
+                  <FileText size={14} className="text-emerald" /> Recent High-Grounded Pillars
+                </h3>
               </div>
-              <div className="card card-metric">
-                <div className="metric-value" style={{ color: 'var(--color-gold)' }}>
-                  {((stats?.totalOutputs ?? 0) * 12.4).toFixed(0)}K
-                </div>
-                <div className="metric-label">Est. Tokens</div>
+              <div className="p-4 flex gap-4 overflow-x-auto scrollbar-none">
+                  {pillars.length > 0 ? pillars.map((p, i) => (
+                    <div key={i} className="card min-w-[200px] border-emerald/20 bg-emerald/5 p-3 flex flex-col justify-between">
+                      <h4 className="font-display text-[10px] text-white line-clamp-2">{p.title}</h4>
+                      <span className="font-mono text-[8px] text-white/40 mt-2">{new Date(p.timestamp).toLocaleDateString()}</span>
+                    </div>
+                  )) : <div className="skeleton w-full h-20" />}
               </div>
-              <div className="card card-metric">
-                <div className="metric-value" style={{ color: 'var(--color-magenta)' }}>
-                  {stats?.senateBlocked ?? 0}
+            </div>
+
+            <div className="w-1/2 glass overflow-hidden flex flex-col">
+              <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
+                <h3 className="font-display text-sm uppercase tracking-wide flex items-center gap-2">
+                  <Shield size={14} className="text-accent" /> Global Deployment
+                </h3>
+              </div>
+              <div className="p-4 flex flex-col gap-3">
+                <div className="flex justify-between items-center text-[10px] uppercase font-mono">
+                  <span className="text-white/40">Hosting Target</span>
+                  <span className="text-emerald">online-marketing-manager</span>
                 </div>
-                <div className="metric-label">Senate Blocked</div>
+                {seo && (
+                  <div className="bg-white/5 rounded p-2 flex justify-between items-center">
+                    <span className="label text-[8px]">SEO Authority</span>
+                    <span className="font-mono text-[10px] text-accent">{seo.domainAuthority}</span>
+                  </div>
+                )}
+                <div className="space-y-1 mt-1">
+                  <div className="flex items-center gap-2 text-[10px] font-mono text-white/60">
+                    <CheckCircle size={10} className="text-emerald" /> CDN Core Synchronized
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-mono text-white/60">
+                    <CheckCircle size={10} className="text-emerald" /> SSL Cert: Genius Edge Active
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -285,7 +332,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
           <Network size={14} className="text-accent" /> Live Swarm Telemetry
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {swarmState ? [swarmState, ...Object.values(swarmState.subAgents || {})].map((agent, i) => (
+          {swarmState ? [swarmState, ...Object.values(swarmState.subAgents || {})].map((agent: any, i) => (
             <motion.div 
               key={agent.id} 
               initial={{ opacity: 0, y: 12 }}

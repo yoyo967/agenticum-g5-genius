@@ -41,16 +41,30 @@ export class DiscoveryEngineService {
       this.logger.info(`Searching knowledge for query: ${query.substring(0, 50)}...`);
       
       const knowledgePath = join(process.cwd(), 'data', 'vault', 'knowledge.txt');
-      let localContext = '';
-      if (existsSync(knowledgePath)) {
-        const fullText = readFileSync(knowledgePath, 'utf8');
-        // Simple mock search: return the first 1000 chars if the query is non-empty, or do rough keyword match
-        if (fullText.trim().length > 0) {
-          localContext = `Local Grounding Data: ${fullText.substring(0, 1000)}... `;
+      if (!existsSync(knowledgePath)) {
+        return `Warning: Vault is empty. Falling back to core reasoning for "${query}".`;
+      }
+
+      const fullText = readFileSync(knowledgePath, 'utf8');
+      const sources = fullText.split('--- SOURCE:').filter(s => s.trim().length > 0);
+      
+      const keywords = query.toLowerCase().split(' ').filter(k => k.length > 3);
+      let matches: string[] = [];
+
+      for (const source of sources) {
+        const content = source.toLowerCase();
+        if (keywords.some(k => content.includes(k))) {
+          // Extract a snippet
+          const sourceName = source.split('---')[0].trim();
+          matches.push(`[SOURCE: ${sourceName}]: ${source.substring(0, 500)}...`);
         }
       }
 
-      return `${localContext}Grounding data for "${query}" retrieved. (Grounding Active)`;
+      if (matches.length > 0) {
+        return `Retrieved ${matches.length} matching fragments from The Vault:\n\n${matches.join('\n\n')}`;
+      }
+
+      return `Grounding data for "${query}" retrieved, but no direct keyword matches found in local vault.`;
     } catch (error) {
       this.logger.error('Error searching knowledge', error as Error);
       return `Warning: Knowledge base search failed. Falling back to core reasoning for "${query}".`;

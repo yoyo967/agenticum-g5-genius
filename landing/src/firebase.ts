@@ -7,9 +7,9 @@ import { getAuth } from "firebase/auth";
 // For this hackathon project, we default to the project ID.
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSy_G5_DEFAULT_KEY", 
-  authDomain: `${import.meta.env.VITE_GCP_PROJECT_ID || "alphate-enterprise-g5"}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_GCP_PROJECT_ID || "alphate-enterprise-g5",
-  storageBucket: `${import.meta.env.VITE_GCP_PROJECT_ID || "alphate-enterprise-g5"}.appspot.com`,
+  authDomain: `${import.meta.env.VITE_GCP_PROJECT_ID || "online-marketing-manager"}.firebaseapp.com`,
+  projectId: import.meta.env.VITE_GCP_PROJECT_ID || "online-marketing-manager",
+  storageBucket: `${import.meta.env.VITE_GCP_PROJECT_ID || "online-marketing-manager"}.appspot.com`,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "TODO",
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "TODO"
 };

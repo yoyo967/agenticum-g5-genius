@@ -14,26 +14,19 @@ export const DemoVideoSection: React.FC = () => (
         </p>
       </div>
 
-        {/* Video Embed */}
-        <div className="relative rounded-2xl overflow-hidden border border-indigo-900/40 shadow-2xl shadow-purple-900/20 bg-black aspect-video">
-          <iframe
-            className="w-full h-full"
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ" // Example placeholder
-            title="AGENTICUM G5 — System Demo"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-          {/* Professional Overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0118]/90 backdrop-blur-sm border border-indigo-900/40">
-            <div className="w-16 h-16 rounded-full border border-accent/30 flex items-center justify-center mb-6 animate-pulse">
-              <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
-                 <div className="w-2 h-2 bg-accent rounded-full" />
-              </div>
-            </div>
-            <div className="text-white font-display font-black text-2xl tracking-tighter uppercase italic mb-2">Neural Transmission Pending</div>
-            <div className="text-slate-500 text-xs font-mono uppercase tracking-widest">
-              Awaiting Swarm Synchronization // G5.LIVE
-            </div>
+        {/* Video Placeholder - Ultra Professional */}
+        <div className="relative rounded-2xl overflow-hidden border border-indigo-900/40 shadow-2xl shadow-purple-900/20 bg-black aspect-video flex items-center justify-center group cursor-pointer">
+          <div className="absolute inset-0 bg-linear-to-br from-indigo-900/20 to-transparent pointer-events-none" />
+          <div className="flex flex-col items-center gap-4">
+             <div className="w-20 h-20 rounded-full border border-accent/20 flex items-center justify-center group-hover:bg-accent/5 transition-colors">
+                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
+                   <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-accent border-b-8 border-b-transparent ml-1" />
+                </div>
+             </div>
+             <div className="text-center">
+                <div className="text-white font-display font-black text-2xl tracking-tighter uppercase italic">Agenticum G5 Official Trailer</div>
+                <div className="text-slate-500 text-xs font-mono uppercase tracking-widest mt-1">Awaiting Transmission Sync // Available Globally Q1 2026</div>
+             </div>
           </div>
         </div>
 

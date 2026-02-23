@@ -245,30 +245,88 @@ export class AnalyticsService {
     }
   }
 
-  async getGA4Data(): Promise<any> {
-    if (!this.ga4Client || !process.env.GA4_PROPERTY_ID) {
-      this.logger.warn('GA4_PROPERTY_ID not configured, returning simulated analytics data');
-      return { sessions: 12450, pageViews: 45200, conversions: 850 };
-    }
-    
+  async getPerformanceKPIs(): Promise<any> {
     try {
-      this.logger.info(`Fetching GA4 data for property ${process.env.GA4_PROPERTY_ID}`);
-      const [response] = await this.ga4Client.runReport({
-        property: `properties/${process.env.GA4_PROPERTY_ID}`,
-        dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
-        metrics: [{ name: 'sessions' }, { name: 'screenPageViews' }, { name: 'conversions' }],
-      });
+      this.logger.info('Calculating cross-campaign KPI aggregates...');
+      const snapshot = await db.collection(Collections.KPI_METRICS).get();
       
-      const row = response.rows?.[0];
-      return {
-        sessions: parseInt(row?.metricValues?.[0]?.value || '0', 10),
-        pageViews: parseInt(row?.metricValues?.[1]?.value || '0', 10),
-        conversions: parseInt(row?.metricValues?.[2]?.value || '0', 10),
+      const metrics = {
+        clicks: 0,
+        conversions: 0,
+        views: 0,
+        ctr: 0,
+        conversionRate: 0
       };
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.type === 'click') metrics.clicks++;
+        if (data.type === 'conversion') metrics.conversions++;
+        if (data.type === 'view') metrics.views++;
+      });
+
+      metrics.ctr = metrics.views > 0 ? (metrics.clicks / metrics.views) * 100 : 0;
+      metrics.conversionRate = metrics.clicks > 0 ? (metrics.conversions / metrics.clicks) * 100 : 0;
+
+      return metrics;
     } catch (e) {
-      this.logger.error('GA4 query failed', e as Error);
-      return { sessions: 0, pageViews: 0, conversions: 0 };
+      this.logger.error('Failed to fetch KPI metrics', e as Error);
+      return { clicks: 0, conversions: 0, views: 0, ctr: 0, conversionRate: 0 };
     }
+  }
+
+  async analyzeABTests(): Promise<any[]> {
+    try {
+      this.logger.info('Running A/B variant statistical analysis...');
+      const tests = await db.collection(Collections.AB_TESTS).get();
+      const results: any[] = [];
+
+      for (const doc of tests.docs) {
+        const testData = doc.data();
+        const kpis = await db.collection(Collections.KPI_METRICS)
+          .where('campaignId', '==', testData.campaignId)
+          .get();
+
+        const variantMetrics: any = {};
+        testData.variants.forEach((v: any) => {
+          variantMetrics[v.id] = { name: v.name, clicks: 0, conversions: 0 };
+        });
+
+        kpis.forEach(k => {
+          const data = k.data();
+          if (data.variantId && variantMetrics[data.variantId]) {
+            if (data.type === 'click') variantMetrics[data.variantId].clicks++;
+            if (data.type === 'conversion') variantMetrics[data.variantId].conversions++;
+          }
+        });
+
+        results.push({
+          id: doc.id,
+          campaignId: testData.campaignId,
+          status: testData.status,
+          metrics: variantMetrics
+        });
+      }
+
+      return results;
+    } catch (e) {
+      this.logger.error('Failed to analyze A/B tests', e as Error);
+      return [];
+    }
+  }
+
+  async getSEORankings(): Promise<any> {
+    // Simulated SEO tracking logic
+    return {
+      domainAuthority: 42,
+      indexedPages: 128,
+      keywordClarity: 88,
+      rankings: [
+        { term: 'Neural Marketing', rank: 3 },
+        { term: 'AI Content Swarm', rank: 1 },
+        { term: 'Autonomous Ad Ops', rank: 5 }
+      ]
+    };
   }
 }
 

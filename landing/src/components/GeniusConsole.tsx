@@ -111,7 +111,7 @@ export function GeniusConsole() {
           window.dispatchEvent(new CustomEvent('swarm-status', { detail: data.agent }));
         }
 
-        if (data.type === 'payload') {
+        if (data.type === 'swarm-payload') {
           // Dispatch global event for SynergyMap telemetry
           window.dispatchEvent(new CustomEvent('swarm-payload', { detail: data }));
           addLog('action', `Data Transfer: ${String(data.from).toUpperCase()} → ${String(data.to).toUpperCase()}`);
@@ -172,14 +172,18 @@ export function GeniusConsole() {
     };
 
     window.addEventListener('trigger-orchestration', handleTrigger);
+    
+    // Copy refs to local variables for cleanup safety
+    const currentWS = ws.current;
+    const currentReconnect = reconnectTimeoutRef.current;
+
     return () => {
       window.removeEventListener('trigger-orchestration', handleTrigger);
-      const currentReconnect = reconnectTimeoutRef.current;
       if (currentReconnect) {
         clearTimeout(currentReconnect);
       }
-      if (ws.current) {
-        ws.current.close();
+      if (currentWS) {
+        currentWS.close();
       }
     };
   }, [connectionState, addLog]);
@@ -189,7 +193,7 @@ export function GeniusConsole() {
       setOutput(null);
       ws.current?.send(JSON.stringify({ 
         type: 'start', 
-        input: 'Create a viral launch campaign for AGENTICUM G5.' 
+        input: 'Erstelle eine Pillar-Page Strategie für AGENTICUM G5.' 
       }));
       addLog('action', 'Initializing Neural Orchestration...');
     }
@@ -396,26 +400,57 @@ export function GeniusConsole() {
                   {agent.state === 'done' ? (
                     <CheckCircle2 size={12} className="text-green-500" />
                   ) : agent.state !== 'idle' ? (
-                    <div className="flex gap-0.5">
-                      <motion.div animate={{ height: [4, 8, 4] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-0.5 bg-neural-blue" />
-                      <motion.div animate={{ height: [8, 4, 8] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-0.5 bg-neural-blue" />
+                    <div className="flex gap-0.5 relative">
+                      <motion.div 
+                        animate={{ height: [4, 12, 4], opacity: [0.3, 1, 0.3] }} 
+                        transition={{ repeat: Infinity, duration: 0.6 }} 
+                        className="w-0.5" 
+                        style={{ backgroundColor: agent.color }}
+                      />
+                      <motion.div 
+                        animate={{ height: [12, 4, 12], opacity: [0.3, 1, 0.3] }} 
+                        transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} 
+                        className="w-0.5"
+                        style={{ backgroundColor: agent.color }}
+                      />
+                      {/* Glow effect */}
+                      <motion.div 
+                        animate={{ opacity: [0, 0.4, 0] }}
+                        transition={{ repeat: Infinity, duration: 1.5 }}
+                        className="absolute inset-[-10px] rounded-full blur-md -z-1"
+                        style={{ backgroundColor: agent.color }}
+                      />
                     </div>
                   ) : null}
                 </div>
                 
                 <div className="flex flex-col gap-1.5">
-                  <div className="flex justify-between text-[8px] uppercase tracking-widest font-black opacity-30">
-                    <span>{agent.state}</span>
-                    <span>{agent.progress}%</span>
+                  <div className="flex justify-between items-center text-[8px] uppercase tracking-widest font-black">
+                    <span 
+                      className={`px-1 rounded ${
+                        agent.state === 'thinking' ? 'text-neural-gold bg-neural-gold/10' : 
+                        agent.state === 'working' ? 'text-neural-blue bg-neural-blue/10' : 
+                        agent.state === 'done' ? 'text-green-500 bg-green-500/10' : 'opacity-30'
+                      }`}
+                    >
+                      {agent.state}
+                    </span>
+                    <span className="opacity-30">{agent.progress}%</span>
                   </div>
                   <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                     <motion.div 
                       className="h-full" 
                       style={{ backgroundColor: agent.color }}
                       animate={{ width: `${agent.progress}%` }}
+                      transition={{ type: 'spring', stiffness: 50, damping: 20 }}
                     />
                   </div>
-                  <p className="text-[9px] opacity-60 truncate italic mt-1 font-medium">{agent.lastStatus}</p>
+                  <div className="flex items-center gap-2 mt-1 min-w-0">
+                    {agent.state === 'thinking' && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-neural-gold animate-ping shrink-0" />
+                    )}
+                    <p className="text-[9px] opacity-60 truncate italic font-medium flex-1 overflow-hidden">{agent.lastStatus}</p>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -530,7 +565,7 @@ export function GeniusConsole() {
                          <div className="flex flex-col gap-3 w-full max-w-sm mb-8">
                            <div className="flex items-center justify-between p-3 rounded glass border-white/5">
                              <span className="text-xs uppercase font-black text-white/60">GCP Project</span>
-                             <span className="flex items-center gap-1 text-[10px] text-green-500 uppercase font-bold"><CheckCircle2 size={12}/> alphate-enterprise-g5</span>
+                             <span className="flex items-center gap-1 text-[10px] text-green-500 uppercase font-bold"><CheckCircle2 size={12}/> online-marketing-manager</span>
                            </div>
                            <div className="flex items-center justify-between p-3 rounded glass border-red-500/20 bg-red-500/5">
                              <span className="text-xs uppercase font-black text-white/60">Gemini API Key</span>
@@ -564,31 +599,32 @@ export function GeniusConsole() {
                        </div>
                      ) : (
                        <>
-                         {logs.map((log, i) => (
-                           <motion.div 
-                             key={i}
-                             initial={{ opacity: 0, x: -5 }}
-                             animate={{ opacity: 1, x: 0 }}
-                             className="flex gap-4 items-start"
-                           >
-                             <span className="text-[9px] opacity-20 font-black tabular-nums">[{log.timestamp}]</span>
-                             <span className={`text-[10px] font-black uppercase tracking-tighter w-16 ${
-                               log.type === 'system' ? 'text-white/30' : 
-                               log.type === 'error' ? 'text-red-500' : 
-                               log.type === 'success' ? 'text-green-500' : 'text-neural-blue'
-                             }`}>{log.type}</span>
-                             <p className="text-[11px] opacity-80 flex-1 leading-normal">{log.message}</p>
-                           </motion.div>
-                         ))}
-                         {swarm?.state !== 'idle' && (
-                           <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="flex gap-4 items-center mt-4">
-                              <span className="text-[9px] opacity-20 font-black tabular-nums">[{new Date().toLocaleTimeString()}]</span>
-                              <span className="text-neural-blue font-black uppercase text-[10px] tracking-tighter">WAIT</span>
-                              <div className="flex gap-1 mt-1">
-                                {[0, 1, 2].map(i => <div key={i} className="w-1.5 h-1.5 bg-neural-blue/40 rounded-full" />)}
-                              </div>
-                           </motion.div>
-                         )}
+                          {logs.map((log, i) => (
+                            <motion.div 
+                              key={i}
+                              initial={{ opacity: 0, x: -5 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              className="flex gap-4 items-start"
+                            >
+                              <span className="text-[9px] opacity-20 font-black tabular-nums">[{log.timestamp}]</span>
+                              <span className={`text-[10px] font-black uppercase tracking-tighter w-16 ${
+                                log.type === 'system' ? 'text-white/30' : 
+                                log.type === 'error' ? 'text-red-500' : 
+                                log.type === 'action' ? 'text-neural-gold' :
+                                log.type === 'success' ? 'text-green-500' : 'text-neural-blue'
+                              }`}>{log.type}</span>
+                              <p className="text-[11px] opacity-80 flex-1 leading-normal">{log.message}</p>
+                            </motion.div>
+                          ))}
+                          {(swarm?.state !== 'idle' && swarm?.state !== 'done') && (
+                            <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="flex gap-4 items-center mt-4">
+                               <span className="text-[9px] opacity-20 font-black tabular-nums">[{new Date().toLocaleTimeString()}]</span>
+                               <span className="text-neural-blue font-black uppercase text-[10px] tracking-tighter">PROCESSING</span>
+                               <div className="flex gap-1 mt-1">
+                                 {[0, 1, 2].map(i => <div key={i} className="w-1.5 h-1.5 bg-neural-blue/40 rounded-full" />)}
+                               </div>
+                            </motion.div>
+                          )}
                        </>
                      )}
                   </motion.div>

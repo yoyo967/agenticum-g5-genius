@@ -79,8 +79,8 @@ export function ImagenGallery() {
             )}
 
             {/* Hover Overlay */}
-            <div className="absolute inset-0 bg-midnight/60 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm flex items-center justify-center gap-4">
-              {asset.url && (
+            <div className="absolute inset-0 bg-midnight/80 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-md flex flex-col items-center justify-center gap-4">
+              {asset.url ? (
                 <>
                   <button className="p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-all">
                     <Eye size={18} />
@@ -89,9 +89,13 @@ export function ImagenGallery() {
                     <Download size={18} />
                   </a>
                 </>
-              )}
-              {!asset.url && (
-                <span className="font-mono text-xs text-white/40">Connect backend to view</span>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                   <div className="w-8 h-8 rounded-full border border-neural-gold/20 flex items-center justify-center">
+                      <Sparkles size={14} className="text-neural-gold/40 animate-pulse" />
+                   </div>
+                   <span className="font-mono text-[10px] text-neural-gold/40 uppercase tracking-widest">Awaiting Generation</span>
+                </div>
               )}
             </div>
 

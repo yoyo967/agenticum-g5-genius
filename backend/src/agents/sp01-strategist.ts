@@ -2,6 +2,7 @@ import { BaseAgent, AgentState } from './base-agent';
 import { DiscoveryEngineService } from '../services/discovery-engine';
 import { VertexAIService } from '../services/vertex-ai';
 import { GoogleWorkspaceService } from '../services/google-workspace';
+import { eventFabric } from '../services/event-fabric';
 
 export class SP01Strategist extends BaseAgent {
   private readonly DIRECTIVES = `
@@ -25,6 +26,7 @@ export class SP01Strategist extends BaseAgent {
 
   async execute(input: string): Promise<string> {
     this.updateStatus(AgentState.THINKING, 'Grounding intelligence on live internet...');
+    eventFabric.broadcast({ type: 'task-log', agentId: 'sp-01', message: 'Searching The Vault & Google Grounding...' });
     
     const vertexAI = VertexAIService.getInstance();
     const discoveryEngine = DiscoveryEngineService.getInstance();
@@ -40,17 +42,32 @@ export class SP01Strategist extends BaseAgent {
     const prompt = `
       ${this.DIRECTIVES}
       TASK: Create a comprehensive strategic blueprint for the target: "${input}"
-      INTERNAL GROUNDING CONTEXT: ${groundingData}
+      INTERNAL GROUNDING CONTEXT (THE VAULT): ${groundingData}
       
-      REQUIREMENTS:
-      1. Search the live internet for up-to-date context regarding the target brand or market.
-      2. Use the StoryBrand Framework.
-      3. Apply Kahneman's 8 Biases to minimize frictional anxiety.
-      4. Recommend a budget allocation following the Binet & Field 60/40 rule.
+      CRITICAL INSTRUCTIONS:
+      1. SEARCH & CITE: Use the live internet to find current market trends, competitor pricing, and news relevant to "${input}".
+      2. EVIDENCE: You MUST include a "SOURCES & EVIDENCE" section at the end of the brief, citing at least 3 distinct URLs or data points found.
+      3. FRAMEWORK: Apply the StoryBrand Framework to define the Customer as the Hero.
+      4. PSYCHOLOGY: Integrate Kahneman's "Availability Heuristic" and "Loss Aversion" to structure the offer's value proposition.
+      5. ALLOCATION: Propose a budget split following the Binet & Field 60:40 Rule (Brand building : Sales activation).
       
-      OUTPUT FORMAT:
-      ## STRATEGIC BLUEPRINT: ${input}
-      ... (detailed analysis sections) ...
+      OUTPUT FORMAT (MARKDOWN):
+      # STRATEGIC MASTER BRIEF: ${input}
+      
+      ## 🎯 Market Pulse & Competitor Landscape
+      (Detailed analysis based on live research)
+      
+      ## 🗺️ StoryBrand Matrix (Customer Journey)
+      ...
+      
+      ## ⚖️ Behavioral Economics & Pricing
+      ...
+      
+      ## 📊 60/40 Budget Allocation
+      ...
+      
+      ## 📌 SOURCES & EVIDENCE
+      - [Source 1](URL) - Key finding...
     `;
 
     const strategy = await vertexAI.generateGroundedContent(prompt);

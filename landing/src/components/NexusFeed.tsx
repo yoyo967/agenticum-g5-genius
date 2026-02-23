@@ -72,23 +72,22 @@ export const NexusFeed = () => {
               >
                 <div className="absolute inset-0 bg-linear-to-r from-white/5 to-transparent pointer-events-none" />
                 <div className="flex justify-between items-start mb-4">
-                  <span className="text-[10px] font-black text-neural-blue/50 uppercase tracking-widest animate-pulse">
-                    AWAITING SYNTHESIS // PM-07
+                  <span className="text-[10px] font-black text-neural-blue/30 uppercase tracking-widest">
+                    SYNCING NEURAL ARCHIVE // G5
                   </span>
-                  <span className="text-[8px] font-black text-white/10 border border-white/10 px-2 py-0.5 rounded uppercase tracking-widest">
-                    LOCKED
+                  <span className="text-[8px] font-black text-white/5 border border-white/5 px-2 py-0.5 rounded uppercase tracking-widest">
+                    STAGING
                   </span>
                 </div>
-                <div className="h-6 w-3/4 bg-white/10 rounded mb-4 animate-pulse" />
-                <div className="space-y-2 mb-6">
-                  <div className="h-2 w-full bg-white/5 rounded animate-pulse" />
-                  <div className="h-2 w-5/6 bg-white/5 rounded animate-pulse" />
-                  <div className="h-2 w-4/6 bg-white/5 rounded animate-pulse" />
+                <div className="h-6 w-3/4 bg-white/5 rounded mb-4" />
+                <div className="space-y-2 mb-6 text-white/10 text-xs font-mono">
+                   <div>// DECRYPTING NARRATIVE BUFFER...</div>
+                   <div>// ALIGNING SEMANTIC NODES...</div>
                 </div>
                 <div className="mt-auto">
-                  <button className="text-[10px] font-black uppercase tracking-widest text-white/10 cursor-not-allowed">
-                    Access Restricted →
-                  </button>
+                   <div className="w-12 h-1 bg-neural-blue/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-neural-blue/30 w-1/3 animate-progress" />
+                   </div>
                 </div>
               </motion.div>
             ))}

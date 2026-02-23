@@ -60,7 +60,8 @@ export class DA03Architect extends BaseAgent {
       REQUIREMENTS:
       1. Reference Itten's 7 Color Contrasts.
       2. Explain the Golden Ratio grid application.
-      3. Format as a clean, authoritative technical manifesto.
+      3. Use G5 BRAND TOKENS: Obsidian, Tech-Gold, Neural Blue.
+      4. Format as a clean, authoritative technical manifesto.
     `;
 
     const manifesto = await vertexAI.generateContent(prompt);

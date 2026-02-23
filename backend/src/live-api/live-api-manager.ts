@@ -76,29 +76,18 @@ export class LiveApiManager {
       });
     }
 
-    // Pipe Swarm Statuses to Frontend
-    this.orchestrator.onStatusUpdate = (status) => {
-      if (clientWs.readyState === WebSocket.OPEN) {
-        clientWs.send(JSON.stringify({ type: 'status', agent: status }));
-      }
-    };
-
-    this.orchestrator.onBroadcast = (message) => {
-      if (clientWs.readyState === WebSocket.OPEN) {
-        clientWs.send(JSON.stringify(message));
-      }
-    };
+    // Event Fabric handles global status/broadcasts.
+    // Individual clients can still listen for direct outputs.
 
     clientWs.on('message', async (data: any) => {
       try {
         const message = JSON.parse(data.toString());
 
         if (message.type === 'start') {
-          // Trigger the standard OS Chat logic (text workflow)
-          clientWs.send(JSON.stringify({ type: 'status', agent: this.orchestrator.getStatus() }));
           const result = await this.orchestrator.execute(message.input || 'Initial brief');
-          clientWs.send(JSON.stringify({ type: 'output', agentId: 'sn-00', data: result }));
-          clientWs.send(JSON.stringify({ type: 'status', agent: this.orchestrator.getStatus() }));
+          if (clientWs.readyState === WebSocket.OPEN) {
+            clientWs.send(JSON.stringify({ type: 'output', agentId: 'sn-00', data: result }));
+          }
         }
 
         // Handle Audio Chunk routing

@@ -307,8 +307,13 @@ export function PillarBlogEngine() {
                     <>
                       {/* Left: Editor */}
                       <div className="flex flex-col h-[calc(100vh-250px)] lg:h-[600px] bg-black/30 border border-white/10 rounded-lg overflow-hidden relative">
-                        <div className="bg-white/5 px-4 py-2 text-[10px] font-mono uppercase text-white/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
-                          Markdown Editor (Drafting)
+                        <div className="bg-white/5 px-4 py-2 text-[10px] font-mono uppercase text-white/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md flex items-center justify-between">
+                          <span>Markdown Editor (Drafting)</span>
+                          <div className="flex gap-2">
+                            <button onClick={() => setEditContent(p => p + ' **Bold**')} className="hover:text-white transition-colors">B</button>
+                            <button onClick={() => setEditContent(p => p + ' *Italic*')} className="hover:text-white transition-colors">I</button>
+                            <button onClick={() => setEditContent(p => p + ' [Link](url)')} className="hover:text-white transition-colors">Link</button>
+                          </div>
                         </div>
                         <textarea
                           value={editContent}

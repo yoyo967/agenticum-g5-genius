@@ -134,9 +134,14 @@ export class CC06Director extends BaseAgent {
       4. The G5 Advantage (Directives & Execution)
       5. Conclusion: The Autonomous Future
       
+      CRITICAL: 
+      - DO NOT include any text like "KNOWLEDGE BASE EXTRACTS" or "DOCUMENT_START" in the output.
+      - DO NOT include your instructions or meta-talk.
+      - Provide ONLY the final Markdown content.
+      
       If this is a "cluster" article, make it hyper-specific and actionable (800-1200 words).
       If this is a "pillar" article, make it a broad, ultimate guide exceeding 2500+ words. 
-      Use deep insights from the provided KNOWLEDGE BASE EXTRACTS to build out substantial sections.
+      Use deep insights from the provided knowledge base context to build out substantial sections.
     `;
 
     this.updateStatus(AgentState.WORKING, 'Consulting Vertex AI (Gemini 2.0 Thinking) for generative payload...', 40);
@@ -150,54 +155,10 @@ export class CC06Director extends BaseAgent {
         markdownContent = `# The Definitive Guide to ${topic}\n\n${markdownContent}`;
       }
       
-      this.updateStatus(AgentState.WORKING, 'AI generation complete. Parsing taxonomy...', 70);
+        this.updateStatus(AgentState.WORKING, 'AI generation complete. Parsing taxonomy...', 70);
     } catch (error) {
-      console.error('Vertex AI failed or API Key 403 Forbidden. Yielding to Knowledge Base Fallback Engine..', error);
-      
-      const kbSnippets = kbContext.split('[DOCUMENT_START:').filter(s => s.trim().includes(']'));
-      let dynamicSections = '';
-      
-      if (kbSnippets.length > 0) {
-          dynamicSections = kbSnippets.map((snippet, idx) => {
-              const parts = snippet.split(']');
-              const sourceName = parts[0]?.trim() || `Knowledge Node ${idx}`;
-              const content = parts.slice(1).join(']').split('[DOCUMENT_END:')[0]?.trim() || '';
-              
-              if (content.length < 50) return '';
-              
-              return `
-## Strategic Pillar ${idx + 1}: Deep Insights from ${sourceName}
-
-${content.substring(0, 1000).replace(/#/g, '###')}
-
-> *Autonomous analysis indicates that integrating ${sourceName} directly improves orchestration latency by 47% across cross-functional agent swarms.*
-
-### Actionable Implementation
-When deploying the architecture mentioned in ${sourceName}, the G5 Nexus automatically routes semantic arrays through the RA-01 audit gate. This establishes a baseline for cognitive scaling.
-`;
-          }).filter(s => s !== '').join('\n\n');
-      }
-
-      markdownContent = `
-# The Ultimate Guide to ${topic}
-
-*Generated autonomously by CC-06 Director (Offline Knowledge-Base Extraction Mode due to API 403).*
-
-## Executive Summary & Paradigm Shift
-
-The enterprise software landscape is rapidly evolving. When dealing with **${topic}**, one must approach the infrastructure through a lens of absolute automation and spatial orchestration. The sheer complexity of modern agentic workflows demands a system that does not merely respond, but anticipates.
-
-${dynamicSections}
-
-## The Obsidian Standard Architecture
-
-Emulate the "Agenticum G5" standard, enforcing Dark Mode, glassmorphism, and minimal latency interfaces to visualize the workflows extracted above.
-
-> "The true measure of an intelligent system is not in its responses, but in the actions it takes before you ask." — *Agenticum G5 Manifesto*
-
-### Moving Forward
-In the coming months, ${topic} will become a foundational necessity rather than an experimental luxury. Deploy your semantic routers. Prepare the execution substrate.
-      `.trim();
+      this.logger.error('Vertex AI failed. Aborting autonomous forge.', error as Error);
+      throw new Error(`Article forging failed: ${ (error as any).message }`);
     }
 
     this.updateStatus(AgentState.WORKING, 'Injecting resulting asset into Firestore database (STAGED)...', 90);

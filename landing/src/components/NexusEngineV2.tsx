@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Workflow, Play, CheckCircle2, Cpu, Zap, Film, Palette, Shield, Bot, ChevronRight } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 type AgentId = 'SN-00' | 'SP-01' | 'CC-06' | 'DA-03' | 'RA-01' | 'PM-07';
 
@@ -70,7 +71,7 @@ export function NexusEngineV2() {
     }
   };
 
-  const runWorkflow = () => {
+  const runWorkflow = async () => {
     if (isRunning) return;
     setIsRunning(true);
     setToast(`${activeWorkflow.name} Compilation Initiated. Swarm Engaged.`);
@@ -80,24 +81,40 @@ export function NexusEngineV2() {
     activeWorkflow.agents.forEach(a => initialState[a] = 'idle');
     setAgentProgress(initialState);
 
-    // Sequentially light up each agent
-    activeWorkflow.agents.forEach((agent, index) => {
-      setTimeout(() => {
-        setAgentProgress(prev => ({ ...prev, [agent]: 'processing' }));
-      }, index * 1200);
-      setTimeout(() => {
-        setAgentProgress(prev => ({ ...prev, [agent]: 'complete' }));
-      }, index * 1200 + 1000);
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/workflow/deploy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workflowId: activeWorkflow.id,
+          name: activeWorkflow.name,
+          nodes: activeWorkflow.agents.map((id, i) => ({
+            id: `node-${i}`,
+            type: 'agentNode',
+            data: { agentId: id.toLowerCase(), title: id, config: activeWorkflow.desc }
+          })).concat([{
+            id: 'trigger-0',
+            type: 'triggerNode',
+            data: { title: 'Manual Trigger', config: activeWorkflow.desc }
+          }]),
+          edges: activeWorkflow.agents.map((id, i) => ({
+            id: `edge-${i}`,
+            source: i === 0 ? 'trigger-0' : `node-${i-1}`,
+            target: `node-${i}`
+          }))
+        })
+      });
 
-    // Complete after all agents finish
-    setTimeout(() => {
+      if (!response.ok) throw new Error('Deployment failed upstream.');
+      
+      setToast(`${activeWorkflow.name} — Dispatched to Swarm Cluster.`);
+      
+    } catch (err: any) {
+      setToast(`Error: ${err.message}`);
       setIsRunning(false);
-      setToast(`${activeWorkflow.name} — All agents completed successfully.`);
-      setTimeout(() => setToast(null), 3000);
-    }, activeWorkflow.agents.length * 1200 + 500);
+    }
 
-    // Dispatch global event for GeniusConsole to pick up
+    // Dispatch global event for GeniusConsole to pick up (for visual only)
     window.dispatchEvent(new CustomEvent('trigger-orchestration', { 
       detail: { 
         input: `Execute workflow: ${activeWorkflow.name}. Context: ${activeWorkflow.desc}`,

@@ -16,7 +16,7 @@ import { FinalCTASection } from '../sections/FinalCTASection';
 
 export function LandingPage() {
   const { scrollYProgress } = useScroll();
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.1]);
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -36,10 +36,8 @@ export function LandingPage() {
     { label: 'Mission', id: 'mission' },
     { label: 'The Swarm', id: 'swarm' },
     { label: 'Tools', id: 'tools' },
-    { label: 'Intelligence', id: 'columna-demo' },
-    { label: 'Senate', id: 'senate-demo' },
-    { label: 'Compliance', id: 'compliance-demo' },
-    { label: 'Demo', id: 'demo' },
+    { label: 'The Codex', id: 'codex' },
+    { label: 'Feed', id: 'feed' },
   ];
 
   return (
@@ -114,8 +112,8 @@ export function LandingPage() {
         {/* ============================================================
            HERO SECTION — Full viewport, agent greetings, massive Oswald
            ============================================================ */}
-        <header id="mission" className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-32 pb-20">
-          <motion.div style={{ opacity: heroOpacity }} className="flex flex-col items-center">
+        <header id="mission" className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-32 pb-20 z-10">
+          <motion.div style={{ opacity: heroOpacity }} className="flex flex-col items-center relative z-20">
             {/* Status Badge */}
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
               className="badge badge-processing mb-10">

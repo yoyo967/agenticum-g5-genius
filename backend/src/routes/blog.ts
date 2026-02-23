@@ -77,50 +77,10 @@ router.post('/agent-dispatch', async (req: Request, res: Response) => {
     // Fire & Forget background generation
     if (type === 'image' || type === 'video') {
        const da03 = new DA03Architect();
-       setTimeout(async () => {
-         try {
-           const result = await da03.execute(topic);
-           // Look for the base64 output
-           const b64Match = result.match(/data:image\/[^;]+;base64,([a-zA-Z0-9+/=]+)/);
-           if (b64Match) {
-              const buffer = Buffer.from(b64Match[1], 'base64');
-              const filename = `DA03-Generated-${Date.now()}.${type === 'video' ? 'mp4' : 'jpg'}`;
-              
-              // We need to write this to a temp file or upload buffer directly
-              // Luckily StorageService relies on Multer, so for direct buffer save:
-              const path = require('path');
-              const fs = require('fs');
-              const filepath = path.join(process.cwd(), 'data', 'vault', filename);
-              fs.writeFileSync(filepath, buffer);
-              
-              // Add to Firestore to index it broadly
-              await db.collection(Collections.CLUSTERS).add({
-                title: topic.substring(0, 40) + '...',
-                slug: filename,
-                tag: type.toUpperCase(),
-                agent: 'DA-03',
-                status: 'published',
-                timestamp: new Date().toISOString()
-              });
-              
-              // Send WS payload to update UI
-              ((global as any).wss)?.clients?.forEach((client: any) => {
-                if (client.readyState === 1) {
-                   client.send(JSON.stringify({
-                     type: 'payload',
-                     from: 'DA-03',
-                     to: 'UI',
-                     payloadType: 'Asset Generation Complete'
-                   }));
-                }
-              });
-              
-              console.log(`[Neural Fabric] DA-03 successfully generated and saved asset: ${filename}`);
-           }
-         } catch(err) {
-           console.error('[Neural Fabric] DA-03 Image Generation failed:', err);
-         }
-       }, 500);
+       // DA-03 handles its own persistence to /vault in its execute method
+       da03.execute(topic)
+         .then(result => console.log(`[Neural Fabric] DA-03 Asset Generation complete.`))
+         .catch(err => console.error('[Neural Fabric] DA-03 failed:', err));
     } else {
        const orchestrator = PillarGraphOrchestrator.getInstance();
        // Autonomous, grounded, audit-trailed execution

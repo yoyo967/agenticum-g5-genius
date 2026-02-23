@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { db, Collections } from '../services/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { PM07Manager } from '../agents/pm07-manager';
+import { googleAdsService } from '../services/google-ads';
+import { eventFabric } from '../services/event-fabric';
 
 const router = Router();
 const pm07 = new PM07Manager();
@@ -182,14 +184,34 @@ router.post('/launch', async (req: Request, res: Response) => {
     const { campaignId, config } = req.body;
     console.log(`[PMax Route] Initiating ecosystem launch for campaign: ${campaignId}`);
     
-    // PM-07 handles the heavy lifting
+    // 1. PM-07 handles the strategy report
     const launchReport = await pm07.execute(`LAUNCH CAMPAIGN ${campaignId} WITH CONFIG: ${JSON.stringify(config)}`);
     
-    res.json({
-      success: true,
-      report: launchReport,
-      timestamp: new Date().toISOString()
-    });
+    // 2. Trigger the real (simulated) Google Ads Launch
+    const campaignDoc = await db.collection('pmax_campaigns').doc(campaignId).get();
+    const campaignData = campaignDoc.exists ? campaignDoc.data() : mockCampaignStore.find(c => c.id === campaignId);
+    
+    if (campaignData) {
+      const adsResult = await googleAdsService.createPMaxCampaign({
+        name: campaignData.name,
+        budgetAmountMicros: campaignData.budget.dailyAmount * 1000000,
+        finalUrls: campaignData.settings.finalUrlExpansion ? ['https://agenticum-g5.web.app'] : [],
+        headlines: campaignData.assetGroups[0].assets.headlines.map((h: any) => h.text),
+        descriptions: campaignData.assetGroups[0].assets.descriptions.map((d: any) => d.text),
+        images: [],
+      });
+      
+      eventFabric.broadcast({ type: 'pmax-launch', campaignId, adsResult });
+      
+      res.json({
+        success: true,
+        report: launchReport,
+        adsResult,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(404).json({ error: 'Campaign details not found for launch' });
+    }
   } catch (error) {
     console.error('Launch failed:', error);
     res.status(500).json({ error: 'Ecosystem launch failed' });
