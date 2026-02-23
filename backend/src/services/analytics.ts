@@ -136,45 +136,59 @@ export class AnalyticsService {
 
       const totalOutputs = campaigns.size + pillars.size + clusters.size;
 
+      const safeDate = (val: any): Date => {
+        if (!val) return now;
+        if (typeof val.toDate === 'function') return val.toDate();
+        if (val instanceof Date) return val;
+        if (typeof val === 'number' || typeof val === 'string') return new Date(val);
+        return now;
+      };
+
       // Build real activity log from recent Firestore documents
       const recentCampaigns = campaigns.docs.slice(-3);
       for (const doc of recentCampaigns) {
         const data = doc.data();
+        const docDate = safeDate(data.createdAt);
         activity.push({
           id: doc.id,
-          time: data.createdAt ? timeStr(data.createdAt.toDate()) : timeStr(now),
+          time: timeStr(docDate),
           agent: 'SP-01',
           text: `Campaign: "${data.brand || data.objective || doc.id}" — ${data.status || 'created'}`,
           type: 'success',
-        });
+          _timestamp: docDate.getTime() // Hidden for sorting
+        } as any);
       }
 
       const recentPillars = pillars.docs.slice(-3);
       for (const doc of recentPillars) {
         const data = doc.data();
+        const docDate = safeDate(data.createdAt);
         activity.push({
           id: doc.id,
-          time: data.createdAt ? timeStr(data.createdAt.toDate()) : timeStr(now),
+          time: timeStr(docDate),
           agent: 'PM-07',
           text: `Article: "${data.title || doc.id}" — ${data.status || 'draft'}`,
           type: 'info',
-        });
+          _timestamp: docDate.getTime()
+        } as any);
       }
 
       const recentRejected = rejected.docs.slice(-2);
       for (const doc of recentRejected) {
         const data = doc.data();
+        const docDate = safeDate(data.timestamp);
         activity.push({
           id: doc.id,
-          time: data.timestamp ? timeStr(data.timestamp.toDate()) : timeStr(now),
+          time: timeStr(docDate),
           agent: 'RA-01',
           text: `Senate Verdict: ${data.reason || 'Content flagged for review'}`,
           type: 'warning',
-        });
+          _timestamp: docDate.getTime()
+        } as any);
       }
 
-      // Sort by time (newest first)
-      activity.sort((a, b) => b.time.localeCompare(a.time));
+      // Sort by actual timestamp (newest first)
+      activity.sort((a: any, b: any) => (b._timestamp || 0) - (a._timestamp || 0));
 
       // Add system status at the end
       activity.push({
