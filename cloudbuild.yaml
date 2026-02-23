@@ -31,6 +31,26 @@ steps:
         "europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agenticum-backend",
       ]
 
+  # --- ENGINE SECTION ---
+
+  # Build the engine container image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agenticum-g5-backend",
+        "./engine",
+      ]
+
+  # Push the engine container image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agenticum-g5-backend",
+      ]
+
   # --- FRONTEND SECTION ---
 
   # Install frontend dependencies
@@ -66,9 +86,57 @@ steps:
         "europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agenticum-frontend",
       ]
 
+  # --- DEPLOYMENT SECTION ---
+
+  # Deploy Backend
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "agenticum-backend"
+      - "--image"
+      - "europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agenticum-backend"
+      - "--region"
+      - "europe-west1"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+      - "--set-secrets=GEMINI_API_KEY=GEMINI_API_KEY:latest"
+
+  # Deploy Engine (G5)
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "agenticum-g5-backend"
+      - "--image"
+      - "europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agenticum-g5-backend"
+      - "--region"
+      - "europe-west1"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+
+  # Deploy Frontend
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "agenticum-frontend"
+      - "--image"
+      - "europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agenticum-frontend"
+      - "--region"
+      - "europe-west1"
+      - "--platform"
+      - "--allow-unauthenticated"
+
 images:
   - "europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agenticum-backend"
   - "europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agenticum-frontend"
+  - "europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agenticum-g5-backend"
 
 options:
   logging: CLOUD_LOGGING_ONLY

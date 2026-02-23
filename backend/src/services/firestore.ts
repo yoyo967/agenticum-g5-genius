@@ -34,10 +34,14 @@ class FirestoreManager {
 
   public get db(): Firestore {
     if (!this._db) {
-      this._db = new Firestore({ 
-        projectId: this._projectId,
-        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS 
-      });
+      const config: any = { projectId: this._projectId };
+      
+      // Only set keyFilename if the environment variable actually points to an existing file
+      if (process.env.GOOGLE_APPLICATION_CREDENTIALS && fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
+        config.keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+      }
+      
+      this._db = new Firestore(config);
     }
     return this._db;
   }
@@ -45,10 +49,13 @@ class FirestoreManager {
   public reinitialize(newProjectId?: string) {
     const targetId = newProjectId || this.resolveProjectId();
     this._projectId = targetId;
-    this._db = new Firestore({ 
-      projectId: this._projectId,
-      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS 
-    });
+    
+    const config: any = { projectId: this._projectId };
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS && fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
+      config.keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    }
+    
+    this._db = new Firestore(config);
   }
 }
 

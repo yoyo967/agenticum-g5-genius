@@ -213,7 +213,7 @@ export class AnalyticsService {
           id: 'sys-error',
           time: timeStr(now),
           agent: 'SYS.CORE',
-          text: 'Firestore connection failed. Operating in offline mode.',
+          text: `Firestore connection failed: ${e instanceof Error ? e.message : String(e)}. Operating in offline mode.`,
           type: 'error',
         }],
       };
