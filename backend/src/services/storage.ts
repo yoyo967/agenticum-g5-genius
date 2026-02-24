@@ -69,14 +69,11 @@ export class StorageService {
     const files = readdirSync(this.localVaultPath);
     return files.map((filename: string) => {
       const stats = statSync(join(this.localVaultPath, filename));
-      return {
-        name: filename,
       const backendBase = process.env.BACKEND_URL || 'https://agenticum-backend-697051612685.europe-west1.run.app';
       return {
         name: filename,
         url: `${backendBase}/vault/${filename}`,
         timestamp: stats.mtime.toISOString()
-      };
       };
     });
   }

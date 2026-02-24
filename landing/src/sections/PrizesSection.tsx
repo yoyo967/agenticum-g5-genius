@@ -47,8 +47,8 @@ export const PrizesSection: React.FC = () => (
         </motion.h2>
         <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
           className="font-mono text-white/40 text-lg max-w-2xl mx-auto leading-relaxed">
-          Agenticum G5 tritt in allen drei Kategorien an. Unsere Architektur ist darauf ausgelegt,
-          nicht nur zu funktionieren, sondern zu gewinnen.
+          Agenticum G5 is competing in all three categories. Our architecture is engineered
+          not just to function, but to dominate.
         </motion.p>
       </div>
 

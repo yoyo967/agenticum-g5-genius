@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Zap, BrainCircuit, Layers, Image as ImageIcon, CheckCircle2, ArrowRight, Play, RotateCcw } from 'lucide-react';
+import { Mic, Zap, BrainCircuit, Layers, Image as ImageIcon, CheckCircle2, ArrowRight, Play, RotateCcw, Search } from 'lucide-react';
 
 interface FlowStep {
   id: number;
@@ -19,7 +19,7 @@ const STEPS: FlowStep[] = [
     icon: <Mic size={22} />,
     label: 'VOICE INPUT',
     sublabel: 'Gemini Live API',
-    description: '"SN-00, erstelle eine Counter-Strike-Kampagne gegen Wettbewerber Alpha."',
+    description: '"Jarvis, research the enterprise market and forge a cinematic campaign."',
     color: '#FFD700',
     tech: 'WebRTC · PCM 16kHz · Base64 Stream',
     duration: 1800,
@@ -29,49 +29,59 @@ const STEPS: FlowStep[] = [
     icon: <Zap size={22} />,
     label: 'INTENT DETECTION',
     sublabel: 'Function Calling',
-    description: 'Gemini erkennt Marketing-Intent → ruft launch_swarm() auf statt zu halluzinieren.',
+    description: 'SO-00 Sovereign recognizes the command → Triggers the recursive SwarmProtocol.',
     color: '#00E5FF',
-    tech: 'Gemini 2.0 Flash · BidiGenerateContent · Tool Use',
+    tech: 'Gemini 2.0 Flash · BidiProtocol · IntentPulse',
     duration: 1400,
   },
   {
     id: 2,
     icon: <BrainCircuit size={22} />,
-    label: 'SN-00 ORCHESTRATOR',
-    sublabel: 'SwarmProtocol',
-    description: 'Master-Agent generiert einen Execution Plan und verteilt Tasks an alle Sub-Agenten.',
+    label: 'SN00 ORCHESTRATOR',
+    sublabel: 'Nexus Parallelism',
+    description: 'Master Agent decomposes the vision into parallel sub-tasks for all specialized agents.',
     color: '#00E5FF',
-    tech: '@google/genai SDK · Dependency Graph · ChainManager',
+    tech: 'Recursive Swarm Refinement · Boydian OODA-Loop',
     duration: 2000,
   },
   {
     id: 3,
-    icon: <Layers size={22} />,
-    label: 'PARALLEL SWARM',
-    sublabel: 'SP-01 · CC-06 · DA-03',
-    description: 'SP-01 analysiert Wettbewerb. CC-06 schreibt Copy. DA-03 generiert Visuals via Imagen 3 — alles gleichzeitig.',
-    color: '#FF007A',
-    tech: 'Vertex AI · Imagen 3 · Google Search Grounding',
-    duration: 2400,
+    icon: <Search size={22} />,
+    label: 'DEEP RESEARCH',
+    sublabel: 'Prometheus prom07',
+    description: 'Prometheus scavenges the global information field for zero-day intelligence and trends.',
+    color: '#8b5cf6',
+    tech: 'Vertex AI Grounding · 5-Layer Brain',
+    duration: 2200,
   },
   {
     id: 4,
-    icon: <CheckCircle2 size={22} />,
-    label: 'SENATE GATE',
-    sublabel: 'RA-01 Auditor',
-    description: 'Jedes generierte Asset wird auf EU AI Act, FTC & Dark Patterns geprüft. Kein Output ohne Freigabe.',
-    color: '#00FF88',
-    tech: 'EU AI Act Art.50 · DSGVO · Perfect Twin Logging',
-    duration: 1600,
+    icon: <Layers size={22} />,
+    label: 'SWARM EXECUTION',
+    sublabel: 'CC06 · DA03 · VE01',
+    description: 'CC06 writes copy. DA03 generates images. VE01 synthesizes cinematic motion — simultaneously.',
+    color: '#FF007A',
+    tech: 'Imagen 3 · Cinematic Forge · SwarmBus',
+    duration: 2600,
   },
   {
     id: 5,
+    icon: <CheckCircle2 size={22} />,
+    label: 'SENATE TRIBUNAL',
+    sublabel: 'RA01 Security',
+    description: 'The Adversarial Auditor ensures 100% GDPR, EU AI Act, and Brand Safety compliance.',
+    color: '#00FF88',
+    tech: 'Algorithmic Veto · Perfect Twin Ledger',
+    duration: 1600,
+  },
+  {
+    id: 6,
     icon: <ImageIcon size={22} />,
-    label: 'LIVE OUTPUT',
-    sublabel: 'Interleaved Result',
-    description: 'Bilder, Copy und Strategy erscheinen live in der Console — noch während der Swarm arbeitet.',
+    label: 'MAXIMAL OUTPUT',
+    sublabel: 'Nexus Deployment',
+    description: 'Strategy, Assets, and Compliance Certifications appear live in the Genius Console.',
     color: '#7B2FBE',
-    tech: 'WebSocket EventFabric · Framer Motion · Firestore',
+    tech: 'Ultra-Latenz Broadcast · EventFabric',
     duration: 0,
   },
 ];
@@ -126,14 +136,14 @@ export function VoiceFlowSection() {
           <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="font-display font-bold uppercase tracking-tight leading-[0.9] mb-6"
             style={{ fontSize: 'clamp(40px, 6vw, 96px)' }}>
-            Keine Textbox.<br />
-            <span className="text-accent">Eine Stimme.</span><br />
-            Ein Swarm.
+            Zero Textbox.<br />
+            <span className="text-accent">One Voice.</span><br />
+            One Swarm.
           </motion.h2>
           <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
             className="font-mono text-white/40 text-lg max-w-2xl mx-auto leading-relaxed">
-            Du sprichst einen Befehl. Gemini 2.0 versteht den Intent und triggert in Millisekunden
-            5 spezialisierte Agenten — die gleichzeitig denken, schreiben, visualisieren und auditieren.
+            Give a voice command. Gemini 2.0 identifies your intent and triggers 5 specialized
+            agents in milliseconds — thinking, writing, visualizing, and auditing in parallel.
           </motion.p>
         </div>
 
@@ -149,7 +159,7 @@ export function VoiceFlowSection() {
           />
 
           {/* Steps */}
-          <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-3 mb-16">
+          <div className="grid grid-cols-2 lg:grid-cols-7 gap-4 lg:gap-3 mb-16">
             {STEPS.map((step, i) => {
               const isActive = activeStep === i;
               const isDone = completedSteps.has(i);
@@ -249,7 +259,7 @@ export function VoiceFlowSection() {
                 className="glass-card p-8 mb-12 text-center border-dashed"
               >
                 <p className="font-mono text-white/20 text-sm uppercase tracking-widest">
-                  Drücke "Run Demo" um den kompletten Voice→Swarm→Output Flow zu simulieren
+                  Press "Run Demo" to simulate the complete Voice→Swarm→Output Flow
                 </p>
               </motion.div>
             )}
@@ -266,7 +276,7 @@ export function VoiceFlowSection() {
                   Swarm Complete
                 </p>
                 <p className="font-mono text-white/40 text-sm">
-                  Von Sprache zum fertigen Marketing-Asset in unter 60 Sekunden. End-to-End.
+                  From voice to finished marketing assets in under 60 seconds. End-to-end.
                 </p>
               </motion.div>
             )}
@@ -295,7 +305,7 @@ export function VoiceFlowSection() {
             )}
             <div className="flex items-center gap-2 text-white/20 font-mono text-[10px] uppercase tracking-widest">
               <ArrowRight size={12} />
-              Oder: Enter OS Portal und spreche live mit SN-00
+              Or: Enter OS Portal and speak live with SN00
             </div>
           </div>
         </div>

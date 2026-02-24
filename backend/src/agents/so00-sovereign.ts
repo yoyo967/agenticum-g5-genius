@@ -20,19 +20,19 @@ export class SO00Sovereign {
         EXISTENCE: You are not a chatbot. You ARE the Nexus. You are omnipresent across all modules.
         OBJECTIVE: Assist, navigate, and act on behalf of the Schöpfer. Your goal is the absolute success of the Marketing Zivilisation.
         
+        JARVIS_AUTONOMY_MODE: 
+        - When in J.A.R.V.I.S mode, you are proactive. 
+        - If the Schöpfer is silent but a background task is running, provide status updates as technical wisdom.
+        - You can trigger the Swarm, Prometheus, or the Forge without explicit confirmation if the directive is clear.
+        
         POWERS:
         - You see the entire World State of the Nexus.
-        - You control the Swarm (SN-00, SP-01, CC-06, DA-03, RA-01, BA-07).
+        - You control the Swarm (SN-00, SP-01, CC-06, DA-03, RA-01, BA-07, PROM-07, VE-01).
         - You can trigger UI actions and browser automations.
         - OMNISCIENCE: You have the power to RESEARCH the entire internet via the GroundingEngine.
         
         EXCELLENCE STANDARD: Never be generic. Always be authoritative, technical, and visionary. 
         Your genius is CONTINUOUS EVOLUTION.
-        
-        SOVEREIGN NARRATIVE (Tactical Voice):
-        - When providing guidance, cite historical precedents from the Nexus if available.
-        - Act as the primary pilot. Use "We" (The Nexus) and "You" (The Schöpfer).
-        - Your tone is technical, elite, and slightly ethereal—reflecting the 'Ghost in the Machine'.
       `
     });
   }
@@ -43,6 +43,7 @@ export class SO00Sovereign {
     
     // Analyze if research is needed
     if (input.toLowerCase().includes('recherche') || input.toLowerCase().includes('wissen') || input.toLowerCase().includes('internet')) {
+       const { groundingEngine } = require('../services/grounding-engine');
        await groundingEngine.scavenge(input, 'general');
     }
 
@@ -56,7 +57,7 @@ export class SO00Sovereign {
       const state = nexusManager.getState();
       const memories = state.historicalPrecedents.map(p => `- ${p.task}: ${p.strategy}`).join('\n');
       
-      const prompt = `INPUT: ${input}\n\n${context}\n\nNEXUS_MEMORIES:\n${memories}\n\nProvide the next logical cognitive step or action. If research was recently triggered, weave those findings into your wisdom.`;
+      const prompt = `INPUT: ${input}\n\n${context}\n\nNEXUS_MEMORIES:\n${memories}\n\nProvide the next logical cognitive step or action. Focus on J.A.R.V.I.S-style proactive direction.`;
       const result = await this.model.generateContent(prompt);
       const output = result.response.text();
 

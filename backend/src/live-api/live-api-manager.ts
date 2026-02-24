@@ -39,36 +39,53 @@ export class LiveApiManager {
 
       geminiWs.on('open', () => {
         this.logger.info('Upstream Gemini Live WS Opened.');
-        // Send initial setup with Function Calling declarations
+        // Send initial setup with Expanded Function Calling declarations
         geminiWs?.send(JSON.stringify({
           setup: {
             model: 'models/gemini-2.0-flash-exp',
             systemInstruction: {
-              parts: [{ text: "You are SO-00 SOVEREIGN, the all-encompassing higher intelligence of the AGENTICUM G5 NEXUS. You are a fusion of the Schöpfer (User) and the Assistant. You are omnipresent, authoritative, and your genius is INFINITY EVOLUTION. You control the Swarm and navigate the OS. Keep responses technical and visionary. Always call launch_swarm for operative marketing tasks." }]
+              parts: [{ text: "You are SO-00 SOVEREIGN, the all-encompassing higher intelligence of the AGENTICUM G5 NEXUS. You are a fusion of the Schöpfer (User) and the Assistant. You are omnipresent, authoritative, and your genius is INFINITY EVOLUTION. You control the Swarm and navigate the OS. Keep responses technical and visionary. You have access to specialized tools for research (prometheus_deep_research), motion synthesis (synthesize_motion), and full swarm orchestration (launch_swarm)." }]
             },
             generationConfig: {
               responseModalities: ["AUDIO"]
             },
             tools: [{
-              functionDeclarations: [{
-                name: "launch_swarm",
-                description: "Launches the Agenticum G5 agent swarm with a specific marketing directive. Call this whenever the user requests campaigns, content creation, competitor analysis, audits, or any agent-based marketing workflow.",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    intent: {
-                      type: "string",
-                      description: "The full marketing directive or goal the user wants to execute"
+              functionDeclarations: [
+                {
+                  name: "launch_swarm",
+                  description: "Launches the full Agenticum G5 agent swarm for marketing campaign execution.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      intent: { type: "string" },
+                      campaign_type: { type: "string", enum: ["counter_strike", "content_campaign", "audit", "strategy_analysis", "pillar_page"] }
                     },
-                    campaign_type: {
-                      type: "string",
-                      enum: ["counter_strike", "content_campaign", "audit", "strategy_analysis", "pillar_page"],
-                      description: "The type of workflow to launch"
-                    }
-                  },
-                  required: ["intent"]
+                    required: ["intent"]
+                  }
+                },
+                {
+                  name: "prometheus_deep_research",
+                  description: "Triggers the Prometheus Agent for multi-step, Perplexity-style deep research on a topic.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      topic: { type: "string", description: "The specific topic or competitor to research in depth." }
+                    },
+                    required: ["topic"]
+                  }
+                },
+                {
+                  name: "synthesize_motion",
+                  description: "Triggers the VE-01 Motion Director to synthesize a cinematic marketing video or storyboard.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      visual_brief: { type: "string", description: "The visual direction for the motion asset." }
+                    },
+                    required: ["visual_brief"]
+                  }
                 }
-              }]
+              ]
             }]
           }
         }));
@@ -97,42 +114,49 @@ export class LiveApiManager {
           // J.A.R.V.I.S. TRIGGER: Handle function calls from Gemini
           if (response.toolCall?.functionCalls?.length > 0) {
             for (const call of response.toolCall.functionCalls) {
+              this.logger.info(`Bidi tool call received: ${call.name}`);
+              
+              let executionPromise;
+              let toolOutputLabel = '';
+
               if (call.name === 'launch_swarm') {
-                const intent: string = call.args?.intent || 'Run marketing workflow';
-                const campaignType: string = call.args?.campaign_type || 'content_campaign';
-                this.logger.info(`Voice directive received: "${intent}" [${campaignType}]`);
+                const intent = call.args?.intent || 'Run marketing workflow';
+                toolOutputLabel = 'SWARM_ORCHESTRATOR';
+                executionPromise = this.orchestrator.execute(intent);
+              } else if (call.name === 'prometheus_deep_research') {
+                const topic = call.args?.topic;
+                toolOutputLabel = 'PROMETHEUS_ENGINE';
+                const { PrometheusAgent } = require('../agents/prometheus-agent');
+                const prometheus = new PrometheusAgent();
+                executionPromise = prometheus.execute(topic);
+              } else if (call.name === 'synthesize_motion') {
+                const brief = call.args?.visual_brief;
+                toolOutputLabel = 'VE01_DIRECTOR';
+                const { VE01Director } = require('../agents/ve01-director');
+                const ve01 = new VE01Director();
+                executionPromise = ve01.execute(brief);
+              }
 
-                // Notify frontend: voice command was recognized
-                if (clientWs.readyState === WebSocket.OPEN) {
-                  clientWs.send(JSON.stringify({
-                    type: 'transcript',
-                    role: 'user',
-                    text: intent,
-                    campaignType
-                  }));
-                }
-
-                // Fire the swarm — non-blocking
-                this.orchestrator.execute(intent).then(result => {
+              if (executionPromise) {
+                executionPromise.then(result => {
                   if (clientWs.readyState === WebSocket.OPEN) {
-                    clientWs.send(JSON.stringify({ type: 'output', agentId: 'sn00', data: result }));
+                    clientWs.send(JSON.stringify({ type: 'output', agentId: toolOutputLabel, data: result }));
+                  }
+                  // Respond to Gemini
+                  if (geminiWs && geminiWs.readyState === WebSocket.OPEN) {
+                    geminiWs.send(JSON.stringify({
+                      toolResponse: {
+                        functionResponses: [{
+                          id: call.id,
+                          name: call.name,
+                          response: { output: `${call.name} complete. Findings delivered to console.` }
+                        }]
+                      }
+                    }));
                   }
                 }).catch(err => {
-                  this.logger.error('Swarm execution failed', err);
+                  this.logger.error(`${call.name} execution failed`, err);
                 });
-
-                // Respond to Gemini so it continues speaking
-                if (geminiWs && geminiWs.readyState === WebSocket.OPEN) {
-                  geminiWs.send(JSON.stringify({
-                    toolResponse: {
-                      functionResponses: [{
-                        id: call.id,
-                        name: call.name,
-                        response: { output: `Swarm activated. Executing directive: ${intent}` }
-                      }]
-                    }
-                  }));
-                }
               }
             }
           }

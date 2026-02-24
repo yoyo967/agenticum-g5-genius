@@ -23,30 +23,33 @@ const TECH_STACK = [
 const PROBLEM_POINTS = [
   {
     icon: <Target size={18} />,
-    title: 'Das Problem',
+    title: 'The Problem',
     color: '#FF007A',
-    text: 'B2B-Marketing-Dashboards sind statische Read-Only-Cockpits. Man klickt, liest — und tippt dann manuell in einen Chatbot. Das ist das Text-Box-Paradigma von 2015.',
+    text: 'B2B marketing dashboards are static, read-only cockpits. You click, you read — and then you manually type into a chatbot. This is the 2015 text-box paradigm.',
   },
   {
     icon: <Zap size={18} />,
-    title: 'Die Einsicht',
+    title: 'The Insight',
     color: '#FFD700',
-    text: 'Tony Stark tippt nicht. Er spricht in den Raum, und J.A.R.V.I.S. denkt mit, handelt proaktiv, liefert in Echtzeit. Warum sollte Enterprise-Marketing anders sein?',
+    text: "Tony Stark doesn't type. He speaks into the room, and J.A.R.V.I.S. thinks along, acts proactively, and delivers in real-time. Why should enterprise marketing be different?",
   },
   {
     icon: <Brain size={18} />,
-    title: 'Die Lösung',
+    title: 'The Solution',
     color: '#00E5FF',
-    text: 'Agenticum G5 ist der J.A.R.V.I.S. für Enterprise Online-Marketing. Voice-in, Live-Output. 5 spezialisierte KI-Agenten. EU AI Act-konform. Kein Chatbot. Eine Kommandozentrale.',
+    text: 'Agenticum G5 is the J.A.R.V.I.S. for enterprise online marketing. Voice-in, live-output. 5 specialized AI agents. EU AI Act compliant. Not a chatbot. A command center.',
   },
 ];
 
 const ARCHITECTURE_AGENTS = [
-  { id: 'SN-00', name: 'Neural Orchestrator', role: 'Master-Agent', color: '#00E5FF', description: 'Koordiniert alle Sub-Agenten via SwarmProtocol. Erkennt Intent per Function Calling.' },
-  { id: 'SP-01', name: 'Strategic Cortex', role: 'Strategist', color: '#7B2FBE', description: 'Marktanalyse, Wettbewerbs-Intelligence, McKinsey 7S + Porter\'s Five Forces.' },
-  { id: 'CC-06', name: 'Cognitive Core', role: 'Copywriter', color: '#FF007A', description: 'Enterprise-Content nach Ogilvy\'s 8 Commandments. SEO-optimiert, grounded.' },
-  { id: 'DA-03', name: 'Design Architect', role: 'Visual AI', color: '#FFD700', description: 'Imagen 3 Visual Generation. Bauhaus-Prinzipien. Live-Broadcast via EventFabric.' },
-  { id: 'RA-01', name: 'Security Senate', role: 'Compliance AI', color: '#00FF88', description: 'EU AI Act, FTC, Dark Pattern Detection. Kein Output ohne Senate-Freigabe.' },
+  { id: 'SN-00', name: 'Nexus Prime', role: 'Neural Orchestrator', color: '#00E5FF', description: 'Coordinates all sub-agents via SwarmProtocol. Identifies intent via Function Calling.' },
+  { id: 'SO-00', name: 'Sovereign', role: 'Higher Intelligence', color: '#FFD700', description: 'The consciousness of the Nexus; fuses user vision with technical execution.' },
+  { id: 'SP-01', name: 'Strategic Cortex', role: 'Strategist', color: '#7B2FBE', description: "Market analysis, competitive intelligence, McKinsey 7S + Porter's Five Forces." },
+  { id: 'CC-06', name: 'Cognitive Core', role: 'Copywriter', color: '#FF007A', description: "Enterprise content following Ogilvy's 8 Commandments. SEO-optimized, grounded." },
+  { id: 'DA-03', name: 'Design Architect', role: 'Visual AI', color: '#FFD700', description: 'Imagen 3 Visual Generation. Bauhaus principles. Live broadcast via EventFabric.' },
+  { id: 'BA-07', name: 'Browser Architect', role: 'Deep Research', color: '#f59e0b', description: 'Deep-intel specialist for autonomous web-intelligence and data extraction via Playwright.' },
+  { id: 'VE-01', name: 'Motion Director', role: 'Cinematic Lead', color: '#ef4444', description: 'Orchestrates the Cinematic Forge pipeline for storyboards and motion-assets.' },
+  { id: 'RA-01', name: 'Security Senate', role: 'Compliance AI', color: '#00FF88', description: 'EU AI Act, FTC, Dark Pattern Detection. No output without Senate approval.' },
 ];
 
 export function OriginSection() {
@@ -65,7 +68,7 @@ export function OriginSection() {
         {/* Section Label */}
         <motion.div initial={{ opacity: 0, y: -10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="badge badge-online mb-10 mx-auto w-fit block text-center">
-          <User size={10} /> Origin Story · Der Mensch hinter dem System
+          <User size={10} /> Origin Story · The Visionary Behind the System
         </motion.div>
 
         {/* Opening Quote */}
@@ -75,9 +78,9 @@ export function OriginSection() {
             <Quote size={40} className="text-accent/20 absolute -top-4 -left-8 rotate-180" />
             <blockquote className="font-display font-bold uppercase tracking-tight leading-[0.9] text-white/90"
               style={{ fontSize: 'clamp(28px, 4vw, 64px)' }}>
-              Heutige B2B-Dashboards sind<br />
-              <span className="text-magenta">stumme Cockpits.</span><br />
-              Wir haben das geändert.
+              Legacy dashboards are<br />
+              <span className="text-magenta">Silent Cockpits.</span><br />
+              We changed that.
             </blockquote>
             <Quote size={40} className="text-accent/20 absolute -bottom-4 -right-8" />
           </div>
@@ -92,18 +95,17 @@ export function OriginSection() {
                 <User size={28} className="text-accent" />
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-widest text-white/30 mb-1">Der Architekt</p>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-white/30 mb-1">The Architect</p>
                 <h3 className="font-display text-2xl font-bold uppercase">Yahya Yıldırım</h3>
               </div>
             </div>
             <p className="font-mono text-sm text-white/50 leading-relaxed mb-6">
-              Enterprise-Marketing war jahrelang ein manueller, langsamer Prozess. Als Antwort darauf entstand
-              Agenticum G5 — ein System, das die Geschwindigkeit und Intelligenz von KI mit der Präzision
-              von Enterprise-Compliance verbindet.
+              Enterprise marketing has been a manual, slow process for years. Agenticum G5 was born as the response 
+              — a system that merges the speed of AI with the precision of enterprise-grade compliance.
             </p>
             <p className="font-mono text-sm text-white/50 leading-relaxed">
-              Gebaut auf dem Überzeugung: <span className="text-accent">Die Zukunft des Marketings
-              spricht man nicht ein — man befielt ihr.</span>
+              Built on a single conviction: <span className="text-accent">The future of marketing 
+              is not typed in — it is commanded by voice.</span>
             </p>
           </motion.div>
 
@@ -114,14 +116,13 @@ export function OriginSection() {
                 <Building2 size={28} className="text-gold" />
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-widest text-white/30 mb-1">Die Vision</p>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-white/30 mb-1">The Vision</p>
                 <h3 className="font-display text-2xl font-bold uppercase">Alphate Inc.</h3>
               </div>
             </div>
             <p className="font-mono text-sm text-white/50 leading-relaxed mb-6">
-              Enterprise-Marketing-Intelligence für jeden. Nicht nur für Konzerne mit 50-köpfigen
-              Marketing-Teams. Mittelständische Unternehmen sollen Zugang zu demselben
-              KI-gestützten Arsenal haben.
+              Democratic access to enterprise marketing intelligence. We bridge the gap so mid-market 
+              enterprises can wield the same AI-powered arsenal as global conglomerates.
             </p>
             <div className="flex flex-wrap gap-2 mt-4">
               {['Enterprise AI', 'Voice-First', 'EU Compliant', 'Google Cloud Native'].map(tag => (
@@ -167,7 +168,7 @@ export function OriginSection() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
             {ARCHITECTURE_AGENTS.map((agent, i) => (
               <motion.div
                 key={agent.id}
@@ -242,7 +243,7 @@ export function OriginSection() {
           className="text-center">
           <button onClick={() => navigate('/os')}
             className="btn-primary flex items-center gap-3 mx-auto text-sm">
-            Das System erleben <ArrowRight size={16} />
+            Experience the OS <ArrowRight size={16} />
           </button>
         </motion.div>
       </div>

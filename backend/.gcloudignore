@@ -5,8 +5,6 @@ data/vault
 *.txt
 .git
 .env
-.dockerignore
-Dockerfile
 package-lock.json
 compile_errors.txt
 final_verification_log.txt

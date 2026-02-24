@@ -4,12 +4,17 @@ WORKDIR /usr/src/app
 # Copy dependency manifests
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm install --only=production
+# Install all dependencies (including devDependencies for build)
+RUN npm install
 
-# Copy built distribution and necessary data
-COPY dist ./dist
-COPY data ./data
+# Copy source code and config
+COPY . .
+
+# Build the application (runs tsc)
+RUN npm run build
+
+# Remove development dependencies to keep image slim
+RUN npm prune --production
 
 # Expose port
 EXPOSE 8080

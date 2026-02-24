@@ -67,9 +67,10 @@ The OS consists of **15 mission-critical modules**:
 
 ## 4. CURRENT DEPLOYMENT STATE
 
-- **Main URL**: `https://agenticum-frontend-697051612685.europe-west1.run.app`
-- **Backend**: `https://agenticum-backend-697051612685.europe-west1.run.app`
-- **GCP Project**: `online-marketing-manager` (Database) & `alphate-enterprise-g5` (Hosting/API).
+- **Main URL**: `https://online-marketing-manager.web.app/`
+- **Backend URL**: `https://agenticum-backend-697051612685.europe-west1.run.app`
+- **GCP Project**: `online-marketing-manager`
+- **Frontend Hosting**: Firebase Hosting (Google Cloud Ecosystem)
 
 ---
 

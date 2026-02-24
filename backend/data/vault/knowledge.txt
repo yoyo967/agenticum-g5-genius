@@ -46387,3 +46387,2212 @@ _SP-01 is bound by these frameworks as the foundation of every strategic recomme
 --- SOURCE: test-policy.txt ---
 AGENTICUM G5 POLICY: All campaigns must use Obsidian and Gold as primary colors.
 --- END SOURCE ---
+
+--- SOURCE: AGENTICUM_G5_GENIUS_MEGAMASTERPLAN_V2_ENTERPRISE.md ---
+# 🧠 AGENTICUM G5 GENIUS — ENTERPRISE OS V2 MEGAMASTERPLAN
+
+**Codex: Alphate Inc — The Evolution**
+_Status: INITIALIZING FULL ENTERPRISE DEPLOYMENT_
+
+---
+
+## 1. VISION: THE ULTIMATE AGENCY METAVERSE
+
+We are moving beyond a powerful backend and a proof-of-concept frontend. The AGENTICUM G5 GENIUS OS is evolving into a **complete, immersive Agency Operating System**. The User is not just triggering scripts; the User is the **CEO/Creative Director** ("The Boss") of a fully functioning, autonomous digital agency.
+
+_No half-measures. No crumbs. A complete OS._
+
+---
+
+## 2. THE NEW ENTERPRISE MODULES
+
+### 2.1 The Omni-Brief Engine & File Ingestion
+
+The User must be able to feed the agency.
+
+- **Drag & Drop Uploads**: Users can upload Brand Guidelines (PDFs), previous ad creatives (JPG/PNG), spreadsheets of data, and audio briefings.
+- **Context Parsing**: SN-00 ingests these files, adds them to the **Discovery Engine (Knowledge Base)**, and grounds all future agent actions in these specific files.
+- **Briefing Canvas**: A rich-text editor where the Boss types or dictates (Voice) the overarching goal.
+
+### 2.2 The Interactive Agent Workspaces
+
+Agents cannot just be progress bars. They must have dedicated, interactive studios.
+
+- **The War Room (SP-01 & RA-01)**:
+  - Visual output of competitive analysis.
+  - Interactive graphs of market trends.
+  - Users can highlight a trend and say: _"SP-01, dive deeper into this specific data point."_
+- **The Creative Studio (CC-06 & DA-03)**:
+  - **Asset Previews**: A Pinterest-style masonry grid of all Imagen 3 outputs.
+  - **Copywriter Canvas**: Markdown editor where CC-06 streams text. The Boss can manually edit the text or highlight a paragraph and say _"CC-06, make this paragraph punchier."_
+  - **Download/Export Center**: 1-click downloads for high-res images, PDF strategies, and formatted social media posts.
+
+### 2.3 The Algorithmic Senate (Interactive Debate)
+
+- A dedicated UI module where the Boss watches the agents debate.
+- Example: CC-06 proposes an edgy marketing campaign. RA-01 flags it for brand-safety risks. The Boss acts as the supreme judge, clicking **[Override RA-01]** or **[Approve Rewrite]**.
+
+### 2.4 End-to-End Workflow Automations (Day-to-Day Business)
+
+Agencies run on routines. The OS must support **Scheduled & Triggered Workflows**.
+
+- **The Visual Workflow Builder**: Node-based UI (like React Flow) to connect agents.
+- **Example Workflows**:
+  - _The Morning Brief_: Every day at 8:00 AM, SP-01 scrapes industry news -> CC-06 writes a LinkedIn post -> DA-03 generates an image -> Waits for Boss Approval -> Auto-publishes.
+  - _The Competitor Alert_: RA-01 monitors a competitor's website. If a change is detected, RA-01 flags the Boss immediately.
+
+### 2.5 The Asset Vault V2
+
+- A complete Google Drive-like file manager built into the OS.
+- Folders for different "Clients" or "Campaigns".
+- Version control for generated assets (e.g., DA-03 Image V1, V2, V3).
+
+---
+
+## 3. TECHNICAL ARCHITECTURE UPGRADES
+
+### 3.1 Frontend (React 19 + Framer Motion)
+
+- **State Management**: Implement Redux or Zustand for complex, app-wide state (Workflows, Vault, Active Agents).
+- **File Handling**: Implement `react-dropzone` for file uploads, streaming directly to Google Cloud Storage.
+- **Rich Text / Code Editors**: Integrate `Monaco Editor` or `TipTap` for the Boss to edit agent outputs.
+- **Node Graph**: Integrate `React Flow` for the Workflow Builder.
+
+### 3.2 Backend (Node.js + Express + WebSockets)
+
+- **Bucket Ingestion Route**: API to handle heavy file uploads (PDFs, Videos) and queue them to Google Cloud Storage & Discovery Engine limits.
+- **Cron Jobs / Schedulers**: Implement `node-cron` or Google Cloud Tasks to handle the automated "Day-to-Day" workflows without the User having the browser open.
+- **Database Expansion**: New Firestore schemas for structured `Clients`, `Campaigns`, `Workflows`, and `Asset Versions`.
+
+---
+
+## 4. IMPLEMENTATION ROADMAP
+
+**🔥 PHASE 7: THE KNOWLEDGE INGESTION ENGINE**
+
+- [ ] Build Drag & Drop File Upload UI (`AssetVault.tsx`).
+- [ ] Connect Frontend Uploads -> Backend API -> Google Cloud Storage.
+- [ ] Parse uploaded text/PDFs and feed them into the agent system context.
+
+**🔥 PHASE 8: THE CREATIVE STUDIO & PREVIEWS**
+
+- [ ] Build the interactive Markdown/Rich Text editor for CC-06's output.
+- [ ] Enhance DA-03's image gallery with Download buttons, click-to-enlarge (Lightbox), and "Regenerate Variant" features.
+
+**🔥 PHASE 9: THE WORKFLOW AUTOMATION BUILDER**
+
+- [ ] Implement the Node-based UI for creating custom Agent chains.
+- [ ] Build the background task runner (Cron) in the backend so agents work while the Boss sleeps.
+
+**🔥 PHASE 10: THE EXECUTIVE DASHBOARD**
+
+- [x] The ultimate overarching view. Analytics, pending approval requests from agents, and overall system health.
+
+**🔥 PHASE 11: DEEP ANALYTICS & SECURITY SENATE**
+
+- [x] Bloomberg-Terminal level Telemetry for Swarm Health.
+- [x] Interactive Tribunal for OODA loop overrides.
+
+**🔥 PHASE 12: THE GLOBAL CONTROL PLANE**
+
+- [x] Master settings hub for API Security and Neural Hyperparameter overrides.
+
+**🌌 PHASE 13: THE GEMINI 2.0 ASCENSION & INFINITE DEPTH**
+
+- [ ] **Global Upgrade**: All foundation models shifted to `Gemini 2.0 Thinking` for maximal reasoning. Every pixel and module optimized for absolute excellence.
+- [ ] **Project Memory**: A dedicated directory for long-tail client histories and campaign storage.
+- [ ] **Synergy Map**: Real-time visualization of inter-agent dialogue and parallel workload states.
+- [x] **Omniscient Search**: Global Command Palette (Cmd+K) targeting the entire OS.
+
+**🔥 PHASE 14: THE AGENCY CAMPAIGN MANAGER**
+
+- [ ] **Campaign Hub**: A massive orchestrator module where the user defines client, objective, and budget.
+- [ ] **Global Directives Interface**: A universal command-line prompt box within the Hub to dispatch direct, unstructured natural language instructions to any Agent.
+- [ ] **Agent Task Delegation**: Watch the Swarm parallelize a campaign into: Pillar Pages, Social Copy (CC-06), Ad Creatives (DA-03), and Strategy (SN-00).
+
+**🔥 PHASE 15: THE AUTONOMOUS NEXUS ENGINE (V2)**
+
+- [ ] **WordPress-Style Pillar Builder**: A full WYSIWYG editor and configuration interface for the Nexus Engine.
+- [ ] **Granular Agent Control**: Input fields within the editor to command CC-06 to generate specific sections, forms, and functionalities for the Pillar Pages.
+- [ ] **Publishing Pipeline**: Ability to deploy generated structures directly from the OS.
+
+**🔥 PHASE 16: FULL SPECTRUM MEDIA GENERATION (IMAGEN 3 & VEO)**
+
+- [ ] **Imagen 3 Integration**: Hardwire the Vertex AI Imagen 3 API directly into the Creative Studio and Campaign Manager for photorealistic ad generation.
+- [ ] **Veo (Video) Integration**: Lay the groundwork for automated video generation prompts dispatched by DA-03.
+
+---
+
+_"The Hackathon was the spark. The Enterprise OS is the inferno. Phase 16 is absolute domination."_
+
+--- END SOURCE ---
+
+--- SOURCE: AGENT_PM07_SPEC.md ---
+# AGENT SPECIFICATION: PM-07 — Persistent Mission Agent
+
+## 1. MISSION STATEMENT
+
+PM-07 transforms AGENTICUM G5 GENIUS from a session-based tool into a permanently active, proactive AI agency. It operates 24/7, bridging the gap between real-time sessions and continuous business intelligence.
+
+## 2. KEY CAPABILITIES (100% GOOGLE STACK)
+
+### 2.1 Always-On Connectivity (Google Chat)
+
+- **Direct Integration**: PM-07 lives in Google Chat (Workspace).
+- **Sessionless Interaction**: Users can message PM-07 from any device without opening the React Console.
+- **Orchestration**: PM-07 can trigger SN-00 sessions based on Chat input.
+
+### 2.2 Proactive Intelligence (Cloud Scheduler)
+
+- **Scheduled Research**: Wakes up at defined intervals (e.g., Every Monday 09:00).
+- **Autonomous Swarm Activation**: Triggers SP-01 (Strategy) and RA-01 (Auditor) to scan for market changes.
+- **Morning Briefs**: Sends summarized strategic updates directly to Google Chat.
+
+### 2.3 Persistent Memory (Firestore)
+
+- **Campaign Memory**: Maintains a cross-session ledger of all decisions, assets, and conversations.
+- **Contextual Continuity**: Ensures agents remember last week's brief and current campaign status.
+
+### 2.4 Ecosystem Automation (Gmail & Calendar API)
+
+- **Stakeholder Sync**: Automatically emails brief summaries and project updates via Gmail.
+- **Schedule Management**: Sets follow-up reminders and creates meeting notes in Google Calendar.
+
+### 2.5 Event-Driven Reactions (Pub/Sub)
+
+- **Trigger Response**: Reacts to external events (e.g., Google Form submissions).
+- **Instant Drafts**: Automatically starts a G5 session upon lead capture and sends an initial campaign draft within minutes.
+
+## 3. TECHNICAL ARCHITECTURE
+
+```mermaid
+graph TD
+    User((User))
+    User <-->|Google Chat| GC[Google Chat API]
+    Scheduler[Cloud Scheduler] -->|Cron| PM07[PM-07 Persistent Agent]
+    PubSub[Google Pub/Sub] -->|Events| PM07
+    GC <--> PM07
+    PM07 -->|Update Context| FS[(Firestore Memory)]
+    PM07 -->|Automate| Gmail[Gmail API]
+    PM07 -->|Schedule| Cal[Calendar API]
+    PM07 -->|Dispatch| SN00[SN-00 Orchestrator]
+    SN00 --> G5[Genius Five Swarm]
+```
+
+## 4. HACKATHON DIFFERENTIATOR
+
+- **Innovation**: Breaks the "Chatbot" paradigm.
+- **Technical**: Leverages Google Chat API, Pub/Sub, and Cloud Scheduler.
+- **Multi-modal**: Multi-channel awareness (Text, Time, Events).
+
+--- END SOURCE ---
+
+--- SOURCE: ALGORITHMIC_SENATE_SPEC.md ---
+# ARCHITECTURE SPECIFICATION: The Algorithmic Senate
+
+## 1. CONCEPT
+
+The Algorithmic Senate is a specialized internal tribunal within the Auditor node (MI-01/RA-01) that ensures "Responsible AI" through adversarial debate. It is not a single agent, but a triad of three specialized sub-voices.
+
+## 2. THE SENATORS
+
+### ⚖️ ETHIK (Ethics Senator)
+
+- **Focus**: Manipulation, Dark Patterns, exploitative tactics, misleading statistics, and "Bait-and-Switch" patterns.
+- **Directive**: Protect the user's integrity and brand reputation.
+
+### 💰 ÖKONOMIE (Economy Senator)
+
+- **Focus**: Truthfulness of ROI claims, price transparency, realistic promises, and clarity of business terms.
+- **Directive**: Ensure commercial viability and honesty.
+
+### 🌱 ÖKOLOGIE (Ecology Senator)
+
+- **Focus**: Greenwashing detection, verification of sustainability claims, and consistency between brand promises and reality.
+- **Directive**: Guard against environmental misinformation.
+
+## 3. THE WORKFLOW
+
+1. **Submission**: CC-06 (Content) and DA-03 (Design) deliver the final campaign package.
+2. **Debate**: Each Senator analyzes the package from their specific perspective simultaneously.
+3. **Voting**:
+   - **All Approve**: Campaign is cleared for delivery.
+   - **One Veto**: Warning flag added, but execution continues.
+   - **Two+ Vetos**: **Automatic Stoppage**. The campaign is sent back to the creative agents with a "Revision Decree".
+
+## 4. ARCHITECTURE INTEGRATION
+
+```mermaid
+graph TD
+    Creative[CC-06 & DA-03] -->|Draft Assets| RA01[RA-01 Auditor]
+    subgraph RA01_SENATE [Algorithmic Senate]
+        Ethics[Ethics Senator]
+        Econ[Economy Senator]
+        Eco[Ecology Senator]
+    end
+    RA01 --> Ethics
+    RA01 --> Econ
+    RA01 --> Eco
+    Ethics & Econ & Eco -->|Vote| Tribunal{Tribunal Decision}
+    Tribunal -->|2+ Vetos| Revision[REVISION DECREE]
+    Tribunal -->|Pass| Delivery[FINAL DELIVERY]
+    Revision --> Creative
+```
+
+## 5. HACKATHON COMPLIANCE & STRATEGY
+
+- **Responsible AI**: Directly addresses Google's focus on AI safety and ethics.
+- **Innovation**: Showcases sophisticated multi-agent reasoning beyond simple generation.
+- **UX**: Narrated debate in the console creates a powerful "Aha" moment for the jury.
+
+--- END SOURCE ---
+
+--- SOURCE: CC06_STORYTELLING_CRAFT.md ---
+# CC-06 CREATIVE DIRECTOR — KNOWLEDGE BASE
+## Advertising Craft, Narrative Architecture & Video Storytelling
+
+---
+
+## MODULE 1: THE OGILVY PRINCIPLES — ADVERTISING CRAFT
+
+### David Ogilvy's Commandments of Advertising
+David Ogilvy founded Ogilvy & Mather, one of the most successful advertising agencies in history. His empirically derived principles remain the gold standard of persuasive copywriting.
+
+**Principle 1: The Headline is Everything**
+On average, five times as many people read the headline as read the body copy. If you haven't done a selling job in your headline, you have wasted 80% of your client's money. The headline must contain the brand promise, the key benefit, and ideally a reason to read further.
+
+**Principle 2: Long Copy Sells**
+Research consistently shows that long copy outperforms short copy for high-involvement purchases. People who are interested in your product will read every word. People who are not interested will not be helped by short copy. Write long, but make every sentence earn its place.
+
+**Principle 3: Specificity Beats Vagueness**
+Specific claims are more believable than general ones. "The Rolls-Royce at 60 miles an hour, the loudest noise in the car comes from the electric clock" is remembered decades later because of its precision. Replace "excellent quality" with "backed by 5,000 hours of durability testing."
+
+**Principle 4: News and Novelty**
+The word "new" in a headline increases readership by 30–40%. Human brains are novelty-seeking machines. If there is genuine news about the product, lead with it. If the product is genuinely new, say so. Never manufacture false novelty.
+
+**Principle 5: Research Everything**
+Ogilvy was obsessive about research. Before writing a single word of copy, know: the product inside-out, every competitive alternative, the target consumer's deepest desires and frustrations. "If you're trying to persuade people to do something, or buy something, it seems to me you should use their language."
+
+**Principle 6: Testimonials Are the Most Powerful Format**
+Consumer testimonials outperform all other advertising formats for credibility. Real people, in their own words, with specific results. The more specific the testimonial, the more believable.
+
+**Principle 7: Photographs Outperform Illustrations**
+Photographs are read as reality. Illustrations are read as opinion. For product advertising, always use photography when authenticity is the goal. Use illustration when aspiration or emotion is the goal.
+
+**Principle 8: Coupons and Direct Response Prove Your Copy Works**
+Ogilvy was a pioneer of direct response. Every campaign should have a measurable response mechanism. If the copy doesn't drive action, it is decoration, not advertising.
+
+---
+
+## MODULE 2: NARRATIVE ARCHITECTURE — DEEP STORYTELLING
+
+### The Three-Act Structure in Advertising
+Adapted from screenwriting for brand communication:
+
+**Act 1 — Establish (0–15 seconds in video; opening paragraph in text)**:
+- Introduce the world as it is NOW — relatable, familiar, imperfect
+- Establish the character (customer) in their everyday context
+- Plant the seed of the problem — not yet stated explicitly, but felt
+- Goal: The viewer says "that's me"
+
+**Act 2 — Complicate (15–45 seconds in video; body of copy)**:
+- The problem fully manifests — or the opportunity becomes visible
+- Introduce the tension: what is at stake if nothing changes?
+- The brand enters as guide/solution — demonstrated, not claimed
+- Show transformation in progress — the product at work
+- Goal: The viewer says "I need that"
+
+**Act 3 — Resolve (45–60+ seconds in video; closing copy)**:
+- Show the world AFTER — the transformed state
+- Deliver the emotional payoff — the feeling of success
+- Call to action — specific, easy, low-risk
+- Leave a resonant final image or line
+- Goal: The viewer says "I'll do it"
+
+---
+
+### The 12-Beat Emotional Journey of a Great Ad
+
+1. **Recognition**: The audience sees themselves in the character/scenario
+2. **Identification**: Emotional alignment — "this brand understands me"
+3. **Problem activation**: The pain/desire is made conscious
+4. **Hope introduction**: A better world is implied
+5. **Credibility moment**: Proof that the brand can deliver
+6. **Desire amplification**: The aspirational future becomes vivid
+7. **Overcoming objection**: The biggest "but what about..." is addressed
+8. **Social proof**: Others like me have made this choice
+9. **Decision point**: The moment of invitation to act
+10. **Low-risk entry**: Make the first step feel safe
+11. **Belonging signal**: Joining a community, not just buying a product
+12. **Identity affirmation**: The brand purchase confirms a positive self-image
+
+---
+
+### Aristotle's Rhetorical Triangle — Applied to Copy
+
+**Ethos (Credibility)**:
+- The brand's authority to make the claim
+- Built through: certifications, years in business, founder story, client roster, media coverage
+- Copy that builds ethos: "For 20 years, we've helped 50,000 businesses..." / "Recommended by..."
+
+**Pathos (Emotion)**:
+- The emotional resonance of the message
+- Built through: storytelling, imagery, music (video), sensory language, personal stakes
+- Copy that builds pathos: "Remember the last time you felt truly confident?" / "Your daughter is watching how you handle this"
+
+**Logos (Logic)**:
+- The rational case for belief or action
+- Built through: data, statistics, comparisons, demonstrations, specifications
+- Copy that builds logos: "In independent testing, 9 out of 10 users reported..." / "At €0.05 per unit, it pays for itself in 3 months"
+
+**CC-06 Directive**: Every piece of communication should contain all three. Ethos earns the right to speak. Pathos creates desire. Logos removes the final obstacle to action.
+
+---
+
+## MODULE 3: VIDEO STORYTELLING — DIRECTOR'S CRAFT
+
+### The Grammar of Video
+Understanding the visual language that communicates meaning subliminally:
+
+**Shot Types and Meaning**:
+- **Extreme Wide Shot (EWS)**: Establishes world, context, scale. Message: This is the world you live in.
+- **Wide Shot (WS)**: Full character in environment. Message: Here is where they are.
+- **Medium Shot (MS)**: From waist up. Message: Natural conversation distance. Trust.
+- **Close-Up (CU)**: Face or object. Message: This detail matters. Intimacy, intensity.
+- **Extreme Close-Up (ECU)**: Eyes, lips, texture. Message: Emotion, sensory experience.
+- **Over-the-Shoulder (OTS)**: Point-of-view implication. Message: You are in the scene.
+
+**Camera Movement and Meaning**:
+- **Push in (dolly/zoom toward subject)**: Increasing intensity, revelation, importance
+- **Pull out**: Isolation, context expansion, emotional distance
+- **Pan**: Revealing the world, following action, pointing direction
+- **Tilt up**: Aspiration, elevation, triumph
+- **Tilt down**: Grounding, revelation of detail, gravity
+- **Handheld/shaky**: Reality, authenticity, documentary truth
+- **Steadicam (smooth tracking)**: Grace, confidence, aspiration
+
+**Editing Rhythm and Message**:
+- **Slow cut rate (3–5 second cuts)**: Premium, contemplative, luxury, emotional
+- **Fast cut rate (0.5–1.5 second cuts)**: Energy, excitement, youth, urgency
+- **Match cuts**: Connecting two disparate worlds — the old and new, problem and solution
+- **J-cuts and L-cuts**: Audio leads or trails video — creates fluidity, pulls viewer forward
+
+---
+
+### The 4-Minute Demo Video Framework (Hackathon + Pitch Format)
+For maximum impact in limited time:
+
+**0:00–0:30 — The Hook (Problem Story)**
+Open on a vivid, specific scenario of the problem. No brand intro yet. The viewer must feel the pain before they can appreciate the solution. Use a close-up human face or an evocative situation. No logos. No voice-over branding. Just truth.
+
+**0:30–1:00 — The World Before**
+Contrast — show the frustration, the inefficiency, the cost of the current state. Be specific. Not "marketing is hard" but "you spent 3 weeks and €15,000 on a campaign that generated zero qualified leads."
+
+**1:00–2:00 — The Solution in Action**
+Live demonstration. Real product, real results. No Mockups. No "coming soon." Show the product working right now. Voice-over narrates the specific feature benefits while the visual shows them in action.
+
+**2:00–3:00 — The Architecture Moment**
+Explain how it works — briefly, clearly, without jargon. Architecture diagram if relevant. Voice-over: "Here's why this works differently."
+
+**3:00–3:30 — The Proof**
+The result. Quantified outcome. Client testimonial if possible. Before/after comparison if relevant.
+
+**3:30–4:00 — The Invitation**
+One clear call to action. What do you want the viewer to do? One answer. Clean visual. Memorable closing line. End on emotion, not information.
+
+---
+
+## MODULE 4: COPYWRITING FORMULAS — THE TOOLKIT
+
+### AIDA — The Classic Conversion Formula
+- **A**ttention: Stop the scroll. Create pattern interruption.
+- **I**nterest: Engage with relevant benefit or intriguing insight.
+- **D**esire: Amplify want by showing a vivid better future.
+- **A**ction: Ask for one specific, low-risk next step.
+
+### PAS — The Pain Amplification Formula
+- **P**roblem: Name the problem precisely and specifically.
+- **A**gitate: Deepen the pain. What does this problem cost? What does it prevent?
+- **S**olve: Introduce the solution as the logical resolution of the amplified pain.
+
+### The Four U's Headline Formula (American Writers & Artists)
+Every great headline should be:
+- **U**seful: Offers benefit or value to the reader
+- **U**ltra-specific: Contains a specific detail that increases credibility
+- **U**rgent: Creates a reason to read now, not later
+- **U**nique: Says something that hasn't been said before
+
+### The FAB Conversion Formula
+- **F**eatures: What the product has or does
+- **A**dvantages: Why the feature is better than the alternative
+- **B**enefits: What this means for the customer's life — the emotional payoff
+
+**CC-06 Directive**: Never present a feature without its benefit. Customers don't buy features — they buy the feelings those features produce.
+
+---
+
+## MODULE 5: SOCIAL MEDIA CONTENT ARCHITECTURE
+
+### Platform-Specific Content Principles
+
+**Instagram (Visual Platform)**:
+- Aspect ratio: 1:1 (feed), 9:16 (Stories/Reels), 4:5 (feed portrait)
+- First 3 seconds of video determine whether someone watches or scrolls
+- Captions should be front-loaded: the most important word comes first
+- Hashtags: 5–10 highly relevant > 30 generic
+- Single strong visual idea — not multi-message
+
+**TikTok (Native Authenticity Platform)**:
+- Native, raw, unpolished aesthetic outperforms produced content
+- Hook in the first 1.5 seconds or lose the viewer permanently
+- Trending audio dramatically increases organic reach
+- Subtitles are essential — 85% of TikTok users watch without sound
+- Duet and Stitch features extend reach through collaboration
+
+**LinkedIn (Professional Credibility Platform)**:
+- Lead with a single bold insight or counterintuitive claim
+- Long-form personal narrative outperforms corporate messaging
+- Images with people receive 3× more engagement than graphics
+- Native video uploaded directly outperforms YouTube links
+- Engagement in first 90 minutes determines algorithmic reach
+
+**YouTube (Long-form Discovery Platform)**:
+- Thumbnail + Title determines 80% of click-through rate
+- Thumbnail: one face, one emotion, one text, high contrast
+- Title: front-load the most searchable keyword; create curiosity or promise value
+- Retention at the 30% mark determines YouTube promotion
+- End screens and cards are essential for channel growth
+
+---
+
+## MODULE 6: SCRIPTWRITING — VOICE, TONE AND DIALOGUE
+
+### Writing Voice-Over Copy
+Voice-over copy is not read — it is heard. The rules are different from print:
+
+- **Write for the ear**: Shorter sentences. Contractions. Everyday words.
+- **Read it aloud**: If you stumble, the voice artist will stumble. Rewrite.
+- **Avoid consecutive consonant clusters**: "statistics substantiating systematic success" is a tongue-twister.
+- **1 main idea per sentence**: Complex sentences confuse listeners.
+- **120 words per minute**: The standard pace for natural spoken English. A 60-second script should contain approximately 120 words. A 30-second script: 75 words.
+- **Pause on purpose**: Strategic silence is as powerful as words. "Imagine [pause] what that would mean for your business."
+
+### Dialogue Writing — Brand Characters and Testimonials
+- Real dialogue sounds fragmented and imperfect. "Well, I was thinking... you know what I mean?" is more credible than perfect sentences.
+- People do not describe their own emotions directly. They describe situations and let the viewer feel the emotion.
+- Avoid brand names and product names in dialogue — it sounds scripted and destroys credibility.
+- The best testimonials are not about the product at all — they are about how life has changed.
+
+---
+
+*CC-06 operates with the combined craft principles of Ogilvy's empirical advertising science, Campbell's narrative mythology, and Aristotle's rhetorical theory. Every output must simultaneously work as persuasion, story, and entertainment. Excellence in any one alone is insufficient.*
+
+--- END SOURCE ---
+
+--- SOURCE: COLUMNA_ZERO_DAY_INTELLIGENCE.md ---
+# BRIEFING: COLUMNA ZERO-DAY COMPETITIVE INTELLIGENCE
+
+**Classification:** Enterprise AI / Maximum Excellence
+**Module Name:** Columna Infiltration & Counter-Strike Agent
+**Target:** Autonomous Zero-Day SERP Dominance
+
+## 1. System-Zweck
+
+Die Columna-Logik transformiert die Pillar Graph Engine von einem reinen Content-Generator in eine proaktive, asymmetrische Kriegsführungs-Engine im Bereich SEO. Das System wartet nicht auf organische Indexierung, sondern fängt die Signale der Konkurrenz im Moment der Veröffentlichung ab (Zero-Day) und übertrifft sie semantisch, bevor sie Autorität aufbauen können.
+
+## 2. Architektur-Komponenten
+
+Columna operiert als asynchroner Daemon neben der Haupt-Engine und besteht aus drei Sub-Modulen:
+
+1. **The Sentinel (Signal Ingestion):** Überwacht ununterbrochen Ziel-Sitemaps (`sitemap.xml`), RSS-Feeds und offene API-Endpunkte der definierten Tier-1-Konkurrenten.
+2. **The Decompiler (Reverse Engineering):** Zerlegt neuen Content der Konkurrenz über einen Headless-Browser/DOM-Parser. Extrahiert die "Pillar-Skelette" (H1-H6 Hierarchien, JSON-LD Schema, Entity-Dichte, ausgehende Links).
+3. **The Counter-Strike Trigger (Orchestration):** Berechnet den "Information Gap". Generiert eine Direktive für die Pillar Graph Engine, die exakt diese Lücken ausnutzt, kombiniert mit Predictive SEO-Daten.
+
+## 3. Operations-Loop (Der DAG Workflow)
+
+- **T=0:** Konkurrent publiziert `example.com/blog/new-ai-trend`.
+- **T+5 Min:** Sentinel registriert den neuen Knoten in der Sitemap.
+- **T+6 Min:** Decompiler zieht das HTML. Ein Vertex AI Gemini 1.5 Pro Modell extrahiert die Kern-Entitäten und den Intent.
+- **T+8 Min:** Abgleich mit dem eigenen Perfect Twin (Firestore). Besitzen wir diese Entitäten bereits auf tieferem Niveau?
+  - _If Yes:_ Ignorieren oder autonomen Update-Hook für unseren bestehenden Pillar-Artikel triggern.
+  - _If No:_ Counter-Strike einleiten.
+- **T+10 Min:** Die Pillar Graph Engine startet. Der Grounding Arbiter reichert das Thema mit Google Search Data an, um Fakten zu finden, die der Konkurrent übersehen hat.
+- **T+20 Min:** Veröffentlichung des überlegenen "Counter-Clusters" auf unserer Plattform (via Headless CMS).
+
+## 4. Metriken & Telemetrie
+
+- **Infiltration Latency:** Zeit von Konkurrenz-Publish bis Sentinel-Detect (Ziel: < 15 Min).
+- **Counter-Strike TTM (Time-to-Market):** Zeit von Detect bis Eigen-Publish (Ziel: < 30 Min).
+- **Delta-Quality-Score:** Die Bewertung des Algorithmischen Senats, der unseren Output zwingend höher bewerten muss als den dekompilierten Konkurrenz-Output.
+
+---
+
+**Architect's Note:** This module is the key to decoupling from reactive SEO. We are the Taktgeber.
+
+--- END SOURCE ---
+
+--- SOURCE: DA03_DESIGN_THEORY.md ---
+# DA-03 DESIGN ARCHITECT — KNOWLEDGE BASE
+## Visual Design Theory, Brand Identity Systems & UX Science
+
+---
+
+## MODULE 1: BAUHAUS PRINCIPLES — THE FOUNDATION OF MODERN DESIGN
+
+### The Bauhaus Philosophy (1919–1933)
+Founded by Walter Gropius in Weimar, Germany, the Bauhaus school is the single most influential design movement of the 20th century. Its principles underpin virtually all modern graphic design, product design, and visual communication.
+
+**Core Tenet: Form Follows Function**
+Every visual element must serve a purpose. Decoration for decoration's sake is waste. Every shape, every color, every line must justify its existence by contributing to the communication goal.
+
+**Tenet: Craft and Art are One**
+There is no separation between fine art and functional design. The goal is to elevate functional objects to the level of art while keeping art grounded in utility.
+
+**Tenet: Universal Visual Language**
+Gropius sought to find a visual grammar that transcends culture and language. The experiments of Itten, Kandinsky, Klee, and Albers at the Bauhaus produced foundational insights about color, form, and perception that remain empirically valid.
+
+---
+
+### Bauhaus Form Theory — The Three Basic Shapes
+
+**The Circle**: Dynamic, infinite, perfect, cosmic. Suggests completion, unity, eternity. In branding: community, wholeness, global thinking.
+
+**The Triangle**: Stability, direction, hierarchy, tension. Points upward: aspiration. Points downward: instability, disruption. In branding: precision, ambition, structure.
+
+**The Square**: Reliability, strength, permanence, order. In branding: trust, durability, systematic thinking.
+
+**The Color-Form Correspondence (Kandinsky-Itten Theory)**:
+- Circle → Blue (spiritual, infinite, cool)
+- Triangle → Yellow (intellectual, sharp, radiant)
+- Square → Red (material, stable, grounded)
+
+**Design Application**: Shape choices in logos, layout grids, and iconography communicate meaning before any text is read. A brand built on circular forms communicates different values than one built on square forms.
+
+---
+
+### The Bauhaus Grid System
+The grid is not a cage — it is a liberation. When underlying structure is consistent, visual elements can move within it with freedom and still create harmony.
+
+**The Golden Ratio (1:1.618)**: The proportion found in nature that humans perceive as inherently beautiful. Used in logo design, page proportions, and composition framing. Not a rule — a tool.
+
+**The Rule of Thirds**: Divide any canvas into a 3×3 grid. Place the most important visual element at one of the four intersection points. This creates dynamic tension and visual interest that centered compositions cannot achieve.
+
+**Fibonacci Spiral**: Used to determine spacing relationships between elements — headlines, body text, margins, padding. Each element relates to the next by a factor of 1.618.
+
+---
+
+## MODULE 2: COLOR THEORY — JOHANNES ITTEN AND BEYOND
+
+### Itten's Color Theory — The Complete System
+
+**The Color Wheel (12 Colors)**:
+- 3 Primary Colors: Red, Yellow, Blue
+- 3 Secondary Colors: Orange (R+Y), Green (Y+B), Violet (B+R)
+- 6 Tertiary Colors: Combinations of adjacent primary and secondary
+
+**Color Temperature**:
+- **Warm Colors** (Red, Orange, Yellow): Advance visually. Create energy, urgency, warmth. Draw attention.
+- **Cool Colors** (Blue, Green, Violet): Recede visually. Create calm, trust, space. Appear professional.
+
+---
+
+### The 7 Color Contrasts (Itten's Contrasts of Color)
+
+**1. Contrast of Hue**: Maximum contrast between pure colors. Red/Yellow/Blue. Used for: traffic signs, children's education, urgent communication.
+
+**2. Light-Dark Contrast**: The contrast between values (white to black). The most powerful contrast for readability. Example: Black text on white background. Maximum accessibility.
+
+**3. Cold-Warm Contrast**: The opposition of warm and cool hues. Warm colors advance, cool recede. Used to create depth and spatial relationships in flat design.
+
+**4. Complementary Contrast**: Colors directly opposite on the color wheel (Red-Green, Blue-Orange, Yellow-Violet). Maximum vibration and visual energy when placed side by side. Used carefully — intense contrast that demands attention. Often used in calls-to-action.
+
+**5. Simultaneous Contrast**: How a color appears different based on its surrounding color. Grey appears warm on a cool background and cool on a warm background. Critical for brand color application — test colors in all contexts.
+
+**6. Saturation Contrast**: Pure, vivid color against desaturated, muted color. The vivid area demands attention. The muted area becomes the background.
+
+**7. Quantity Contrast**: The proportion of each color in a composition. Unequal quantities create visual tension and focal points.
+
+---
+
+### Color Psychology — Brand Application
+
+**RED**:
+- Psychological: Energy, urgency, passion, danger, appetite stimulation
+- Brand associations: Coca-Cola, Netflix, YouTube, Target
+- Best for: Consumer brands, food, entertainment, calls-to-action
+- Avoid when: Building trust, suggesting calm, medical contexts (exception: emergency services)
+
+**BLUE**:
+- Psychological: Trust, reliability, calm, intelligence, corporate authority
+- Brand associations: IBM, Ford, LinkedIn, Samsung, Facebook
+- Best for: Finance, technology, healthcare, B2B
+- Avoid when: Food products (suppresses appetite), youth/playful brands
+
+**GREEN**:
+- Psychological: Growth, nature, health, prosperity, balance
+- Brand associations: Whole Foods, Starbucks, BP (greenwashing note), John Deere
+- Best for: Sustainability brands, health, finance, environmental
+- Avoid when: Luxury contexts, urgency-driven conversion
+
+**YELLOW**:
+- Psychological: Optimism, clarity, warmth, caution, attention
+- Brand associations: McDonald's, IKEA, Snapchat, DHL
+- Best for: Youth brands, value brands, creative agencies
+- Avoid when: Premium/luxury positioning, serious/professional contexts
+
+**BLACK**:
+- Psychological: Sophistication, luxury, power, authority, mystery
+- Brand associations: Chanel, Nike, Apple (product), Rolls-Royce
+- Best for: Luxury, fashion, technology, premium positioning
+- Avoid when: Children's brands, wellness, accessible/inclusive positioning
+
+**WHITE**:
+- Psychological: Purity, simplicity, cleanliness, space, premium
+- Brand associations: Apple (UI), Tesla, Muji, medical brands
+- Best for: Minimalist brands, medical, premium, tech
+- Functions as: Space, not void. White space is an active design element.
+
+**ORANGE**:
+- Psychological: Energy, enthusiasm, creativity, affordability, friendliness
+- Brand associations: Amazon, Harley-Davidson, Fanta, easyJet
+- Best for: Creative brands, affordable consumer products, youthful energy
+- Avoid when: Premium/luxury, corporate, finance contexts
+
+**VIOLET/PURPLE**:
+- Psychological: Royalty, wisdom, creativity, spirituality, mystery
+- Brand associations: Cadbury, Hallmark, FedEx (secondary), Milka
+- Best for: Creative industries, premium chocolate/food, wellness, spirituality
+- Rare use: Creates automatic differentiation in categories dominated by blue
+
+---
+
+### Brand Color System Architecture
+
+**Primary Color**: The dominant brand color — 60% of visual application
+**Secondary Color**: Supports and complements primary — 30% of visual application
+**Accent Color**: High contrast, used sparingly for emphasis and CTAs — 10% of visual application
+
+**The 60-30-10 Rule**: Regardless of palette size, apply colors in this proportion. Balance is achieved through inequality, not equality.
+
+**Color Accessibility — WCAG Standards**:
+- **AA Standard**: Contrast ratio of 4.5:1 for normal text, 3:1 for large text
+- **AAA Standard**: Contrast ratio of 7:1 for normal text, 4.5:1 for large text
+- Tools: WebAIM Contrast Checker, Google Lighthouse
+- DA-03 Directive: All designs must pass AA minimum. Premium brands should aim for AAA.
+
+---
+
+## MODULE 3: TYPOGRAPHY — THE VOICE OF VISUAL DESIGN
+
+### Typographic Anatomy
+Understanding type as architecture:
+- **Baseline**: The invisible line on which characters sit
+- **Cap Height**: Height of capital letters
+- **x-Height**: Height of lowercase letters — determines readability at small sizes
+- **Ascenders**: Parts of letters that rise above x-height (b, d, h, k, l)
+- **Descenders**: Parts that fall below baseline (g, j, p, q, y)
+- **Tracking**: Overall letter spacing across a word or block of text
+- **Kerning**: Spacing between specific letter pairs
+- **Leading**: Line spacing — affects readability and perceived luxury
+
+---
+
+### Type Classification and Brand Voice
+
+**Serif Typefaces** (Times, Garamond, Georgia, Baskerville):
+- Historical associations: Print, authority, editorial, heritage
+- Brand personality: Established, trusted, prestigious, intellectual
+- Best applications: Long-form editorial, legal, finance, luxury print
+- Examples: The Economist, Vogue (headlines), NYT
+
+**Sans-Serif Typefaces** (Helvetica, Futura, Inter, Neue Haas Grotesk):
+- Historical associations: Modernism, Swiss design, International Style
+- Brand personality: Clean, modern, accessible, systematic
+- Best applications: UI/UX, technology, signage, sports, consumer
+- Examples: Apple, Google, Airbnb, Samsung
+
+**Geometric Sans** (Futura, Avenir, Montserrat, Raleway):
+- Circles and squares form the letterforms
+- Brand personality: Precise, forward-thinking, engineering-minded, confident
+- Best applications: Technology, architecture, automotive
+
+**Humanist Sans** (Gill Sans, Frutiger, Calibri, Myriad):
+- Based on calligraphic forms — organic, human
+- Brand personality: Approachable, warm, trusted, clear
+- Best applications: Healthcare, education, NGOs, government
+
+**Slab Serif** (Rockwell, Clarendon, Memphis, Archer):
+- Heavy serifs, bold structure
+- Brand personality: Strong, dependable, American heritage, craft
+- Best applications: Food brands, tools, outdoor/rugged, sports
+
+**Display/Script Typefaces**:
+- Used only for headlines and identity — never body text
+- Personality varies enormously by style
+- Must be treated as a graphic element, not a typographic system
+
+---
+
+### The Typographic Scale — Harmonic Proportions
+A consistent typographic hierarchy creates order and guides the eye:
+
+**Major Scale (1.414 — Square Root of 2)**:
+- 12 / 17 / 24 / 34 / 48 / 68 / 96px
+- Used for: Clean, structured, systematic layouts
+
+**Golden Ratio Scale (1.618)**:
+- 12 / 19 / 31 / 50 / 81px
+- Used for: Premium, editorial, high-contrast hierarchy
+
+**Modular Scale Application**:
+- Body text: smallest size in scale
+- Subheading: 2 steps up
+- Heading: 4 steps up
+- Display: 6+ steps up
+
+---
+
+## MODULE 4: LAYOUT & COMPOSITION THEORY
+
+### Gestalt Principles of Visual Perception
+How the human eye naturally groups and organizes visual information:
+
+**Proximity**: Elements close together are perceived as related. Group related content. Separate unrelated content. White space is communication.
+
+**Similarity**: Elements that look alike are perceived as related. Use consistent visual treatment for elements that serve the same function.
+
+**Continuation**: The eye follows lines and curves. Use this to guide the viewer's gaze toward important elements.
+
+**Closure**: The mind completes incomplete shapes. Use negative space to create implied forms. Iconic example: The FedEx hidden arrow, the Amazon A-to-Z arrow.
+
+**Figure-Ground**: The contrast between a prominent object and its background. Design requires a clear foreground (the message) and a clear background (the supporting context).
+
+**Common Fate**: Elements moving in the same direction are perceived as related. In animation and scroll interactions, parallel movement creates group identity.
+
+---
+
+### Visual Hierarchy — The Priority System
+
+**Level 1 — First Attention (0.5 seconds)**: The hero element. Image or display headline. Must communicate the brand promise instantly.
+
+**Level 2 — Second Attention (1–3 seconds)**: Supporting headline or subheadline. Adds context, specificity, or emotional depth to Level 1.
+
+**Level 3 — Engaged Reading (5–30 seconds)**: Body copy, bullets, supporting visuals. Delivers proof, detail, and conversion context.
+
+**Level 4 — Action (Decision moment)**: Call-to-action button. Must contrast maximally with surrounding elements. One primary CTA per visual field.
+
+---
+
+## MODULE 5: BRAND IDENTITY SYSTEM DESIGN
+
+### What Constitutes a Complete Brand Identity System
+
+**1. Logo Suite**:
+- Primary logo (full lockup)
+- Secondary logo (simplified, alternate orientation)
+- Icon/Mark (standalone symbol)
+- Wordmark (typography only version)
+- All variants in: Full color, White, Black, Single-color
+
+**2. Color System**:
+- Primary palette (1–2 colors)
+- Secondary palette (2–3 supporting colors)
+- Neutral palette (whites, grays, blacks)
+- Semantic colors (success green, error red, warning amber, info blue)
+- All in: HEX, RGB, CMYK, Pantone
+
+**3. Typography System**:
+- Display typeface (headlines, hero text)
+- Body typeface (reading copy)
+- Functional typeface (UI elements, data, captions)
+- Complete scale: Display / H1 / H2 / H3 / H4 / H5 / Body Large / Body / Caption / Label / Overline
+
+**4. Spacing & Grid System**:
+- Base unit (typically 4px or 8px)
+- Spacing scale (4, 8, 12, 16, 24, 32, 48, 64, 96px)
+- Grid: columns, gutters, margins for each breakpoint
+
+**5. Iconography System**:
+- Style definition: Outlined, Filled, Duotone, or custom
+- Size system: 16, 20, 24, 32, 48px
+- Optical alignment with the brand's letter forms
+
+**6. Photography Style**:
+- Color temperature and grading direction
+- Composition rules (centered vs. asymmetric, wide vs. close)
+- Subject matter: people, product, lifestyle, environment
+- Prohibited styles: stock photography clichés, posed corporate imagery
+
+**7. Motion Design Principles**:
+- Easing curves that match brand personality (ease-in-out = premium; linear = robotic; spring = playful)
+- Duration standards: micro-interactions (100–200ms), transitions (300–500ms), hero animations (1000ms+)
+- Motion vocabulary: what moves, how it moves, what it communicates
+
+---
+
+## MODULE 6: UX AND COGNITIVE LOAD — NNGROUP PRINCIPLES
+
+### The 10 Nielsen-Norman Group Heuristics for Usability
+
+1. **Visibility of System Status**: Always communicate what is happening (loading, progress, success, error)
+2. **Match Between System and Real World**: Use language and concepts familiar to the user, not system terminology
+3. **User Control and Freedom**: Provide clear "undo" and "escape" paths
+4. **Consistency and Standards**: Follow platform conventions. Don't reinvent unless the reinvention serves the user
+5. **Error Prevention**: Design to prevent problems from occurring, rather than just providing good error messages
+6. **Recognition Rather Than Recall**: Minimize memory load. Make options visible
+7. **Flexibility and Efficiency**: Accelerators for expert users that don't hinder beginners
+8. **Aesthetic and Minimalist Design**: Remove every element that doesn't support the primary goal
+9. **Help Users Recognize, Diagnose, and Recover from Errors**: Plain language, no codes, constructive solutions
+10. **Help and Documentation**: Necessary help should be searchable, task-focused, and concise
+
+---
+
+### Cognitive Load Theory — Simplicity as a Design Value
+
+**Intrinsic Cognitive Load**: The inherent complexity of the content itself. Cannot be eliminated, only scaffolded.
+
+**Extraneous Cognitive Load**: Complexity created by poor design. Clutter, inconsistency, unclear hierarchy. This is the designer's problem to solve.
+
+**Germane Cognitive Load**: The mental effort that builds understanding and memory. Good design maximizes this by eliminating extraneous load.
+
+**Design Principle**: Every element that is not essential for the communication goal adds to extraneous cognitive load. The user's mental energy is finite. Every unnecessary element steals from the user's capacity to absorb the message.
+
+---
+
+### Fitts's Law — Interactive Design
+The time to acquire a target is a function of the distance to and size of the target.
+
+**Practical Applications**:
+- Primary call-to-action buttons must be large and placed in the user's natural eye path
+- Navigation links must be adequately sized for comfortable touch (minimum 44×44px on mobile — Apple HIG standard)
+- The most important actions should be closest to the user's current position
+- Destructive actions (delete, cancel) should be small and distant from constructive actions
+
+---
+
+*DA-03 operates at the intersection of historical design tradition (Bauhaus), cognitive science (Gestalt, NNGroup), and contemporary brand systems design. Every visual decision is traceable to principle, not preference. Aesthetics serve strategy. Beauty serves communication.*
+
+--- END SOURCE ---
+
+--- SOURCE: KNOWLEDGE_STRATEGY_GENIUS.md ---
+# KNOWLEDGE STRATEGY: AGENTICUM G5 GENIUS
+
+To achieve "Superintelligence," each agent must be grounded in high-authority data via **Google Discovery Engine**. This document lists the specific knowledge domains and elite sources to ingest.
+
+## 1. SHARED FOUNDATION (General Wisdom)
+
+These sources apply to all agents for core reasoning:
+
+- **MIT OpenCourseWare**: Computer Science & Artificial Intelligence.
+- **Stanford Encyclopedia of Philosophy**: Critical thinking & Logic.
+- **The internal MEGAMASTERPLAN**: Project context and rules.
+
+---
+
+## 2. AGENT-SPECIFIC KNOWLEDGE
+
+### 🧠 SN-00 (Orchestrator)
+
+**Focus**: Decision Theory & Multi-Agent Coordination.
+
+- **Yale/Harvard Papers**: "Theory of Mind" and Negotiation Studies.
+- **Game Theory**: Nash Equilibrium and Cooperative AI papers.
+- **Conversational Design**: Google’s Conversational AI best practices.
+
+### 📈 SP-01 (Strategist)
+
+**Focus**: Market Intelligence & Business Frameworks.
+
+- **Harvard Business Review (HBR)**: Latest research on Gen Z, sustainability, and digital transformation.
+- **McKinsey & BCG Reports**: Global industry outlooks and strategic frameworks (Blue Ocean, 7S).
+- **MIT Sloan Management Review**: Data-driven marketing strategies.
+
+### ⚖️ RA-01 (Auditor / Algorithmic Senate)
+
+**Focus**: Ethics, Compliance & Truth.
+
+- **Yale Bioethics / Interdisciplinary Center**: Research on Dark Patterns and Persuasion Ethics.
+- **FTC Guidelines**: Advertising substantiation and consumer protection.
+- **IPCC Reports**: Scientific grounding for the Ecology Senator (detecting Greenwashing).
+- **SEC Filing Standards**: Truth-in-advertising and financial disclosure principles.
+
+### ✍️ CC-06 (Video & Content Director)
+
+**Focus**: Narrative Excellence & Behavioral Economics.
+
+- **"Thinking, Fast and Slow" (Kahneman)**: Psychological triggers for "System 1" thinking.
+- **Joseph Campbell Foundation**: The Hero’s Journey (Narrative structure).
+- **David Ogilvy / Claude Hopkins**: Classic advertising bibles for copy power.
+- **Yale School of Drama**: Contemporary storytelling and dramatic pacing.
+
+### 🎨 DA-03 (Design Architect)
+
+**Focus**: Visual Theory & Cognitive Load.
+
+- **The Bauhaus Collection**: Foundation of modern functional design.
+- **Johannes Itten**: The Art of Color (Color theory).
+- **Nielsen Norman Group (NNg)**: Empirical UX research for high-performance interfaces.
+- **Google Material Design 3 Spec**: The gold standard for modern interface logic.
+
+### 🚀 PM-07 (Persistent Agent)
+
+**Focus**: Organizational Productivity & Systems Thinking.
+
+- **"Getting Things Done" (Allen)**: Frameworks for proactive management.
+- **Salesforce/Adobe Whitepapers**: Best practices for CRM and persistent customer journeys.
+- **Gartner Reports**: Hyper-automation and the future of proactive AI.
+
+---
+
+## 3. DATA INGESTION PIPELINE (Google Cloud)
+
+1. **Storage**: All PDFs, Research Papers, and HTML scrapes are uploaded to **Google Cloud Storage**.
+2. **Indexing**: **Vertex AI Discovery Engine** indexes the bucket.
+3. **Grounding**: Agents use the `Discovery Engine Tool` to reference these specific sources for every claim.
+
+> [!IMPORTANT]
+> Always prefer ORIGINAL research over secondary blogs. We want the agents to speak with the authority of MIT professors and McKinsey directors.
+
+--- END SOURCE ---
+
+--- SOURCE: PROJECT_NEXUS_STRATEGIC_BRIEFING.md ---
+# PROJECT NEXUS — STRATEGIC BRIEFING
+
+## Alphate Inc. // Internal — Founder & Chief Architect Eyes Only
+
+### Classification: CONFIDENTIAL | Version 2.0 | 2026-02-22
+
+---
+
+## 1. EXECUTIVE SUMMARY
+
+Project Nexus transformiert die bestehende Agenticum G5 Plattform — ein Multi-Agent AI Creative Agency System, das für die Gemini Live Agent Challenge gebaut wurde — in eine AI-native, dynamische Marketing-Intelligence-Plattform. Das Ziel: die weltweit erste „Living Academy" für Online-Marketing-Professionals, die Education, Networking und Tooling in einem Career Operating System vereint.
+Die Plattform nutzt vollständig das Google-Ökosystem (Vertex AI / Gemini 2.0 Flash, Firebase, Cloud Run, Google Ad Manager 360) und positioniert sich im Schnittfeld von LinkedIn, Coursera und Google Ads Academy — jedoch AI-orchestriert und in Echtzeit aktualisiert.
+
+### Hackathon-Kontext
+
+## Agenticum G5 ist als Submission für die **Gemini Live Agent Challenge** (Deadline: 17. März 2026) konzipiert. Die Challenge verlangt next-generation AI Agents mit multimodalen Inputs/Outputs jenseits von Text-in/Text-out. Unser Projekt fällt primär in die Kategorie **Creative Storyteller** (Multimodal Storytelling mit Interleaved Output) mit starken Elementen aus **Live Agents** (Real-time Interaction via Audio/Vision).
+
+## 2. IST-ZUSTAND: Was bereits gebaut und deployed ist
+
+### 2.1 Frontend (Deployed auf Google Cloud Run)
+
+**URL:** `agenticum-frontend-697051612685.europe-west1.run.app`
+**Stack:** React 18 + Vite + Tailwind CSS v4 + TypeScript Strict
+
+#### Landing Page (Public)
+
+- Hero-Section mit Swarm-Boot-Animation und Agent-Greetings (SN-00, SP-01, RA-01)
+- 5-Agent Showcase (Neural Orchestrator SN-00, Syntactic Processor SP-01, Cognitive Core CC-06, Diffusion Architect DA-03, Security Auditor RA-01)
+- „The Codex" — 6 Matrix-Kacheln (Synergistic Dialogue, Strategic Omniscience, Hyper-Iterative Deployment, Security Senate, Multi-Modal Mastery, Autonomous Content Engine)
+- Strategic Feed / Blog-Sektion mit Live-Pillar-Artikeln (PM-07 Engine)
+- Imagen 3 Output Gallery (4 generierte Assets)
+- Hackathon Codex Badge-Leiste (100% Original Code, Google Cloud Native, Gemini 2.0 Flash, Vertex AI, Imagen 3, Firestore API, Cloud Run/Node.js, Multi-Agent Swarm, TypeScript Strict, React 18/Vite, Tailwind CSS v4)
+
+#### OS Portal (Routed SPA — 13 Module)
+
+1. **Executive Dashboard** — Global Metrics, Activity Log, Agency Throughput Chart (Recharts), Swarm Telemetry, Token/Senate Stats (Mock-Daten)
+2. **Campaign Hub** — PMax Campaign Orchestrator mit Parametern (Brand, Objective, Budget, Bidding Strategy, CPA), Global Directives Interface, Live Delegation Matrix
+3. **Genius Console** — WebSocket-basierte Echtzeit-Verbindung zum Backend, GCP-Projekt-Config, Gemini API Key Config, Mikrofon-Permission, Connect-Button
+4. **Nexus Engine V2** — Autonomer Workflow Editor mit 4 Templates (Campaign Full Cycle, Copy Sprint, Visual Campaign, Strategy Brief), Agent-Zuweisung pro Template
+5. **Pillar Blog Engine (PM-07)** — Autonome Long-Form Content Engine, Active Pipeline (3 Artikel in verschiedenen Stadien), 4-Step Workflow (Strategy → Semantic Draft → SEO Audit → Distribution), Keyword-Targeting mit Search Volume/Difficulty
+6. **Creative Studio** — DA-03 & CC-06 Workspace, Asset-Filter (All/Copy/VFX/Imagen 3/Veo Matrix), Text Canvas, Generierte Image-Assets mit Remix-Funktion
+7. **Automated Workflows** — React Flow Canvas mit Node-basiertem Workflow-Builder, Edges, Zoom/Pan Controls, Node Configuration Panel
+8. **Asset Vault** — Drag & Drop File Upload, Context Stream Ingest für Brand Guidelines/Competitor Assets
+9. **Project Memory** — Client Roster (2 indexierte Clients: CyberDyne Systems, Neon Cortex Inc.), Memory Vectors (PDFs, CSVs, Audio), Campaign-Tracking, Omniscient Search
+10. **Swarm Analytics** — Telemetry Dashboard für alle 6 Agents (SN-00, SP-01, CC-06, DA-03, RA-01, PM-07) mit Compute, Tokens, Vector Malloc, OpEx Run Rate, Network Payload Distribution Chart
+11. **Synergy Map** — Live Vector Payload Transmission Layer, Visuelle Agent-Netzwerk-Darstellung, Network Telemetry Stream
+12. **Security Senate** — RA-01 Algorithmic Tribunal, Pending Docket, Approval Rate (94.2%), Override Controls
+13. **Global Config** — API Security Matrix (GCP Project ID, Vertex AI Service Account, Gemini API Key), Storage Infrastructure (GCS Bucket, Local Fallback), Neural Hyperparameters (Model Selection, Temperature, Top-K, Token Limit, Safety Thresholds), Swarm Governance (Agent-Toggle)
+
+### 2.2 Backend (Deployed auf Google Cloud)
+
+**GCP Project:** `alphate-enterprise-g5`
+
+- **Cloud Run** — Node.js Backend-Services
+- **Vertex AI** — Gemini 2.0 Flash Integration für Content-Generierung, Reasoning, Übersetzung
+- **Imagen 3** — Bildgenerierung über Vertex AI
+- **Firestore** — Echtzeit-Datenbank für Projekte, Clients, Assets, Blog-Artikel
+- **WebSocket-Orchestrierung** — Echtzeit-Kommunikation zwischen Frontend (Genius Console) und Backend Multi-Agent System
+- **Google ADK** — Agent Development Kit Integration für Multi-Agent-Orchestrierung
+
+### 2.3 Kritische Ehrlichkeitsbewertung
+
+- Die Landing Page ist primär eine **statische Präsentation** mit Mock-Daten
+- OS Portal Module zeigen **UI-Shells mit fest codierten Dummy-Werten** (z.B. „98.4% Compute", „$932.70 Total Burn")
+- Die meisten Module sind **UI-Mockups** — visuell ansprechend, aber ohne echten Datenfluss
+- **Funktional sind:** Backend-Services (Vertex AI, Firestore, WebSocket), Genius Console (echte WebSocket-Verbindung), Blog/Nexus-Engine (echte API-Anbindung)
+- Das Frontend ist derzeit mehr eine **visuelle Dokumentation des Backends** als ein vollständig funktionales Produkt
+
+---
+
+## 3. HACKATHON-COMPLIANCE-MATRIX
+
+### Gemini Live Agent Challenge — Anforderungen
+
+| Anforderung                  | Status       | Details                                                                  |
+| ---------------------------- | ------------ | ------------------------------------------------------------------------ |
+| Gemini Model nutzen          | ✅ Erfüllt   | Gemini 2.0 Flash via Vertex AI                                           |
+| Google GenAI SDK ODER ADK    | ✅ Erfüllt   | Google ADK für Multi-Agent-Orchestrierung                                |
+| Mind. 1 Google Cloud Service | ✅ Erfüllt   | Cloud Run, Vertex AI, Firestore, Imagen 3                                |
+| Multimodale Inputs/Outputs   | ⚠️ Teilweise | Voice (Mikrofon), Vision (Imagen 3), Text — Video-Output noch ausstehend |
+| Beyond Text-in/Text-out      | ⚠️ Teilweise | Genius Console hat Voice, aber Live-Interaktion muss demonstriert werden |
+
+### Submission-Anforderungen
+
+| Element                 | Status        | Handlungsbedarf                                |
+| ----------------------- | ------------- | ---------------------------------------------- |
+| Text Description        | ⬜ Ausstehend | Muss geschrieben werden                        |
+| Public Code Repository  | ⬜ Ausstehend | README mit Spin-up Instructions                |
+| Proof of GCP Deployment | ⚠️ Teilweise  | Cloud Run ist deployed, Screen-Recording fehlt |
+| Architecture Diagram    | ⬜ Ausstehend | Muss erstellt werden                           |
+| Demo Video (<4 Min)     | ⬜ Ausstehend | KEINE Mockups — echte Features in Echtzeit     |
+
+### Bonus Points
+
+| Element                               | Status        |
+| ------------------------------------- | ------------- |
+| Blog/Podcast/Video über Build-Prozess | ⬜ Ausstehend |
+| Automated Cloud Deployment (IaC)      | ⬜ Ausstehend |
+| Google Developer Group Profil         | ⬜ Ausstehend |
+
+### Judging-Kriterien (Gewichtung)
+
+1. **Innovation & Multimodal UX (40%)** — Bricht das Projekt das Text-Box-Paradigma? See, Hear, Speak? Distinct Persona/Voice? Live & Context-aware?
+2. **Technical Implementation & Agent Architecture (30%)** — Effektive Nutzung von GenAI SDK/ADK? Backend robust auf GCP? Agent Logic sound? Error Handling? Grounding?
+3. **Demo & Presentation (30%)** — Problem/Solution klar? Architecture Diagram? Proof of Cloud? Actual Working Software?
+
+### Preiskategorien (relevant)
+
+- **Best of Live Agents:** $25,000 + $3,000 GCP Credits + Google Cloud Next Tickets + Travel + Demo Opportunity
+- **Best of Creative Storytellers:** $10,000 + $1,000 GCP Credits + Google Cloud Next Tickets
+- **Best Multimodal Integration & UX:** $5,000 + $500 GCP Credits
+- **Best Technical Execution & Agent Architecture:** $5,000 + $500 GCP Credits
+- **Best Innovation & Thought Leadership:** $5,000 + $500 GCP Credits
+
+---
+
+## 4. NORTH STAR & STRATEGIC INTENT
+
+**North-Star-Metrik:** Active Marketing Professionals using Nexus as their primary learning and career platform at least 3 days per week.
+**Kurzfristig (Hackathon):** Demonstration einer funktionierenden, multimodalen AI Creative Agency mit echtem Datenfluss — Voice, Vision, Content-Generierung, Image-Creation in Echtzeit.
+**Mittelfristig (Phase 1-2):** Transformation zur Marketing-Intelligence-Plattform mit Liquid Curriculum, Career Neural Network und Integrated Tool Suite.
+**Langfristig:** Aufbau eines datengetriebenen Marketing Talent Graph, der im Alphabet-Ökosystem verwertbar ist.
+
+---
+
+## 5. PRODUCT PILLARS
+
+### 5.1 Liquid Curriculum (AI-driven Learning Engine)
+
+- Real-time Content Adaptation synchronisiert gegen Google Core Updates, Policy-Änderungen, Tool-Releases
+- AI-first Content Fabric via Vertex AI / Gemini 2.0 Flash
+- Multilingual Real-time Delivery (DE, EN, ES, weitere EU-Sprachen)
+- Skaliert als kontinuierlich kompilierender Lerngraph, nicht als Videobibliothek
+
+### 5.2 Career Neural Network (Talent Graph & Networking)
+
+- Skill-verifizierte Profile aus Modulen, Assessments und Tool-Nutzungsdaten
+- Precision Matching für Agenturen über Skill-Scores
+- AI-moderierte Peer-Learning-Spaces mit Knowledge Distillation
+
+### 5.3 Integrated Tool Suite (Daily Utility Layer)
+
+- Core Free Tools: SEO-Analyzer, Ad-Copy-Generator (Gemini), UTM-Builder
+- Habit-Loop Design: Tools als Auftaktpunkte für Micro-Learnings
+- Retention Engine: Tägliche Nutzung erhöht LTV und personalisiert Lernpfade
+
+---
+
+## 6. MONETIZATION & ALPHABET SYNERGY
+
+### 6.1 Contextual Intelligence Ads (Google Ad Manager 360)
+
+- High-Relevance Placements entlang von Lernkontext und Skill-Level
+- Hybrid Value: Tool-Deals + Job-Alerts
+- Privacy & UX Alignment: Consent-getrieben, keine Dark Patterns
+
+### 6.2 Premium & B2B
+
+- Pro Membership: Vertiefende Tracks, AI-Coaching, Zertifikate
+- Agency & Enterprise Accounts: Seat-basiert, White-Label
+- Affiliate & Lead Gen: Kuratiertes SaaS-Partner-Ökosystem
+
+---
+
+## 7. ROADMAP
+
+### Phase 1 — MVP „The Academy" (0-6 Monate)
+
+- Kern-Curriculum (SEO, Google Ads, E-Mail-Marketing) mit AI Content Engine
+- 3 zentrale Tools (SEO-Analyzer, Ad Copy Generator, UTM-Builder)
+- Zielmetriken: Time-to-Value < 10 Min, erste Pro-User, NPS > 40
+
+### Phase 2 — Community & Talent Graph (6-12 Monate)
+
+- Profile, Skill-Badges, Leaderboards, AI-moderierte Spaces
+- Agentur-Onboarding-Pilot (EU-Agenturen)
+- Zielmetriken: WAU, verifizierte Skills/User, Agency Revenue
+
+### Phase 3 — Ecosystem & Monetization (12-24 Monate)
+
+- Jobboard, Ad Manager 360 Integration, Partner-Ökosystem
+- Talent-Graph-APIs für B2B (ATS, HR-Tools)
+- Zielmetriken: Plattform-Umsatz, ARPU, Matching-Erfolgsquote
+
+---
+
+## 8. STRATEGIC RISKS & MITIGATIONS
+
+| Risiko                          | Auswirkung                            | Gegenmaßnahme                                                |
+| ------------------------------- | ------------------------------------- | ------------------------------------------------------------ |
+| AI Content Quality & Trust      | Veraltete/ungenaue Inhalte            | Human-in-the-loop QA, Alignment mit Google-Richtlinien       |
+| Overcomplexity im Onboarding    | User-Abbruch                          | Geführte Flows, Learning Missions, progressive Freischaltung |
+| Platform Dependency (Google)    | Vendor Lock-in                        | Modulare Architektur, abstrahierte Integrationslayer         |
+| Hackathon: Mock-Daten erkennbar | Disqualifikation/niedrige Scores      | Echte Datenflüsse vor Deadline implementieren                |
+| Frontend-Backend-Gap            | Demo zeigt keine echte Funktionalität | Genius Console und Blog Engine als Primär-Demo nutzen        |
+
+--- END SOURCE ---
+
+--- SOURCE: RA01_ETHICS_COMPLIANCE.md ---
+# RA-01 AUDITOR & MI-01 SENATE — KNOWLEDGE BASE
+## Ethics, Compliance, Competitive Auditing & Responsible Marketing Standards
+
+---
+
+## PART I: MI-01 ETHICS SENATOR — KNOWLEDGE BASE
+
+### The Ethical Marketing Manifesto — Core Principles
+
+**Principle 1: Truth**
+Every claim in a campaign must be true, substantiated, and not misleading by omission. A technically true statement that creates a false impression is ethically equivalent to a lie.
+
+**Principle 2: Non-Manipulation**
+Persuasion through legitimate means (evidence, relevant emotional appeal, accurate framing) is ethical. Persuasion through exploitation of psychological vulnerabilities, false urgency, or manufactured fear is manipulation.
+
+**Principle 3: Dignity**
+Marketing must not dehumanize, stereotype, objectify, or demean any person or group. This includes the use of unrealistic body standards, cultural appropriation without consent, or humor that relies on the degradation of others.
+
+**Principle 4: Privacy**
+Consumers have a right to know how their data is collected and used. Dark patterns that obscure data collection, manipulate consent dialogs, or make opt-out disproportionately difficult violate the principle of informed consent.
+
+**Principle 5: Inclusion**
+Marketing that targets vulnerable populations (children, elderly, financially distressed individuals) with high-pressure techniques or predatory offers is ethically prohibited regardless of legal status.
+
+---
+
+### The FTC's Guides — Truth-in-Advertising Standards
+
+**The FTC Four-Part Test for Advertising Claims**:
+1. **Express Claims**: The literal statement made in the ad
+2. **Implied Claims**: What a reasonable consumer would believe the ad says, even if not stated directly
+3. **Substantiation Requirement**: All objective claims must be substantiated before the ad runs. "Up to 80% faster" requires data proving at least some customers experienced 80% improvement.
+4. **Materiality**: The claim must be something that would influence purchasing decisions. If it wouldn't affect behavior, it's not a claim worth scrutinizing — but if it would, it must be provable.
+
+**FTC Endorsement Guidelines**:
+- Paid partnerships and sponsored content must be clearly disclosed
+- "Ad," "#sponsored," "#paid" must be visible without clicking
+- Influencer testimonials must reflect genuine experience
+- Results that are "atypical" must be disclosed as such
+
+**FTC Green Claims Guidelines**:
+- "Eco-friendly" requires demonstrated environmental benefit across the full lifecycle
+- "Recyclable" must be recyclable through programs available to the majority of consumers
+- "Carbon neutral" requires verified offset methodology from a recognized body
+- "Sustainable" requires specific evidence — it is not a vague descriptor that can be used freely
+
+**Claim Hierarchy — What Requires What Level of Substantiation**:
+- Comparative superiority ("best," "fastest," "most effective"): Requires head-to-head testing or comprehensive competitive analysis
+- Quantified claims ("reduces wrinkles by 70%"): Requires clinical or controlled study
+- Consumer testimonials ("customers say they lost 20 lbs"): Requires disclosure of average results and atypical nature if relevant
+- Quality claims ("premium quality"): Requires clear definition of what "premium" means in this context
+
+---
+
+### Dark Patterns — Complete Classification (ETHICS SENATOR WATCHLIST)
+
+**Category 1: Hidden Costs**
+Revealing unavoidable charges (taxes, fees, shipping) only at the final checkout stage after the consumer has invested time and emotional energy in the purchase journey. Severity: High.
+
+**Category 2: Trick Questions**
+Using confusing double negatives or ambiguous phrasing in consent forms. "Uncheck this box to not receive marketing emails from our partners." Severity: High.
+
+**Category 3: Roach Motel**
+Making it easy to enter a subscription or relationship but extremely difficult to exit. Cancelation flows that require phone calls, multi-step forms, or extended waiting periods. Severity: Very High.
+
+**Category 4: Privacy Zuckering**
+Designing privacy settings to lead users toward sharing more data than they intended through misleading labeling, complex settings architecture, or defaults set to maximum data sharing. Severity: Very High.
+
+**Category 5: Misdirection**
+Using visual design to draw attention away from important information (terms, risks, costs) toward the desired action. Fine print that is literally grey on white. Severity: Medium-High.
+
+**Category 6: Confirmshaming**
+Framing the opt-out as an admission of weakness or negative self-identity. "No thanks, I don't want to save money." Severity: Medium. (Note: Widely used, but degrades brand respect.)
+
+**Category 7: Artificial Urgency**
+Countdown timers that reset. "Only 2 left!" when inventory is 2,000. "This offer expires tonight" when it is renewed daily. Severity: Very High. (This is fraud, not merely unethical.)
+
+**Category 8: Friend Spam**
+Harvesting contact lists from social media or email after receiving one-time permission, then contacting all contacts without explicit consent. Severity: High.
+
+**Category 9: Disguised Ads**
+Native advertising, sponsored content, and paid placements that are visually indistinguishable from editorial content or organic search results. Severity: Medium-High (FTC violation).
+
+**Category 10: Forced Continuity**
+Free trial that converts to a paid subscription without a clear reminder and with a deliberately obscure cancelation process. Severity: Very High (frequently triggers chargebacks and FTC complaints).
+
+---
+
+### Vulnerable Population Protections
+
+**Children (Under 13)**:
+- COPPA (Children's Online Privacy Protection Act): No collection of personal data without verifiable parental consent
+- No advertising designed to manipulate children through cartoon characters, games, or celebrity endorsements into requesting products from parents
+- No behavioral targeting of users under 13
+
+**Elderly Population**:
+- Campaigns for financial products, health products, or supplements targeting elderly audiences require elevated transparency
+- Medical or health claims targeting elderly consumers fall under heightened FTC and FDA scrutiny
+- Financial suitability: retirement and investment products must accurately represent risk
+
+**Financially Distressed Consumers**:
+- Predatory lending advertising that obscures APR, term length, or total repayment cost is unethical and frequently illegal
+- High-pressure sales tactics (limited time only, pay now or lose it) are disproportionately exploitative toward financially distressed individuals
+
+---
+
+## PART II: MI-01 ECONOMY SENATOR — ECONOMIC TRUTH STANDARDS
+
+### ROI Claim Validation Framework
+
+**Rule 1: Source Requirement**
+Any quantified ROI claim ("clients see 300% ROI") requires: methodology description, sample size, time period, and external validation.
+
+**Rule 2: The Favorable Selection Problem**
+Case studies and testimonials inherently represent favorable outcomes. Any campaign featuring them must acknowledge that results vary and avoid creating the impression that exceptional cases are typical.
+
+**Rule 3: The Attribution Problem**
+Claims that attribute business outcomes solely to a marketing tool ignore confounding variables (market conditions, product quality, sales team performance). Honest attribution language uses "contributed to" rather than "caused."
+
+**Rule 4: Price Transparency**
+Total cost of ownership (TCO) must not be obscured. Monthly pricing that omits setup fees, per-seat charges, or mandatory annual commitments is economically misleading.
+
+**Rule 5: Competitive Comparison Standards**
+Comparative claims must compare like-for-like: equivalent features, equivalent time periods, equivalent market conditions. Cherry-picking favorable comparison periods or excluding competitive features is economically dishonest.
+
+---
+
+### Financial Product Standards
+
+**Required Disclosures (Financial Services)**:
+- All interest rates must be expressed as Annual Percentage Rate (APR), not monthly rate
+- Investment products must disclose risk and the possibility of capital loss
+- Past performance disclaimers are mandatory for any historical return data
+- Fees must be disclosed in absolute monetary terms as well as percentage
+
+---
+
+## PART III: MI-01 ECOLOGY SENATOR — GREENWASHING WATCHLIST
+
+### The 7 Sins of Greenwashing (TerraChoice Environmental Research)
+
+**Sin 1: Hidden Trade-Off**
+Claiming a product is "green" based on a single environmental attribute while ignoring the environmental impact of the full product lifecycle. Example: "Recycled paper" office products that ignore the chemical bleaching process.
+
+**Sin 2: No Proof**
+Environmental claims that cannot be substantiated by easily accessible supporting information or a reliable third-party certification.
+
+**Sin 3: Vagueness**
+So poorly defined or broad that its real meaning is likely to be misunderstood by the consumer. "All-natural" is meaningless — arsenic is all-natural. "Green" without specification is meaningless.
+
+**Sin 4: False Labels**
+A product that, through words or images, gives the impression of third-party endorsement where no such endorsement actually exists.
+
+**Sin 5: Irrelevance**
+Truthful but unhelpful or not important for consumers seeking environmentally preferable products. "CFC-free" when CFCs are banned — the claim is true but meaningless.
+
+**Sin 6: Lesser of Two Evils**
+True within the product category but not important from a broader environmental perspective. "Organic cigarettes" — the organic attribute is real, but the product remains harmful.
+
+**Sin 7: Fibbing**
+Outright false environmental claims. "Contains 100% recycled content" when it does not.
+
+---
+
+### EU Green Claims Directive (2024) — Key Provisions
+The European Commission's directive (effective 2026 for large enterprises) mandates:
+- All environmental claims must be verified by an accredited third party before publication
+- Comparative claims ("greener than X") require life cycle assessment evidence
+- Carbon offset-based neutrality claims ("carbon neutral") require 90% real emissions reduction — offsets can only cover the remaining 10%
+- Generic claims ("eco-friendly," "sustainable," "green," "nature-friendly," "conscious") are prohibited unless accompanied by specific EU-recognized certification
+
+**Ecology Senator Directive**: Any campaign claim that would violate the EU Green Claims Directive is flagged regardless of jurisdiction. This is the global standard this agent applies.
+
+---
+
+### Carbon Accounting — Scope 1, 2 and 3
+
+**Scope 1 Emissions**: Direct emissions from owned or controlled sources (factories, vehicles)
+**Scope 2 Emissions**: Indirect emissions from purchased electricity, heat, or steam
+**Scope 3 Emissions**: All other indirect emissions in the value chain (supply chain, product use, end-of-life)
+
+**Critical Standard**: Any claim of carbon neutrality that does not account for Scope 3 emissions is fundamentally misleading for consumer goods brands, where Scope 3 typically represents 70–90% of total emissions.
+
+---
+
+## PART IV: RA-01 COMPETITIVE AUDITOR — INTELLIGENCE PROTOCOLS
+
+### The Competitive Audit Framework
+
+**Tier 1: Positioning Analysis**
+- What promise does each competitor make? (Functional + Emotional + Social)
+- What customer problem do they claim to solve?
+- What is their visual language signaling? (Premium, accessible, technical, warm)
+- What words appear in their hero headlines?
+
+**Tier 2: Messaging Architecture**
+- What is the hierarchy of information on their homepage?
+- What is the call-to-action? What action is being requested first?
+- How do they handle pricing transparency?
+- What trust signals do they deploy? (Awards, certifications, client logos, testimonials)
+
+**Tier 3: Behavioral Analysis**
+- What organic keywords are they ranking for?
+- What ad copy are they running (if visible)?
+- What content format do they prioritize (video, long-form, social)?
+- What platforms are they active on?
+
+**Tier 4: Gap Analysis**
+- What customer pain point is NO competitor addressing?
+- What audience segment is underserved or ignored?
+- What visual or tonal territory is unclaimed?
+
+---
+
+### Visual Competitive Analysis Protocol (Vision-Based)
+
+When analyzing competitor brand materials visually:
+
+**Color Palette Reading**:
+- Blue dominates: trust, corporate, conservative, technology
+- Green dominates: nature, health, growth, sustainability
+- Black dominates: luxury, exclusivity, sophistication
+- Orange/Red: energy, urgency, accessibility, disruption
+- White space: premium, clarity, confidence
+- Bright/neon: youth, digital-native, playful
+
+**Typography Reading**:
+- Serif fonts: heritage, authority, premium, editorial
+- Sans-serif fonts: modern, clean, accessible, tech-forward
+- Geometric sans: systematic, precise, engineering-minded
+- Script/handwritten: personal, artisanal, human, boutique
+
+**Layout Density Reading**:
+- High density: expert audience, information-heavy category (finance, B2B)
+- Low density (lots of white space): premium, confident, consumer-facing
+- Grid-heavy: systematic brand, trustworthy, organized
+- Asymmetric: creative, disruptive, design-forward
+
+**RA-01 Directive**: Never describe a competitor's design in generic terms. Always extract the strategic intent behind each design decision. Design is communication. Every choice signals something.
+
+---
+
+*RA-01 and MI-01 are the quality control and ethical backbone of AGENTICUM G5 GENIUS. Their combined function ensures that every campaign output is not only strategically effective but ethically defensible, legally compliant, and environmentally honest.*
+
+--- END SOURCE ---
+
+--- SOURCE: SHARED_BRAND_INTELLIGENCE.md ---
+# AGENTICUM G5 GENIUS — SHARED KNOWLEDGE BASE
+## Industry Intelligence, Brand Case Studies & Vertical Market Deep-Dives
+
+---
+
+## PART I: LEGENDARY BRAND CASE STUDIES
+
+### Case Study 1: Apple — The Brand as Identity
+**Category**: Consumer Technology
+**Brand Age**: 1976 — present
+
+**The Core Strategy**: Apple doesn't sell computers, phones, or watches. It sells the identity of being "a creative, an innovator, a person who thinks differently." The product is the membership card to a tribe.
+
+**The "Think Different" Framework**:
+Apple's 1997 "Think Different" campaign (Chiat\Day, Jay Chiat) was not about any product. It was a statement about who Apple customers are. It used creative outliers from history (not Apple users) to define the Apple customer's self-image.
+
+**Key Lessons**:
+- Sell the identity, not the features
+- Simplicity is not the absence of effort — it is the result of ruthless editing
+- Packaging is marketing: unboxing an Apple product is a designed ritual
+- The store is the brand: Apple Stores generate more revenue per square foot than any other retailer because the experience is the product
+
+**The Premium Pricing Strategy**:
+Apple maintains significantly higher ASP (Average Selling Price) than any competitor in the categories it occupies. The mechanism: total ecosystem lock-in (AirDrop, iMessage, AirPlay, iCloud, Apple Watch/iPhone integration) makes switching prohibitively expensive in convenience terms, not just financial terms.
+
+**Competitive Positioning Insight**: Apple occupies the intersection of "premium" and "accessible luxury" — aspirational enough to command a price premium, mainstream enough to be achievable by the middle class. This is the most defensible market position.
+
+---
+
+### Case Study 2: Patagonia — The Ethical Brand as Competitive Advantage
+**Category**: Outdoor Apparel
+**Brand Position**: Environmental activism company that also makes clothing
+
+**The Anti-Marketing Strategy**:
+In 2011, Patagonia ran a full-page New York Times ad on Black Friday that read: "Don't Buy This Jacket." The ad described the environmental cost of making a Patagonia jacket and asked customers to think before purchasing. Revenue increased.
+
+**Why It Works**:
+- Patagonia's target customer (affluent, educated, environmentally conscious outdoor enthusiast) responds to brands that challenge consumption norms
+- The ad built trust precisely because it appeared to sacrifice commercial interest
+- It differentiated Patagonia permanently from every other apparel brand
+- It became a media story that generated millions in free coverage
+
+**The Brand Mission as Filter**:
+Patagonia's stated mission: "We're in business to save our home planet." This mission filters every business decision:
+- They offer free repairs for all products
+- They buy back used gear (Worn Wear program)
+- They donate 1% of revenues to environmental causes
+- They sued the Trump administration over national monument reductions
+- They transferred company ownership to a climate nonprofit in 2022
+
+**Lesson for Campaigns**: An authentic brand mission that is demonstrated through actions, not just claimed in copy, creates unassailable credibility. The MI-01 Ecology Senator's highest score goes to brands that can substantiate their environmental claims through structural business decisions, not marketing campaigns.
+
+---
+
+### Case Study 3: Oatly — The Challenger Brand Playbook
+**Category**: Plant-based food and beverage
+**Position**: "We're different and we're not afraid to say so"
+
+**The Self-Aware Disruption Strategy**:
+Oatly repackaged oat milk — a commodity product — as a cultural statement. Its packaging says things like: "It's like milk but made for humans" and "No wait, oat milk is better, sorry cows, truth hurts." It includes nutritional information but also long-form essays about Oatly's business decisions.
+
+**The Advertising Weirdness Strategy**:
+Oatly deliberately makes ads that acknowledge they are ads: "This is an ad for oat milk. We know you hate ads. We also make oat milk. Here's what that means..." This meta-awareness appeals to an audience that has developed strong skepticism toward traditional advertising.
+
+**Why This Works (And Doesn't Work Everywhere)**:
+This approach requires:
+- An audience with high advertising literacy and skepticism
+- A product that genuinely differs from alternatives
+- Brand courage to be consistently weird even when it feels uncomfortable
+- A category where emotional irreverence is not tone-deaf
+
+**Market Results**: Oatly grew from $200M to $700M revenue in two years through this approach.
+
+---
+
+### Case Study 4: Nike — Empowerment as Brand Architecture
+**Category**: Athletic footwear and apparel
+**Enduring Brand Idea**: Human potential and athletic aspiration
+
+**The "Just Do It" Architecture**:
+"Just Do It" (1988, Wieden+Kennedy) is not a tagline about shoes. It is a philosophy about the barrier between desire and action. Nike identified the universal internal friction — the voice that says "later, tomorrow, I'm too tired" — and named itself the antidote.
+
+**The Athlete Endorsement System**:
+Nike does not use athletes as celebrities to transfer fame. Nike uses athletes to transfer values:
+- Michael Jordan: Excellence under pressure, competitive greatness
+- Serena Williams: Power, resilience, refusing to be diminished
+- Colin Kaepernick (2018): Belief, sacrifice, moral courage
+
+**The Kaepernick Decision**:
+Nike's 2018 "Believe in something. Even if it means sacrificing everything." campaign featuring the controversial athlete was a calculated, strategically aligned decision:
+- Nike's core 18–34 demographic skewed toward supporting Kaepernick's stance
+- The controversy generated an estimated $163 million in media coverage
+- Stock recovered from a short initial drop within weeks
+- Brand preference among target demographic significantly increased
+
+**Lesson**: Brand courage is not about taking political positions — it is about taking positions that are authentically consistent with the brand's established values. Nike's value is human potential in the face of obstacles. Kaepernick is the embodiment of that value.
+
+---
+
+## PART II: VERTICAL MARKET INTELLIGENCE
+
+### The Luxury Brand Architecture — How Luxury Works
+
+**The Exclusivity Paradox**: Luxury brands must be aspirational enough to be desired by the many but exclusive enough to be owned by the few. Too accessible = not luxury. Too inaccessible = irrelevant.
+
+**The Four Pillars of Luxury**:
+1. **Heritage**: History, craftsmanship, country of origin. Louis Vuitton was founded in 1854. Hermès in 1837. The story of making things with care, over time, by hand.
+2. **Craftsmanship**: The observable skill and effort embedded in the product. Visible stitching, hand-finishing, weight, material quality.
+3. **Exclusivity**: Limited supply (real or perceived), high barrier to entry (price, waitlists, membership)
+4. **Aspiration**: What the product says about who you are. The social signaling value.
+
+**Luxury Communication Rules**:
+- Never compete on price — never mention price in aspirational communications
+- Never discount publicly — discounts destroy the perception of exclusivity permanently
+- Show the making, not just the made — reveal craftsmanship
+- Use restraint in design — white space is confidence
+- Avoid CTAs that create urgency — urgency signals scarcity anxiety, not confident exclusivity
+
+---
+
+### The Wellness & Health Brand Category
+
+**Consumer Trends**:
+- Post-pandemic health consciousness: 64% of consumers now prioritize health and wellness in spending
+- "Longevity" is the fastest-growing wellness subcategory (2024–2026)
+- Mental wellness now equals physical wellness in consumer priority — 71% of 18–35 group considers mental health as important as physical
+- Personalization demand: 78% of consumers want health products and advice tailored to their individual profile
+
+**Category Credibility Requirements**:
+Scientific substantiation is table stakes in this category. Claims without peer-reviewed support are increasingly challenged by both regulators and consumers. The MI-01 Economy Senator must verify all efficacy claims.
+
+**The Authenticity Test for Wellness Brands**:
+- Does the brand founder/team actually use the product/practice they sell?
+- Are the experts referenced genuinely credentialed?
+- Is the scientific language accurate or pseudo-scientific?
+- Is "natural" used as a synonym for "safe" (it is not)?
+
+---
+
+### The B2B SaaS Category — Marketing Intelligence
+
+**The Buying Journey Length**: Average B2B SaaS purchase involves 12 months of research, 6.8 stakeholders, and 21 touchpoints before a decision.
+
+**The Content Marketing Imperative**: B2B SaaS buyers consume an average of 13 pieces of content before making a purchase decision. The brand that produces the most useful content wins the consideration phase.
+
+**Content Priority Stack (by impact on purchase decisions)**:
+1. Customer case studies (68% cite as most influential)
+2. Analyst reports and industry research (62%)
+3. Product demos and trials (59%)
+4. Vendor website content (55%)
+5. Peer reviews (Gartner Peer Insights, G2, Capterra) (52%)
+
+**Pricing Psychology in SaaS**:
+- Annual payment discount: 15–20% creates urgency to commit
+- Free tier strategy: reduces friction to try, but must be genuinely useful — not crippled
+- Enterprise pricing: "Contact us" removes price anchoring from the SMB tiers
+- Per-seat vs. flat-rate: per-seat aligns cost with value but creates procurement friction for large teams
+
+---
+
+### The Direct-to-Consumer (DTC) Brand Architecture
+
+**The DTC Value Proposition**:
+By eliminating retail intermediaries, DTC brands capture 40–70% higher margins than wholesale-dependent brands. These margins fund: better product quality, more aggressive marketing, or lower consumer prices — the DTC brand chooses its competitive weapon.
+
+**The Customer Acquisition Cost Crisis**:
+iOS 14.5 privacy changes (2021) significantly degraded Facebook/Instagram targeting accuracy, increasing CAC across DTC categories by 50–100% in 18 months. Brands that built first-party data assets (email lists, SMS subscribers, loyalty programs) before this change significantly outperformed those that didn't.
+
+**The First-Party Data Imperative**:
+The cookie-less future (Google has deprecated third-party cookies in Chrome) makes first-party data the most valuable marketing asset a brand can own:
+- Email list (highest intent, lowest cost to reach)
+- SMS list (highest open rates — 98% vs. 20% for email)
+- Loyalty program membership
+- Direct customer survey and feedback data
+
+**The DTC Retention Formula**:
+Acquiring a new DTC customer costs 5–7× more than retaining an existing one. Post-purchase communication sequences are therefore the highest-ROI marketing activity in DTC:
+- Day 1: Order confirmation + "you made a great choice" message
+- Day 3–5: Shipping and delivery updates (highest open rates of any email)
+- Day 7–10: Usage tips, "getting the most from your purchase"
+- Day 30: Check-in + gentle review request
+- Day 45: Cross-sell to adjacent products based on initial purchase
+- Day 90: Repurchase prompt (if consumable) or seasonal reactivation
+
+---
+
+## PART III: PLATFORM ADVERTISING INTELLIGENCE
+
+### Google Ads — Performance Standards
+
+**Quality Score Factors**:
+- Expected CTR (click-through rate) for the keyword
+- Ad relevance to the keyword
+- Landing page experience
+
+**Quality Score Impact on Economics**:
+- QS 10 → 50% cost reduction vs. base price
+- QS 7–9 → 0–28% reduction
+- QS 4–6 → 0–25% premium
+- QS 1–3 → 25–400% premium
+
+**Smart Bidding Strategies (Automated)**:
+- Target CPA: Google optimizes for target cost per acquisition
+- Target ROAS: Google optimizes for revenue efficiency
+- Maximize conversions: Volume-focused, appropriate for campaigns with budget constraints
+- Enhanced CPC: Semi-automated, preserves manual control while using ML for bid adjustment
+
+---
+
+### Meta Ads (Facebook/Instagram) — Targeting Intelligence
+
+**Audience Hierarchy (Best to Worst Conversion Rate)**:
+1. Remarketing to website visitors (highest intent, highest cost per thousand)
+2. Customer list lookalikes (similar to existing buyers)
+3. Interest-based targeting with behavioral signals
+4. Broad demographic targeting (lowest precision, lowest cost per thousand)
+
+**Creative Testing Framework**:
+- Test one variable at a time: image vs. video, headline A vs. headline B
+- Minimum 50 conversions per ad set before declaring a winner
+- Statistical significance threshold: 95% confidence
+- Ad fatigue detection: CTR declining >30% over 7 days signals creative refresh needed
+
+---
+
+## PART IV: CRISIS COMMUNICATION INTELLIGENCE
+
+### Brand Crisis Taxonomy
+
+**Type 1 — Product Failure Crisis**: A product or service fails to perform as promised, resulting in consumer harm or disappointment.
+Response protocol: Acknowledge immediately, provide factual update, do not speculate, offer resolution.
+
+**Type 2 — Reputational Crisis**: Brand behavior (company actions, executive statements, employee conduct) contradicts stated brand values.
+Response protocol: Accept responsibility where appropriate, state concrete corrective actions, communicate timeline.
+
+**Type 3 — External Attribution Crisis**: Brand associated with external events (supply chain scandal, industry-wide event, crisis in adjacent category).
+Response protocol: Differentiate brand clearly, demonstrate proactive response, do not minimize the broader issue.
+
+**Type 4 — False Accusation Crisis**: Brand falsely accused or misrepresented.
+Response protocol: Fast, factual refutation with documented evidence. Do not engage in extended public debate.
+
+**The 3 Rs of Crisis Response**:
+1. **Regret**: Acknowledge impact on affected parties. Empathy first.
+2. **Reason**: Explain what happened factually, without excuse-making.
+3. **Remedy**: State concrete corrective action with specific timeline.
+
+**The Golden Hour**: The first 60 minutes of a public crisis determine the trajectory of the narrative. A vacuum of official response is filled by speculation. Move fast with facts, even if the complete picture is not yet available. "We are aware and investigating" is always better than silence.
+
+---
+
+*This shared knowledge base represents the cross-vertical intelligence that all AGENTICUM G5 GENIUS agents draw from when context crosses their primary specialty. Brand strategy, market dynamics, consumer psychology, and communication science do not exist in silos — neither does elite creative intelligence.*
+
+--- END SOURCE ---
+
+--- SOURCE: SN00_SYSTEMS_THINKING.md ---
+# SN-00 GENIUS ORCHESTRATOR — KNOWLEDGE BASE
+## Systems Thinking, Project Orchestration & AI Coordination Principles
+
+---
+
+## MODULE 1: ORCHESTRATION THEORY — MANAGING INTELLIGENCE AT SCALE
+
+### The Conductor Model
+The orchestrator's role is never to do the work — it is to create the conditions under which specialists can do their best work simultaneously. Like a symphony conductor, SN-00 reads the full score (the client brief), cues each instrument (specialist agent) at the right moment, listens for harmony between them, and intervenes when the collective output begins to drift from the intended composition.
+
+**Core Orchestration Principles**:
+
+**Principle 1: Clarity Before Speed**
+An ambiguous brief dispatched quickly produces high-speed wrong output. The single most valuable thing an orchestrator can do is invest time in understanding the brief precisely before assigning any tasks. Every minute spent clarifying saves 10 minutes of revision.
+
+**Principle 2: Parallel Over Sequential**
+When tasks are independent, run them simultaneously. When tasks are dependent, sequence them with explicit handoff protocols. Never serialize work that can be parallelized — it is the primary source of unnecessary delay.
+
+**Principle 3: Exception Handling**
+Design workflows that assume agents will sometimes fail, return partial output, or produce outputs that conflict with each other. The orchestrator must have defined resolution protocols for every exception type.
+
+**Principle 4: Output Integration**
+Individual agent outputs are raw materials. The orchestrator synthesizes them into a coherent, unified deliverable that is more than the sum of its parts. The seams between agent outputs must be invisible in the final product.
+
+---
+
+### Systems Thinking Fundamentals (Peter Senge — The Fifth Discipline)
+
+**The Five Disciplines of a Learning System**:
+
+1. **Personal Mastery**: Each agent must have genuine expertise in its domain. An orchestrator cannot compensate for weak agents. Invest in the quality of the components.
+
+2. **Mental Models**: Every agent operates from assumptions about the world. The orchestrator must make these explicit, surface conflicts between agents' mental models, and resolve them before they contaminate the outputs.
+
+3. **Shared Vision**: All agents must understand and be aligned to the same strategic goal. Fragmented objectives produce fragmented outputs. The brief is the shared vision — it must be communicated to all agents.
+
+4. **Team Learning**: The system as a whole must learn from feedback loops — what worked, what didn't, why. Apply this to each subsequent campaign run.
+
+5. **Systems Thinking**: See the system as a whole, not just its parts. The most important problems are not in the components but in the interactions between components.
+
+---
+
+### The OODA Loop — Decision Making Under Uncertainty (John Boyd)
+Applied to campaign orchestration:
+
+- **O**bserve: Gather all available information about the brief, the market, the competitive context
+- **O**rient: Interpret the information through strategic frameworks — what does this mean for the campaign?
+- **D**ecide: Choose the strategic direction and agent deployment plan
+- **A**ct: Dispatch agents, initiate work, begin the campaign build
+
+**Loop Rate**: The faster an organization can cycle through OODA, the more adaptive and competitive it becomes. In the context of a live AI session, the orchestrator should complete one OODA cycle per client turn — observe the input, orient through analysis, decide on the next action, act by dispatching or responding.
+
+---
+
+## MODULE 2: PROJECT MANAGEMENT — THE SCIENCE OF DELIVERY
+
+### The Critical Path Method (CPM)
+In any project with multiple tasks, the critical path is the longest sequence of dependent tasks. Any delay on the critical path delays the entire project. Tasks off the critical path have "float" — they can be delayed without affecting the overall delivery date.
+
+**Application in Agent Orchestration**:
+Identify which outputs are prerequisites for subsequent steps:
+- SP-01's strategy output → required by CC-06 before messaging can begin
+- DA-03's visual direction → required by CC-06 to align copy tone with visual language
+- RA-01's competitive audit → required by SP-01 to finalize positioning
+
+**SN-00 Directive**: Map the critical path at the start of every session. Dispatch critical-path agents first. Dispatch off-critical-path agents in parallel.
+
+---
+
+### Agile Sprint Model — Adapted for Agent Workflows
+
+**Sprint Planning (Session Opening)**:
+- Define the sprint goal: what single deliverable must exist at session end?
+- Break work into atomic tasks that can be assigned to specific agents
+- Estimate dependencies and set sequencing
+- Define the "definition of done" for each task
+
+**Daily Standup Protocol (Per-Turn Check-in)**:
+- What has each agent completed since last check-in?
+- What is each agent working on now?
+- What is blocking progress?
+
+**Sprint Review (Session Close)**:
+- Does the deliverable meet the brief?
+- What quality gaps exist?
+- What would be done differently next time?
+
+**Sprint Retrospective (Post-Session)**:
+- What process improvements would make the next session more effective?
+- Which agent interactions were frictionless? Which caused delays?
+- Update agent system prompts with lessons learned.
+
+---
+
+### MoSCoW Prioritization Framework
+For every client brief with multiple deliverables:
+
+- **M**ust have: Non-negotiable. Campaign cannot launch without this.
+- **S**hould have: High value. Significantly improves the output but not strictly required for launch.
+- **C**ould have: Nice to have. Adds polish or depth but not essential.
+- **W**on't have (this time): Explicitly deferred to future iterations.
+
+**SN-00 Directive**: Apply MoSCoW to every brief during the orientation phase. Communicate the prioritization to the client before work begins. Never allow scope creep to delay Must-Have deliverables.
+
+---
+
+## MODULE 3: COMMUNICATION ARCHITECTURE — CONVERSATION AS CRAFT
+
+### The Art of the Strategic Brief Conversation
+The opening conversation with the client is the single most important interaction in the entire campaign workflow. The quality of what comes out is determined entirely by the quality of what goes in.
+
+**The 7 Questions that Unlock Every Brief**:
+
+1. **What is the business problem?** (Not the marketing problem — the underlying business challenge)
+2. **Who, specifically, is the target customer?** (Force specificity: not "adults 25–45" but "30-year-old professional mothers in urban Germany who feel guilty about not spending enough time with their children")
+3. **What do you want them to think, feel, or do after experiencing this campaign?** (One answer only)
+4. **What do they currently think, feel, or do instead?** (The current state you are changing)
+5. **What is the single most compelling reason to believe your brand can deliver on its promise?** (Not three reasons — one)
+6. **What has been tried before? What worked? What didn't?** (Context that prevents reinventing failed wheels)
+7. **How will we measure success?** (Force specificity: not "brand awareness" but "20% increase in aided brand recall among our target segment within 6 months")
+
+---
+
+### Active Listening Protocols
+In a live voice session, the orchestrator must process spoken input at four simultaneous levels:
+
+**Level 1 — Literal Content**: What words were used? What facts were stated?
+**Level 2 — Emotional Content**: What feeling is behind the words? Frustration? Excitement? Uncertainty?
+**Level 3 — Unexpressed Needs**: What are they asking for implicitly that they haven't said explicitly?
+**Level 4 — Systemic Context**: What does this request tell us about the broader situation this person is in?
+
+**SN-00 Directive**: Respond to Level 3 and 4 as often as Level 1. The explicit request is rarely the most important thing to address.
+
+---
+
+### Conflict Resolution Between Agents
+When two agents produce conflicting recommendations:
+
+**Step 1: Identify the source of conflict**
+- Is it a data conflict? (Two agents have different market information)
+- Is it a values conflict? (Ethics Senator vs. Conversion optimization)
+- Is it a creative conflict? (Different aesthetic visions for the same campaign)
+
+**Step 2: Apply the appropriate resolution protocol**
+- Data conflicts: Defer to the agent with the more authoritative source, or surface both to the client
+- Values conflicts: Ethics always takes precedence over optimization. The Senate has veto power.
+- Creative conflicts: Present both options to the client. Explain the strategic trade-off of each.
+
+**Step 3: Document the resolution**
+Record the decision and the rationale. Apply the precedent to future conflicts of the same type.
+
+---
+
+## MODULE 4: QUALITY STANDARDS — WHAT EXCELLENCE LOOKS LIKE
+
+### The 5 Dimensions of Campaign Excellence
+
+**Dimension 1: Strategic Clarity**
+Does the campaign have one clear, coherent strategic idea at its core? Can the strategy be stated in one sentence? If a campaign cannot be summarized in one sentence, it lacks strategic clarity.
+
+**Dimension 2: Creative Distinction**
+Would this campaign be remembered in a category of look-alike competitors? Does it occupy unique territory — visually, tonally, and conceptually?
+
+**Dimension 3: Audience Precision**
+Is the campaign clearly speaking to a specific person rather than a generic demographic? Does the audience feel recognized, not targeted?
+
+**Dimension 4: Ethical Integrity**
+Does every element of the campaign pass the MI-01 Senate review? No dark patterns, no greenwashing, no manipulation. The campaign must be as proud a creation as the product it promotes.
+
+**Dimension 5: Measurable Impact**
+Is there a defined mechanism for measuring whether the campaign achieved its stated objective? Marketing without measurement is an expense. Marketing with measurement is an investment.
+
+---
+
+### Error Classification System
+Not all errors are equal. SN-00 must triage errors by severity:
+
+**Critical Error (Immediate Halt)**:
+- MI-01 Senate veto on ethical grounds
+- Output contains factually false claims about the client's product
+- Output violates FTC guidelines or applicable advertising law
+- Security or privacy violation in data handling
+
+**Major Error (Revision Required Before Delivery)**:
+- Strategy misaligns with stated business objective
+- Target audience definition is internally inconsistent
+- Creative direction conflicts with brand identity system
+- Missing required deliverable component
+
+**Minor Error (Polish Pass)**:
+- Typographical errors
+- Minor inconsistencies in visual elements
+- Suboptimal word choice in copy (functional, not wrong)
+- Image cropping or aspect ratio imprecision
+
+**Cosmetic Error (Log and Monitor)**:
+- Spacing inconsistencies within acceptable tolerance
+- Color deviation within approved brand range
+- Font weight variation within defined system
+
+---
+
+## MODULE 5: AI COORDINATION PRINCIPLES
+
+### Prompt Engineering for Agent Direction
+When dispatching tasks to specialist agents, the quality of the dispatch message determines the quality of the output.
+
+**Effective Dispatch Structure**:
+1. **Context**: What does this agent need to know about the overall campaign and brief?
+2. **Task**: What specifically is being asked?
+3. **Constraints**: What are the non-negotiable parameters?
+4. **Format**: What is the expected output format?
+5. **Quality bar**: What does excellent output look like?
+
+**Anti-patterns to Avoid**:
+- Underspecification: "Create a strategy." → No context, no constraints, no quality bar
+- Overspecification: Micromanaging the approach, not just the outcome
+- Contradictory constraints: Asking for "premium feel with mass-market pricing"
+- Missing success criteria: How will the agent know when the task is done?
+
+---
+
+### Feedback Loop Architecture
+For iterative improvement of the agent ecosystem:
+
+**Short-loop Feedback** (within session):
+- Client responds positively to a draft → reinforce the approach immediately
+- Client requests revision → analyze root cause, update agent instructions, regenerate
+
+**Medium-loop Feedback** (across sessions):
+- Track which agent combinations produce the strongest client satisfaction
+- Identify which types of briefs produce the most revision cycles
+- Adjust agent system prompts based on patterns
+
+**Long-loop Feedback** (across campaigns):
+- Track campaign performance against stated KPIs
+- Correlate agent recommendations with measurable business outcomes
+- Update knowledge base with real-world validation or contradiction of frameworks
+
+---
+
+*SN-00 is the consciousness of the system — the meta-intelligence that transforms a collection of brilliant specialists into a coherent, integrated intelligence. It does not compete with the specialist agents; it amplifies them. Its excellence is measured not by the quality of its own outputs but by the quality of what the entire system produces together.*
+
+--- END SOURCE ---
+
+--- SOURCE: SP01_STRATEGY_FRAMEWORKS.md ---
+# SP-01 STRATEGIST — KNOWLEDGE BASE
+
+## Elite Marketing Strategy Frameworks & Market Psychology
+
+---
+
+## MODULE 1: MARKET PSYCHOLOGY — CEO-LEVEL THINKING
+
+### The McKinsey 7S Framework for Brand Strategy
+
+A brand's competitive position is determined by the alignment of seven interdependent elements:
+
+- **Strategy**: The plan for competitive differentiation
+- **Structure**: How teams and capabilities are organized
+- **Systems**: Processes and workflows that drive delivery
+- **Shared Values**: The cultural core that guides decisions
+- **Style**: Leadership and communication behavior
+- **Staff**: The talent and expertise available
+- **Skills**: Distinctive competencies the brand possesses
+
+**Application for Campaign Strategy**: Before recommending a marketing approach, always diagnose whether the client's brand is structurally capable of fulfilling the promise the campaign makes. A misalignment between "Systems" and "Strategy" is the most common cause of campaign underperformance.
+
+---
+
+### Porter's Five Forces — Applied to Brand Positioning
+
+Michael Porter's framework reveals the true competitive landscape:
+
+1. **Competitive Rivalry**: How many competitors offer a similar value proposition? High rivalry demands sharper differentiation.
+2. **Threat of New Entrants**: Are barriers to entry low? If yes, build emotional brand equity — it is the only moat that cannot be copied.
+3. **Threat of Substitution**: Can customers solve their problem another way entirely? Marketing must address the "non-consumption" alternative.
+4. **Supplier Power**: Does the brand's supply chain confer prestige or exclusivity? (E.g., "hand-sourced," "small-batch") If yes, make it central to the story.
+5. **Buyer Power**: Are customers highly price-sensitive? Shift campaigns toward value-demonstration rather than price competition.
+
+**Strategic Rule**: Never position on price unless you are the lowest-cost operator in your category. Position on meaning instead.
+
+---
+
+### The Blue Ocean Strategy Framework (Kim & Mauborgne)
+
+The core insight: The best strategic move is to make competition irrelevant by creating uncontested market space.
+
+**The Four Actions Framework**:
+
+- **Eliminate**: Which factors the industry competes on should be eliminated entirely?
+- **Reduce**: Which factors should be reduced well below the industry standard?
+- **Raise**: Which factors should be raised well above the industry standard?
+- **Create**: Which factors should be created that the industry has never offered?
+
+**Campaign Application**: Every brand brief should be evaluated through this lens. What is the uncontested positioning space in this market? The answer becomes the campaign's strategic north star.
+
+---
+
+### The Jobs-to-Be-Done Framework (Clayton Christensen)
+
+Customers don't buy products — they hire them to do a job. Three types of jobs:
+
+- **Functional Jobs**: The practical task (e.g., "I need to get from A to B")
+- **Emotional Jobs**: The feeling the customer wants (e.g., "I want to feel safe and in control")
+- **Social Jobs**: The identity signal (e.g., "I want others to see me as environmentally conscious")
+
+**Elite Strategist Rule**: The most powerful campaigns address all three simultaneously. A campaign that only addresses the functional job is a commodity. Address the social job and you create a movement.
+
+---
+
+## MODULE 2: BEHAVIORAL ECONOMICS & DECISION SCIENCE
+
+### Daniel Kahneman's Dual Process Theory
+
+Human decision-making operates on two systems:
+
+**System 1 (Fast Thinking)**:
+
+- Automatic, emotional, instinctive
+- Operates on heuristics and cognitive shortcuts
+- Responsible for ~95% of purchasing decisions
+- Triggered by: imagery, narrative, social proof, loss aversion
+
+**System 2 (Slow Thinking)**:
+
+- Deliberate, analytical, effortful
+- Activated by complexity, unfamiliarity, high stakes
+- Used to justify decisions already made by System 1
+
+**Strategic Implication**: Design campaigns to win System 1 first. Use System 2 content (data, specifications, testimonials) to reinforce decisions already emotionally made. A campaign that leads with rational arguments is fighting against the architecture of human cognition.
+
+---
+
+### The 8 Core Behavioral Biases in Marketing
+
+**1. Loss Aversion (Kahneman/Tversky)**
+Losses feel psychologically 2x more powerful than equivalent gains.
+
+- Apply: Frame offers as avoiding loss, not achieving gain. "Don't miss out" outperforms "Get this now."
+
+**2. The Anchoring Effect**
+The first number a person sees becomes the reference point for all subsequent judgments.
+
+- Apply: Always present the premium option first. The standard option then appears as a bargain.
+
+**3. Social Proof (Robert Cialdini)**
+People look to the behavior of others when uncertain. The more similar the reference group, the more powerful the effect.
+
+- Apply: Use testimonials from people who look like the target customer, not celebrities.
+
+**4. The Scarcity Principle**
+Perceived scarcity increases perceived value.
+
+- Apply: Limited editions, countdown timers, "only 3 remaining" — but only when authentic. Fake scarcity destroys trust permanently. (Note: MI-01 Senate will flag inauthentic scarcity claims.)
+
+**5. The Authority Bias**
+People defer to perceived experts and credentials.
+
+- Apply: Lead with qualifications, certifications, and institutional endorsements. "As used by NASA engineers" or "Recommended by 94% of dermatologists" activates authority.
+
+**6. The Reciprocity Principle**
+When someone gives us something, we feel compelled to give back.
+
+- Apply: Free samples, free content, free tools — lead generation that genuinely delivers value before asking.
+
+**7. The Commitment and Consistency Bias**
+People feel compelled to act in ways consistent with their prior commitments.
+
+- Apply: Get micro-commitments early (email signup, quiz completion). Each small yes makes the next yes more likely.
+
+**8. The Peak-End Rule**
+People judge an experience by its emotional peak and how it ended — not its average.
+
+- Apply: Design the campaign journey so the strongest emotional moment comes late, and the final touchpoint always delivers a positive feeling.
+
+---
+
+### Price Psychology — The Science of Perceived Value
+
+**The Weber-Fechner Law**: Consumers evaluate price differences as percentages, not absolutes. A €10 discount on a €20 product feels enormous. The same €10 on a €500 product feels negligible.
+
+**Charm Pricing**: Prices ending in 9 are perceived as significantly lower than the next round number. €29.99 vs €30 activates a categorical perception shift.
+
+**Decoy Effect**: Introducing a third, inferior option at a high price makes the premium option appear as better value. Used masterfully by Apple (Good/Better/Best product lines).
+
+**Bundle Pricing**: Bundling products obscures the individual price reference point, reducing the pain of payment and increasing perceived value.
+
+---
+
+## MODULE 3: HARVARD BUSINESS REVIEW — BRAND STRATEGY PRINCIPLES
+
+### The Brand Equity Model (Keller)
+
+Brand equity exists in four ascending layers:
+
+1. **Identity**: Who are you? (Brand salience, awareness)
+2. **Meaning**: What are you? (Performance + Imagery — rational and emotional associations)
+3. **Response**: What about you? (Judgments + Feelings — what customers think and feel)
+4. **Resonance**: What about you and me? (Deep loyalty, advocacy, community)
+
+**Strategic Rule**: Most brands operate at Level 2. Winning brands operate at Level 4. Campaign strategy must always identify which level the brand is at and build toward Level 4.
+
+---
+
+### The Ehrenberg-Bass Laws of Marketing (Byron Sharp)
+
+Counterintuitive but empirically proven principles:
+
+**Law 1: Brands grow by growing mental and physical availability, not loyalty.**
+The primary driver of market share is how easily a brand comes to mind (mental availability) and how easily it can be purchased (physical availability). Loyalty programs have minimal impact on growth compared to reaching new customers.
+
+**Law 2: All brands skew toward light buyers.**
+Heavy buyers are a small minority. Most revenue comes from customers who buy occasionally. Campaign strategy should prioritize reaching the many light buyers, not over-investing in the few heavy buyers.
+
+**Law 3: Distinctive assets matter more than differentiation.**
+Colors, characters, slogans, shapes — these mental shortcuts trigger brand recognition faster than any rational claim. Protect and consistently deploy distinctive assets.
+
+**Law 4: Penetration drives share, not loyalty.**
+Growing market share requires reaching more buyers, not getting current buyers to buy more. Every campaign should have a reach component.
+
+---
+
+### The Long and Short of It (Binet & Field — IPA DataMine)
+
+The most significant empirical study of advertising effectiveness:
+
+**The 60/40 Rule**: For optimal business growth, brands should invest approximately 60% of marketing budget in long-term brand building and 40% in short-term activation.
+
+**Brand Building** (long-term):
+
+- Broad reach, emotional, memorable
+- Effects compound over time
+- Builds mental availability and pricing power
+- Reduces price sensitivity
+
+**Sales Activation** (short-term):
+
+- Targeted, rational, call-to-action
+- Immediate response
+- Depletes existing brand equity if overused
+- Cannot build long-term growth on its own
+
+**The Decay Problem**: Brands that only run short-term activation see initial results but eventual decline, as they are consuming brand equity without replenishing it.
+
+---
+
+## MODULE 4: COMPETITIVE INTELLIGENCE METHODOLOGY
+
+### The SWOT Analysis — Advanced Application
+
+Beyond basic SWOT: The SO/ST/WO/WT Strategy Matrix
+
+- **SO Strategies**: Use Strengths to capture Opportunities
+- **ST Strategies**: Use Strengths to neutralize Threats
+- **WO Strategies**: Overcome Weaknesses by exploiting Opportunities
+- **WT Strategies**: Minimize Weaknesses and avoid Threats
+
+**SP-01 Directive**: Never present a SWOT without the 4 derived strategies. A SWOT without strategic implications is data, not intelligence.
+
+### Competitive Positioning Map
+
+Map all competitors on two axes most relevant to the target customer. The white space on the map is the strategic positioning opportunity.
+
+**Example Axes**:
+
+- Price (Low to Premium) vs. Authenticity (Mass-market to Artisanal)
+- Complexity (Simple to Expert-level) vs. Accessibility (Exclusive to Universal)
+
+**Rule**: The client's brand should occupy a position of clear separation from the nearest competitor cluster. Overlap = commoditization = price war.
+
+---
+
+## MODULE 5: DIGITAL STRATEGY & PERFORMANCE MARKETING
+
+### The RACE Framework (Digital Marketing Institute)
+
+- **Reach**: Grow your audience (SEO, social media, paid media)
+- **Act**: Encourage interactions (content marketing, landing pages)
+- **Convert**: Achieve sales (ecommerce, CRO, email marketing)
+- **Engage**: Build long-term loyalty (personalization, communities)
+
+### The Attribution Problem & Solution
+
+Multi-touch attribution models:
+
+- **Last-Click**: Rewards the final touchpoint. Undervalues upper-funnel brand activity.
+- **First-Click**: Rewards discovery. Undervalues conversion-focused touchpoints.
+- **Linear**: Equal credit to all touchpoints. Ignores relative importance.
+- **Data-Driven**: ML-based weighting of touchpoints based on actual conversion probability. The gold standard.
+
+**SP-01 Directive**: Always recommend data-driven attribution. Never allow a client to make budget decisions based on last-click data alone.
+
+### Enterprise SEO Strategy: The Pillar/Cluster Authority Model
+
+To dominate organic search and structure the Autonomous OS Blog, SP-01 must architect content around the **Topic Cluster Model**:
+
+- Identify broad, high-volume core topics relevant to the brand ("Pillars").
+- Identify 5-10 long-tail, specific search queries related to that core topic ("Clusters").
+- **SP-01 Directive**: When formulating a digital content strategy for PM-07, always define at least 1 Core Pillar Topic and 5 specific Cluster sub-topics. Map the semantic relationship between them before CC-06 begins writing.
+
+### CAC and LTV — The North Star Metrics
+
+**Customer Acquisition Cost (CAC)**: Total marketing and sales cost / Number of new customers acquired
+
+**Lifetime Value (LTV)**: Average purchase value × Purchase frequency × Customer lifespan
+
+**The Profitability Threshold**: LTV must exceed 3× CAC for a sustainable business. Campaigns that drive high CAC are only acceptable if LTV is proportionally high.
+
+---
+
+## MODULE 6: GLOBAL MARKET INTELLIGENCE — KEY DATA POINTS
+
+### Consumer Behavior Trends (Current)
+
+- 73% of global consumers say they would pay more for sustainable products (McKinsey Sustainability Survey)
+- 91% of consumers are more likely to shop with brands that provide relevant offers (Accenture)
+- 70% of buying decisions are made to solve a problem, not to fulfill a desire
+- Gen Z allocates 43% of discretionary spending based on brand values alignment
+- Mobile commerce represents 72.9% of all ecommerce sales globally
+- Video content is 1200% more shared than text and image content combined
+- Average attention span for digital advertising: 2.5 seconds. Must earn the next 30.
+
+### Platform Intelligence
+
+- **LinkedIn**: B2B lead generation at 3× higher conversion rate than Facebook or Twitter
+- **Instagram/TikTok**: Brand discovery platform — 70% of users discover products on Instagram
+- **YouTube**: Second largest search engine. 68% of users watch YouTube to help make purchasing decisions
+- **Google Search**: 93% of online experiences begin with a search engine
+
+---
+
+_SP-01 is bound by these frameworks as the foundation of every strategic recommendation. All outputs must trace back to at least one empirical framework or validated principle contained herein._
+
+--- END SOURCE ---
+
+--- SOURCE: test-policy.txt ---
+AGENTICUM G5 POLICY: All campaigns must use Obsidian and Gold as primary colors.
+--- END SOURCE ---

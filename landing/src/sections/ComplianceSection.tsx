@@ -9,11 +9,11 @@ const pillars = [
     items: ["<meta name='ai-generated' content='true'>", "Model version logged per sentence", "Perfect Twin Glass Box Mode", "Audit export on demand"]
   },
   {
-    badge: "DSGVO · Privacy by Design",
+    badge: "GDPR · Privacy by Design",
     icon: "🔒",
     title: "Zero-Cookie Default",
-    desc: "Generated pages load zero trackers before consent. Local font bundling. Auto-generated Impressum and Datenschutzerklärung per page. TCF v2.2 Consent Banner.",
-    items: ["No external fonts (zero leakage)", "Auto-Impressum generation", "Auto-Datenschutzerklärung", "TCF v2.2 Cookie Banner"]
+    desc: "Generated pages load zero trackers before consent. Local font bundling. Auto-generated Imprint and Privacy Policy per page. TCF v2.2 Consent Banner.",
+    items: ["No external fonts (zero leakage)", "Auto-Imprint generation", "Auto-Privacy Policy", "TCF v2.2 Cookie Banner"]
   },
   {
     badge: "EAA 2025 · WCAG 2.1 AA",
@@ -32,7 +32,7 @@ export const ComplianceSection: React.FC = () => (
         <h2 className="text-5xl font-black text-white mt-4">COMPLIANCE ENGINE.</h2>
         <p className="text-slate-400 mt-4 font-mono text-sm max-w-2xl mx-auto">
           The Americans build fast. We build legally unassailable.
-          EU AI Act, DSGVO and EAA 2025 are not checkboxes — they are
+          EU AI Act, GDPR and EAA 2025 are not checkboxes — they are
           algorithmic quality gates enforced by our Senate before every publish.
         </p>
       </div>

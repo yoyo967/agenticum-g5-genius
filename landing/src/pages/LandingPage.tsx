@@ -19,6 +19,9 @@ import { PrizesSection } from '../sections/PrizesSection';
 import { FinalCTASection } from '../sections/FinalCTASection';
 import { VoiceFlowSection } from '../sections/VoiceFlowSection';
 import { OriginSection } from '../sections/OriginSection';
+import { JarvisHeroChat } from '../components/JarvisHeroChat';
+import { PrometheusBrowser } from '../components/PrometheusBrowser';
+import { ApexContentSection } from '../sections/ApexContentSection';
 
 /* ============================================================
    SEO / STRUCTURED DATA HELPER
@@ -26,7 +29,7 @@ import { OriginSection } from '../sections/OriginSection';
 function useSEO() {
   useEffect(() => {
     // Title
-    document.title = 'Agenticum G5 GENIUS — J.A.R.V.I.S. für Enterprise Marketing | Gemini Live Agent Challenge';
+    document.title = 'Agenticum G5 GENIUS — The J.A.R.V.I.S. for Enterprise Marketing | Gemini Live Agent Challenge';
 
     const setMeta = (name: string, content: string, isProperty = false) => {
       const attr = isProperty ? 'property' : 'name';
@@ -39,22 +42,22 @@ function useSEO() {
       el.content = content;
     };
 
-    setMeta('description', 'Das erste sprachgesteuerte KI-Marketing-System. 5 spezialisierte Agenten, Gemini 2.0 Live API, Imagen 3, EU AI Act konform. Sprich einen Befehl — der Swarm liefert. Gebaut für die Google Gemini Live Agent Challenge 2026.');
-    setMeta('keywords', 'Gemini Live API, AI Marketing, Voice AI Agent, Imagen 3, Multi-Agent System, EU AI Act, Agenticum, Google Cloud AI, Enterprise Marketing AI, J.A.R.V.I.S. Marketing');
+    setMeta('description', 'The world\'s first voice-activated AI marketing operating system. 8 specialized agents, Gemini 2.0 Live API, Imagen 3, EU AI Act compliant. Speak a command — the swarm delivers. Engineered for the Google Gemini Live Agent Challenge 2026.');
+    setMeta('keywords', 'Gemini Live API, AI Marketing, Voice AI Agent, Imagen 3, Multi-Agent System, EU AI Act, Agenticum, Google Cloud AI, Enterprise Marketing AI, J.A.R.V.I.S. Marketing, AEO Optimization');
     setMeta('author', 'Yahya Yıldırım · Alphate Inc.');
     setMeta('robots', 'index, follow');
 
     // Open Graph
-    setMeta('og:title', 'Agenticum G5 — Der J.A.R.V.I.S. für Enterprise Marketing', true);
-    setMeta('og:description', '5 KI-Agenten. Eine Stimme. Unbegrenzte Synergie. Gebaut auf Gemini 2.0 & Google Cloud.', true);
+    setMeta('og:title', 'Agenticum G5 — The J.A.R.V.I.S. for Enterprise Marketing', true);
+    setMeta('og:description', '5 Specialized AI Agents. One Voice. Infinite Synergy. Built on Gemini 2.0 & Google Cloud.', true);
     setMeta('og:type', 'website', true);
-    setMeta('og:url', 'https://agenticum-frontend-697051612685.europe-west1.run.app', true);
+    setMeta('og:url', 'https://online-marketing-manager.web.app', true);
     setMeta('og:site_name', 'Agenticum G5 GENIUS', true);
 
     // Twitter
     setMeta('twitter:card', 'summary_large_image');
-    setMeta('twitter:title', 'Agenticum G5 — J.A.R.V.I.S. für Enterprise Marketing');
-    setMeta('twitter:description', '5 KI-Agenten, Gemini Live API, Imagen 3. Voice-First Enterprise Marketing System.');
+    setMeta('twitter:title', 'Agenticum G5 — The J.A.R.V.I.S. for Enterprise Marketing');
+    setMeta('twitter:description', '5 AI Agents, Gemini Live API, Imagen 3. Voice-First Enterprise Marketing OS.');
 
     // Canonical
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -63,9 +66,9 @@ function useSEO() {
       canonical.rel = 'canonical';
       document.head.appendChild(canonical);
     }
-    canonical.href = 'https://agenticum-frontend-697051612685.europe-west1.run.app';
+    canonical.href = 'https://online-marketing-manager.web.app';
 
-    // JSON-LD Structured Data
+    // JSON-LD Structured Data (AEO/SEO optimized)
     const jsonLd = {
       '@context': 'https://schema.org',
       '@graph': [
@@ -74,29 +77,29 @@ function useSEO() {
           name: 'Agenticum G5 GENIUS',
           applicationCategory: 'BusinessApplication',
           operatingSystem: 'Web Browser',
-          description: 'Voice-commanded multi-agent AI system for enterprise marketing. Built on Gemini 2.0 Live API with 5 specialized AI agents.',
-          url: 'https://agenticum-frontend-697051612685.europe-west1.run.app',
+          description: 'Autonomous voice-commanded multi-agent AI system for global enterprise marketing. Features real-time orchestration via Gemini 2.0 Live API.',
+          url: 'https://online-marketing-manager.web.app',
           author: {
             '@type': 'Person',
             name: 'Yahya Yıldırım',
             worksFor: { '@type': 'Organization', name: 'Alphate Inc.' }
           },
           offers: { '@type': 'Offer', availability: 'https://schema.org/OnlineOnly' },
-          keywords: 'AI Marketing, Gemini Live API, Voice AI, Multi-Agent, Enterprise',
+          keywords: 'AI Marketing, Gemini Live API, Voice AI, Multi-Agent, Enterprise Intelligence',
           featureList: [
-            'Voice-commanded agent orchestration via Gemini 2.0 Live API',
-            'Imagen 3 visual asset generation (Vertex AI)',
-            'EU AI Act Art. 50 compliant output with Perfect Twin audit trail',
-            'Real-time WebSocket event streaming',
-            '5 specialized AI agents: sn00, sp01, cc06, da03, ra01',
-            'Google Search grounding for zero-hallucination guarantee',
+            'Voice-commanded agent orchestration via Gemini 2.0 Live API (Low Latency)',
+            'Imagen 3 high-fidelity visual asset generation (Vertex AI Forge)',
+            'EU AI Act Art. 50 compliant output with automated Perfect Twin audit',
+            'Real-time WebSocket event streaming and swarm telemetry',
+            '5 specialized AI agents: SN00, SP01, CC06, DA03, RA01',
+            'Google Search grounding for zero-hallucination factual integrity',
           ],
         },
         {
           '@type': 'Organization',
           name: 'Alphate Inc.',
           founder: { '@type': 'Person', name: 'Yahya Yıldırım' },
-          description: 'Enterprise AI Marketing Intelligence Platform',
+          description: 'Global Intelligence Hub for Enterprise AI Marketing',
         }
       ]
     };
@@ -132,7 +135,7 @@ function LiveCounter({ value, label, suffix = '', color = 'white' }: { value: nu
   return (
     <div className="flex flex-col items-center">
       <span className="font-display font-black text-3xl md:text-4xl tabular-nums" style={{ color }}>
-        {count.toLocaleString('de-DE')}{suffix}
+        {count.toLocaleString('en-US')}{suffix}
       </span>
       <span className="font-mono text-[9px] uppercase tracking-widest text-white/30 mt-1">{label}</span>
     </div>
@@ -261,10 +264,10 @@ export function LandingPage() {
               transition={{ duration: 0.6 }}
               className="flex items-center gap-3 mb-12">
               <span className="badge badge-processing">
-                <Star size={9} /> Gemini Live Agent Challenge 2026 · Deadline 17. März
+                <Star size={9} /> Gemini Live Agent Challenge 2026 · Global Submission
               </span>
               <span className="badge badge-online">
-                <Activity size={9} /> Swarm Online
+                <Activity size={9} /> Swarm Operational
               </span>
             </motion.div>
 
@@ -274,11 +277,14 @@ export function LandingPage() {
               animate={heroVisible ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.9, delay: 0.1 }}
               className="font-display font-black uppercase tracking-tight leading-[0.85]"
-              style={{ fontSize: 'clamp(48px, 9.5vw, 152px)' }}>
-              Der <span className="text-accent">J.A.R.V.I.S.</span><br />
-              für Enterprise<br />
-              <span style={{ WebkitTextStroke: '1px rgba(255,255,255,0.3)', color: 'transparent' }}>Marketing.</span>
+              style={{ fontSize: 'clamp(48px, 9.5vw, 120px)' }}>
+              MAXIMAL <span className="text-accent">INTELLIGENCE</span><br />
+              ACTIVATED.<br />
+              <span className="text-neural-gold/80" style={{ fontSize: '0.4em', letterSpacing: '0.3em', fontWeight: 900 }}>The Nexus Sovereign Engine</span>
             </motion.h1>
+
+            {/* Jarvis Chat Interface Integration */}
+            <JarvisHeroChat />
 
             {/* Divider */}
             <motion.div initial={{ scaleX: 0 }} animate={heroVisible ? { scaleX: 1 } : {}} transition={{ duration: 0.8, delay: 0.5 }}
@@ -287,12 +293,12 @@ export function LandingPage() {
             {/* Subtitle */}
             <motion.p initial={{ opacity: 0 }} animate={heroVisible ? { opacity: 1 } : {}} transition={{ delay: 0.6 }}
               className="text-lg md:text-xl text-white/40 max-w-2xl font-mono leading-relaxed mb-2">
-              Sprich einen Befehl. Fünf spezialisierte KI-Agenten liefern in Echtzeit:
-              Strategie, Copy, Visuals und Compliance-Audit — gleichzeitig.
+              The J.A.R.V.I.S. for Enterprise Marketing. A 'Sentient System' 
+              fusing user vision with technical excellence to steer complex marketing ecosystems autonomously.
             </motion.p>
             <motion.p initial={{ opacity: 0 }} animate={heroVisible ? { opacity: 1 } : {}} transition={{ delay: 0.7 }}
               className="text-sm text-accent/60 font-mono uppercase tracking-widest">
-              100% Google Cloud · Gemini 2.0 Flash · Vertex AI · Imagen 3 · EU AI Act Konform
+              100% Google Cloud · Gemini 2.0 Flash · Vertex AI · Imagen 3 · EU AI Act Compliant
             </motion.p>
 
             {/* Live Indicators */}
@@ -301,7 +307,7 @@ export function LandingPage() {
               {[
                 { icon: <Mic2 size={16} />, label: 'Voice · Live API', color: '#00E5FF' },
                 { icon: <Eye size={16} />, label: 'Vision · Multimodal', color: '#FFD700' },
-                { icon: <Bot size={16} />, label: '5 Agents · Parallel', color: '#FF007A' },
+                { icon: <Bot size={16} />, label: '8 Agents · Parallel', color: '#FF007A' },
                 { icon: <Cpu size={16} />, label: 'Gemini 2.0 Flash', color: '#00FF88' },
                 { icon: <Globe size={16} />, label: 'Google Search Grounding', color: '#7B2FBE' },
                 { icon: <Shield size={16} />, label: 'EU AI Act · ra01', color: '#FF6B35' },
@@ -318,20 +324,20 @@ export function LandingPage() {
               className="mt-16 flex flex-col sm:flex-row items-center gap-5">
               <button onClick={() => navigate('/os')}
                 className="btn-primary flex items-center gap-3 text-base px-8 py-4 shadow-[0_0_40px_rgba(0,229,255,0.4)] hover:shadow-[0_0_60px_rgba(0,229,255,0.6)]">
-                <Mic2 size={18} /> Swarm Initialisieren <ArrowRight size={18} />
+                <Mic2 size={18} /> Initialize Swarm <ArrowRight size={18} />
               </button>
               <button onClick={() => scrollTo('voice-flow')}
                 className="btn-ghost flex items-center gap-3 text-sm px-6 py-4">
-                <Play size={16} /> Live Demo ansehen
+                <Play size={16} /> Watch Live Demo
               </button>
             </motion.div>
 
             {/* Live Stats */}
             <motion.div initial={{ opacity: 0, y: 30 }} animate={heroVisible ? { opacity: 1, y: 0 } : {}} transition={{ delay: 1.2 }}
               className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-16">
-              <LiveCounter value={5} label="KI-Agenten" color="#00E5FF" />
+              <LiveCounter value={8} label="AI Agents" color="#00E5FF" />
               <LiveCounter value={99} label="Senate Approval Rate" suffix="%" color="#00FF88" />
-              <LiveCounter value={42} label="sn00 Latenz ms" color="#FFD700" />
+              <LiveCounter value={42} label="SN00 Latency ms" color="#FFD700" />
               <LiveCounter value={100} label="Google Cloud Native" suffix="%" color="#7B2FBE" />
             </motion.div>
           </motion.div>
@@ -368,9 +374,9 @@ export function LandingPage() {
                 Access The <span className="text-accent">Genius OS</span>
               </h2>
               <p className="text-white/40 max-w-2xl mx-auto font-mono text-sm leading-relaxed mb-12">
-                Die Agenticum G5 Enterprise Command Console. sn00 wartet auf deinen Befehl.
-                Drücke den Mikrofon-Button — und beobachte wie 5 KI-Agenten in Echtzeit für dich arbeiten.
-                Synergy Map, Live-Bilder, Senate-Tribunal — alles sichtbar. Alles live.
+                The Agenticum G5 Enterprise Command Console. SN00 is awaiting your command.
+                Press the microphone button — and witness 8 specialized AI agents work for you in real-time.
+                Synergy Map, Live Assets, Senate Tribunal — all visible. All live.
               </p>
               <button onClick={(e) => { e.stopPropagation(); navigate('/os'); }}
                 className="btn-primary flex items-center gap-3 mx-auto shadow-[0_0_30px_rgba(0,229,255,0.3)]">
@@ -379,10 +385,10 @@ export function LandingPage() {
 
               <div className="mt-12 pt-8 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
-                  { label: 'Aktive Workflows', value: '4', color: '#00E5FF' },
-                  { label: 'Generierte Outputs', value: '440+', color: '#FFD700' },
-                  { label: 'Swarm Bereit', value: '100%', color: '#00FF88' },
-                  { label: 'Revision auf Cloud Run', value: '00009', color: '#7B2FBE' },
+                  { label: 'Active Workflows', value: '4', color: '#00E5FF' },
+                  { label: 'Generated Outputs', value: '440+', color: '#FFD700' },
+                  { label: 'Swarm Readiness', value: '100%', color: '#00FF88' },
+                  { label: 'Cloud Run Revision', value: '00032', color: '#7B2FBE' },
                 ].map(m => (
                   <div key={m.label} className="flex flex-col items-center">
                     <span className="font-mono text-[9px] uppercase tracking-widest text-white/20 mb-2">{m.label}</span>
@@ -402,6 +408,11 @@ export function LandingPage() {
         </section>
 
         {/* ============================================================
+           APEX INTELLIGENCE — Narrative Focus
+           ============================================================ */}
+        <ApexContentSection />
+
+        {/* ============================================================
            VOICE FLOW — J.A.R.V.I.S. Demo Animation
            ============================================================ */}
         <div id="voice-flow">
@@ -418,7 +429,7 @@ export function LandingPage() {
             <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               className="font-display font-black uppercase tracking-tight"
               style={{ fontSize: 'clamp(32px, 5vw, 80px)' }}>
-              Das Arsenal
+              The Arsenal
             </motion.h2>
           </div>
 
@@ -434,11 +445,11 @@ export function LandingPage() {
               </div>
               <h3 className="font-display text-5xl md:text-6xl font-black uppercase tracking-tight mb-6 leading-[0.9]">
                 Voice → Swarm.<br />
-                <span className="text-accent">Keine Textbox.</span>
+                <span className="text-accent">Zero Textbox.</span>
               </h3>
               <p className="text-white/40 text-base max-w-lg font-mono leading-relaxed">
-                Du sprichst — Gemini 2.0 erkennt deinen Intent per Function Calling und triggert alle 5 Agenten
-                gleichzeitig. Nicht sequenziell. Nicht nacheinander. <strong className="text-white/70">Parallel.</strong>
+                You speak — Gemini 2.0 identifies your intent via Function Calling and triggers all 5 agents
+                simultaneously. Not sequential. Not one after another. <strong className="text-white/70">Parallel.</strong>
               </p>
               <div className="mt-8 flex flex-wrap gap-2">
                 {['BidiGenerateContent', 'launch_swarm()', 'SwarmProtocol', 'ChainManager', 'EventFabric'].map(t => (
@@ -476,8 +487,8 @@ export function LandingPage() {
                 Algorithmic<br />Senate.
               </h3>
               <p className="text-white/40 font-mono text-sm leading-relaxed">
-                RA-01 prüft jeden Output auf EU AI Act, FTC Endorsement Guidelines & 10 Dark Pattern-Kategorien.
-                Kein Asset verlässt das System ohne Senate-Freigabe.
+                RA-01 audits every output against the EU AI Act, FTC Endorsement Guidelines & 10 Dark Pattern categories.
+                No asset leaves the system without Senate approval.
               </p>
             </motion.div>
 
@@ -489,8 +500,8 @@ export function LandingPage() {
                 Perfect Twin<br />Grounding.
               </h3>
               <p className="text-white/40 font-mono text-sm leading-relaxed">
-                Jede Behauptung wird via Google Search verifiziert. Vollständiger Audit-Trail in Firestore.
-                Zero Halluzinationen. Enterprise-Grade.
+                Every claim is verified via Google Search grounding. Full audit trail persisted in Firestore.
+                Zero hallucinations. Enterprise-grade.
               </p>
             </motion.div>
 
@@ -502,8 +513,8 @@ export function LandingPage() {
                 @google/genai<br />SDK v1.42.0.
               </h3>
               <p className="text-white/40 font-mono text-sm leading-relaxed">
-                Direkte Integration des offiziellen Google GenAI SDK. Keine Wrapper. Keine Abstraktionen.
-                Hackathon-konforme Technologie-Stack.
+                Direct integration of the official Google GenAI SDK. No wrappers. No unnecessary abstractions.
+                High-fidelity technology stack.
               </p>
             </motion.div>
 
@@ -517,16 +528,16 @@ export function LandingPage() {
                   </div>
                   <div>
                     <h3 className="font-display text-2xl font-black uppercase mb-2">
-                      EU AI Act · DSGVO · EAA 2025 — <span className="text-emerald">Compliance by Design</span>
+                      EU AI Act · GDPR · EAA 2025 — <span className="text-emerald">Compliance by Design</span>
                     </h3>
                     <p className="font-mono text-sm text-white/40">
-                      Nicht nachträglich hinzugefügt. In der Architektur verankert. Jeder Output trägt C2PA Meta-Tags,
-                      AI-Disclosure und WCAG 2.1 AA Accessibility-Zertifizierung.
+                      Not added as an afterthought. Built into the architecture. Every output carries C2PA meta-tags,
+                      AI-disclosure, and WCAG 2.1 AA accessibility certifications.
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 shrink-0">
-                  {['EU AI Act Art.50', 'DSGVO', 'FTC Guidelines', 'C2PA', 'WCAG 2.1 AA', 'EAA 2025'].map(t => (
+                  {['EU AI Act Art.50', 'GDPR', 'FTC Guidelines', 'C2PA', 'WCAG 2.1 AA', 'EAA 2025'].map(t => (
                     <span key={t} className="badge badge-online text-[8px]">{t}</span>
                   ))}
                 </div>
@@ -563,9 +574,9 @@ export function LandingPage() {
                   The Hackathon <span className="text-accent">Codex</span>
                 </h2>
                 <p className="text-white/40 text-lg max-w-3xl mx-auto font-mono leading-relaxed mb-14">
-                  Vollständig origineller Code. 100% Google-Technologie. Gebaut nach den Regeln der Challenge —
-                  und darüber hinaus. Weil "Maximum Excellence" kein Marketing-Begriff ist,
-                  sondern ein Versprechen an die Jury.
+                  100% original code. 100% Google Tech. Engineered beyond the baseline — 
+                  because "Maximum Excellence" is not a marketing term, 
+                  but a promise to the jury.
                 </p>
                 <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
                   {[
@@ -589,6 +600,23 @@ export function LandingPage() {
         </section>
 
         {/* ============================================================
+           PROMETHEUS BROWSER — Deep Intelligence
+           ============================================================ */}
+        <section className="py-32 px-6 border-t border-white/5">
+          <div className="text-center mb-16">
+            <span className="label-active block mb-4">Recursive Intelligence · prom07</span>
+            <h2 className="font-display font-black uppercase tracking-tight text-4xl md:text-5xl mb-4">
+              The <span className="text-accent">Prometheus</span> Scavenge
+            </h2>
+            <p className="font-mono text-sm text-white/30 max-w-lg mx-auto">
+              Witness the autonomous deep-research cycle. Prometheus pierces the global information field 
+              to find disruptive white-space opportunities in real-time.
+            </p>
+          </div>
+          <PrometheusBrowser />
+        </section>
+
+        {/* ============================================================
            IMAGEN GALLERY — Live DA-03 Assets
            ============================================================ */}
         <section className="py-32 px-6 max-w-[1280px] mx-auto border-t border-white/5">
@@ -598,7 +626,7 @@ export function LandingPage() {
               Visual <span className="text-gold">Outputs</span>
             </h2>
             <p className="font-mono text-sm text-white/30 max-w-lg mx-auto">
-              Generiert von DA-03 via Imagen 3 auf Vertex AI. Live-broadcast in die Genius Console während der Workflow läuft.
+              Generated by DA-03 via Imagen 3 on Vertex AI. Broadcasted live to the Genius Console during swarm execution.
             </p>
           </div>
           <ImagenGallery />
@@ -635,12 +663,12 @@ export function LandingPage() {
                 Strategic <span className="text-accent">Feed</span>
               </h2>
               <p className="font-mono text-sm text-white/30 mt-3">
-                Generiert von CC-06. Grounded via Google Search. Senate-approved.
+                Generated by CC-06. Grounded via Google Search. Senate-approved. Factual integrity guaranteed.
               </p>
             </div>
             <button onClick={() => navigate('/os?module=pillar-blog')}
               className="btn-outline text-xs flex items-center gap-2 shrink-0">
-              Alle Archives <ArrowRight size={12} />
+              View All Archives <ArrowRight size={12} />
             </button>
           </div>
           <NexusFeed />
@@ -680,9 +708,9 @@ export function LandingPage() {
                   </div>
                 </div>
                 <p className="font-mono text-xs text-white/25 leading-relaxed">
-                  Das erste sprachgesteuerte KI-Marketing-System der Welt.
-                  Gebaut von <span className="text-white/40">Yahya Yıldırım</span> bei <span className="text-white/40">Alphate Inc.</span>,
-                  nativ auf Google Cloud für die Gemini Live Agent Challenge 2026.
+                  The world's first voice-activated AI marketing operating system.
+                  Engineered by <span className="text-white/40">Yahya Yıldırım</span> at <span className="text-white/40">Alphate Inc.</span>, 
+                  native on Google Cloud for the Gemini Live Agent Challenge 2026.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {['Gemini 2.0', 'Vertex AI', 'Cloud Run'].map(t => (
@@ -710,7 +738,7 @@ export function LandingPage() {
                 </div>
                 <div className="flex flex-col gap-3">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-white/20 mb-1">Agents</span>
-                  {['sn00 · Orchestrator', 'sp01 · Strategist', 'cc06 · Copywriter', 'da03 · Visual AI', 'ra01 · Senate'].map(a => (
+                  {['sn00 · Orchestrator', 'sp01 · Strategist', 'cc06 · Copywriter', 'da03 · Design AI', 'ba07 · Deep Intel', 've01 · Motion', 'ra01 · Senate'].map(a => (
                     <span key={a} className="font-mono text-xs text-white/30">{a}</span>
                   ))}
                 </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Database, FolderHeart, FileText, Search, Target, RefreshCw, Clock, ChevronRight, Building2 } from 'lucide-react';
+import { Database, FolderHeart, FileText, Search, Target, RefreshCw, Clock, ChevronRight, Building2, Zap } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadCSV } from '../utils/export';
@@ -129,7 +129,23 @@ export function ProjectMemory() {
               </div>
               <div className="flex-1 p-4 overflow-y-auto space-y-4">
                 <div className="card">
-                  <h4 className="label mb-2">Campaign Details</h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="label mb-0">Campaign Details</h4>
+                    <button 
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('trigger-orchestration', { 
+                          detail: { 
+                            input: `Analyze campaign ${selectedCampaign.name} (${selectedCampaign.objective}) and suggest a disruptive evolution strategy.`,
+                            workflowId: 'Memory-Injection'
+                          } 
+                        }));
+                        window.dispatchEvent(new CustomEvent('os-module-change', { detail: 'console' }));
+                      }}
+                      className="text-[9px] px-2 py-1 rounded bg-accent/20 text-accent hover:bg-accent hover:text-obsidian transition-all uppercase font-black tracking-widest flex items-center gap-1.5"
+                    >
+                      <Zap size={10} /> Inject Context
+                    </button>
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <span className="font-mono text-[9px] text-white/25 block">Budget</span>

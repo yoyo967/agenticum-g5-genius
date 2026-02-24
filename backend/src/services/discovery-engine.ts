@@ -12,9 +12,9 @@ export class DiscoveryEngineService {
     this.logger = new Logger('DiscoveryEngine');
     
     // Ensure vault directory exists
-    const vaultDir = join(process.cwd(), 'data', 'vault');
-    if (!existsSync(vaultDir)) {
-      mkdirSync(vaultDir, { recursive: true });
+    const vaultPath = join(process.cwd(), 'data', 'vault');
+    if (!existsSync(vaultPath)) {
+      mkdirSync(vaultPath, { recursive: true });
     }
     try {
       // Handling different import styles in the compiled JS

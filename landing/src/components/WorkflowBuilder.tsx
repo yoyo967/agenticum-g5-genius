@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { ReactFlow, Controls, Background, MiniMap, addEdge, applyNodeChanges, applyEdgeChanges, type Node, type Edge, type Connection, type NodeChange, type EdgeChange, Handle, Position } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { GitMerge, Plus, Bot, Calendar, Play, Save, Trash2 } from 'lucide-react';
+import { GitMerge, Plus, Bot, Calendar, Play, Save, Trash2, Activity, Zap } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadJSON } from '../utils/export';
@@ -15,70 +15,90 @@ interface NodeData {
 const getAgentColor = (id?: string) => {
   const colors: Record<string, string> = {
     'sn00': '#00E5FF', 'sp01': '#7B2FBE', 'cc06': '#FF007A',
-    'da03': '#FFD700', 'ra01': '#00FF88',
+    'da03': '#FFD700', 'ra01': '#00FF88', 'prom07': '#00E5FF',
+    'ba07': '#f59e0b', 've01': '#ef4444'
   };
   return id ? colors[id] || '#00E5FF' : '#00E5FF';
 };
 
 function TriggerNode({ data, selected }: { data: NodeData; selected: boolean }) {
   return (
-    <div className={`glass-card px-5 py-4 min-w-[180px] transition-all ${selected ? 'border-gold/50 glow-gold' : 'border-white/10'}`}>
-      <div className="flex items-center gap-2 mb-2">
-        <Calendar size={14} className="text-gold" />
-        <span className="font-display text-sm font-bold uppercase tracking-tight text-gold">{data.title}</span>
+    <div className={`glass p-4 min-w-[200px] transition-all border-2 ${selected ? 'border-neural-gold glow-gold' : 'border-white/5 bg-obsidian/40'}`}>
+      <div className="flex items-center gap-3 mb-3">
+        <div className="p-2 rounded bg-neural-gold/10">
+          <Calendar size={16} className="text-neural-gold" />
+        </div>
+        <span className="font-display text-sm font-black uppercase tracking-widest text-neural-gold">{data.title}</span>
       </div>
-      <p className="font-mono text-[10px] text-white/30">{data.config}</p>
-      <Handle type="source" position={Position.Bottom} className="bg-gold! border-gold/30! w-3! h-3!" />
+      <p className="font-mono text-[10px] text-white/40 leading-relaxed">{data.config}</p>
+      <Handle type="source" position={Position.Bottom} className="bg-neural-gold! border-neural-gold/30! w-3! h-3!" />
     </div>
   );
 }
 
 function AgentNode({ data, selected }: { data: NodeData; selected: boolean }) {
   const color = getAgentColor(data.agentId);
+  const geniusScore = useMemo(() => {
+    // Stable score based on content length + base offset
+    const seed = (data.title?.length || 0) + (data.agentId?.length || 0);
+    return (88 + (seed % 11)).toFixed(1);
+  }, [data.title, data.agentId]);
+  
   return (
-    <div className={`glass-card px-5 py-4 min-w-[200px] transition-all ${selected ? 'glow-cyan' : ''}`}
-      style={{ borderLeftColor: color, borderLeftWidth: '3px' }}>
-      <Handle type="target" position={Position.Top} className="bg-accent! border-accent/30! w-3! h-3!" />
-      <div className="flex items-center gap-2 mb-2">
-        <Bot size={14} style={{ color }} />
-        <span className="font-display text-sm font-bold uppercase tracking-tight" style={{ color }}>{data.agentId || 'Agent'}</span>
+    <div className={`glass p-4 min-w-[220px] transition-all border-2 ${selected ? 'glow-cyan' : 'border-white/5 bg-obsidian/40'}`}
+      style={{ borderLeftColor: color, borderLeftWidth: '4px' }}>
+      <Handle type="target" position={Position.Top} className="bg-neural-blue! border-neural-blue/30! w-3! h-3!" />
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded bg-white/5" style={{ color }}>
+            {data.agentId === 'prom07' ? <Activity size={16} /> : <Bot size={16} />}
+          </div>
+          <span className="font-display text-sm font-black uppercase tracking-widest" style={{ color }}>{data.agentId || 'Agent'}</span>
+        </div>
+        <div className="text-[10px] font-mono font-bold text-accent/60 flex items-center gap-1">
+          <Zap size={10} className="text-accent" /> {geniusScore}
+        </div>
       </div>
-      <p className="font-mono text-xs text-white/80 mb-1">{data.title}</p>
-      <p className="font-mono text-[10px] text-white/30">{data.config}</p>
-      <Handle type="source" position={Position.Bottom} className="bg-accent! border-accent/30! w-3! h-3!" />
+      <p className="font-display text-xs font-bold text-white/90 mb-1 uppercase tracking-tight">{data.title}</p>
+      <div className="flex items-center justify-between mt-3">
+        <p className="font-mono text-[9px] text-white/30 leading-relaxed max-w-xs truncate">{data.config}</p>
+        <div className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[7px] font-mono text-white/20 uppercase tracking-tighter">
+          Context Sync Active
+        </div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="bg-neural-blue! border-neural-blue/30! w-3! h-3!" />
     </div>
   );
 }
 
 function ActionNode({ data, selected }: { data: NodeData; selected: boolean }) {
   return (
-    <div className={`glass-card px-5 py-4 min-w-[180px] transition-all ${selected ? 'border-emerald/50 glow-emerald' : 'border-white/10'}`}>
-      <Handle type="target" position={Position.Top} className="bg-emerald! border-emerald/30! w-3! h-3!" />
-      <div className="flex items-center gap-2 mb-2">
-        <Play size={14} className="text-emerald" />
-        <span className="font-display text-sm font-bold uppercase tracking-tight text-emerald">{data.title}</span>
+    <div className={`glass p-4 min-w-[200px] transition-all border-2 ${selected ? 'border-emerald-500/50 glow-emerald' : 'border-white/5 bg-obsidian/40'}`}>
+      <Handle type="target" position={Position.Top} className="bg-emerald-500! border-emerald-500/30! w-3! h-3!" />
+      <div className="flex items-center gap-3 mb-3">
+        <div className="p-2 rounded bg-emerald-500/10">
+          <Play size={16} className="text-emerald-500" />
+        </div>
+        <span className="font-display text-sm font-black uppercase tracking-widest text-emerald-500">{data.title}</span>
       </div>
-      <p className="font-mono text-[10px] text-white/30">{data.config}</p>
+      <p className="font-mono text-[10px] text-white/40 leading-relaxed">{data.config}</p>
     </div>
   );
 }
 
 const initialNodes: Node[] = [
-  { id: '1', type: 'triggerNode', position: { x: 250, y: 50 }, data: { title: 'Schedule Trigger', config: 'Every Monday @ 8:00 AM' } },
-  { id: '2', type: 'agentNode', position: { x: 100, y: 200 }, data: { title: 'Generate Strategy Brief', config: 'Market analysis + competitor scan', agentId: 'sp01' } },
-  { id: '3', type: 'agentNode', position: { x: 400, y: 200 }, data: { title: 'Content Draft', config: 'Blog + social copy from brief', agentId: 'cc06' } },
-  { id: '4', type: 'agentNode', position: { x: 100, y: 380 }, data: { title: 'Generate Visuals', config: 'Imagen 3 assets for campaign', agentId: 'da03' } },
-  { id: '5', type: 'agentNode', position: { x: 400, y: 380 }, data: { title: 'Compliance Audit', config: 'Legal + brand safety check', agentId: 'ra01' } },
-  { id: '6', type: 'actionNode', position: { x: 250, y: 540 }, data: { title: 'Deploy Campaign', config: 'Push to Google Ads via PMax API' } },
+  { id: '1', type: 'triggerNode', position: { x: 250, y: 50 }, data: { title: 'Intelligence Trigger', config: 'Persistent Market Monitoring' } },
+  { id: '2', type: 'agentNode', position: { x: 100, y: 200 }, data: { title: 'Deep Research', config: 'Prometheus ground-scavenge mode', agentId: 'prom07' } },
+  { id: '3', type: 'agentNode', position: { x: 400, y: 200 }, data: { title: 'Strategic Synthesis', config: 'Generate disruptive brief', agentId: 'sp01' } },
+  { id: '4', type: 'agentNode', position: { x: 400, y: 380 }, data: { title: 'Cinema Forge', config: 'Synthesize motion assets', agentId: 've01' } },
+  { id: '5', type: 'actionNode', position: { x: 250, y: 540 }, data: { title: 'Neural Deployment', config: 'Push to Nexus World State' } },
 ];
 
 const initialEdges: Edge[] = [
-  { id: 'e1-2', source: '1', target: '2', animated: true, style: { stroke: '#7B2FBE', strokeWidth: 2 } },
-  { id: 'e1-3', source: '1', target: '3', animated: true, style: { stroke: '#FF007A', strokeWidth: 2 } },
-  { id: 'e2-4', source: '2', target: '4', animated: true, style: { stroke: '#FFD700', strokeWidth: 2 } },
-  { id: 'e3-5', source: '3', target: '5', animated: true, style: { stroke: '#00FF88', strokeWidth: 2 } },
-  { id: 'e4-6', source: '4', target: '6', animated: true, style: { stroke: '#FFD700', strokeWidth: 2 } },
-  { id: 'e5-6', source: '5', target: '6', animated: true, style: { stroke: '#00FF88', strokeWidth: 2 } },
+  { id: 'e1-2', source: '1', target: '2', animated: true, style: { stroke: '#00E5FF', strokeWidth: 2 } },
+  { id: 'e2-3', source: '2', target: '3', animated: true, style: { stroke: '#7B2FBE', strokeWidth: 2 } },
+  { id: 'e3-4', source: '3', target: '4', animated: true, style: { stroke: '#FF007A', strokeWidth: 2 } },
+  { id: 'e4-5', source: '4', target: '5', animated: true, style: { stroke: '#00B8D4', strokeWidth: 2 } },
 ];
 
 export function WorkflowBuilder() {
@@ -101,7 +121,7 @@ export function WorkflowBuilder() {
     setEdges(eds => addEdge({ ...conn, animated: true, style: { stroke: '#00E5FF', strokeWidth: 2 } }, eds)), []);
 
   const addNode = (type: 'triggerNode' | 'agentNode' | 'actionNode') => {
-    const agents = ['sn00', 'sp01', 'cc06', 'da03', 'ra01'];
+    const agents = ['sn00', 'sp01', 'cc06', 'da03', 'ra01', 'prom07', 'ba07', 've01'];
     const id = String(nodes.length + 1);
     const titles: Record<string, string> = {
       triggerNode: 'New Trigger',
@@ -109,9 +129,9 @@ export function WorkflowBuilder() {
       actionNode: 'Action Step',
     };
     const configs: Record<string, string> = {
-      triggerNode: 'Configure trigger...',
-      agentNode: 'Configure agent task...',
-      actionNode: 'Configure action...',
+      triggerNode: 'Manual directive trigger...',
+      agentNode: 'Autonomous work sequence...',
+      actionNode: 'Final deployment step...',
     };
     const newNode: Node = {
       id,

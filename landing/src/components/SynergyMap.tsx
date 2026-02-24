@@ -286,7 +286,7 @@ export function SynergyMap() {
                     alt={`DA-03 asset ${i + 1}`}
                     className="w-full h-40 object-cover"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-linear-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                     <p className="font-mono text-[8px] text-[#FFD700]/80 uppercase">{img.timestamp}</p>
                   </div>
                 </motion.div>

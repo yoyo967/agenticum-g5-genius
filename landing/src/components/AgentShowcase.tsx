@@ -13,8 +13,8 @@ const AGENTS = [
   },
   {
     id: "sp01",
-    role: "Syntactic Processor",
-    description: "The strategic brain. Runs competitive intelligence and structural analysis using deep logical reasoning models.",
+    role: "Strategic Intelligence",
+    description: "The strategic brain. Runs market analysis and competitive scavenging using the Columna Radar for real-time monitoring.",
     color: "#8b5cf6",
     icon: Cpu,
     stats: { latency: "120ms", success: "98.5%" }
@@ -22,23 +22,39 @@ const AGENTS = [
   {
     id: "cc06",
     role: "Cognitive Core",
-    description: "The hyper-creative copywriter. Drafts semantic SEO articles, brand scripts, and conversion copy in premium English.",
+    description: "The hyper-creative copywriter. Drafts semantic SEO articles, brand scripts, and conversion copy following the 'Ogilvy Commandments'.",
     color: "#10b981",
     icon: PenTool,
     stats: { latency: "85ms", success: "96.2%" }
   },
   {
     id: "da03",
-    role: "Diffusion Architect",
-    description: "The visual artist. Hardwired to Vertex AI Imagen 3 to forge photorealistic assets matching exact brand constraints.",
+    role: "Design Architect",
+    description: "The visual artist. Hardwired to Vertex AI Imagen 3 to forge fotorealistic Studio-Assets based on Bauhaus design principles.",
     color: "#ec4899",
     icon: ImageIcon,
     stats: { latency: "140ms", success: "94.0%" }
   },
   {
+    id: "ba07",
+    role: "Browser Architect",
+    description: "The deep-intel specialist. Uses a 5-layer brain and Playwright for autonomous web interaction and zero-day intelligence.",
+    color: "#f59e0b",
+    icon: Network, // Update with appropriate icon if needed
+    stats: { latency: "150ms", success: "97.8%" }
+  },
+  {
+    id: "ve01",
+    role: "Motion Director",
+    description: "The cinematic architect. Orchestrates the Cinematic Forge pipeline to transform storyboards into high-fidelity motion assets.",
+    color: "#ef4444",
+    icon: Cpu, // Update with appropriate icon if needed
+    stats: { latency: "200ms", success: "95.5%" }
+  },
+  {
     id: "ra01",
-    role: "Security Auditor",
-    description: "The adversarial algorithm. Reviews every output against strict brand safety guidelines and economic benchmarks before approval.",
+    role: "Security Senate",
+    description: "The adversarial algorithm. Reviews every output against GDPR, EU AI Act, and brand safety guidelines before release.",
     color: "#ef4444",
     icon: ShieldCheck,
     stats: { latency: "65ms", success: "100%" }

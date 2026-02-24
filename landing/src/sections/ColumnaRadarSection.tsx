@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 
 const MOCK_INTEL = [
-  { competitor: "AnalyticaInvestor", url: "analyticainvestor.com/robo-milliardaere", status: "DECOMPILED", threat: 74, h2: ["Was sind humanoide Roboter?", "Top 5 Robotik-Aktien 2026", "Wie investieren?"] },
-  { competitor: "RoboReport.io", url: "roboreport.io/humanoid-market-2026", status: "DECOMPILED", threat: 61, h2: ["Marktgröße 2026", "Figure AI vs Boston Dynamics", "Investment-Risiken"] },
-  { competitor: "TechAlpha.de", url: "techalpha.de/ki-aktien-robotik", status: "NEW", threat: 88, h2: [] },
+  { competitor: "AnalyticaInvestor", url: "analyticainvestor.com/robo-billions", status: "DECOMPILED", threat: 74, h2: ["What are humanoid robots?", "Top 5 Robotics Stocks 2026", "How to invest?"] },
+  { competitor: "RoboReport.io", url: "roboreport.io/humanoid-market-2026", status: "DECOMPILED", threat: 61, h2: ["Market Size 2026", "Figure AI vs Boston Dynamics", "Investment Risks"] },
+  { competitor: "TechAlpha.com", url: "techalpha.com/ai-robotics-stocks", status: "NEW", threat: 88, h2: [] },
 ];
 
 export const ColumnaRadarSection: React.FC = () => {

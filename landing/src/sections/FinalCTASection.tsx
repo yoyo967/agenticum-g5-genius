@@ -37,9 +37,9 @@ export const FinalCTASection: React.FC = () => {
 
         <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
           className="text-white/40 mb-14 text-lg md:text-xl font-mono max-w-2xl mx-auto leading-relaxed">
-          Fünf spezialisierte Agenten. Ein Sprachbefehl. Autonome Synergie.
+          Five specialized agents. One voice command. Autonomous synergy.
           EU-Compliance-by-Design. Perfect Twin Audit Ledger.<br />
-          <span className="text-white/60">Dies ist kein Tool. Dies ist Agenticum G5.</span>
+          <span className="text-white/60">This is not a tool. This is Agenticum G5.</span>
         </motion.p>
 
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.5 }}
@@ -48,13 +48,13 @@ export const FinalCTASection: React.FC = () => {
             onClick={() => navigate('/os')}
             className="btn-primary flex items-center gap-3 px-10 py-5 text-lg shadow-[0_0_50px_rgba(0,229,255,0.4)] hover:shadow-[0_0_70px_rgba(0,229,255,0.6)]"
           >
-            <Mic2 size={20} /> Swarm Initialisieren <ArrowRight size={20} />
+            <Mic2 size={20} /> Initialize Swarm <ArrowRight size={20} />
           </button>
           <button
             onClick={() => navigate('/os')}
             className="btn-outline flex items-center gap-3 px-10 py-5 text-lg border-white/20! hover:border-accent/50! group"
           >
-            <Terminal size={20} className="group-hover:text-accent transition-colors" /> OS Portal Betreten
+            <Terminal size={20} className="group-hover:text-accent transition-colors" /> Enter OS Portal
           </button>
         </motion.div>
 

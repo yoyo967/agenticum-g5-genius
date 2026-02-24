@@ -352,6 +352,7 @@ export function GeniusConsole() {
       case 'ra01': return <Shield size={16} />;
       case 'pm07': return <Bot size={16} />;
       case 've01': return <Film size={16} />;
+      case 'prom07': return <Activity size={16} />;
       default: return <Bot size={16} />;
     }
   };
@@ -616,35 +617,72 @@ export function GeniusConsole() {
           <div className="flex-1 p-8 overflow-y-auto font-mono scrollbar-none" ref={scrollRef}>
              <AnimatePresence>
                {isRecording && (
-                 <motion.div 
-                   key="voice-overlay"
-                   initial={{ opacity: 0, scale: 0.95 }}
-                   animate={{ opacity: 1, scale: 1 }}
-                   exit={{ opacity: 0, scale: 0.95 }}
-                   className="absolute inset-x-8 top-8 z-30 p-12 rounded-3xl bg-black/80 backdrop-blur-2xl border border-neural-gold/30 shadow-[0_0_100px_rgba(251,188,4,0.1)] flex flex-col items-center justify-center text-center"
-                 >
+                  <motion.div 
+                    key="voice-overlay"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="absolute inset-x-8 top-8 z-30 p-12 rounded-3xl bg-black/80 backdrop-blur-3xl border border-neural-blue/30 shadow-[0_0_100px_rgba(0,184,212,0.15)] flex flex-col items-center justify-center text-center"
+                  >
+                    <div className="absolute inset-0 bg-linear-to-br from-neural-blue/5 to-neural-gold/5 opacity-50 pointer-events-none" />
+                    
                     <div className="relative mb-8">
-                      <div className="absolute inset-0 bg-neural-gold/20 rounded-full blur-3xl animate-pulse" />
-                      <div className="w-28 h-28 rounded-full border border-neural-gold/50 flex items-center justify-center relative z-10 bg-black/40 shadow-inner">
-                        <Mic size={40} className="text-neural-gold animate-pulse shadow-[0_0_20px_rgba(251,188,4,0.5)]" />
+                      {/* Jarvis Pulse Core */}
+                      <motion.div 
+                        animate={{ 
+                          scale: [1, 1.2, 1],
+                          opacity: [0.5, 0.8, 0.5],
+                          boxShadow: [
+                            '0 0 40px rgba(0, 229, 255, 0.2)',
+                            '0 0 80px rgba(0, 229, 255, 0.4)',
+                            '0 0 40px rgba(0, 229, 255, 0.2)'
+                          ]
+                        }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute inset-0 bg-neural-blue/20 rounded-full blur-3xl" 
+                      />
+                      
+                      <div className="w-32 h-32 rounded-full border-2 border-neural-blue/50 flex items-center justify-center relative z-10 bg-black/40 shadow-[inset_0_0_40px_rgba(0,229,255,0.2)]">
+                        <div className="absolute inset-0 rounded-full border-4 border-neural-gold/20 animate-[spin_10s_linear_infinite]" />
+                        <motion.div 
+                          animate={{ 
+                            scale: [1, 1.1, 1],
+                            rotate: [0, 5, -5, 0]
+                          }}
+                          transition={{ duration: 4, repeat: Infinity }}
+                        >
+                          <Mic size={48} className="text-neural-blue drop-shadow-[0_0_15px_rgba(0,229,255,1)]" />
+                        </motion.div>
                       </div>
-                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }} className="absolute inset-[-15px] rounded-full border border-dashed border-neural-gold/30" />
-                      <motion.div animate={{ rotate: -360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="absolute inset-[-30px] rounded-full border border-solid border-neural-gold/10" />
+
+                      {/* Orbitals */}
+                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-[-20px] rounded-full border border-dashed border-neural-blue/30" />
+                      <motion.div animate={{ rotate: -360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute inset-[-40px] rounded-full border border-solid border-neural-gold/10" />
                     </div>
-                   <h3 className="text-2xl font-display font-black text-white uppercase tracking-widest mb-3">Gemini Live Active</h3>
-                   <p className="text-xs text-neural-gold/80 uppercase tracking-[0.3em] font-mono">Transcribing Neuro-Acoustic Input...</p>
-                   
-                   <div className="flex items-center gap-1.5 mt-8 h-12 w-full max-w-sm justify-center">
-                     {[0.8, 0.4, 0.9, 0.3, 0.7, 0.5, 0.8, 0.6, 0.9, 0.4, 0.7, 0.5, 0.3, 0.8, 0.6, 0.9, 0.4, 0.7, 0.5, 0.3, 0.8, 0.6, 0.9, 0.4].map((val, i) => (
-                       <motion.div
-                          key={i}
-                          className="w-2 bg-neural-gold/80 rounded-sm"
-                          animate={{ height: ['20%', `${val * 100}%`, '20%'] }}
-                          transition={{ repeat: Infinity, duration: 0.4 + (i % 5) * 0.1, ease: "easeInOut" }}
-                       />
-                     ))}
-                   </div>
-                 </motion.div>
+
+                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-[0.2em] mb-2 drop-shadow-sm">J.A.R.V.I.S Active</h3>
+                    <p className="text-[10px] text-neural-blue/80 uppercase tracking-[0.5em] font-mono font-bold">Multimodal Neural Uplink Synchronized</p>
+                    
+                    <div className="flex items-center gap-2 mt-10 h-16 w-full max-w-lg justify-center">
+                      {[1.0, 0.4, 1.2, 0.3, 0.8, 0.6, 1.1, 0.5, 0.9, 0.4, 0.7, 0.5, 0.3, 1.0, 0.6, 1.3, 0.4, 0.8, 0.5, 0.3, 1.1, 0.6, 0.9, 0.4].map((val, i) => (
+                        <motion.div
+                           key={i}
+                           className={`w-1.5 rounded-full ${i % 3 === 0 ? 'bg-neural-gold' : 'bg-neural-blue'}`}
+                           animate={{ height: ['15%', `${val * 80}%`, '15%'] }}
+                           transition={{ repeat: Infinity, duration: 0.3 + (i % 6) * 0.1, ease: "easeInOut" }}
+                        />
+                      ))}
+                    </div>
+                    
+                    <motion.p 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0.4, 1, 0.4] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="mt-8 text-[9px] uppercase font-black tracking-widest text-white/40"
+                    >
+                      Listening for directive...
+                    </motion.p>
+                  </motion.div>
                )}
              </AnimatePresence>
 
@@ -762,9 +800,9 @@ export function GeniusConsole() {
                                 log.type === 'system' ? 'text-white/30' :
                                 log.type === 'error' ? 'text-red-500' :
                                 log.type === 'action' ? 'text-neural-gold' :
-                                log.type === 'agent' ? 'text-neural-blue' :
+                                log.type === 'agent' ? (log.message.includes('PROMETHEUS') ? 'text-neural-blue brightness-150 drop-shadow-[0_0_10px_rgba(0,229,255,0.4)]' : 'text-neural-blue') :
                                 log.type === 'success' ? 'text-neural-gold drop-shadow-[0_0_8px_rgba(251,188,4,0.4)]' : 'text-neural-blue'
-                              }`}>{log.type === 'success' ? 'SOVEREIGN' : log.type}</span>
+                              }`}>{log.type === 'success' ? 'SOVEREIGN' : log.message.includes('PROMETHEUS') ? 'PROMETHEUS' : log.type}</span>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[11px] opacity-80 leading-normal">{log.message}</p>
                                 {log.imageUrl && (
