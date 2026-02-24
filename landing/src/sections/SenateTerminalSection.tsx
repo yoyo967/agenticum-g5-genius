@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 const SENATE_LOGS = [
-  { time: "00:00.021", agent: "SN-00", msg: "Directive received. Initializing Pillar Graph Engine...", status: "ok" },
+  { time: "00:00.021", agent: "sn00", msg: "Directive received. Initializing Pillar Graph Engine...", status: "ok" },
   { time: "00:00.890", agent: "GROUNDING", msg: "Google Search Grounding activated. Querying: 'humanoid robotics 2026'", status: "ok" },
   { time: "00:02.140", agent: "GROUNDING", msg: "12 verified sources found. Entity graph built. Hallucination risk: 0%", status: "ok" },
   { time: "00:04.330", agent: "COLUMNA", msg: "Competitor sitemap delta detected: analyticainvestor.com +1 new page", status: "warn" },

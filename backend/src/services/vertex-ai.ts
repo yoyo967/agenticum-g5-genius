@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI as GoogleGenAI } from '@google/generative-ai';
 import { VertexAI, GenerativeModel } from '@google-cloud/vertexai';
 import { Logger } from '../utils/logger';
 import fs from 'fs';
@@ -51,12 +51,11 @@ export class VertexAIService {
       this.logger.info(`Generating content for prompt: ${prompt.substring(0, 50)}...`);
       if (apiKey) {
         try {
-          const ai = new GoogleGenAI({ apiKey });
-          const response = await ai.models.generateContent({
-             model: 'gemini-2.0-flash',
-             contents: prompt
-          });
-          return response.text || '';
+          const ai = new GoogleGenAI(apiKey);
+          const model = ai.getGenerativeModel({ model: 'gemini-2.0-flash' });
+          const result = await model.generateContent(prompt);
+          const response = await result.response;
+          return response.text() || '';
         } catch (error: any) {
           if (error.status === 403 || error.message?.includes('403')) {
             this.logger.warn('API Key restricted (403). Falling back to Vertex AI SDK.');
@@ -98,15 +97,14 @@ export class VertexAIService {
       // Try Cloud Native Vertex AI first if explicitly desired or as primary for PMax/Strategy
       // For this hackathon, we use GoogleGenAI (API Key) as primary for grounding stability
       if (apiKey) {
-        const ai = new GoogleGenAI({ apiKey });
-        const response = await ai.models.generateContent({
+        const ai = new GoogleGenAI(apiKey);
+        const model = ai.getGenerativeModel({
             model: 'gemini-2.0-flash',
-            contents: prompt,
-            config: {
-               tools: [{ googleSearch: {} }] as any
-            }
+            tools: [{ googleSearch: {} }] as any
         });
-        return response.text || '';
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        return response.text() || '';
       } else {
         const result = await this.model.generateContent({
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -143,9 +141,11 @@ export class VertexAIService {
     }
 
     try {
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateImages({
-        model: 'imagen-3.0-generate-002',
+      const ai = new GoogleGenAI(apiKey);
+      const model = ai.getGenerativeModel({ model: 'imagen-3.0-generate-002' });
+      // Note: Imagen 3 via @google/generative-ai might have different method names or be restricted.
+      // Assuming generateContent with task/config if supported, or falling back.
+      const response = await (model as any).generateImages({
         prompt: prompt,
         config: {
             numberOfImages: 1,
@@ -227,15 +227,16 @@ export class VertexAIService {
     }
 
     try {
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-          model: 'gemini-2.0-flash-exp',
-          contents: prompt,
-          config: {
-             responseMimeType: 'application/json'
-          }
+      const ai = new GoogleGenAI(apiKey);
+      const model = ai.getGenerativeModel({ 
+        model: 'gemini-2.0-flash-exp',
+        generationConfig: {
+          responseMimeType: 'application/json'
+        }
       });
-      return JSON.parse(response.text || '{"score": 0, "reasoning": "Error parsing AI response"}');
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return JSON.parse(response.text() || '{"score": 0, "reasoning": "Error parsing AI response"}');
     } catch (error) {
       this.logger.error('Predictive scoring failed', error as Error);
       return { score: 0, reasoning: "Scoring engine failure: " + (error as Error).message };

@@ -18,12 +18,12 @@ export function GlobalControlPlane() {
     tokenLimit: 8192,
     safetyThreshold: 'BLOCK_MEDIUM_AND_ABOVE',
     swarms: {
-      sn00: true, sp01: true, cc06: true, da03: true, ra01: true, pm07: true
+      sn00: true, sp01: true, cc06: true, da03: true, ra01: true, pm07: true, ve01: true
     }
   });
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/settings`)
+    fetch(`${API_BASE_URL}/settings`)
       .then(res => res.json())
       .then(data => {
         if (Object.keys(data).length > 0) setSettings(prev => ({ ...prev, ...data }));
@@ -38,7 +38,7 @@ export function GlobalControlPlane() {
     setSaveResult('idle');
     setSaveError('');
     try {
-      const res = await fetch(`${API_BASE_URL}/api/settings`, {
+      const res = await fetch(`${API_BASE_URL}/settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings)
@@ -185,12 +185,13 @@ export function GlobalControlPlane() {
           </h3>
           <div className="space-y-3">
             {[
-              { key: 'sn00', name: 'SN-00', role: 'Orchestrator', color: 'var(--color-accent)' },
-              { key: 'sp01', name: 'SP-01', role: 'Strategist', color: 'var(--color-gold)' },
-              { key: 'cc06', name: 'CC-06', role: 'Copywriter', color: 'var(--color-emerald)' },
-              { key: 'da03', name: 'DA-03', role: 'Visual Architect', color: 'var(--color-magenta)' },
-              { key: 'ra01', name: 'RA-01', role: 'Auditor', color: 'var(--color-gold)' },
-              { key: 'pm07', name: 'PM-07', role: 'Pillar Master', color: 'var(--color-emerald)' },
+              { key: 'sn00', name: 'sn00', role: 'Orchestrator', color: 'var(--color-accent)' },
+              { key: 'sp01', name: 'sp01', role: 'Strategist', color: 'var(--color-gold)' },
+              { key: 'cc06', name: 'cc06', role: 'Copywriter', color: 'var(--color-emerald)' },
+              { key: 'da03', name: 'da03', role: 'Visual Architect', color: 'var(--color-magenta)' },
+              { key: 'ra01', name: 'ra01', role: 'Auditor', color: 'var(--color-gold)' },
+              { key: 'pm07', name: 'pm07', role: 'Pillar Master', color: 'var(--color-emerald)' },
+              { key: 've01', name: 've01', role: 'Motion Director', color: '#FF6B00' },
             ].map(agent => (
               <div key={agent.key} className="flex items-center justify-between p-3 rounded-lg bg-white/2 border border-white/5 group hover:border-white/10 transition-colors">
                 <div className="flex items-center gap-3">

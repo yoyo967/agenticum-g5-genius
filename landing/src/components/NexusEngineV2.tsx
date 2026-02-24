@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Workflow, Play, CheckCircle2, Cpu, Zap, Film, Palette, Shield, Bot, ChevronRight } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
-type AgentId = 'SN-00' | 'SP-01' | 'CC-06' | 'DA-03' | 'RA-01' | 'PM-07' | 'trigger';
+type AgentId = 'sn00' | 'sp01' | 'cc06' | 'da03' | 'ra01' | 'pm07' | 'trigger';
 
 interface WorkflowTemplate {
   name: string;
@@ -17,25 +17,25 @@ const WORKFLOWS: WorkflowTemplate[] = [
     id: 'campaign-full',
     name: 'Campaign Full Cycle',
     desc: 'End-to-end campaign deployment through all tactical nodes.',
-    agents: ['SN-00', 'SP-01', 'CC-06', 'DA-03', 'RA-01']
+    agents: ['sn00', 'sp01', 'cc06', 'da03', 'ra01']
   },
   {
     id: 'copy-sprint',
     name: 'Copy Sprint',
     desc: 'Rapid iteration of high-conversion copy variants.',
-    agents: ['SN-00', 'CC-06', 'RA-01']
+    agents: ['sn00', 'cc06', 'ra01']
   },
   {
     id: 'visual-campaign',
     name: 'Visual Campaign',
     desc: 'Generation of brand-aligned visual assets.',
-    agents: ['SN-00', 'DA-03', 'RA-01']
+    agents: ['sn00', 'da03', 'ra01']
   },
   {
     id: 'strategy-brief',
     name: 'Strategy Brief',
     desc: 'Deep analytical target audience synthesis.',
-    agents: ['SN-00', 'SP-01', 'RA-01']
+    agents: ['sn00', 'sp01', 'ra01']
   }
 ];
 
@@ -49,24 +49,24 @@ export function NexusEngineV2() {
 
   const getAgentIcon = (id: AgentId) => {
     switch (id) {
-      case 'SN-00': return <Cpu size={16} />;
-      case 'SP-01': return <Zap size={16} />;
-      case 'CC-06': return <Film size={16} />;
-      case 'DA-03': return <Palette size={16} />;
-      case 'RA-01': return <Shield size={16} />;
-      case 'PM-07': return <Bot size={16} />;
+      case 'sn00': return <Cpu size={16} />;
+      case 'sp01': return <Zap size={16} />;
+      case 'cc06': return <Film size={16} />;
+      case 'da03': return <Palette size={16} />;
+      case 'ra01': return <Shield size={16} />;
+      case 'pm07': return <Bot size={16} />;
       default: return <Cpu size={16} />;
     }
   };
 
   const getAgentColor = (id: AgentId) => {
     switch (id) {
-      case 'SN-00': return 'text-neural-blue';
-      case 'SP-01': return 'text-neural-gold';
-      case 'CC-06': return 'text-neural-purple';
-      case 'DA-03': return 'text-white';
-      case 'RA-01': return 'text-red-500';
-      case 'PM-07': return 'text-green-500';
+      case 'sn00': return 'text-neural-blue';
+      case 'sp01': return 'text-neural-gold';
+      case 'cc06': return 'text-neural-purple';
+      case 'da03': return 'text-white';
+      case 'ra01': return 'text-red-500';
+      case 'pm07': return 'text-green-500';
       default: return 'text-neural-blue';
     }
   };
@@ -82,7 +82,7 @@ export function NexusEngineV2() {
     setAgentProgress(initialState);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/workflow/deploy`, {
+      const response = await fetch(`${API_BASE_URL}/workflow/deploy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -241,6 +241,7 @@ export function NexusEngineV2() {
           <div className="mt-8 flex justify-end">
             <button 
               onClick={runWorkflow}
+              aria-label={isRunning ? "Executing Workflow" : "Run Workflow Blueprint"}
               disabled={isRunning}
               className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2 active:scale-95 ${
                 isRunning ? 'bg-neural-gold/50 text-obsidian cursor-wait' : 'bg-neural-blue text-obsidian hover:bg-white shadow-[0_0_20px_rgba(0,229,255,0.3)]'

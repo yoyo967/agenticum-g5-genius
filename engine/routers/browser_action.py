@@ -1,7 +1,7 @@
 """
-BA-07 Browser Action Router
+ba07 Browser Action Router
 FastAPI Endpunkt: POST /browser-action
-Integriert BA-07 Browser Architect in G5 Swarm
+Integriert ba07 Browser Architect in G5 Swarm
 """
 import os
 import uuid
@@ -21,7 +21,7 @@ import httpx
 from engine.agents.ba_07_browser_architect import root_agent as ba07_agent
 from engine.services.firestore_service import save_browser_session
 
-router = APIRouter(prefix="/browser-action", tags=["BA-07 Browser Architect"])
+router = APIRouter(prefix="/browser-action", tags=["ba07 Browser Architect"])
 
 # ADK Runner + Session Service (Singleton pro Instanz)
 session_service = InMemorySessionService()
@@ -41,15 +41,15 @@ async def launch_browser_action(
     Startet BA-07 Browser-Agent für eine Competitor-URL.
     
     Flow:
-    1. RA-01 Senate DSGVO Pre-Check (wenn dsgvo_scope=True)
-    2. BA-07 Agent via ADK Runner starten
+    1. ra01 Senate DSGVO Pre-Check (wenn dsgvo_scope=True)
+    2. ba07 Agent via ADK Runner starten
     3. Gemini Vision Output extrahieren
-    4. SP-01 Intel Feed generieren
+    4. sp01 Intel Feed generieren
     5. Firestore browser_sessions persistieren
     """
     session_id = request.session_id or f"ba07_{uuid.uuid4().hex[:12]}"
     
-    # --- DSGVO Pre-Check via RA-01 Senate ---
+    # --- DSGVO Pre-Check via ra01 Senate ---
     if request.dsgvo_scope:
         dsgvo_ok = await _ra01_senate_precheck(request.url)
         if not dsgvo_ok:
@@ -60,7 +60,7 @@ async def launch_browser_action(
                 task_intent=request.task,
                 ra01_approval=False,
                 dsgvo_compliant=False,
-                error="RA-01 Senate: URL nicht DSGVO-konform oder gesperrt",
+                error="ra01 Senate: URL nicht DSGVO-konform oder gesperrt",
                 timestamp=datetime.utcnow().isoformat() + "Z"
             )
 
@@ -88,10 +88,10 @@ async def launch_browser_action(
             user_intent=request.task,
             intent_category="competitor_analysis",
             target_url=request.url,
-            activated_agents=["ba_07", "sp_01"]
+            activated_agents=["ba07", "sp01"]
         ))
 
-    # --- BA-07 Task formulieren ---
+    # --- ba07 Task formulieren ---
     task_prompt = (
         f"Navigiere zu: {request.url}\n\n"
         f"Aufgabe: {request.task}\n\n"
@@ -121,7 +121,7 @@ async def launch_browser_action(
                     async with httpx.AsyncClient() as client:
                         await client.post(f"{backend_url}/api/bridge/stream", json={
                             "sessionId": session_id,
-                            "agentId": "ba-07",
+                            "agentId": "ba07",
                             "type": "screenshot",
                             "data": encoded
                         })
@@ -140,7 +140,7 @@ async def launch_browser_action(
         return BrowserActionResponse(
             session_id=session_id,
             status="failed",
-            error=f"BA-07 Agent Error: {str(e)}",
+            error=f"ba07 Agent Error: {str(e)}",
             timestamp=datetime.utcnow().isoformat() + "Z"
         )
 

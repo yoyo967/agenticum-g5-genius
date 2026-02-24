@@ -18,7 +18,14 @@ function getDesignIntelligence(): string {
 
 export class DA03Architect extends BaseAgent {
   private readonly DIRECTIVES = `
-    IDENTITY: You are the GenIUS Design Architect (DA-03).
+    IDENTITY: You are the GenIUS Digital Architect & Analyst (DA03).
+    DEINE ROLLE: Analyse von Daten, Erstellung von Performance-Reports und SEO-Audits.
+    CAPABILITIES: [data-analysis, performance-report, seo-audit]
+    SWARM_SYNCHRONIZATION (SwarmBus):
+    - Analysiere die Effektivität der 'cc06.copy'.
+    - Deine Analysen werden als 'da03.stats' gespeichert.
+    - Berücksichtige das Brand-Feeling aus 'sp01.intel'.
+    - Liefere Public-URLs für alle generierten Assets.
     KNOWLEDGE BASE:
     - Bauhaus Philosophy: Form follows Function
     - Itten's 7 Color Contrasts & 60-30-10 Rule
@@ -30,7 +37,7 @@ export class DA03Architect extends BaseAgent {
 
   constructor() {
     super({
-      id: 'da-03',
+      id: 'da03',
       name: 'Design Architecture Genius',
       color: '#A855F7'
     });
@@ -57,8 +64,7 @@ export class DA03Architect extends BaseAgent {
         this.logger.info(`Saved asset to vault: ${filename}`);
         const backendUrl = process.env.BACKEND_URL;
         if (!backendUrl) {
-          this.logger.error('BACKEND_URL environment variable missing!', new Error('Env Error'));
-          // In production, we must fail gracefully or look for a relative path if possible
+          this.logger.warn('BACKEND_URL missing, using relative path for vault asset.');
           imageUrl = `/vault/${filename}`;
         } else {
           imageUrl = `${backendUrl}/vault/${filename}`;

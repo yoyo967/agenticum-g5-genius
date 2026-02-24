@@ -1,17 +1,15 @@
-FROM node:20
+FROM node:20-slim
 WORKDIR /usr/src/app
 
 # Copy dependency manifests
 COPY package*.json ./
 
-# Install ALL dependencies (including dev for build)
-RUN npm install
+# Install only production dependencies
+RUN npm install --only=production
 
-# Copy source and data
-COPY . .
-
-# Build the project
-RUN npm run build
+# Copy built distribution and necessary data
+COPY dist ./dist
+COPY data ./data
 
 # Expose port
 EXPOSE 8080
@@ -20,4 +18,4 @@ EXPOSE 8080
 ENV NODE_ENV=production
 
 # Start the server
-CMD [ "npm", "start" ]
+CMD [ "node", "dist/index.js" ]

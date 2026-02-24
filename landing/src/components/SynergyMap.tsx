@@ -23,11 +23,11 @@ interface DataFlow {
 }
 
 const AGENTS: Agent[] = [
-  { id: 'SN-00', name: 'NEXUS PRIME', role: 'Orchestrator', color: '#00E5FF', cx: 50, cy: 18 },
-  { id: 'SP-01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: '#7B2FBE', cx: 85, cy: 45 },
-  { id: 'CC-06', name: 'COGNITIVE CORE', role: 'Copywriter', color: '#FF007A', cx: 72, cy: 82 },
-  { id: 'DA-03', name: 'DESIGN ARCHITECT', role: 'Visual Artist', color: '#FFD700', cx: 28, cy: 82 },
-  { id: 'RA-01', name: 'SECURITY CORTEX', role: 'Auditor', color: '#00FF88', cx: 15, cy: 45 },
+  { id: 'sn00', name: 'NEXUS PRIME', role: 'Orchestrator', color: '#00E5FF', cx: 50, cy: 18 },
+  { id: 'sp01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: '#7B2FBE', cx: 85, cy: 45 },
+  { id: 'cc06', name: 'COGNITIVE CORE', role: 'Copywriter', color: '#FF007A', cx: 72, cy: 82 },
+  { id: 'da03', name: 'DESIGN ARCHITECT', role: 'Visual Artist', color: '#FFD700', cx: 28, cy: 82 },
+  { id: 'ra01', name: 'SECURITY CORTEX', role: 'Auditor', color: '#00FF88', cx: 15, cy: 45 },
 ];
 
 let flowIdCounter = 0;
@@ -105,7 +105,7 @@ export function SynergyMap() {
          };
          setFlows(prev => [newFlow, ...prev].slice(0, 20));
          // Update RA-01 state to error-like visually
-         setAgentStates(prev => ({ ...prev, 'ra-01': 'error' }));
+         setAgentStates(prev => ({ ...prev, 'ra01': 'error' }));
       }
     };
     window.addEventListener('swarm-senate', handler);
@@ -270,7 +270,7 @@ export function SynergyMap() {
             <div className="flex items-center gap-2 mb-4">
               <Palette size={16} className="text-[#FFD700]" />
               <h3 className="font-display text-lg font-bold uppercase tracking-tight">Live Visual Output</h3>
-              <span className="badge badge-processing text-[8px] ml-auto">DA-03 · Imagen 3</span>
+              <span className="badge badge-processing text-[8px] ml-auto">DA03 · Imagen 3</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {liveImages.map((img, i) => (

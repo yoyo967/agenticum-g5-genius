@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 
@@ -18,12 +18,13 @@ interface Story {
 export const NexusFeed = () => {
   const navigate = useNavigate();
   const [stories, setStories] = useState<Story[]>([]);
+  const [cognitiveThreads, setCognitiveThreads] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchFeed = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/blog/feed`);
+        const response = await fetch(`${API_BASE_URL}/blog/feed`);
         if (!response.ok) throw new Error('Nexus Sync Failed');
         const data = await response.json();
         
@@ -43,6 +44,25 @@ export const NexusFeed = () => {
     };
 
     fetchFeed();
+
+    // Simulate sentient consciousness stream
+    const fragments = [
+      "Optimizing semantic resonance for [Strategic Pillar 4]...",
+      "RA-01 detecting White Space opportunity in 'Post-Sovereign Marketing' keywords",
+      "CC-06 generating high-conversion narrative hooks for 'Sentient UX'...",
+      "Nexus historical precedent [2026-02-23] successfully injected into current manifold",
+      "DA-03 scavenging visual aesthetics for 'Maximum Excellence' standard...",
+      "Swarm throughput stabilized at 4.2k tokens/sec. Intelligence density nominal."
+    ];
+    
+    const interval = setInterval(() => {
+      setCognitiveThreads(prev => {
+        const next = [...prev, fragments[Math.floor(Math.random() * fragments.length)]];
+        return next.slice(-5); // Keep last 5
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -58,6 +78,30 @@ export const NexusFeed = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto py-20 px-6">
+      {/* Sentient Consciousness Stream */}
+      <div className="mb-12 border-b border-white/5 pb-8 overflow-hidden">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent/60">Live Consciousness Stream // Sub-Cognitive fragments</span>
+        </div>
+        <div className="flex flex-col gap-2 font-mono text-[11px] h-[100px] mask-fade-y">
+          <AnimatePresence>
+            {cognitiveThreads.map((thread, i) => (
+              <motion.div
+                key={`${thread}-${i}`}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                className="text-white/40 italic"
+              >
+                <span className="text-accent/40 mr-2">[{new Date().toLocaleTimeString()}]</span>
+                <span className="text-white/60">»</span> {thread}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {stories.length === 0 ? (
           <>
@@ -118,7 +162,10 @@ export const NexusFeed = () => {
                 {story.excerpt || (story.content?.substring(0, 120) + '...')}
               </p>
               <div className="mt-auto">
-                <button className="text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-colors">
+                <button 
+                  aria-label={`Read transmission: ${story.title}`}
+                  className="text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-colors"
+                >
                   Read Transmission →
                 </button>
               </div>

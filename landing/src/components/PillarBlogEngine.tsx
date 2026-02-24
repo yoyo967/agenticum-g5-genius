@@ -46,7 +46,7 @@ export function PillarBlogEngine() {
   const fetchArticles = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/blog/feed`);
+      const res = await fetch(`${API_BASE_URL}/blog/feed`);
       if (res.ok) {
         const data = await res.json();
         const all: Article[] = [
@@ -65,7 +65,7 @@ export function PillarBlogEngine() {
 
   const fetchArticleContent = async (slug: string) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/blog/article/${slug}`);
+      const res = await fetch(`${API_BASE_URL}/blog/article/${slug}`);
       if (res.ok) {
         const data = await res.json();
         setSelectedArticle(data);
@@ -80,7 +80,7 @@ export function PillarBlogEngine() {
     setIsGenerating(true);
     setGenerateResult(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/blog/agent-dispatch`, {
+      const res = await fetch(`${API_BASE_URL}/blog/agent-dispatch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic, type: articleType }),
@@ -243,7 +243,7 @@ export function PillarBlogEngine() {
                           if (!selectedArticle) return;
                           setIsPublishing(true);
                           try {
-                            const res = await fetch(`${API_BASE_URL}/api/blog/publish/wordpress/${selectedArticle.id}`, {
+                            const res = await fetch(`${API_BASE_URL}/blog/publish/wordpress/${selectedArticle.id}`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ type: selectedArticle.type || 'pillar' }),
@@ -267,7 +267,7 @@ export function PillarBlogEngine() {
                           if (!selectedArticle) return;
                           setIsPublishing(true);
                           try {
-                            const res = await fetch(`${API_BASE_URL}/api/blog/publish/linkedin/${selectedArticle.id}`, {
+                            const res = await fetch(`${API_BASE_URL}/blog/publish/linkedin/${selectedArticle.id}`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ type: selectedArticle.type || 'pillar' }),
@@ -300,7 +300,7 @@ export function PillarBlogEngine() {
                         onClick={async () => {
                           if (!selectedArticle || !scheduleDate) return;
                           try {
-                            const res = await fetch(`${API_BASE_URL}/api/blog/schedule/wordpress/${selectedArticle.id}`, {
+                            const res = await fetch(`${API_BASE_URL}/blog/schedule/wordpress/${selectedArticle.id}`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ 
@@ -330,7 +330,7 @@ export function PillarBlogEngine() {
                         onClick={async () => {
                           if (!selectedArticle) return;
                           try {
-                            const res = await fetch(`${API_BASE_URL}/api/senate/submit`, {
+                            const res = await fetch(`${API_BASE_URL}/senate/submit`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({

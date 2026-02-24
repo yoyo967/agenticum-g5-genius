@@ -1,9 +1,10 @@
 import { VertexAIService } from './vertex-ai';
 import { Logger } from '../utils/logger';
 import { db, Collections } from './firestore';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI as GoogleGenAI } from '@google/generative-ai';
 import fs from 'fs';
 import path from 'path';
+import { VE01Director } from '../agents/ve01-director';
 
 export interface StoryboardShot {
   shotNumber: number;
@@ -26,6 +27,7 @@ export interface CinematicAsset {
 export class CinematicService {
   private logger = new Logger('CinematicService');
   private vertexAI = VertexAIService.getInstance();
+  private ve01 = new VE01Director();
   private static instance: CinematicService;
 
   private constructor() {}
@@ -69,21 +71,44 @@ export class CinematicService {
     `;
 
     try {
-      // Use the internal VertexAIService check for API keys or fallback
-      const responseText = await this.vertexAI.generateContent(prompt);
+      // Use the ve01 Agent to leverage its specialized prompts and eventFabric status updates
+      const responseText = await this.ve01.execute(topic);
       
-      // Clean possible markdown backticks
-      const cleanJson = responseText.replace(/```json|```/g, '').trim();
-      const data = JSON.parse(cleanJson);
+      // The agent returns markdown with a JSON block for the storyboard
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('Failed to find storyboard JSON in agent response');
+      
+      const data = JSON.parse(jsonMatch[0]);
+      // Handle schema variations (scenes vs storyboard)
+      const storyboardData = data.storyboard || data.scenes; 
 
       const cinematic: CinematicAsset = {
         id: `cinematic-${Date.now()}`,
         topic,
-        storyboard: data.storyboard,
-        status: 'complete', // Simulated rendering completes immediately for the demo
+        storyboard: storyboardData.map((s: any, i: number) => ({
+          shotNumber: s.shotNumber || s.id || (i + 1),
+          visualPrompt: s.visualPrompt || s.visual,
+          audioDescription: s.audioDescription || s.audio || s.camera,
+          durationSec: s.durationSec || s.duration || 5,
+          mood: s.mood || 'Cinematic'
+        })),
+        status: 'rendering', // Transitioning to ultimate rendering state
         createdAt: new Date().toISOString(),
         clientId
       };
+
+      // ULTIMATE: Parallel Synthesis of all shot visuals
+      this.logger.info(`Initiating parallel neural synthesis for ${cinematic.storyboard.length} shots.`);
+      const synthesisPromises = cinematic.storyboard.map(async (shot) => {
+        try {
+          shot.imageUrl = await this.vertexAI.generateImage(shot.visualPrompt);
+        } catch (e) {
+          this.logger.error(`Synthesis failed for shot ${shot.shotNumber}`, e as Error);
+        }
+      });
+
+      await Promise.all(synthesisPromises);
+      cinematic.status = 'complete';
 
       // Persist to Firestore
       await db.collection('cinematic_assets').doc(cinematic.id).set(cinematic);

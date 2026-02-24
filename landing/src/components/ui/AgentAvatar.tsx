@@ -8,11 +8,11 @@ interface AgentAvatarProps {
 }
 
 const agentConfig: Record<string, { color: string; defaultName: string; defaultRole: string }> = {
-  'SN-00': { color: '#00E5FF', defaultName: 'NEXUS PRIME', defaultRole: 'Orchestrator' },
-  'SP-01': { color: '#7B2FBE', defaultName: 'STRATEGIC CORTEX', defaultRole: 'Strategist' },
-  'CC-06': { color: '#FF007A', defaultName: 'COGNITIVE CORE', defaultRole: 'Copywriter' },
-  'DA-03': { color: '#FFD700', defaultName: 'DESIGN ARCHITECT', defaultRole: 'Visual Artist' },
-  'RA-01': { color: '#00FF88', defaultName: 'SECURITY CORTEX', defaultRole: 'Auditor' },
+  'sn00': { color: '#00E5FF', defaultName: 'NEXUS PRIME', defaultRole: 'Orchestrator' },
+  'sp01': { color: '#7B2FBE', defaultName: 'STRATEGIC CORTEX', defaultRole: 'Strategist' },
+  'cc06': { color: '#FF007A', defaultName: 'COGNITIVE CORE', defaultRole: 'Copywriter' },
+  'da03': { color: '#FFD700', defaultName: 'DESIGN ARCHITECT', defaultRole: 'Visual Artist' },
+  'ra01': { color: '#00FF88', defaultName: 'SECURITY CORTEX', defaultRole: 'Auditor' },
 };
 
 const sizeMap = {

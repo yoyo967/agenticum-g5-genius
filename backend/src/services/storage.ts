@@ -35,11 +35,12 @@ export class StorageService {
 
     // Always save locally first for immediate preview reliability
     const localPath = join(this.localVaultPath, filename);
-    writeFileSync(localPath, buffer);
-    const localUrl = `${process.env.BACKEND_URL || ''}/vault/${filename}`;
+    // Standardized URL resolution for production consistency
+    const backendBase = process.env.BACKEND_URL || 'https://agenticum-backend-697051612685.europe-west1.run.app';
+    const localUrl = `${backendBase}/vault/${filename}`;
 
     if (this.useLocalFallback) {
-      this.logger.info(`Saved ${filename} to local vault.`);
+      this.logger.info(`Saved ${filename} to local vault. Link: ${localUrl}`);
       return localUrl;
     }
 
@@ -70,8 +71,12 @@ export class StorageService {
       const stats = statSync(join(this.localVaultPath, filename));
       return {
         name: filename,
-        url: `${process.env.BACKEND_URL || ''}/vault/${filename}`,
-        timestamp: stats.mtime.toLocaleTimeString()
+      const backendBase = process.env.BACKEND_URL || 'https://agenticum-backend-697051612685.europe-west1.run.app';
+      return {
+        name: filename,
+        url: `${backendBase}/vault/${filename}`,
+        timestamp: stats.mtime.toISOString()
+      };
       };
     });
   }

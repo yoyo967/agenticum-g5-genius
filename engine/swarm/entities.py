@@ -19,7 +19,7 @@ class WorkflowPhase(str, Enum):
     FAILED     = "failed"
 
 
-# SN-00: SWARM BRIEF
+# sn00: SWARM BRIEF
 class SwarmBriefEntity(BaseModel):
     session_id:          str
     user_intent:         str
@@ -32,7 +32,7 @@ class SwarmBriefEntity(BaseModel):
     timestamp:           str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
 
 
-# SP-01: COMPETITOR INTEL
+# sp01: COMPETITOR INTEL
 class PricingTier(BaseModel):
     name:       str
     price:      Optional[float] = None
@@ -59,7 +59,7 @@ class CompetitorIntelEntity(BaseModel):
     timestamp:                   str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
 
 
-# CC-06: CONTENT OUTPUT
+# cc06: CONTENT OUTPUT
 class ContentBlock(BaseModel):
     block_type:    str
     content:       str
@@ -75,7 +75,7 @@ class ContentOutputEntity(BaseModel):
     timestamp:           str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
 
 
-# DA-03: VISUAL OUTPUT
+# da03: VISUAL OUTPUT
 class VisualAsset(BaseModel):
     asset_id:       str
     public_url:     str
@@ -88,7 +88,7 @@ class VisualOutputEntity(BaseModel):
     timestamp:          str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
 
 
-# RA-01: SENATE VERDICT
+# ra01: SENATE VERDICT
 class AuditCheck(BaseModel):
     category:    str
     passed:      bool
@@ -103,7 +103,7 @@ class SenateVerdictEntity(BaseModel):
     timestamp:          str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
 
 
-# BA-07: BROWSER INTEL
+# ba07: BROWSER INTEL
 class BrowserIntelEntity(BaseModel):
     session_id:          str
     pages_visited:       List[str] = []

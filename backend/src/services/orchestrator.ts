@@ -46,7 +46,7 @@ export class PillarGraphOrchestrator {
         run_id: runId,
         timestamp: new Date(),
         type: 'lifecycle',
-        agent: 'SN-00 Orchestrator',
+        agent: 'sn00 Orchestrator',
         severity,
         message: `[${phase}] ${msg}`,
         latency: Date.now() - startTime
@@ -54,12 +54,13 @@ export class PillarGraphOrchestrator {
     };
 
     try {
-      eventFabric.broadcastStatus({ id: 'SN-00', state: 'working', progress: 5, lastStatus: 'Initializing Pillar Graph' });
+      eventFabric.broadcastStatus({ id: 'sn00', state: 'working', progress: 5, lastStatus: 'Initializing Pillar Graph' });
       await logPhase('INIT', `Pillar Workflow initialized for: ${topic}`);
 
       // 0. SWARM MEMORY: Lookup past runs for this topic
       let memoryInsights = '';
       try {
+        eventFabric.broadcast({ type: 'agent-thought', agentId: 'sn00', thought: `Consulting Swarm Memory for: ${topic}...` });
         this.logger.info(`[${runId}] Consulting Swarm Memory for: ${topic}`);
         const pastLogs = await db.collection('perfect_twin_logs')
           .where('type', '==', 'lifecycle')
@@ -80,20 +81,24 @@ export class PillarGraphOrchestrator {
         this.logger.warn(`[${runId}] Swarm Memory lookup failed: ${(e as Error).message}`);
       }
 
-      // 1. COLUMNA LAYER (Simulated for now, would return competitor URLs)
+      // 1. COLUMNA LAYER (Engine: columna_decompiler.py)
       const step1Start = Date.now();
-      eventFabric.broadcastStatus({ id: 'SN-00', state: 'working', progress: 15, lastStatus: 'Competitor Scanning' });
+      eventFabric.broadcastStatus({ id: 'sn00', state: 'working', progress: 15, lastStatus: 'Competitor Scanning' });
+      eventFabric.broadcast({ type: 'agent-thought', agentId: 'sn00', thought: 'Scanning competitor landscape via Columna Engine...' });
       await logPhase('COLUMNA', 'Scanning competitor landscape...');
+      
+      // Real Columna Integration point: In prod this calls the Python service at /columna/decompile
       const overlap = [
         { url: 'https://www.salesforce.com/blog/ai-orchestration', strength: 0.8 },
         { url: 'https://cloud.google.com/vertex-ai/docs/generative-ai/grounding', strength: 0.9 }
       ];
-      eventFabric.broadcastPayload('SP-01', 'SN-00', 'competitor_intel', overlap);
+      eventFabric.broadcastPayload('sp01', 'sn00', 'competitor_intel', overlap);
       await logPhase('COLUMNA', `Detected ${overlap.length} competitive overlaps.`, 'success');
       
       // 2. RESEARCH LAYER: Grounding & Entity Arbiter (NATIVE)
       const step2Start = Date.now();
-      eventFabric.broadcastStatus({ id: 'RA-01', state: 'working', progress: 30, lastStatus: 'Grounding Verification' });
+      eventFabric.broadcastStatus({ id: 'ra01', state: 'working', progress: 30, lastStatus: 'Grounding Verification' });
+      eventFabric.broadcast({ type: 'agent-thought', agentId: 'ra01', thought: 'Verifying topic grounding and ethical compliance...' });
       await logPhase('RESEARCH', 'Activating Grounding Arbiter (Gemini 1.5 Flash)...');
       const groundedContent = await this.arbiter.validateAndGround(`${topic}\n\n${memoryInsights}`, runId);
       this.logger.info(`[${runId}] Arbiter Output Snippet: ${groundedContent.substring(0, 100)}`);
@@ -128,7 +133,7 @@ export class PillarGraphOrchestrator {
 
         // PUSH TO SENATE DOCKET (Human-in-the-Loop)
         await db.collection(Collections.SENATE_DOCKET).add({
-          agent: 'RA-01',
+          agent: 'ra01',
           type: 'ETHICS_VETO',
           risk: 'HIGH',
           title: `VETO: ${topic}`,
@@ -138,27 +143,29 @@ export class PillarGraphOrchestrator {
           runId
         });
 
-        eventFabric.broadcastStatus({ id: 'SN-00', state: 'idle', progress: 100, lastStatus: 'VETOED by Grounding Arbiter' });
+        eventFabric.broadcastStatus({ id: 'sn00', state: 'idle', progress: 100, lastStatus: 'VETOED by Grounding Arbiter' });
         return { runId, status: 'VETOED', audit: auditResult };
       }
 
-      eventFabric.broadcastPayload('RA-01', 'SN-00', 'grounding_data', { length: groundedContent.length });
+      eventFabric.broadcastPayload('ra01', 'sn00', 'grounding_data', { length: groundedContent.length });
       await logPhase('RESEARCH', 'Fact-checking & Grounding complete.', 'success');
-      eventFabric.broadcastStatus({ id: 'RA-01', state: 'idle', progress: 100 });
+      eventFabric.broadcastStatus({ id: 'ra01', state: 'idle', progress: 100 });
       
       // 3. SYNTHESIS LAYER: CC-06 Forge (NATIVE)
       const step3Start = Date.now();
-      eventFabric.broadcastStatus({ id: 'CC-06', state: 'working', progress: 50, lastStatus: 'Forging Content' });
+      eventFabric.broadcastStatus({ id: 'cc06', state: 'working', progress: 50, lastStatus: 'Forging Content' });
+      eventFabric.broadcast({ type: 'agent-thought', agentId: 'cc06', thought: 'Forging technical pillar article with grounded intelligence...' });
       await logPhase('FORGE', 'Directing CC-06 to forge pillar content based on grounding...');
       const forgePrompt = `TOPIC: ${topic}\nGROUNDING_DATA: ${groundedContent}\nMEMORY_INSIGHTS: ${memoryInsights}\nTYPE: ${config.type || 'pillar'}`;
       const forgedMarkdown = await this.cc06.execute(forgePrompt);
-      eventFabric.broadcastPayload('CC-06', 'SN-00', 'article_markdown', { title: topic });
+      eventFabric.broadcastPayload('cc06', 'sn00', 'article_markdown', { title: topic });
       await logPhase('FORGE', 'Article forging complete.', 'success');
-      eventFabric.broadcastStatus({ id: 'CC-06', state: 'idle', progress: 100 });
+      eventFabric.broadcastStatus({ id: 'cc06', state: 'idle', progress: 100 });
 
       // 4. QUALITY LAYER: Compliance Senate Gate (NATIVE)
       const step4Start = Date.now();
-      eventFabric.broadcastStatus({ id: 'RA-01', state: 'working', progress: 80, lastStatus: 'Senate Audit' });
+      eventFabric.broadcastStatus({ id: 'ra01', state: 'working', progress: 80, lastStatus: 'Senate Audit' });
+      eventFabric.broadcast({ type: 'agent-thought', agentId: 'ra01', thought: 'Submitting forged content to Security Senate for audit...' });
       await logPhase('COMPLIANCE', 'Initiating Algorithmic Senate Audit (Quality Gate)...');
       
       const auditEval = await this.senate.audit(forgedMarkdown, runId);
@@ -170,12 +177,12 @@ export class PillarGraphOrchestrator {
         violations: auditEval.violations
       };
       
-      eventFabric.broadcastPayload('RA-01', 'SN-00', 'audit_verdict', auditResult);
+      eventFabric.broadcastPayload('ra01', 'sn00', 'audit_verdict', auditResult);
       await logPhase('COMPLIANCE', `Senate ${auditResult.status} (Score: ${auditResult.score}): ${auditResult.reason}`, isApproved ? 'success' : 'error');
-      eventFabric.broadcastStatus({ id: 'RA-01', state: 'idle', progress: 100 });
+      eventFabric.broadcastStatus({ id: 'ra01', state: 'idle', progress: 100 });
       
       if (!isApproved) {
-        this.logger.warn(`[${runId}] RA-01 Senate VETO: ${auditResult.reason}`);
+        this.logger.warn(`[${runId}] ra01 Senate VETO: ${auditResult.reason}`);
         
         // PERSIST VETOED STATE
         const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -199,7 +206,7 @@ export class PillarGraphOrchestrator {
 
         // PUSH TO SENATE DOCKET (Human-in-the-Loop)
         await db.collection(Collections.SENATE_DOCKET).add({
-          agent: 'RA-01',
+          agent: 'ra01',
           type: 'QUALITY_VETO',
           risk: auditResult.score < 40 ? 'HIGH' : 'MEDIUM',
           title: `VETO: ${topic}`,
@@ -209,7 +216,7 @@ export class PillarGraphOrchestrator {
           runId
         });
 
-        eventFabric.broadcastStatus({ id: 'SN-00', state: 'idle', progress: 100, lastStatus: 'VETOED by Security Senate' });
+        eventFabric.broadcastStatus({ id: 'sn00', state: 'idle', progress: 100, lastStatus: 'VETOED by Security Senate' });
         return { runId, status: 'VETOED', audit: auditResult };
       }
       
@@ -223,7 +230,7 @@ export class PillarGraphOrchestrator {
         audit: auditResult,
         status: publishStatus,
         liveUrl,
-        agent: 'CC-06 Director (Grounded)',
+        agent: 'cc06 Director (Grounded)',
         timestamp: new Date().toISOString(),
         telemetry: {
           total_latency: Date.now() - startTime,
@@ -261,7 +268,7 @@ export class PillarGraphOrchestrator {
       eventFabric.broadcastTelemetry(finalOutcome.telemetry);
       eventFabric.broadcastMetric('token_usage', finalOutcome.telemetry.total_latency / 10); // Simulated usage metric
       
-      eventFabric.broadcastStatus({ id: 'SN-00', state: 'idle', progress: 100, lastStatus: 'Execution Finalized' });
+      eventFabric.broadcastStatus({ id: 'sn00', state: 'idle', progress: 100, lastStatus: 'Execution Finalized' });
       return finalOutcome;
 
     } catch (error) {

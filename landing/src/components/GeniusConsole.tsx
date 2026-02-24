@@ -13,7 +13,9 @@ import { API_BASE_URL, WS_BASE_URL } from '../config';
 
 import { type SwarmState } from '../types';
 
-const SESSION_KEY = 'g5_console_session';
+import type { WorldState } from '../../../backend/src/services/nexus-manager';
+
+const SESSION_KEY = 'agenticum_g5_session';
 
 export function GeniusConsole() {
   const [swarm, setSwarm] = useState<SwarmState | null>(null);
@@ -27,6 +29,7 @@ export function GeniusConsole() {
   const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'active' | 'error'>('disconnected');
   const [isRecording, setIsRecording] = useState(false);
   const [settings, setSettings] = useState<{ projectId?: string; geminiKey?: string }>({});
+  const [micStatus, setMicStatus] = useState<'pending' | 'granted' | 'denied'>('pending');
   
   const navigate = useNavigate();
   const ws = useRef<WebSocket | null>(null);
@@ -47,16 +50,31 @@ export function GeniusConsole() {
   };
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/settings`)
+    fetch(`${API_BASE_URL}/settings`)
       .then(res => res.json())
       .then(data => setSettings(data))
       .catch(() => {});
   }, []);
 
+  const [nexusState, setNexusState] = useState<WorldState | null>(null);
+  const [resonance, setResonance] = useState(0);
+
+  // Pulse effect based on nexusState changes
+  useEffect(() => {
+    if (nexusState) {
+      const startTimer = setTimeout(() => setResonance(1.0), 0);
+      const endTimer = setTimeout(() => setResonance(0), 1000);
+      return () => {
+        clearTimeout(startTimer);
+        clearTimeout(endTimer);
+      };
+    }
+  }, [nexusState]);
+
   // Audio refs
   const audioContextRef = useRef<AudioContext | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
 
   const addLog = useCallback((type: string, message: string, imageUrl?: string) => {
     setLogs(prev => [...prev.slice(-19), { type, message, timestamp: new Date().toLocaleTimeString(), imageUrl }]);
@@ -93,105 +111,137 @@ export function GeniusConsole() {
 
 
   const connect = useCallback(() => {
-    if (ws.current?.readyState === WebSocket.OPEN) return;
+    if (ws.current?.readyState === WebSocket.OPEN) {
+      addLog('system', 'Neural Uplink already active.');
+      return;
+    }
     
     setConnectionState('connecting');
     setLogs([]);
+    addLog('system', 'Initializing Neural Uplink... 🔌');
+    console.log('🔌 Attempting Neural Uplink to:', WS_BASE_URL);
     
-    // Unified Cloud WebSocket Endpoint
-    const socket = new WebSocket(WS_BASE_URL);
-    ws.current = socket;
+    try {
+      const socket = new WebSocket(WS_BASE_URL);
+      ws.current = socket;
 
-    socket.onopen = () => {
-      setConnectionState('connected');
-      addLog('success', 'Neural Uplink Stable. Matrix Synchronized.');
-    };
+      socket.onopen = () => {
+        console.log('✅ Neural Uplink Established');
+        setConnectionState('connected');
+        addLog('success', 'Neural Uplink Stable. Matrix Synchronized.');
+      };
 
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        
-        if (data.type === 'status') {
-          // Handle swarm status updates
-          setSwarm(data.agent);
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
           
-          // Dispatch global event for OS-wide telemetry
-          window.dispatchEvent(new CustomEvent('swarm-status', { detail: data.agent }));
-        }
-
-        if (data.type === 'swarm-payload') {
-          // Dispatch global event for SynergyMap telemetry
-          window.dispatchEvent(new CustomEvent('swarm-payload', { detail: data }));
-          addLog('action', `Data Transfer: ${String(data.from).toUpperCase()} → ${String(data.to).toUpperCase()}`);
-          // Render live image inline when DA-03 delivers an asset
-          if (data.payloadType === 'IMAGE_ASSET' && data.payload) {
-            addLog('agent', `[DA-03] Visual asset generated`, data.payload);
-          } else {
-            addLog('system', `Payload: [${data.payloadType}]`);
+          if (data.type === 'status') {
+            setSwarm(data.agent);
+            window.dispatchEvent(new CustomEvent('swarm-status', { detail: data.agent }));
           }
-        }
 
-        if (data.type === 'transcript') {
-          // Show recognized voice command in console
-          addLog('action', `[VOICE] "${data.text}"`);
-          addLog('system', `Directive type: ${data.campaignType || 'auto'} — Swarm activating...`);
-          setConnectionState('active');
-        }
-
-        if (data.type === 'senate') {
-          // Dispatch global event for SecuritySenate
-          window.dispatchEvent(new CustomEvent('swarm-senate', { detail: data }));
-          addLog('error', `SENATE VETO: RA-01 has haulted orchestration.`);
-          addLog('system', `Reason: ${data.payload}`);
-        }
-
-        if (data.type === 'output') {
-          addLog('agent', `[${data.agentId.toUpperCase()}] ${data.data.substring(0, 100)}...`);
-          if (data.agentId === 'sn-00') {
-            setOutput(data.data);
+          if (data.type === 'swarm-payload') {
+            window.dispatchEvent(new CustomEvent('swarm-payload', { detail: data }));
+            addLog('action', `Data Transfer: ${String(data.from).toUpperCase()} → ${String(data.to).toUpperCase()}`);
+            if (data.payloadType === 'IMAGE_ASSET' && data.payload) {
+              addLog('agent', `[da03] Visual asset generated`, data.payload);
+            } else {
+              addLog('system', `Payload: [${data.payloadType}]`);
+            }
           }
+
+          if (data.type === 'transcript') {
+            addLog('action', `[VOICE] "${data.text}"`);
+            addLog('system', `Directive type: ${data.campaignType || 'auto'} — Swarm activating...`);
+            setConnectionState('active');
+          }
+
+          if (data.type === 'senate') {
+            window.dispatchEvent(new CustomEvent('swarm-senate', { detail: data }));
+            addLog('error', `SENATE VETO: ra01 has haulted orchestration.`);
+            addLog('system', `Reason: ${data.payload}`);
+          }
+
+          if (data.type === 'output') {
+            addLog('agent', `[${data.agentId.toUpperCase()}] ${data.data.substring(0, 100)}...`);
+            if (data.agentId === 'sn00') {
+              setOutput(data.data);
+            }
+          }
+
+          if (data.type === 'realtime_output') {
+            playAudioBase64(data.data);
+          }
+
+          if (data.type === 'error') {
+            addLog('error', data.message);
+            setConnectionState('error');
+          }
+
+          if (data.type === 'metric') {
+            addLog('system', `Metric Update: ${data.metric} = ${data.value}`);
+            window.dispatchEvent(new CustomEvent('swarm-metric', { detail: data }));
+          }
+
+          if (data.type === 'telemetry') {
+            addLog('system', `Neural Latency: ${data.stats.total_latency}ms across nodes.`);
+            window.dispatchEvent(new CustomEvent('swarm-telemetry', { detail: data }));
+          }
+
+          if (data.type === 'protocol-activated') {
+            addLog('action', `Neural Protocol [${data.protocol.id}] Activated.`);
+            addLog('system', `Goal: ${data.protocol.goal}`);
+            setConnectionState('active');
+          }
+
+          if (data.type === 'agent-thought') {
+            addLog('agent', `[${data.agentId.toUpperCase()}] Cognitive Phase: ${data.thought}`);
+          }
+
+          if (data.type === 'nexus-state-update') {
+            window.dispatchEvent(new CustomEvent('nexus-world-state', { detail: data.state }));
+          }
+
+          if (data.type === 'sovereign-wisdom') {
+            addLog('success', `[so00 sovereign] ${data.data}`);
+          }
+
+          if (data.type === 'task-update') {
+            const { task } = data;
+            const statusEmoji = task.state === 'running' ? '⚡' : task.state === 'completed' ? '✅' : '❌';
+            addLog('agent', `${statusEmoji} [${task.agentId.toUpperCase()}] ${task.description} (${task.state.toUpperCase()})`);
+            
+            if (task.state === 'completed' && task.result) {
+               addLog('system', `Intel Acquired: ${String(task.result).substring(0, 50)}...`);
+            }
+          }
+        } catch (err) {
+          console.error('Failed to parse socket message', err);
         }
+      };
 
-        if (data.type === 'realtime_output') {
-          // Play incoming audio from Gemini Live
-          playAudioBase64(data.data);
-        }
+      socket.onclose = () => {
+        setConnectionState('disconnected');
+        addLog('system', 'Neural Uplink Terminated.');
+      };
 
-        if (data.type === 'error') {
-          addLog('error', data.message);
-          setConnectionState('error');
-        }
+      socket.onerror = (err) => {
+        console.error('❌ Fabric Connectivity Error:', err);
+        setConnectionState('error');
+        addLog('error', 'Fabric Connectivity Error. Check API Gateway.');
+      };
 
-        if (data.type === 'metric') {
-          addLog('system', `Metric Update: ${data.metric} = ${data.value}`);
-          window.dispatchEvent(new CustomEvent('swarm-metric', { detail: data }));
-        }
-
-        if (data.type === 'telemetry') {
-          addLog('system', `Neural Latency: ${data.stats.total_latency}ms across nodes.`);
-          window.dispatchEvent(new CustomEvent('swarm-telemetry', { detail: data }));
-        }
-      } catch (err) {
-        console.error('Failed to parse socket message', err);
-      }
-    };
-
-    socket.onclose = () => {
-      setConnectionState('disconnected');
-      addLog('system', 'Neural Uplink Terminated.');
-    };
-
-    socket.onerror = () => {
+    } catch (err) {
+      console.error('🚀 Socket Initialization Failed:', err);
       setConnectionState('error');
-      addLog('error', 'Fabric Connectivity Error. Check API Gateway.');
-    };
-
+      addLog('error', 'Critical Error: Neural Bond Initialization Failed.');
+    }
   }, [addLog]);
 
   useEffect(() => {
     const handleTrigger = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (connectionState === 'connected' || connectionState === 'active') {
+      if (ws.current?.readyState === WebSocket.OPEN) {
         setOutput(null);
         ws.current?.send(JSON.stringify({ 
           type: 'start', 
@@ -202,13 +252,24 @@ export function GeniusConsole() {
     };
 
     window.addEventListener('trigger-orchestration', handleTrigger);
-    
-    // Copy refs to local variables for cleanup safety
-    const currentWS = ws.current;
-    const currentReconnect = reconnectTimeoutRef.current;
+
+    const handleNexusState = (e: Event) => {
+      setNexusState((e as CustomEvent).detail);
+    };
+
+    window.addEventListener('nexus-world-state', handleNexusState);
 
     return () => {
       window.removeEventListener('trigger-orchestration', handleTrigger);
+      window.removeEventListener('nexus-world-state', handleNexusState);
+    };
+  }, [addLog]);
+
+  useEffect(() => {
+    const currentReconnect = reconnectTimeoutRef.current;
+    const currentWS = ws.current;
+    
+    return () => {
       if (currentReconnect) {
         clearTimeout(currentReconnect);
       }
@@ -216,7 +277,7 @@ export function GeniusConsole() {
         currentWS.close();
       }
     };
-  }, [connectionState, addLog]);
+  }, []);
 
   const handleStart = () => {
     if (connectionState === 'connected' || connectionState === 'active') {
@@ -233,7 +294,7 @@ export function GeniusConsole() {
     if (isRecording) {
       setIsRecording(false);
       streamRef.current?.getTracks().forEach(track => track.stop());
-      processorRef.current?.disconnect();
+      workletNodeRef.current?.disconnect();
       addLog('system', 'Neural Uplink (Voice) Closed.');
       return;
     }
@@ -242,24 +303,17 @@ export function GeniusConsole() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       
-      const audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({ sampleRate: 16000 });
+      const audioCtx = new AudioContext({ sampleRate: 16000 });
       audioContextRef.current = audioCtx;
       
+      await audioCtx.audioWorklet.addModule('/audio-processor.js');
+      
       const source = audioCtx.createMediaStreamSource(stream);
-      const processor = audioCtx.createScriptProcessor(4096, 1, 1);
-      processorRef.current = processor;
+      const workletNode = new AudioWorkletNode(audioCtx, 'audio-pcm-processor');
+      workletNodeRef.current = workletNode;
 
-      processor.onaudioprocess = (e) => {
-        const float32Array = e.inputBuffer.getChannelData(0);
-        // Convert Float32 to Int16
-        const int16Array = new Int16Array(float32Array.length);
-        for (let i = 0; i < float32Array.length; i++) {
-           let val = float32Array[i] * 32768;
-           val = Math.max(-32768, Math.min(32767, val));
-           int16Array[i] = val;
-        }
-
-        // Convert Int16Array to Base64
+      workletNode.port.onmessage = (event) => {
+        const int16Array = event.data;
         const uint8Array = new Uint8Array(int16Array.buffer);
         let binary = '';
         const len = uint8Array.byteLength;
@@ -268,7 +322,6 @@ export function GeniusConsole() {
         }
         const base64Data = window.btoa(binary);
 
-        // Send over WS
         if (ws.current?.readyState === WebSocket.OPEN) {
            ws.current.send(JSON.stringify({
              type: 'realtime_input',
@@ -278,8 +331,8 @@ export function GeniusConsole() {
         }
       };
 
-      source.connect(processor);
-      processor.connect(audioCtx.destination);
+      source.connect(workletNode);
+      workletNode.connect(audioCtx.destination);
       
       setIsRecording(true);
       addLog('system', 'Neural Uplink (Voice) Established. Speak now.');
@@ -290,13 +343,15 @@ export function GeniusConsole() {
   };
 
   const getAgentIcon = (id: string) => {
-    switch (id) {
-      case 'sn-00': return <Cpu size={16} />;
-      case 'sp-01': return <Zap size={16} />;
-      case 'cc-06': return <Film size={16} />;
-      case 'da-03': return <Palette size={16} />;
-      case 'ra-01': return <Shield size={16} />;
-      case 'pm-07': return <Bot size={16} />;
+    const aid = id.toLowerCase().replace('-', '');
+    switch (aid) {
+      case 'sn00': return <Cpu size={16} />;
+      case 'sp01': return <Zap size={16} />;
+      case 'cc06': return <Film size={16} />;
+      case 'da03': return <Palette size={16} />;
+      case 'ra01': return <Shield size={16} />;
+      case 'pm07': return <Bot size={16} />;
+      case 've01': return <Film size={16} />;
       default: return <Bot size={16} />;
     }
   };
@@ -336,7 +391,27 @@ export function GeniusConsole() {
   };
 
   return (
-    <div className="w-full h-[800px] glass rounded-3xl overflow-hidden flex flex-col font-mono text-sm border border-white/5 relative bg-obsidian/40 backdrop-blur-3xl shadow-2xl">
+    <motion.div 
+      animate={{ 
+        boxShadow: resonance > 0 
+          ? '0 0 100px rgba(251, 188, 4, 0.4)' 
+          : '0 0 60px rgba(251, 188, 4, 0.05)'
+      }}
+      transition={{ duration: resonance > 0 ? 0.2 : 1 }}
+      className="w-full h-[800px] glass rounded-3xl overflow-hidden flex flex-col font-mono text-sm border border-white/5 relative bg-obsidian/40 backdrop-blur-3xl shadow-2xl"
+    >
+      {/* Resonance Aura */}
+      <AnimatePresence>
+        {resonance > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-0 bg-linear-to-br from-neural-gold/5 via-transparent to-accent/5 pointer-events-none"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Header Bar */}
       <div className="bg-white/5 border border-white/5 p-4 rounded-xl flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -363,7 +438,11 @@ export function GeniusConsole() {
             { label: 'JSON History', format: 'JSON', onClick: () => downloadJSON(logs.map(l => ({ role: l.type, content: l.message, timestamp: l.timestamp })), 'G5_Chat_History') },
             { label: 'Markdown Log', format: 'MD', onClick: () => downloadTextFile(logs.map(l => `**[${l.timestamp}] ${l.type}:**\n${l.message}`).join('\n\n---\n\n'), 'G5_Chat_Log', 'md') },
           ]} />
-          <button onClick={startNewSession} className="text-[10px] uppercase tracking-widest font-bold text-white/30 hover:text-accent transition-colors px-3 py-1 border border-white/10 rounded hover:border-accent/30">
+          <button 
+            onClick={startNewSession} 
+            aria-label="Start New Console Session"
+            className="text-[10px] uppercase tracking-widest font-bold text-white/30 hover:text-accent transition-colors px-3 py-1 border border-white/10 rounded hover:border-accent/30"
+          >
             + New Session
           </button>
           <div className="flex gap-2 text-[10px] uppercase font-black text-white/50 tracking-widest items-center mr-4">
@@ -389,12 +468,14 @@ export function GeniusConsole() {
           </div>
           <button 
             onClick={toggleRecording}
+            aria-label={isRecording ? "Stop Voice Recording" : "Start Voice Recording"}
             className={`p-2 rounded border transition-all active:scale-95 ${isRecording ? 'bg-red-500/20 text-red-500 border-red-500/30' : 'bg-neural-gold/10 text-neural-gold hover:bg-neural-gold border-neural-gold/20 hover:text-obsidian'}`}
           >
             {isRecording ? <MicOff size={14} /> : <Mic size={14} />}
           </button>
           <button 
             onClick={handleStart}
+            aria-label="Spawn Neural Swarm"
             disabled={(connectionState !== 'connected' && connectionState !== 'active') || (swarm?.state !== 'idle' && swarm?.state !== 'done')}
             className="bg-neural-blue/10 hover:bg-neural-blue text-neural-blue hover:text-obsidian px-4 py-1.5 rounded border border-neural-blue/20 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
           >
@@ -542,15 +623,14 @@ export function GeniusConsole() {
                    exit={{ opacity: 0, scale: 0.95 }}
                    className="absolute inset-x-8 top-8 z-30 p-12 rounded-3xl bg-black/80 backdrop-blur-2xl border border-neural-gold/30 shadow-[0_0_100px_rgba(251,188,4,0.1)] flex flex-col items-center justify-center text-center"
                  >
-                   <div className="relative mb-8">
-                     <div className="absolute inset-0 bg-neural-gold/20 rounded-full blur-3xl animate-pulse" />
-                     <div className="w-28 h-28 rounded-full border border-neural-gold/50 flex items-center justify-center relative z-10 bg-black/40 shadow-inner">
-                       <Mic size={40} className="text-neural-gold animate-pulse shadow-[0_0_20px_rgba(251,188,4,0.5)]" />
-                     </div>
-                     {/* Orbiting rings */}
-                     <motion.div animate={{ rotate: 360 }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }} className="absolute inset-[-15px] rounded-full border border-dashed border-neural-gold/30" />
-                     <motion.div animate={{ rotate: -360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="absolute inset-[-30px] rounded-full border border-solid border-neural-gold/10" />
-                   </div>
+                    <div className="relative mb-8">
+                      <div className="absolute inset-0 bg-neural-gold/20 rounded-full blur-3xl animate-pulse" />
+                      <div className="w-28 h-28 rounded-full border border-neural-gold/50 flex items-center justify-center relative z-10 bg-black/40 shadow-inner">
+                        <Mic size={40} className="text-neural-gold animate-pulse shadow-[0_0_20px_rgba(251,188,4,0.5)]" />
+                      </div>
+                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }} className="absolute inset-[-15px] rounded-full border border-dashed border-neural-gold/30" />
+                      <motion.div animate={{ rotate: -360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="absolute inset-[-30px] rounded-full border border-solid border-neural-gold/10" />
+                    </div>
                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-widest mb-3">Gemini Live Active</h3>
                    <p className="text-xs text-neural-gold/80 uppercase tracking-[0.3em] font-mono">Transcribing Neuro-Acoustic Input...</p>
                    
@@ -586,6 +666,21 @@ export function GeniusConsole() {
                  </motion.div>
                ) : (
                   <motion.div key="logs" className="flex flex-col gap-2 relative">
+                    {/* Nexus Resonance Glow */}
+                    <AnimatePresence>
+                      {nexusState && (
+                        <motion.div 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 0.15 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl"
+                        >
+                           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,#fb7185,transparent_50%)]" />
+                           <div className="absolute bottom-0 right-0 w-96 h-96 bg-[radial-gradient(circle_at_center,#06b6d4,transparent_70%)] opacity-30 mix-blend-screen animate-pulse" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                      {connectionState === 'disconnected' ? (
                        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center border border-red-500/20 rounded-xl p-8 shadow-2xl">
                          <Link2Off size={48} className="text-red-500/50 mb-6" />
@@ -612,8 +707,27 @@ export function GeniusConsole() {
                             </div>
                             <div className="flex items-center justify-between p-3 rounded glass border-neural-gold/20 bg-neural-gold/5">
                               <span className="text-xs uppercase font-black text-white/60">Microphone</span>
-                              <button onClick={() => navigator.mediaDevices.getUserMedia({ audio: true })} className="flex items-center gap-1 text-[10px] text-neural-gold uppercase font-bold hover:text-neural-gold/80 transition-colors">
-                                ⚠ Check Permission →
+                              <button 
+                                onClick={() => {
+                                  navigator.mediaDevices.getUserMedia({ audio: true })
+                                    .then(() => {
+                                      setMicStatus('granted');
+                                      addLog('success', 'Microphone Access Granted.');
+                                    })
+                                    .catch(() => {
+                                      setMicStatus('denied');
+                                      addLog('error', 'Microphone Access Denied.');
+                                    });
+                                }} 
+                                className={`flex items-center gap-1 text-[10px] uppercase font-bold transition-colors ${micStatus === 'granted' ? 'text-green-500' : 'text-neural-gold hover:text-neural-gold/80'}`}
+                              >
+                                {micStatus === 'granted' ? (
+                                  <><CheckCircle2 size={12}/> Access Granted</>
+                                ) : micStatus === 'denied' ? (
+                                  <><AlertCircle size={12}/> Access Denied</>
+                                ) : (
+                                  <>⚠ Check Permission →</>
+                                )}
                               </button>
                             </div>
                           </div>
@@ -648,8 +762,9 @@ export function GeniusConsole() {
                                 log.type === 'system' ? 'text-white/30' :
                                 log.type === 'error' ? 'text-red-500' :
                                 log.type === 'action' ? 'text-neural-gold' :
-                                log.type === 'success' ? 'text-green-500' : 'text-neural-blue'
-                              }`}>{log.type}</span>
+                                log.type === 'agent' ? 'text-neural-blue' :
+                                log.type === 'success' ? 'text-neural-gold drop-shadow-[0_0_8px_rgba(251,188,4,0.4)]' : 'text-neural-blue'
+                              }`}>{log.type === 'success' ? 'SOVEREIGN' : log.type}</span>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[11px] opacity-80 leading-normal">{log.message}</p>
                                 {log.imageUrl && (
@@ -670,7 +785,7 @@ export function GeniusConsole() {
                                <span className="text-[9px] opacity-20 font-black tabular-nums">[{new Date().toLocaleTimeString()}]</span>
                                <span className="text-neural-blue font-black uppercase text-[10px] tracking-tighter">PROCESSING</span>
                                <div className="flex gap-1 mt-1">
-                                 {[0, 1, 2].map(i => <div key={i} className="w-1.5 h-1.5 bg-neural-blue/40 rounded-full" />)}
+                                 {[0, 1, 2].map(id => <div key={id} className="w-1.5 h-1.5 bg-neural-blue/40 rounded-full" />)}
                                </div>
                             </motion.div>
                           )}
@@ -704,6 +819,6 @@ export function GeniusConsole() {
            ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

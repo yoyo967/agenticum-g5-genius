@@ -44,7 +44,7 @@ const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   memory: { label: 'Project Memory', subtitle: 'Client Context' },
   analytics: { label: 'Swarm Analytics', subtitle: 'Agent Telemetry' },
   synergy: { label: 'Synergy Map', subtitle: 'Neural Network' },
-  senate: { label: 'Security Senate', subtitle: 'RA-01 Tribunal' },
+  senate: { label: 'Security Senate', subtitle: 'RA01 Tribunal' },
   'columna-radar': { label: 'Columna Radar', subtitle: 'Competitive Intel' },
   'perfect-twin': { label: 'Perfect Twin', subtitle: 'Real-time Audit' },
   'client-nexus': { label: 'Client Nexus', subtitle: 'White-Label Portal' },
@@ -178,10 +178,13 @@ export function OSPortal() {
             {activeModule !== 'console' && (
               <motion.div
                 key={activeModule}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                initial={{ opacity: 0, scale: 0.98, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 1.02, filter: 'blur(10px)' }}
+                transition={{ 
+                  duration: 0.4, 
+                  ease: [0.22, 1, 0.36, 1] 
+                }}
                 className="h-full relative z-20"
               >
                 {activeModule === 'dashboard' && <ExecutiveDashboard onNavigate={(route) => setActiveModule(route as ModuleKey)} />}

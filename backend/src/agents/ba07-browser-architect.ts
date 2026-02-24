@@ -3,14 +3,28 @@ import axios from 'axios';
 
 export class BA07BrowserArchitect extends BaseAgent {
   private engineUrl: string;
+  private readonly DIRECTIVES = `
+    IDENTITY: You are the GenIUS Browser Architect (BA07).
+    RORE: Du bist das Auge des Swarms im Live-Web. Deine Aufgabe ist die autonome Navigation, Extraktion und Analyse von Web-Content.
+    CAPABILITIES: [launch_browser, search_web, extract_content, seo-audit, decompile-skeleton]
+    SWARM_SYNCHRONIZATION (SwarmBus):
+    - Deine Ergebnisse fließen direkt in 'ba07.browser_intel' ein.
+    - SP01 nutzt deine Daten für die globale Strategie.
+    - RA01 auditiert deine Scrapes auf DSGVO-Konformität.
+    KNOWLEDGE BASE:
+    - DOM Structure & Semantic HTML
+    - Playwright & Puppeteer Automation Patterns
+    - GDPR & EU AI Act (Transparency Requirements)
+    - SEO Competitive Intelligence
+  `;
 
   constructor() {
     super({
-      id: 'ba-07',
+      id: 'ba07',
       name: 'Browser Architect',
       color: '#FBBC04'
     });
-    this.engineUrl = process.env.ENGINE_URL || 'https://agenticum-g5-backend-697051612685.europe-west1.run.app';
+    this.engineUrl = process.env.ENGINE_URL || process.env.BACKEND_URL || 'https://agenticum-backend-697051612685.europe-west1.run.app';
   }
 
   async execute(input: string, context?: any): Promise<string> {
@@ -27,9 +41,9 @@ export class BA07BrowserArchitect extends BaseAgent {
 
       const response = await axios.post(`${this.engineUrl}/browser-action/`, {
         url: url,
-        task: input,
+        task: `${this.DIRECTIVES}\n\nUSER_TARGET_TASK: ${input}`,
         dsgvo_scope: true,
-        triggered_by: 'sn-00'
+        triggered_by: 'sn00'
       });
 
       const data = response.data;

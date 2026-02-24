@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const AGENTS = [
   {
-    id: "SN-00",
+    id: "sn00",
     role: "Neural Orchestrator",
     description: "The commanding node. Translates user briefs into parallelized sub-tasks. Masters the Boydian OODA loop for rapid decision making.",
     color: "#00e5ff",
@@ -12,7 +12,7 @@ const AGENTS = [
     stats: { latency: "42ms", success: "99.9%" }
   },
   {
-    id: "SP-01",
+    id: "sp01",
     role: "Syntactic Processor",
     description: "The strategic brain. Runs competitive intelligence and structural analysis using deep logical reasoning models.",
     color: "#8b5cf6",
@@ -20,7 +20,7 @@ const AGENTS = [
     stats: { latency: "120ms", success: "98.5%" }
   },
   {
-    id: "CC-06",
+    id: "cc06",
     role: "Cognitive Core",
     description: "The hyper-creative copywriter. Drafts semantic SEO articles, brand scripts, and conversion copy in premium English.",
     color: "#10b981",
@@ -28,7 +28,7 @@ const AGENTS = [
     stats: { latency: "85ms", success: "96.2%" }
   },
   {
-    id: "DA-03",
+    id: "da03",
     role: "Diffusion Architect",
     description: "The visual artist. Hardwired to Vertex AI Imagen 3 to forge photorealistic assets matching exact brand constraints.",
     color: "#ec4899",
@@ -36,7 +36,7 @@ const AGENTS = [
     stats: { latency: "140ms", success: "94.0%" }
   },
   {
-    id: "RA-01",
+    id: "ra01",
     role: "Security Auditor",
     description: "The adversarial algorithm. Reviews every output against strict brand safety guidelines and economic benchmarks before approval.",
     color: "#ef4444",

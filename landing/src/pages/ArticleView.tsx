@@ -12,7 +12,7 @@ export function ArticleView() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/blog/article/${slug}`)
+    fetch(`${API_BASE_URL}/blog/article/${slug}`)
       .then(res => {
         if (!res.ok) throw new Error('Not found');
         return res.json();

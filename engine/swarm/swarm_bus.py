@@ -16,7 +16,15 @@ from .entities import (
     BrowserIntelEntity, WorkflowPhase
 )
 
-_db = firestore.AsyncClient(project="online-marketing-manager")
+_db_cached = None
+
+def get_db():
+    global _db_cached
+    if _db_cached is None:
+        from google.cloud import firestore
+        from engine.config import PROJECT_ID
+        _db_cached = firestore.AsyncClient(project=PROJECT_ID)
+    return _db_cached
 
 class SwarmBus:
     def __init__(self, context: InvocationContext):
@@ -67,7 +75,8 @@ class SwarmBus:
     async def persist(self):
         """Save the unified state to Firestore."""
         session_id = self.state.get("swarm_session_id")
-        doc_ref = _db.collection("swarm_sessions").document(session_id)
+        db = get_db()
+        doc_ref = db.collection("swarm_sessions").document(session_id)
         await doc_ref.set(self.state)
         print(f"SwarmBus: Persisted session {session_id}")
 

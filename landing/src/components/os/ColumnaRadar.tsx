@@ -43,7 +43,7 @@ export function ColumnaRadar() {
           </div>
           <div>
             <h2 className="font-display text-lg uppercase tracking-tight">Columna Intelligence Radar</h2>
-            <p className="font-mono text-[10px] text-white/30">SP-01 Zero-Day Competitive Intel Feed</p>
+            <p className="font-mono text-[10px] text-white/30">sp01 Zero-Day Competitive Intel Feed</p>
           </div>
         </div>
         <button 

@@ -20,7 +20,7 @@ export function ClientNexus() {
 
   const fetchDockets = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/clients/dockets/${clientId}`);
+      const res = await fetch(`${API_BASE_URL}/clients/dockets/${clientId}`);
       if (res.ok) {
         setDockets(await res.json());
       }
@@ -40,7 +40,7 @@ export function ClientNexus() {
 
   const handleAction = async (docketId: string, status: 'approved' | 'rejected', comment: string) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/clients/dockets/${docketId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/clients/dockets/${docketId}/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, comment })

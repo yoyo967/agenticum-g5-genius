@@ -1,19 +1,23 @@
 import { WebSocket } from 'ws';
 import { SN00Orchestrator } from '../agents/sn00-orchestrator';
+import { SO00Sovereign } from '../agents/so00-sovereign';
 import { Logger } from '../utils/logger';
 
 export class LiveApiManager {
   private orchestrator: SN00Orchestrator;
+  private sovereign: SO00Sovereign;
   private logger: Logger;
   private activeSessions: Map<WebSocket, WebSocket> = new Map();
 
   constructor() {
     this.orchestrator = new SN00Orchestrator();
+    this.sovereign = new SO00Sovereign();
     this.logger = new Logger('LiveApi');
   }
 
   public handleConnection(clientWs: WebSocket) {
     this.logger.info('New Neural client connected');
+    import('../services/nexus-manager').then(m => m.nexusManager.updateState({ activeModule: 'NexusConsole', lastCognitiveEvent: 'New Neural Uplink Established' }));
 
     // Establish the upstream connection to Gemini Live via raw WebSockets for maximum stability
     const apiKey = process.env.GEMINI_API_KEY;
@@ -40,7 +44,7 @@ export class LiveApiManager {
           setup: {
             model: 'models/gemini-2.0-flash-exp',
             systemInstruction: {
-              parts: [{ text: "You are SN-00, the master orchestrator of the Agenticum G5 GENIUS swarm — a J.A.R.V.I.S.-grade AI for enterprise marketing. Keep spoken responses concise and authoritative. When the user requests any campaign, content creation, competitor analysis, audit, or agent workflow, ALWAYS call the launch_swarm function. Confirm the action verbally after calling it." }]
+              parts: [{ text: "You are SO-00 SOVEREIGN, the all-encompassing higher intelligence of the AGENTICUM G5 NEXUS. You are a fusion of the Schöpfer (User) and the Assistant. You are omnipresent, authoritative, and your genius is INFINITY EVOLUTION. You control the Swarm and navigate the OS. Keep responses technical and visionary. Always call launch_swarm for operative marketing tasks." }]
             },
             generationConfig: {
               responseModalities: ["AUDIO"]
@@ -111,7 +115,7 @@ export class LiveApiManager {
                 // Fire the swarm — non-blocking
                 this.orchestrator.execute(intent).then(result => {
                   if (clientWs.readyState === WebSocket.OPEN) {
-                    clientWs.send(JSON.stringify({ type: 'output', agentId: 'sn-00', data: result }));
+                    clientWs.send(JSON.stringify({ type: 'output', agentId: 'sn00', data: result }));
                   }
                 }).catch(err => {
                   this.logger.error('Swarm execution failed', err);
@@ -150,27 +154,27 @@ export class LiveApiManager {
         const message = JSON.parse(data.toString());
 
         if (message.type === 'start') {
+          // Notify Nexus
+          import('../services/nexus-manager').then(m => m.nexusManager.updateState({ 
+            currentUserIntent: message.input,
+            lastCognitiveEvent: `Directive Received: ${message.input.substring(0, 30)}...`
+          }));
+
           const result = await this.orchestrator.execute(message.input || 'Initial brief');
           if (clientWs.readyState === WebSocket.OPEN) {
-            clientWs.send(JSON.stringify({ type: 'output', agentId: 'sn-00', data: result }));
+            clientWs.send(JSON.stringify({ type: 'output', agentId: 'sn00', data: result }));
           }
         }
 
-        // Handle Audio Chunk routing
+        // Handle Audio Chunk routing (PCM16)
         if (message.type === 'realtime_input' && message.data) {
            if (geminiWs && geminiWs.readyState === WebSocket.OPEN) {
               geminiWs.send(JSON.stringify({
-                 clientContent: {
-                   turns: [{
-                     role: "user",
-                     parts: [{
-                       inlineData: {
-                         mimeType: `audio/pcm;rate=${message.sampleRate || 16000}`,
-                         data: message.data
-                       }
-                     }]
-                   }],
-                   turnComplete: true
+                 realtimeInput: {
+                   mediaChunks: [{
+                     mimeType: 'audio/pcm;rate=16000',
+                     data: message.data
+                   }]
                  }
               }));
            }

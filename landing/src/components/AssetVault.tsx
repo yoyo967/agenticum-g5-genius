@@ -26,7 +26,7 @@ export function AssetVault() {
   const fetchFiles = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/vault/list`);
+      const res = await fetch(`${API_BASE_URL}/vault/list`);
       if (res.ok) {
         const data = await res.json();
         setFiles(data.files || []);
@@ -45,7 +45,7 @@ export function AssetVault() {
     const formData = new FormData();
     Array.from(fileList).forEach(f => formData.append('files', f));
     try {
-      const res = await fetch(`${API_BASE_URL}/api/vault/upload`, { method: 'POST', body: formData });
+      const res = await fetch(`${API_BASE_URL}/vault/upload`, { method: 'POST', body: formData });
       if (res.ok) fetchFiles();
     } catch (e) {
       console.warn('[Vault] Upload failed:', e);
@@ -96,7 +96,7 @@ export function AssetVault() {
     try {
       const zipFiles = selected.map(f => ({ 
         name: f.name, 
-        content: f.url 
+        content: f.url.startsWith('http') ? f.url : `${API_BASE_URL.replace('/api/v1', '')}${f.url}`
       }));
       await downloadZIP(zipFiles, `G5_Vault_Export_${Date.now()}`);
     } finally {

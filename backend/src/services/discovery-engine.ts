@@ -48,7 +48,7 @@ export class DiscoveryEngineService {
       const files = readdirSync(vaultDir).filter((f: string) => f.endsWith('.md') || f.endsWith('.txt'));
       
       const keywords = query.toLowerCase().split(' ').filter(k => k.length > 3);
-      let matches: string[] = [];
+      let matches: Array<{ score: number; fragment: string }> = [];
 
       for (const file of files) {
         const fullPath = join(vaultDir, file);
@@ -57,23 +57,38 @@ export class DiscoveryEngineService {
         const content = readFileSync(fullPath, 'utf8');
         const contentLower = content.toLowerCase();
         
-        if (keywords.some(k => contentLower.includes(k))) {
-          // Extract a meaningful snippet around the first keyword match
+        let score = 0;
+        keywords.forEach(k => {
+          if (contentLower.includes(k)) {
+            score += contentLower.split(k).length - 1;
+          }
+        });
+
+        if (score > 0) {
+          // Extract a substantial, high-fidelity fragment around the densest area
           const firstKeyword = keywords.find(k => contentLower.includes(k))!;
           const index = contentLower.indexOf(firstKeyword);
-          const start = Math.max(0, index - 300);
-          const end = Math.min(content.length, index + 700);
+          const start = Math.max(0, index - 800);
+          const end = Math.min(content.length, index + 2200);
           
-          matches.push(`[SOURCE: ${file}]: ...${content.substring(start, end).trim()}...`);
+          matches.push({
+            score,
+            fragment: `[INTELLIGENCE_NODE: ${file} (Score: ${score})]\n${content.substring(start, end).trim()}\n`
+          });
         }
       }
 
-      if (matches.length > 0) {
-        this.logger.info(`RAG: Found ${matches.length} relevant fragments in Vault.`);
-        return `Retrieved ${matches.length} matching fragments from The Vault Intelligence Hub:\n\n${matches.join('\n\n')}`;
+      const topMatches = matches
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5)
+        .map(m => m.fragment);
+
+      if (topMatches.length > 0) {
+        this.logger.info(`RAG EXCELLENCE: Injecting ${topMatches.length} intelligence nodes.`);
+        return `RETRIEVED FROM VAULT ARCHIVE [GROUNDED]:\n\n${topMatches.join('\n\n')}`;
       }
 
-      return `Grounding data for "${query}" searched in ${files.length} vault files, but no direct keyword matches found. Falling back to core intelligence.`;
+      return `G5_SENTIENCE_ALERT: No direct intelligence nodes found for "${query}" in archive. Core reasoning active.`;
     } catch (error) {
       this.logger.error('Error searching knowledge', error as Error);
       return `Warning: Knowledge base search failed. Falling back to core reasoning for "${query}".`;

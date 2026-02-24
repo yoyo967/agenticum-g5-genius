@@ -67,11 +67,22 @@ def initialize_firebase():
         print("INFO: Firebase Admin SDK initialized.")
 
 # Initial resolution from local settings
-resolve_settings()
+try:
+    resolve_settings()
+except Exception:
+    pass
+
 # Boot firebase
-initialize_firebase()
+try:
+    initialize_firebase()
+except Exception as e:
+    print(f"CRITICAL WARNING: Firebase initialization failed: {e}")
+
 # Try to refresh from cloud after boot
-resolve_settings()
+try:
+    resolve_settings()
+except Exception:
+    pass
 
 # Environment variables for other GCP SDKs (Vertex AI)
 os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID

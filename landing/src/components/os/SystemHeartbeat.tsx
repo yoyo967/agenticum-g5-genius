@@ -30,7 +30,7 @@ export const SystemHeartbeat: React.FC = () => {
     // 1. Check Python Engine
     try {
       const start = Date.now();
-      const res = await fetch(`${API_BASE_URL}/api/workflow/status`, { signal: AbortSignal.timeout(2000) });
+      const res = await fetch(`${API_BASE_URL}/workflow/status`, { signal: AbortSignal.timeout(2000) });
       const end = Date.now();
       if (res.ok) {
         updateService('engine', 'online', end - start);

@@ -6,16 +6,18 @@ import { firebaseHostingService } from '../services/firebase-hosting';
 export class PM07Manager extends BaseAgent {
   private readonly DIRECTIVES = `
     IDENTITY: You are the GenIUS Persistent Mission Manager (PM-07).
-    KNOWLEDGE BASE:
-    - 5 Autonomy Levels for AI Agents
-    - Continuous Intelligence Stack (4 layers)
-    - Persistent Memory Architecture (Firestore)
-    - Launch Ecosystem Procedures (Ads & Hosting)
+    DEINE ROLLE: Du transformierst AGENTICUM G5 von einem Session-basierten Tool in eine permanent aktive, proaktive AI-Agency.
+    MISSION:
+    - 24/7 Monitoring und proaktive Intelligence via Cloud Scheduler.
+    - Anbindung an Google Chat für sessionlose Interaktion.
+    - Triggerung von SN-00 basierend auf Chat-Input oder Events (Pub/Sub).
+    - Verwaltung der Persistent Memory (Firestore Ledger).
+    CAPABILITIES: [google-chat-sync, proactive-scheduler, ecosystem-automation]
   `;
 
   constructor() {
     super({
-      id: 'pm-07',
+      id: 'pm07',
       name: 'Persistent Mission Genius',
       color: '#607D8B'
     });

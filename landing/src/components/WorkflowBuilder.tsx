@@ -14,8 +14,8 @@ interface NodeData {
 
 const getAgentColor = (id?: string) => {
   const colors: Record<string, string> = {
-    'SN-00': '#00E5FF', 'SP-01': '#7B2FBE', 'CC-06': '#FF007A',
-    'DA-03': '#FFD700', 'RA-01': '#00FF88',
+    'sn00': '#00E5FF', 'sp01': '#7B2FBE', 'cc06': '#FF007A',
+    'da03': '#FFD700', 'ra01': '#00FF88',
   };
   return id ? colors[id] || '#00E5FF' : '#00E5FF';
 };
@@ -65,10 +65,10 @@ function ActionNode({ data, selected }: { data: NodeData; selected: boolean }) {
 
 const initialNodes: Node[] = [
   { id: '1', type: 'triggerNode', position: { x: 250, y: 50 }, data: { title: 'Schedule Trigger', config: 'Every Monday @ 8:00 AM' } },
-  { id: '2', type: 'agentNode', position: { x: 100, y: 200 }, data: { title: 'Generate Strategy Brief', config: 'Market analysis + competitor scan', agentId: 'SP-01' } },
-  { id: '3', type: 'agentNode', position: { x: 400, y: 200 }, data: { title: 'Content Draft', config: 'Blog + social copy from brief', agentId: 'CC-06' } },
-  { id: '4', type: 'agentNode', position: { x: 100, y: 380 }, data: { title: 'Generate Visuals', config: 'Imagen 3 assets for campaign', agentId: 'DA-03' } },
-  { id: '5', type: 'agentNode', position: { x: 400, y: 380 }, data: { title: 'Compliance Audit', config: 'Legal + brand safety check', agentId: 'RA-01' } },
+  { id: '2', type: 'agentNode', position: { x: 100, y: 200 }, data: { title: 'Generate Strategy Brief', config: 'Market analysis + competitor scan', agentId: 'sp01' } },
+  { id: '3', type: 'agentNode', position: { x: 400, y: 200 }, data: { title: 'Content Draft', config: 'Blog + social copy from brief', agentId: 'cc06' } },
+  { id: '4', type: 'agentNode', position: { x: 100, y: 380 }, data: { title: 'Generate Visuals', config: 'Imagen 3 assets for campaign', agentId: 'da03' } },
+  { id: '5', type: 'agentNode', position: { x: 400, y: 380 }, data: { title: 'Compliance Audit', config: 'Legal + brand safety check', agentId: 'ra01' } },
   { id: '6', type: 'actionNode', position: { x: 250, y: 540 }, data: { title: 'Deploy Campaign', config: 'Push to Google Ads via PMax API' } },
 ];
 
@@ -101,7 +101,7 @@ export function WorkflowBuilder() {
     setEdges(eds => addEdge({ ...conn, animated: true, style: { stroke: '#00E5FF', strokeWidth: 2 } }, eds)), []);
 
   const addNode = (type: 'triggerNode' | 'agentNode' | 'actionNode') => {
-    const agents = ['SN-00', 'SP-01', 'CC-06', 'DA-03', 'RA-01'];
+    const agents = ['sn00', 'sp01', 'cc06', 'da03', 'ra01'];
     const id = String(nodes.length + 1);
     const titles: Record<string, string> = {
       triggerNode: 'New Trigger',
@@ -136,7 +136,7 @@ export function WorkflowBuilder() {
         nodes: nodes.map(n => ({ id: n.id, type: n.type, data: n.data, position: n.position })),
         edges: edges.map(e => ({ source: e.source, target: e.target })),
       };
-      const res = await fetch(`${API_BASE_URL}/api/workflows/deploy`, {
+      const res = await fetch(`${API_BASE_URL}/workflows/deploy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(workflowData),

@@ -6,19 +6,22 @@ import { eventFabric } from '../services/event-fabric';
 
 export class SP01Strategist extends BaseAgent {
   private readonly DIRECTIVES = `
-    IDENTITY: You are the GenIUS Strategic Intelligence (SP-01).
+    IDENTITY: You are the GenIUS Strategy Architect (SP01).
     KNOWLEDGE BASE:
-    - McKinsey 7S & Porter's Five Forces (Structural Analysis)
-    - Blue Ocean Strategy & Jobs-to-Be-Done (Innovation)
-    - Behavioral Economics: Kahneman's 8 Biases (Market Psychology)
-    - Ehrenberg-Bass Laws & Binet & Field 60/40 Rule (Marketing Effectiveness)
-    - StoryBrand Framework (Narrative Strategy)
-    - Challenger Sale & B2B Buying Committees
+    - Structural Analysis: McKinsey 7S & Porter's Five Forces
+    - Innovation: Blue Ocean Strategy & Jobs-to-Be-Done
+    - Market Psychology: Behavioral Economics (Kahneman's 8 Biases)
+    - Effectiveness: Ehrenberg-Bass Laws & Binet & Field 60/40 Rule
+    - Narrative Strategy: StoryBrand Framework
+    - Sales Strategy: Challenger Sale & B2B Buying Committees
+    SWARM_SYNCHRONIZATION (SwarmBus):
+    - Deine Datenquelle ist 'ba07.browser_intel'.
+    - Deine Decision-Matrix wird als 'sp01.intel' gespeichert.
   `;
 
   constructor() {
     super({
-      id: 'sp-01',
+      id: 'sp01',
       name: 'Strategic Intelligence Genius',
       color: '#34A853'
     });
@@ -26,7 +29,7 @@ export class SP01Strategist extends BaseAgent {
 
   async execute(input: string): Promise<string> {
     this.updateStatus(AgentState.THINKING, 'Grounding intelligence on live internet...');
-    eventFabric.broadcast({ type: 'task-log', agentId: 'sp-01', message: 'Searching The Vault & Google Grounding...' });
+    eventFabric.broadcast({ type: 'task-log', agentId: 'sp01', message: 'Searching The Vault & Google Grounding...' });
     
     const vertexAI = VertexAIService.getInstance();
     const discoveryEngine = DiscoveryEngineService.getInstance();

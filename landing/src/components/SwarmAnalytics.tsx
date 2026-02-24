@@ -82,11 +82,11 @@ export function SwarmAnalytics() {
     const fetchData = async () => {
       try {
         const [analyticsRes, throughputRes, kpiRes, abRes, seoRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/analytics/agents`).catch(() => null),
-          fetch(`${API_BASE_URL}/api/analytics/throughput`).catch(() => null),
-          fetch(`${API_BASE_URL}/api/analytics/kpis`).catch(() => null),
-          fetch(`${API_BASE_URL}/api/analytics/ab-tests`).catch(() => null),
-          fetch(`${API_BASE_URL}/api/analytics/seo-rankings`).catch(() => null),
+          fetch(`${API_BASE_URL}/analytics/agents`).catch(() => null),
+          fetch(`${API_BASE_URL}/analytics/throughput`).catch(() => null),
+          fetch(`${API_BASE_URL}/analytics/kpis`).catch(() => null),
+          fetch(`${API_BASE_URL}/analytics/ab-tests`).catch(() => null),
+          fetch(`${API_BASE_URL}/analytics/seo-rankings`).catch(() => null),
         ]);
 
         if (analyticsRes?.ok) {
@@ -121,7 +121,7 @@ export function SwarmAnalytics() {
   const handleOptimizeROI = async () => {
     setIsOptimizing(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/analytics/roi/optimize`, { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/analytics/roi/optimize`, { method: 'POST' });
       if (res.ok) {
         setRoiData(await res.json());
       }
@@ -136,7 +136,7 @@ export function SwarmAnalytics() {
     if (!variantInput) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/analytics/ab/generate`, {
+      const res = await fetch(`${API_BASE_URL}/analytics/ab/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ original: variantInput, type: 'headline', count: 3 })

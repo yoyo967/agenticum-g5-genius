@@ -40,16 +40,16 @@ export function CreativeStudio() {
   const fetchAssets = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/vault/list`);
+      const res = await fetch(`${API_BASE_URL}/vault/list`);
       if (res.ok) {
         const data = await res.json();
         const vaultAssets: CreativeAsset[] = (data.files || []).map((f: { name: string; url: string; timestamp?: string }) => ({
           id: f.name,
           type: f.name.match(/\.(mp4|webm)$/i) ? 'video' : f.name.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'image' : 'copy',
           title: f.name.replace(/[-_]/g, ' ').replace(/\.\w+$/, ''),
-          agent: f.name.startsWith('DA03') ? 'DA-03' : f.name.startsWith('CC06') ? 'CC-06' : 'Vault',
+          agent: f.name.startsWith('da03') ? 'da03' : f.name.startsWith('cc06') ? 'cc06' : 'Vault',
           timestamp: f.timestamp || new Date().toISOString(),
-          content: f.url,
+          content: f.url.startsWith('http') ? f.url : `${API_BASE_URL.replace('/api/v1', '')}${f.url.startsWith('/') ? '' : '/'}${f.url}`,
         }));
         setAssets(vaultAssets);
       }
@@ -96,7 +96,7 @@ export function CreativeStudio() {
     setIsProcessing(true);
     setGenerationResult(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/blog/agent-dispatch`, {
+      const res = await fetch(`${API_BASE_URL}/blog/agent-dispatch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -121,7 +121,7 @@ export function CreativeStudio() {
     setGenerationResult('Initiating Veo-X Cinematic Production...');
     try {
       // Step 1: Forge Storyboard
-      const forgeRes = await fetch(`${API_BASE_URL}/api/blog/cinematic/forge`, {
+      const forgeRes = await fetch(`${API_BASE_URL}/blog/cinematic/forge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic })
@@ -130,7 +130,7 @@ export function CreativeStudio() {
       if (forgeRes.ok) {
         const asset = await forgeRes.json();
         // Step 2: Request Video Synthesis
-        const synthRes = await fetch(`${API_BASE_URL}/api/blog/cinematic/synthesize-video`, {
+        const synthRes = await fetch(`${API_BASE_URL}/blog/cinematic/synthesize-video`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ assetId: asset.id })
@@ -154,7 +154,7 @@ export function CreativeStudio() {
     const formData = new FormData();
     Array.from(files).forEach(f => formData.append('files', f));
     try {
-      const res = await fetch(`${API_BASE_URL}/api/vault/upload`, {
+      const res = await fetch(`${API_BASE_URL}/vault/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -209,7 +209,7 @@ export function CreativeStudio() {
           </div>
           <div>
             <h2 className="font-display text-xl uppercase tracking-tight">Creative Studio</h2>
-            <p className="font-mono text-[10px] text-white/30">DA-03 Imagen 3 + CC-06 Copy Engine</p>
+            <p className="font-mono text-[10px] text-white/30">da03 Imagen 3 + cc06 Copy Engine</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -243,7 +243,7 @@ export function CreativeStudio() {
               <ImageIcon size={14} className="text-purple-400" /> Generate Image (Imagen 3)
             </button>
             <button onClick={() => setGeneratingType('copy')} className="btn btn-ghost gap-2">
-              <Type size={14} className="text-emerald" /> Generate Copy (CC-06)
+              <Type size={14} className="text-emerald" /> Generate Copy (cc06)
             </button>
             <button onClick={() => setGeneratingType('video')} className="btn btn-ghost gap-2 border-magenta/20 col-span-2">
               <Film size={14} className="text-magenta" /> Create Cinematic Storyboard (Veo-X)
@@ -328,7 +328,7 @@ export function CreativeStudio() {
                   <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
                     <h3 className="font-display text-sm uppercase flex items-center gap-2">
                       {generatingType === 'image' ? <ImageIcon size={14} className="text-purple-400" /> : generatingType === 'video' ? <Film size={14} className="text-magenta" /> : <Type size={14} className="text-emerald" />}
-                      {generatingType === 'image' ? 'Imagen 3 Generator' : generatingType === 'video' ? 'Veo-X Cinematic Production' : 'CC-06 Copywriter'}
+                      {generatingType === 'image' ? 'Imagen 3 Generator' : generatingType === 'video' ? 'Veo-X Cinematic Production' : 'cc06 Copywriter'}
                     </h3>
                     <button onClick={() => { setGeneratingType(null); setGenerationResult(null); }} className="text-white/30 hover:text-white">
                       <X size={16} />
@@ -348,7 +348,7 @@ export function CreativeStudio() {
                     </div>
                     <button onClick={() => generatingType === 'video' ? handleSynthesizeVideo(mediaPrompt) : handleGenerate()} disabled={isProcessing || !mediaPrompt.trim()}
                       className="btn btn-primary w-full" style={{ background: generatingType === 'image' ? 'var(--color-magenta)' : generatingType === 'video' ? 'var(--color-accent)' : 'var(--color-emerald)' }}>
-                      <Cpu size={14} /> {isProcessing ? 'Agent Active...' : `Generate with ${generatingType === 'image' ? 'DA-03' : generatingType === 'video' ? 'Veo-X' : 'CC-06'}`}
+                      <Cpu size={14} /> {isProcessing ? 'Agent Active...' : `Generate with ${generatingType === 'image' ? 'da03' : generatingType === 'video' ? 'Veo-X' : 'cc06'}`}
                     </button>
                     {generationResult && (
                       <div className="p-3 rounded-lg bg-black/30 border border-white/5 font-mono text-xs text-accent">

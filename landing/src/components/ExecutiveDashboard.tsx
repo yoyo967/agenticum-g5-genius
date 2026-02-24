@@ -57,8 +57,8 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
     setLoading(true);
     try {
       const [throughputRes, statsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/analytics/throughput`),
-        fetch(`${API_BASE_URL}/api/analytics/stats`),
+        fetch(`${API_BASE_URL}/analytics/throughput`),
+        fetch(`${API_BASE_URL}/analytics/stats`),
       ]);
       
       if (throughputRes.ok) {
@@ -76,8 +76,8 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
 
       // Fetch actual outputs for the gallery
       const [vaultRes, blogRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/vault/list`),
-        fetch(`${API_BASE_URL}/api/blog/feed`)
+        fetch(`${API_BASE_URL}/vault/list`),
+        fetch(`${API_BASE_URL}/blog/feed`)
       ]);
 
       if (vaultRes.ok) {
@@ -91,7 +91,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
       }
 
       // Fetch actual SEO rankings
-      const seoRes = await fetch(`${API_BASE_URL}/api/analytics/seo-rankings`);
+      const seoRes = await fetch(`${API_BASE_URL}/analytics/seo-rankings`);
       if (seoRes.ok) {
         const sData = await seoRes.json();
         setSeo(sData);
@@ -148,12 +148,37 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
     };
   }, []);
 
+  if (loading && !stats) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative w-16 h-16">
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-0 border-t-2 border-accent rounded-full"
+            />
+            <motion.div 
+              animate={{ rotate: -360 }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-2 border-b-2 border-magenta rounded-full opacity-50"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Zap className="text-accent animate-pulse" size={24} />
+            </div>
+          </div>
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent/60">Assembling Cognitive Interface...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div id="dashboard-export-container" className="h-full flex flex-col gap-5 overflow-y-auto pb-6">
       
       {/* Quick Actions Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
-        <button onClick={() => onNavigate?.('campaign')} className="btn btn-primary btn-lg gap-3">
+        <button onClick={() => onNavigate?.('campaign')} className="btn btn-primary btn-lg gap-3 shadow-lg shadow-accent/20">
           <Play size={14} /> Initialize Campaign
         </button>
         <button onClick={() => onNavigate?.('studio')} className="btn btn-ghost btn-lg gap-3">
@@ -170,6 +195,25 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
           { label: 'CSV Metrics', format: 'CSV', onClick: () => downloadCSV(throughput.map(t => ({ ...t })), 'G5_Throughput_Data') },
           { label: 'PNG Screenshot', format: 'PNG', onClick: () => downloadPNG('dashboard-export-container', 'G5_Dashboard_Screenshot') },
         ]} />
+      </div>
+
+      {/* Sentient Context Banner (Resonance Indication) */}
+      <div className="glass-card p-4 flex items-center justify-between border-accent/20 bg-accent/5 overflow-hidden relative">
+        <motion.div 
+          animate={{ x: ['-100%', '100%'] }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
+          className="absolute inset-0 bg-linear-to-r from-transparent via-accent/10 to-transparent pointer-events-none"
+        />
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-2 h-2 rounded-full bg-accent animate-ping" />
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">
+            Nexus Context: <span className="text-white italic">"Active Swarm Optimization for High-Density Strategic Growth"</span>
+          </p>
+        </div>
+        <div className="flex items-center gap-2 relative z-10">
+          <span className="font-mono text-[9px] text-white/40 uppercase">Resonance Index:</span>
+          <span className="font-mono text-[10px] text-accent font-bold">0.94 // OPTIMAL</span>
+        </div>
       </div>
 
       {/* Stats Row — All from API */}
@@ -215,7 +259,12 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
             <h3 className="font-display text-sm uppercase tracking-wide flex items-center gap-2">
               <Clock size={14} className="text-white/40" /> Activity Log
             </h3>
-            <button onClick={fetchData} className="text-white/30 hover:text-accent transition-colors" title="Refresh">
+            <button 
+              onClick={fetchData} 
+              aria-label="Refresh Dashboard Data"
+              className="text-white/30 hover:text-accent transition-colors" 
+              title="Refresh"
+            >
               <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
             </button>
           </div>
@@ -254,7 +303,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
             
             <div className="flex-1 p-6 grid grid-cols-2 gap-4">
               {vaultAssets.length > 0 ? vaultAssets.map((asset, i) => (
-                <div key={i} className="card relative group cursor-pointer overflow-hidden border-purple-400/20 bg-purple-400/5">
+                <div key={i} className="card relative group cursor-pointer overflow-hidden border-purple-400/20 bg-purple-400/5 hover:border-purple-400/40 transition-all">
                   <div className="aspect-video bg-black/40 overflow-hidden">
                      <img src={asset.url} alt={asset.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   </div>
@@ -287,7 +336,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
               </div>
               <div className="p-4 flex gap-4 overflow-x-auto scrollbar-none">
                   {pillars.length > 0 ? pillars.map((p, i) => (
-                    <div key={i} className="card min-w-[200px] border-emerald/20 bg-emerald/5 p-3 flex flex-col justify-between">
+                    <div key={i} className="card min-w-[200px] border-emerald/20 bg-emerald/5 p-3 flex flex-col justify-between hover:border-emerald/40 transition-colors">
                       <h4 className="font-display text-[10px] text-white line-clamp-2">{p.title}</h4>
                       <span className="font-mono text-[8px] text-white/40 mt-2">{new Date(p.timestamp).toLocaleDateString()}</span>
                     </div>
@@ -304,7 +353,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
               <div className="p-4 flex flex-col gap-3">
                 <div className="flex justify-between items-center text-[10px] uppercase font-mono">
                   <span className="text-white/40">Hosting Target</span>
-                  <span className="text-emerald">online-marketing-manager</span>
+                  <span className="text-emerald font-bold">online-marketing-manager</span>
                 </div>
                 {seo && (
                   <div className="bg-white/5 rounded p-2 space-y-2">
@@ -324,14 +373,6 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
                     <p className="font-mono text-[9px] text-accent/80 italic leading-tight">
                       "Utilizing 20+ past lifecycle logs for contextual optimization..."
                     </p>
-                  </div>
-                </div>
-                <div className="space-y-1 mt-1">
-                  <div className="flex items-center gap-2 text-[10px] font-mono text-white/60">
-                    <CheckCircle size={10} className="text-emerald" /> GA4 Real-time Streaming Active
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] font-mono text-white/60">
-                    <CheckCircle size={10} className="text-emerald" /> SSL Cert: Genius Edge Active
                   </div>
                 </div>
               </div>
@@ -419,16 +460,37 @@ function StatCard({ title, value, subtext, icon, accentColor, live, onClick }: {
     <motion.div 
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02 }}
       onClick={onClick}
       className={`card relative overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
       style={{ borderLeftColor: accentColor, borderLeftWidth: '2px' }}
     >
+      {live && (
+        <motion.div
+          animate={{ opacity: [0.05, 0.15, 0.05] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(circle at center, ${accentColor} 0%, transparent 70%)` }}
+        />
+      )}
       <div className="absolute -right-3 -top-3 opacity-[0.06]" style={{ color: accentColor }}>
         <div style={{ transform: 'scale(3)' }}>{icon}</div>
       </div>
       <div className="relative z-10">
         <div className="flex items-center gap-2 mb-3" style={{ color: accentColor }}>
           {icon}
+          {live && (
+            <div className="flex gap-0.5">
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  animate={{ height: [2, 6, 2] }}
+                  transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
+                  className="w-0.5 rounded-full bg-current"
+                />
+              ))}
+            </div>
+          )}
         </div>
         <p className="label mb-1">{title}</p>
         <p className="font-mono text-2xl font-bold text-white mb-1">{value}
@@ -458,7 +520,7 @@ function LogItem({ time, agent, text, type }: ActivityLog) {
         <div className="w-px h-full bg-white/5 absolute top-0 bottom-0" />
         <div className={`w-2 h-2 rounded-full z-10 mt-2 ${c.dot}`} style={{ boxShadow: '0 0 6px currentColor' }} />
       </div>
-      <div className={`flex-1 p-3 rounded-lg border ${c.bg} ${c.border} transition-colors`}>
+      <div className={`flex-1 p-3 rounded-lg border ${c.bg} ${c.border} transition-colors group-hover:bg-white/5`}>
         <div className="flex items-center justify-between mb-0.5">
           <span className={`font-mono text-[9px] font-bold uppercase tracking-widest ${c.text} opacity-70`}>{agent}</span>
         </div>

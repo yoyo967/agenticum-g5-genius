@@ -88,7 +88,7 @@ function useSEO() {
             'Imagen 3 visual asset generation (Vertex AI)',
             'EU AI Act Art. 50 compliant output with Perfect Twin audit trail',
             'Real-time WebSocket event streaming',
-            '5 specialized AI agents: SN-00, SP-01, CC-06, DA-03, RA-01',
+            '5 specialized AI agents: sn00, sp01, cc06, da03, ra01',
             'Google Search grounding for zero-hallucination guarantee',
           ],
         },
@@ -304,7 +304,7 @@ export function LandingPage() {
                 { icon: <Bot size={16} />, label: '5 Agents · Parallel', color: '#FF007A' },
                 { icon: <Cpu size={16} />, label: 'Gemini 2.0 Flash', color: '#00FF88' },
                 { icon: <Globe size={16} />, label: 'Google Search Grounding', color: '#7B2FBE' },
-                { icon: <Shield size={16} />, label: 'EU AI Act · RA-01', color: '#FF6B35' },
+                { icon: <Shield size={16} />, label: 'EU AI Act · ra01', color: '#FF6B35' },
               ].map(item => (
                 <div key={item.label} className="flex items-center gap-2 group">
                   <span style={{ color: item.color }} className="opacity-80 group-hover:opacity-100 transition-opacity">{item.icon}</span>
@@ -331,7 +331,7 @@ export function LandingPage() {
               className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-16">
               <LiveCounter value={5} label="KI-Agenten" color="#00E5FF" />
               <LiveCounter value={99} label="Senate Approval Rate" suffix="%" color="#00FF88" />
-              <LiveCounter value={42} label="SN-00 Latenz ms" color="#FFD700" />
+              <LiveCounter value={42} label="sn00 Latenz ms" color="#FFD700" />
               <LiveCounter value={100} label="Google Cloud Native" suffix="%" color="#7B2FBE" />
             </motion.div>
           </motion.div>
@@ -368,7 +368,7 @@ export function LandingPage() {
                 Access The <span className="text-accent">Genius OS</span>
               </h2>
               <p className="text-white/40 max-w-2xl mx-auto font-mono text-sm leading-relaxed mb-12">
-                Die Agenticum G5 Enterprise Command Console. SN-00 wartet auf deinen Befehl.
+                Die Agenticum G5 Enterprise Command Console. sn00 wartet auf deinen Befehl.
                 Drücke den Mikrofon-Button — und beobachte wie 5 KI-Agenten in Echtzeit für dich arbeiten.
                 Synergy Map, Live-Bilder, Senate-Tribunal — alles sichtbar. Alles live.
               </p>
@@ -710,7 +710,7 @@ export function LandingPage() {
                 </div>
                 <div className="flex flex-col gap-3">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-white/20 mb-1">Agents</span>
-                  {['SN-00 · Orchestrator', 'SP-01 · Strategist', 'CC-06 · Copywriter', 'DA-03 · Visual AI', 'RA-01 · Senate'].map(a => (
+                  {['sn00 · Orchestrator', 'sp01 · Strategist', 'cc06 · Copywriter', 'da03 · Visual AI', 'ra01 · Senate'].map(a => (
                     <span key={a} className="font-mono text-xs text-white/30">{a}</span>
                   ))}
                 </div>

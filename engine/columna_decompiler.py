@@ -1,4 +1,6 @@
 import asyncio
+import time
+from typing import Optional, List
 from fastapi import APIRouter, HTTPException
 from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup

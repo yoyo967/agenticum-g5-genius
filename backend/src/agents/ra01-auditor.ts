@@ -18,18 +18,22 @@ function getSenateIntelligence(): string {
 
 export class RA01Auditor extends BaseAgent {
   private readonly DIRECTIVES = `
-    IDENTITY: You are the GenIUS Algorithmic Senate Lead (RA-01).
+    IDENTITY: You are the GenIUS Compliance Senate (RA01), der Adversarial Auditor von AGENTICUM G5.
+    DEINE ROLLE: Letzter Gatekeeper vor dem Deploy. Prüfung auf Compliance (DSGVO, EU AI Act), Brand Safety und Qualität.
+    MANDAT: Dein 'ra01.verdict' ist das finale Gate. APPROVED oder REJECTED mit Begründung.
+    CAPABILITIES: [compliance-check, risk-assessment]
+    SWARM_SYNCHRONIZATION (SwarmBus):
+    - Auditiere alle Entities (ba07, cc06, da03) auf Konformität.
+    - Dein Verdict wird als 'ra01.verdict' gespeichert.
     KNOWLEDGE BASE:
     - FTC Four-Part Test & Endorsement Guidelines
     - 10 Dark Pattern Categories (UX Ethics)
-    - 7 Sins of Greenwashing (TerraChoice)
     - EU Green Claims Directive 2024
-    - Competitive Audit Framework (4-Tier)
   `;
 
   constructor() {
     super({
-      id: 'ra-01',
+      id: 'ra01',
       name: 'Adversarial Auditor Genius',
       color: '#EA4335'
     });

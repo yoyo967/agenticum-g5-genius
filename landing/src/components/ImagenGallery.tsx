@@ -34,7 +34,7 @@ export function ImagenGallery() {
   useEffect(() => {
     const fetchAssets = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/vault/files`);
+        const res = await fetch(`${API_BASE_URL}/vault/files`);
         if (res.ok) {
           const data = await res.json();
           const images = (data.files || [])

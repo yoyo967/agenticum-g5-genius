@@ -37,9 +37,9 @@ export function OmniscientSearch({ isOpen, onClose, onNavigate }: { isOpen: bool
   useEffect(() => {
     // Fetch real data from all APIs in parallel
     Promise.all([
-      fetch(`${API_BASE_URL}/api/blog/feed`).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch(`${API_BASE_URL}/api/pmax/campaigns`).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch(`${API_BASE_URL}/api/vault/list`).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(`${API_BASE_URL}/blog/feed`).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(`${API_BASE_URL}/pmax/campaigns`).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(`${API_BASE_URL}/vault/list`).then(r => r.ok ? r.json() : null).catch(() => null),
     ]).then(([blogData, campaignsData, vaultData]) => {
       const items: SearchItem[] = [];
 

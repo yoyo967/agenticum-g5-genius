@@ -3,19 +3,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Shield, Zap, Film, Palette } from 'lucide-react';
 
 const AGENTS = [
-  { id: 'SN-00', name: 'Orchestrator', icon: Bot, color: '#4285F4' },
-  { id: 'SP-01', name: 'Strategist', icon: Zap, color: '#34A853' },
-  { id: 'CC-06', name: 'Director', icon: Film, color: '#FBBC04' },
-  { id: 'DA-03', name: 'Architect', icon: Palette, color: '#A855F7' },
-  { id: 'RA-01', name: 'Auditor', icon: Shield, color: '#EA4335' }
+  { id: 'SN00', name: 'Orchestrator', icon: Bot, color: '#4285F4' },
+  { id: 'SP01', name: 'Strategist', icon: Zap, color: '#34A853' },
+  { id: 'CC06', name: 'Director', icon: Film, color: '#FBBC04' },
+  { id: 'DA03', name: 'Architect', icon: Palette, color: '#A855F7' },
+  { id: 'RA01', name: 'Auditor', icon: Shield, color: '#EA4335' }
 ];
 
 const PROACTIVE_MESSAGES = [
-  { agent: 'SN-00', text: "Neural Substrate initialized. G5 Core at 100% capacity." },
-  { agent: 'SN-00', text: "Welcome to the Nexus. I've already begun triaging the session intent." },
-  { agent: 'SP-01', text: "Strategic layers are ready. I'm detecting high-value potential in this environment." },
-  { agent: 'RA-01', text: "Security and compliance audit passed. The Matrix is stable." },
-  { agent: 'SN-00', text: "User detected. Initiating immediate synergy. How shall we evolve your vision today?" }
+  { agent: 'SN00', text: "Neural Substrate initialized. G5 Core at 100% capacity." },
+  { agent: 'SN00', text: "Welcome to the Nexus. I've already begun triaging the session intent." },
+  { agent: 'SP01', text: "Strategic layers are ready. I'm detecting high-value potential in this environment." },
+  { agent: 'RA01', text: "Security and compliance audit passed. The Matrix is stable." },
+  { agent: 'SN00', text: "User detected. Initiating immediate synergy. How shall we evolve your vision today?" }
 ];
 
 export const LivingAgents = () => {

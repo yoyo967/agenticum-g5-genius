@@ -29,7 +29,7 @@ export function SecuritySenate() {
   const fetchCases = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/senate/docket`);
+      const res = await fetch(`${API_BASE_URL}/senate/docket`);
       if (res.ok) {
         const data = await res.json();
         setCases(data.cases || []);
@@ -56,7 +56,7 @@ export function SecuritySenate() {
   const castVerdict = async (caseId: string, verdict: 'APPROVED' | 'REJECTED') => {
     setCastingVerdict(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/senate/verdict/${caseId}`, {
+      const res = await fetch(`${API_BASE_URL}/senate/verdict/${caseId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ verdict, reason: verdictReason }),
@@ -70,7 +70,7 @@ export function SecuritySenate() {
           const slug = slugMatch ? slugMatch[1].trim() : null;
           
           if (slug) {
-            await fetch(`${API_BASE_URL}/api/blog/article/${slug}`, {
+            await fetch(`${API_BASE_URL}/blog/article/${slug}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ status: 'published' }),
@@ -104,7 +104,7 @@ export function SecuritySenate() {
           </div>
           <div>
             <h2 className="font-display text-xl uppercase tracking-tight">Security Senate</h2>
-            <p className="font-mono text-[10px] text-white/30">RA-01 Autonomous Content & Brand Safety Tribunal</p>
+            <p className="font-mono text-[10px] text-white/30">ra01 Autonomous Content & Brand Safety Tribunal</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -114,7 +114,11 @@ export function SecuritySenate() {
             <span className="badge badge-online">{approved} Approved</span>
             <span className="badge badge-error">{rejected} Rejected</span>
           </div>
-          <button onClick={fetchCases} className="btn btn-ghost btn-sm">
+          <button 
+            onClick={fetchCases} 
+            aria-label="Refresh Senate Docket"
+            className="btn btn-ghost btn-sm"
+          >
             <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
           </button>
           <ExportMenu options={[

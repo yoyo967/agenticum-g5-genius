@@ -47,30 +47,37 @@ process.on('unhandledRejection', (reason, promise) => {
 app.use(cors());
 app.use(express.json());
 
-// API Routes
-app.use('/api/blog', blogRoutes);
-app.use('/api/vault', vaultRoutes);
-app.use('/api/workflow', workflowRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/pmax', pmaxRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/senate', senateRoutes);
-app.use('/api/deploy', deploymentRoutes);
-app.use('/api/clients', clientsRouter);
-app.use('/api/bridge', bridgeRoutes);
+// API v1 Routes
+app.use('/api/v1/blog', blogRoutes);
+app.use('/api/v1/vault', vaultRoutes);
+app.use('/api/v1/workflow', workflowRoutes);
+app.use('/api/v1/settings', settingsRoutes);
+app.use('/api/v1/pmax', pmaxRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/senate', senateRoutes);
+app.use('/api/v1/deploy', deploymentRoutes);
+app.use('/api/v1/clients', clientsRouter);
+app.use('/api/v1/bridge', bridgeRoutes);
 
 // --- SOVEREIGN AI / GEOPOLITICS ROUTES ---
 
-app.get('/api/sovereign/nodes', async (req, res) => {
+app.get('/api/v1/sovereign/nodes', async (req, res) => {
   try {
     const nodes = await sovereignService.getGlobalNodes();
-    res.json(nodes);
+    res.json({
+      success: true,
+      data: nodes,
+      meta: { timestamp: new Date().toISOString() }
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch global nodes.' });
+    res.status(500).json({
+      success: false,
+      error: { code: 'INTERNAL_ERROR', message: 'Failed to fetch global nodes.' }
+    });
   }
 });
 
-app.post('/api/sovereign/sync', async (req, res) => {
+app.post('/api/v1/sovereign/sync', async (req, res) => {
   try {
     const result = await sovereignService.initiateFederatedSync();
     res.json(result);
@@ -79,7 +86,7 @@ app.post('/api/sovereign/sync', async (req, res) => {
   }
 });
 
-app.post('/api/sovereign/audit', async (req, res) => {
+app.post('/api/v1/sovereign/audit', async (req, res) => {
   try {
     const { content, zone } = req.body;
     const audit = await sovereignService.auditCompliance(content, zone);
@@ -96,8 +103,12 @@ wss.on('connection', (ws: WebSocket) => {
   liveApi.handleConnection(ws);
 });
 
-app.get('/health', (_req: express.Request, res: express.Response) => {
-  res.json({ status: 'Neural Fabric Active', project: 'AGENTICUM G5 GENIUS' });
+app.get('/api/v1/health', (_req: express.Request, res: express.Response) => {
+  res.json({
+    success: true,
+    data: { status: 'healthy', project: 'AGENTICUM G5 GENIUS' },
+    meta: { timestamp: new Date().toISOString() }
+  });
 });
 
 httpServer.listen(port, async () => {

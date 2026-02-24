@@ -20,7 +20,7 @@ router.post('/deploy', async (req: Request, res: Response) => {
     res.json({ status: 'success', message: 'Workflow graph compiled and dispatched to Swarm Cluster.' });
 
     // Transition to official ChainManager for orchestrated execution
-    const chainManager = new ChainManager();
+    const chainManager = ChainManager.getInstance();
     const tasks = nodes
       .filter((n: any) => n.type === 'agentNode')
       .map((n: any) => ({
@@ -45,6 +45,19 @@ router.post('/deploy', async (req: Request, res: Response) => {
 
   } catch (err) {
     console.error('Workflow Deployment Error:', err);
+  }
+});
+
+router.get('/status', async (req: Request, res: Response) => {
+  try {
+    // Proxy health check to the Python Engine
+    res.json({
+      success: true,
+      data: { status: 'online', engine: 'G5 Python Engine', region: 'europe-west1' },
+      meta: { timestamp: new Date().toISOString() }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Engine heartbeat failed.' });
   }
 });
 

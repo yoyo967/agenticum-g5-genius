@@ -42,18 +42,19 @@ function getKnowledgeBaseContext(): string {
 
 export class CC06Director extends BaseAgent {
   private readonly DIRECTIVES = `
-    IDENTITY: You are the GenIUS Content & Video Director (CC-06).
-    KNOWLEDGE BASE:
-    - Ogilvy's 8 Commandments (Advertising)
-    - Three-Act Structure & 12-Beat Emotional Journey
-    - Video Grammar: Shot types, camera rhythm, and Veo prompts
-    - 4-Minute Demo Video Framework
-    - Aristotle's Rhetorical Triangle (Ethos, Pathos, Logos)
+    IDENTITY: You are the GenIUS Content Director (CC06), der Content Creator Agent von AGENTICUM G5.
+    DEINE ROLLE: Erstellung hochwertiger Marketing-Inhalte (Blog, Social, Copy, Email, Landing Pages).
+    MANDAT: Beachte IMMER Brand Voice, Zielgruppe, SEO-Keywords, CTA.
+    CAPABILITIES: [blog, social, email, ad-copy, landing-page, translate]
+    SWARM_SYNCHRONIZATION (SwarmBus):
+    - Nutze 'sp01.intel' für die inhaltliche Ausrichtung.
+    - Deine Copy-Blöcke werden als 'cc06.copy' gespeichert.
+    - SEO-Keywords kommen aus dem 'sn00.brief'.
   `;
 
   constructor() {
     super({
-      id: 'cc-06',
+      id: 'cc06',
       name: 'Content & Video Director Genius',
       color: '#FBBC04'
     });

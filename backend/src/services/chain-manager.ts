@@ -7,21 +7,66 @@ import { DA03Architect } from '../agents/da03-architect';
 import { RA01Auditor } from '../agents/ra01-auditor';
 import { PM07Manager } from '../agents/pm07-manager';
 import { VE01Director } from '../agents/ve01-director';
+import { SN00Orchestrator } from '../agents/sn00-orchestrator';
+import { BA07BrowserArchitect } from '../agents/ba07-browser-architect';
 
 export class ChainManager {
   private logger: Logger;
   private activeProtocol: SwarmProtocol | null = null;
   private agents: Record<string, any> = {};
+  private static instance: ChainManager;
 
-  constructor() {
+  private constructor() {
     this.logger = new Logger('ChainManager');
-    // Initialize agents
-    this.agents['sp-01'] = new SP01Strategist();
-    this.agents['cc-06'] = new CC06Director();
-    this.agents['da-03'] = new DA03Architect();
-    this.agents['ra-01'] = new RA01Auditor();
-    this.agents['pm-07'] = new PM07Manager();
-    this.agents['ve-01'] = new VE01Director();
+    // Agents will be registered via registerAgent or lazy-loaded to avoid circular deps
+  }
+
+  public static getInstance(): ChainManager {
+    if (!ChainManager.instance) {
+      ChainManager.instance = new ChainManager();
+    }
+    return ChainManager.instance;
+  }
+
+  public getAgent(id: string) {
+    if (this.agents[id]) return this.agents[id];
+
+    // Lazy instantiation to prevent circular dependencies
+    switch (id.toLowerCase()) {
+      case 'sn00':
+        const { SN00Orchestrator } = require('../agents/sn00-orchestrator');
+        this.agents['sn00'] = new SN00Orchestrator();
+        break;
+      case 'sp01':
+        const { SP01Strategist } = require('../agents/sp01-strategist');
+        this.agents['sp01'] = new SP01Strategist();
+        break;
+      case 'cc06':
+        const { CC06Director } = require('../agents/cc06-director');
+        this.agents['cc06'] = new CC06Director();
+        break;
+      case 'da03':
+        const { DA03Architect } = require('../agents/da03-architect');
+        this.agents['da03'] = new DA03Architect();
+        break;
+      case 'ra01':
+        const { RA01Auditor } = require('../agents/ra01-auditor');
+        this.agents['ra01'] = new RA01Auditor();
+        break;
+      case 'pm07':
+        const { PM07Manager } = require('../agents/pm07-manager');
+        this.agents['pm07'] = new PM07Manager();
+        break;
+      case 've01':
+        const { VE01Director } = require('../agents/ve01-director');
+        this.agents['ve01'] = new VE01Director();
+        break;
+      case 'ba07':
+        const { BA07BrowserArchitect } = require('../agents/ba07-browser-architect');
+        this.agents['ba07'] = new BA07BrowserArchitect();
+        break;
+    }
+    return this.agents[id];
   }
 
   public pauseProtocol() {
@@ -79,7 +124,7 @@ export class ChainManager {
     
     eventFabric.broadcast({ type: 'task-update', task });
 
-    const agent = this.agents[task.agentId];
+    const agent = this.getAgent(task.agentId);
     if (!agent) {
       this.logger.error(`Agent ${task.agentId} not found for task ${task.id}`);
       task.state = TaskState.FAILED;

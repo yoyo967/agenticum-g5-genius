@@ -16,7 +16,7 @@ router.post('/stream', (req, res) => {
 
   // Broadcast to all clients via the Neural Fabric
   eventFabric.broadcastPayload(
-    agentId || 'ba-07',
+    agentId || 'ba07',
     'os-core',
     `Stream: ${type}`,
     { sessionId, type, data, timestamp: Date.now() }

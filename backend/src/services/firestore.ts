@@ -83,5 +83,9 @@ export const Collections = {
   SENATE_DOCKET: 'senate_docket',
   KPI_METRICS: 'kpi_metrics',
   AB_TESTS: 'ab_tests',
-  SYSTEM_CONFIG: 'system_config'
+  SYSTEM_CONFIG: 'system_config',
+  USERS: 'users',
+  CURRICULUM: 'curriculum',
+  TOOLS: 'tools',
+  TALENT_GRAPH: 'talent_graph'
 };

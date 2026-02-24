@@ -13,7 +13,7 @@ interface AuditLog {
   sources?: string[];
   score?: number;
   latency?: number;
-  timestamp: unknown;
+  timestamp: { toDate: () => Date } | string | number | null;
   severity: 'info' | 'success' | 'warning' | 'error';
 }
 
@@ -95,12 +95,12 @@ export function PerfectTwinInspector() {
                 <p className="font-mono text-[10px] uppercase">Awaiting Swarm Initialization...</p>
               </div>
             ) : (
-              filteredLogs.map((log) => (
+              filteredLogs.map((log: AuditLog) => (
                 <motion.div
                   key={log.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="group flex gap-3 p-3 rounded-lg bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-colors"
+                  className="group flex gap-3 p-3 rounded-lg bg-white/2 border border-white/5 hover:bg-white/4 transition-colors"
                 >
                   <div className="shrink-0 mt-0.5">
                     {log.severity === 'success' && <CheckCircle size={14} className="text-emerald" />}
@@ -112,7 +112,7 @@ export function PerfectTwinInspector() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-mono text-[10px] uppercase tracking-wider text-accent">{log.agent}</span>
                       <span className="font-mono text-[8px] text-white/20">
-                        {log.latency ? `${log.latency}ms` : ((log.timestamp as any)?.toDate ? (log.timestamp as any).toDate().toLocaleTimeString() : 'RECENT')}
+                        {log.latency ? `${log.latency}ms` : (log.timestamp && typeof log.timestamp === 'object' && 'toDate' in log.timestamp ? log.timestamp.toDate().toLocaleTimeString() : 'RECENT')}
                       </span>
                     </div>
                     <p className="text-xs text-white/70 leading-relaxed mb-2">{log.message}</p>

@@ -32,7 +32,7 @@ export function CinematicForge() {
 
   const fetchAssets = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/blog/cinematic/default-client`);
+      const res = await fetch(`${API_BASE_URL}/blog/cinematic/default-client`);
       if (res.ok) setAssets(await res.json());
     } catch (e) {
       console.error('Failed to fetch cinematic assets', e);
@@ -46,7 +46,7 @@ export function CinematicForge() {
     setIsForging(true);
     setCurrentAsset(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/blog/cinematic/forge`, {
+      const res = await fetch(`${API_BASE_URL}/blog/cinematic/forge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic, clientId: 'default-client' })
@@ -67,7 +67,7 @@ export function CinematicForge() {
     if (!currentAsset) return;
     setIsForging(true); // Reuse forging state for visual gen
     try {
-      const res = await fetch(`${API_BASE_URL}/api/blog/cinematic/generate-visual`, {
+      const res = await fetch(`${API_BASE_URL}/blog/cinematic/generate-visual`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ assetId: currentAsset.id, shotNumber })

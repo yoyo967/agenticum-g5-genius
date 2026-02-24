@@ -18,7 +18,7 @@ export function GeopoliticsHub() {
 
   const fetchNodes = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/sovereign/nodes`);
+      const res = await fetch(`${API_BASE_URL}/sovereign/nodes`);
       if (res.ok) setNodes(await res.json());
     } catch {
       console.error('Failed to fetch global nodes');
@@ -31,7 +31,7 @@ export function GeopoliticsHub() {
     setIsSyncing(true);
     setSyncStatus('Initiating Federated Intelligence Sync...');
     try {
-      const res = await fetch(`${API_BASE_URL}/api/sovereign/sync`, { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/sovereign/sync`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
         setSyncStatus(`Sync Successful: ${data.dataExchangedKB} KB of intelligence shared.`);

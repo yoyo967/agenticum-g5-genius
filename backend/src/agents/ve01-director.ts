@@ -6,7 +6,7 @@ export class VE01Director extends BaseAgent {
 
   constructor() {
     super({
-      id: 've-01',
+      id: 've01',
       name: 'Motion Director',
       color: '#FF6B00'
     });
@@ -19,18 +19,15 @@ export class VE01Director extends BaseAgent {
     try {
       // 1. Generate Storyboard using Gemini
       this.updateStatus(AgentState.THINKING, 'Generating cinematic storyboard...', 20);
-      const { GoogleGenAI, Type } = await import('@google/genai');
+      const { GoogleGenerativeAI: GoogleGenAI, SchemaType: Type } = await import('@google/generative-ai');
       const apiKey = process.env.GEMINI_API_KEY;
       let storyboard: any = null;
-
       if (apiKey) {
         try {
-          const ai = new GoogleGenAI({ apiKey });
-          const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash', // Use 1.5-flash for broader compatibility
-            contents: `Create a cinematic storyboard for a marketing video based on: "${input}". 
-            Decompose this into 3 specific scenes with visual descriptions and camera move instructions.`,
-            config: {
+          const ai = new GoogleGenAI(apiKey);
+          const model = ai.getGenerativeModel({
+            model: 'gemini-1.5-flash',
+            generationConfig: {
               responseMimeType: 'application/json',
               responseSchema: {
                 type: Type.OBJECT,
@@ -52,7 +49,10 @@ export class VE01Director extends BaseAgent {
               }
             }
           });
-          storyboard = JSON.parse(response.text || '{}');
+          const result = await model.generateContent(`Create a cinematic storyboard for a marketing video based on: "${input}". 
+            Decompose this into 3 specific scenes with visual descriptions and camera move instructions.`);
+          const response = await result.response;
+          storyboard = JSON.parse(response.text() || '{}');
         } catch (storyboardErr: any) {
           this.logger.warn('AI Storyboard synthesis failed (likely API restriction). Using architectural fallback.');
           storyboard = {
@@ -67,7 +67,7 @@ export class VE01Director extends BaseAgent {
       }
 
       const { eventFabric } = require('../services/event-fabric');
-      eventFabric.broadcastPayload('ve-01', 'os-core', 'Cinematic Storyboard', storyboard);
+      eventFabric.broadcastPayload('ve01', 'os-core', 'Cinematic Storyboard', storyboard);
 
       // 2. Synthesize Video
       this.updateStatus(AgentState.WORKING, 'Synthesizing motion frames & temporal fusion...', 50);

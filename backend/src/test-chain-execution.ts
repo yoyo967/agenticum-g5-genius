@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 async function runTest() {
-  const manager = new ChainManager();
+  const manager = ChainManager.getInstance();
   
   const protocol: SwarmProtocol = {
     id: 'test-graph-01',
@@ -14,28 +14,28 @@ async function runTest() {
     tasks: [
       {
         id: 't1',
-        agentId: 'sp-01',
+        agentId: 'sp01',
         description: 'Generate marketing theme',
         state: TaskState.PENDING,
         dependencies: []
       },
       {
         id: 't2',
-        agentId: 'cc-06',
+        agentId: 'cc06',
         description: 'Write copy based on T1 theme',
         state: TaskState.PENDING,
         dependencies: ['t1']
       },
       {
         id: 't3',
-        agentId: 'da-03',
+        agentId: 'da03',
         description: 'Design visual based on T1 theme',
         state: TaskState.PENDING,
         dependencies: ['t1']
       },
       {
         id: 't4',
-        agentId: 'ra-01',
+        agentId: 'ra01',
         description: 'Audit T2 and T3 results',
         state: TaskState.PENDING,
         dependencies: ['t2', 't3']

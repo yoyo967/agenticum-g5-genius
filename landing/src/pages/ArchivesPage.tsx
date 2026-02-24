@@ -22,8 +22,8 @@ export function ArchivesPage() {
     setLoading(true);
     try {
       const [blogRes, campaignRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/blog/feed`),
-        fetch(`${API_BASE_URL}/api/pmax/campaigns`)
+        fetch(`${API_BASE_URL}/blog/feed`),
+        fetch(`${API_BASE_URL}/pmax/campaigns`)
       ]);
 
       const blogData = await blogRes.json();

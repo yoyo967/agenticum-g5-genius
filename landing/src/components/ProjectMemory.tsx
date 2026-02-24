@@ -31,8 +31,8 @@ export function ProjectMemory() {
     setLoading(true);
     try {
       const [campRes, vaultRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/pmax/campaigns`),
-        fetch(`${API_BASE_URL}/api/vault/list`),
+        fetch(`${API_BASE_URL}/pmax/campaigns`),
+        fetch(`${API_BASE_URL}/vault/list`),
       ]);
       if (campRes.ok) {
         const data = await campRes.json();
