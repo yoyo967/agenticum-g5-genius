@@ -138,7 +138,7 @@ export class LiveApiManager {
               }
 
               if (executionPromise) {
-                executionPromise.then(result => {
+                executionPromise.then((result: any) => {
                   if (clientWs.readyState === WebSocket.OPEN) {
                     clientWs.send(JSON.stringify({ type: 'output', agentId: toolOutputLabel, data: result }));
                   }
@@ -154,7 +154,7 @@ export class LiveApiManager {
                       }
                     }));
                   }
-                }).catch(err => {
+                }).catch((err: any) => {
                   this.logger.error(`${call.name} execution failed`, err);
                 });
               }
