@@ -56,7 +56,7 @@ export class CC06Director extends BaseAgent {
     super({
       id: 'cc06',
       name: 'Content & Video Director Genius',
-      color: '#FBBC04'
+      color: '#00FF88'
     });
   }
 
@@ -121,7 +121,8 @@ export class CC06Director extends BaseAgent {
       ${this.DIRECTIVES}
       ${kbContext}
 
-      You are writing a comprehensive, enterprise-grade SEO ${type} article on the topic: "${topic}".
+      You are writing an exhaustive, enterprise-grade SEO ${type} article on the topic: "${topic}".
+      DENSITY REQUIREMENT: AVOID MARKETING SUMMARIES. This must be a "Full Technical Depth" pillar, not a snippet.
       The article MUST be formatted in high-fidelity Markdown. 
       STYLE GUIDE:
       - Use "Obsidian & Gold" technical aesthetic in your descriptions.

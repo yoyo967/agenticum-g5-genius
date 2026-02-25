@@ -236,7 +236,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
         <StatCard
           title="Swarm Readiness"
           value={loading ? '—' : (stats?.readiness ?? 'Offline')}
-          subtext="All 5 agents online"
+          subtext="All 8 agents online"
           icon={<Users size={20} />}
           accentColor="var(--color-gold)"
         />
@@ -386,7 +386,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
         <h3 className="label flex items-center gap-2">
           <Network size={14} className="text-accent" /> Live Swarm Telemetry
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
           {swarmState ? [swarmState, ...Object.values(swarmState.subAgents || {})].map((agent, i) => (
             <motion.div 
               key={agent.id} 
@@ -396,7 +396,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
               className="card group hover:border-white/20"
             >
               <div className="flex justify-between items-center mb-3">
-                <span className="font-display text-sm uppercase" style={{ color: agent.color }}>
+                <span className="font-display text-xs uppercase" style={{ color: agent.color }}>
                   {agent.id.toUpperCase()}
                 </span>
                 <span className={`status-dot ${agent.state !== 'idle' ? 'processing' : 'offline'}`} />
@@ -427,7 +427,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
               </div>
             </motion.div>
           )) : (
-            [...Array(5)].map((_, i) => (
+            [...Array(8)].map((_, i) => (
               <div key={i} className="card flex flex-col gap-3">
                 <div className="flex justify-between items-center">
                   <div className="skeleton w-16 h-5" />

@@ -8,6 +8,18 @@ export interface TwinLog {
   input: any;
   output: any;
   provenance: string[];
+  telemetry?: {
+    searchQueries?: string[];
+    groundingSources?: string[];
+    modelVersion?: string;
+  };
+  senate_evaluation?: {
+    compliance_score: number;
+    seo_excellence_score: number;
+    veto_triggered: boolean;
+    feedback: string;
+  };
+  senate_approved?: boolean;
   evalResult?: any;
   timestamp: Date;
 }

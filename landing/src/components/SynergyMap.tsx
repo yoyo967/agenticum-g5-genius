@@ -23,11 +23,14 @@ interface DataFlow {
 }
 
 const AGENTS: Agent[] = [
-  { id: 'sn00', name: 'NEXUS PRIME', role: 'Orchestrator', color: '#00E5FF', cx: 50, cy: 18 },
-  { id: 'sp01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: '#7B2FBE', cx: 85, cy: 45 },
-  { id: 'cc06', name: 'COGNITIVE CORE', role: 'Copywriter', color: '#FF007A', cx: 72, cy: 82 },
-  { id: 'da03', name: 'DESIGN ARCHITECT', role: 'Visual Artist', color: '#FFD700', cx: 28, cy: 82 },
-  { id: 'ra01', name: 'SECURITY CORTEX', role: 'Auditor', color: '#00FF88', cx: 15, cy: 45 },
+  { id: 'sn00', name: 'NEXUS PRIME', role: 'Orchestrator', color: '#00E5FF', cx: 50, cy: 15 },
+  { id: 'so00', name: 'SOVEREIGN CORE', role: 'Pilot', color: '#00E5FF', cx: 75, cy: 25 },
+  { id: 'sp01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: 'var(--color-gold)', cx: 85, cy: 50 },
+  { id: 'cc06', name: 'COGNITIVE CORE', role: 'Copywriter', color: 'var(--color-emerald)', cx: 75, cy: 75 },
+  { id: 'da03', name: 'DESIGN ARCHITECT', role: 'Visual Artist', color: '#FFD700', cx: 50, cy: 85 },
+  { id: 'ba07', name: 'BROWSER ARCHITECT', role: 'Researcher', color: '#00FF88', cx: 25, cy: 75 },
+  { id: 've01', name: 'MOTION DIRECTOR', role: 'Video synthesis', color: '#FF007A', cx: 15, cy: 50 },
+  { id: 'ra01', name: 'SECURITY CORTEX', role: 'Auditor', color: '#00FF88', cx: 25, cy: 25 },
 ];
 
 let flowIdCounter = 0;

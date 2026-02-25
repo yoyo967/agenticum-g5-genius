@@ -1,6 +1,6 @@
 # 🧠 AGENTICUM G5 GENIUS — ENTERPRISE OS V2 MEGAMASTERPLAN
 
-**Codex: Alphate Inc — The Evolution**
+**Codex: Agenticum G5— The Evolution**
 _Status: INITIALIZING FULL ENTERPRISE DEPLOYMENT_
 
 ---

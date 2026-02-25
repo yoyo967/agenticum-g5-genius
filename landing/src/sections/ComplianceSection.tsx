@@ -25,7 +25,7 @@ const pillars = [
 ];
 
 export const ComplianceSection: React.FC = () => (
-  <section id="compliance-demo" className="py-32 px-6 bg-[#050010]">
+  <section id="compliance-demo" className="py-32 px-6 bg-midnight-900">
     <div className="max-w-6xl mx-auto">
       <div className="text-center mb-16">
         <span className="text-xs uppercase tracking-widest text-emerald-400 font-mono">EU-First · Maximum Excellence</span>

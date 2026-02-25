@@ -10,7 +10,7 @@ export const ColumnaRadarSection: React.FC = () => {
   const [active, setActive] = useState(0);
 
   return (
-    <section id="columna-demo" className="py-32 px-6 bg-[#050010]">
+    <section id="columna-demo" className="py-32 px-6 bg-midnight-900">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <span className="text-xs uppercase tracking-widest text-amber-400 font-mono">Columna · Zero-Day Intelligence</span>

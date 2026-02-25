@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Terminal, Briefcase, Zap, Send, FileText, Image as ImageIcon, Cpu, Activity, CircleDashed, DollarSign, Crosshair, BarChart2, Plus, ChevronRight, RefreshCw, Clock, Download as DownloadIcon } from 'lucide-react';
+import { Target, Terminal, Briefcase, Zap, Send, FileText, Image as ImageIcon, Cpu, Activity, CircleDashed, DollarSign, Crosshair, BarChart2, Plus, ChevronRight, RefreshCw, Clock, Download as DownloadIcon, Search, Film, Shield, Eye } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadCSV, downloadZIP, downloadPDF } from '../utils/export';
+import { PerfectTwinInspector } from './os/PerfectTwinInspector';
 
 interface Campaign {
   id: string;
@@ -42,12 +43,17 @@ export function CampaignManager() {
   const [isOrchestrating, setIsOrchestrating] = useState(false);
   const [launchStatus, setLaunchStatus] = useState<'idle' | 'launching' | 'success' | 'error'>('idle');
   const [launchReport, setLaunchReport] = useState<string | null>(null);
+  const [showInspector, setShowInspector] = useState(false);
+  const [currentRunId, setCurrentRunId] = useState<string | null>(null);
 
   const [agentTasks, setAgentTasks] = useState<AgentDraft[]>([
     { agent: 'sn00', role: 'Orchestrator', status: 'pending' },
+    { agent: 'so00', role: 'Pilot', status: 'pending' },
     { agent: 'sp01', role: 'Strategy', status: 'pending' },
     { agent: 'cc06', role: 'Copywriter', status: 'pending' },
     { agent: 'da03', role: 'Visuals', status: 'pending' },
+    { agent: 'ba07', role: 'Research', status: 'pending' },
+    { agent: 've01', role: 'Motion', status: 'pending' },
     { agent: 'ra01', role: 'Audit', status: 'pending' },
   ]);
 
@@ -101,6 +107,9 @@ export function CampaignManager() {
   const handleDispatch = async () => {
     if (!directive.trim() && (!clientName.trim() || !objective.trim())) return;
     setIsOrchestrating(true);
+    const runId = `pmax_${Date.now()}`;
+    setCurrentRunId(runId);
+    setShowInspector(true);
     setAgentTasks(prev => prev.map(t => ({ ...t, status: 'working', output: undefined })));
 
     // Save campaign to Firestore via API
@@ -415,12 +424,37 @@ export function CampaignManager() {
 
         {/* Right: Live Agent Delegation Matrix */}
         <div className="w-1/2 glass flex flex-col overflow-hidden">
-          <div className="p-4 border-b border-white/5 shrink-0">
+          <div className="p-4 border-b border-white/5 shrink-0 flex items-center justify-between">
             <h3 className="font-display text-sm uppercase tracking-wide flex items-center gap-2">
               <Send size={14} className="text-accent" /> Agent Delegation Matrix
             </h3>
+            {isOrchestrating && (
+              <button 
+                onClick={() => setShowInspector(!showInspector)}
+                className={`btn btn-xs flex items-center gap-2 ${showInspector ? 'btn-primary' : 'btn-ghost'}`}
+              >
+                <Eye size={12} /> Glass Box
+              </button>
+            )}
           </div>
-          <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-3">
+          <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-3 relative">
+            <AnimatePresence>
+              {showInspector && (
+                <motion.div
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 50 }}
+                  className="absolute inset-0 z-10 bg-void/95 p-4 overflow-hidden border-l border-white/10"
+                >
+                  <PerfectTwinInspector 
+                    runId={currentRunId} 
+                    onClose={() => setShowInspector(false)} 
+                    standalone={false} 
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {!isOrchestrating && agentTasks.every(t => t.status === 'pending') ? (
               <div className="h-full flex flex-col items-center justify-center text-center">
                 <CircleDashed size={40} className="text-white/10 mb-3" />
@@ -431,7 +465,15 @@ export function CampaignManager() {
               <AnimatePresence>
                 {agentTasks.map((task, idx) => {
                   if (task.status === 'pending' && !isOrchestrating) return null;
-                  const Icon = task.agent === 'cc06' ? FileText : task.agent === 'da03' ? ImageIcon : task.agent === 'sn00' ? Cpu : task.agent === 'ra01' ? Briefcase : Briefcase;
+                  const Icon = 
+                    task.agent === 'cc06' ? FileText : 
+                    task.agent === 'da03' ? ImageIcon : 
+                    task.agent === 'sn00' ? Cpu : 
+                    task.agent === 'so00' ? Cpu :
+                    task.agent === 'sp01' ? Zap :
+                    task.agent === 'ba07' ? Search :
+                    task.agent === 've01' ? Film :
+                    task.agent === 'ra01' ? Shield : Briefcase;
 
                   return (
                     <motion.div key={task.agent}

@@ -39,7 +39,7 @@ export class DA03Architect extends BaseAgent {
     super({
       id: 'da03',
       name: 'Design Architecture Genius',
-      color: '#A855F7'
+      color: '#00FF88'
     });
   }
 

@@ -63,7 +63,7 @@ export function CTASection() {
         {/* Fine Print */}
         <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.6 }}
           className="font-mono text-[10px] text-white/15 mt-10 uppercase tracking-widest">
-          Gemini Live Agent Challenge 2026 · Alphate Inc · 100% Original Code
+          Gemini Live Agent Challenge 2026 · Agenticum G5 · 100% Original Code
         </motion.p>
       </div>
     </section>

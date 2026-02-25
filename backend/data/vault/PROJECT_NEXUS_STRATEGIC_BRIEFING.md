@@ -1,6 +1,6 @@
 # PROJECT NEXUS — STRATEGIC BRIEFING
 
-## Alphate Inc. // Internal — Founder & Chief Architect Eyes Only
+## Agenticum G5 // Internal — Founder & Chief Architect Eyes Only
 
 ### Classification: CONFIDENTIAL | Version 2.0 | 2026-02-22
 
@@ -49,7 +49,7 @@ Die Plattform nutzt vollständig das Google-Ökosystem (Vertex AI / Gemini 2.0 F
 
 ### 2.2 Backend (Deployed auf Google Cloud)
 
-**GCP Project:** `alphate-enterprise-g5`
+**GCP Project:** `Agenticum G5-enterprise-g5`
 
 - **Cloud Run** — Node.js Backend-Services
 - **Vertex AI** — Gemini 2.0 Flash Integration für Content-Generierung, Reasoning, Übersetzung

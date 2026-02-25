@@ -19,7 +19,7 @@ const STEPS: FlowStep[] = [
     icon: <Mic size={22} />,
     label: 'VOICE INPUT',
     sublabel: 'Gemini Live API',
-    description: '"Jarvis, research the enterprise market and forge a cinematic campaign."',
+    description: '"Genius, research the enterprise market and forge a cinematic campaign."',
     color: '#FFD700',
     tech: 'WebRTC · PCM 16kHz · Base64 Stream',
     duration: 1800,
@@ -29,7 +29,7 @@ const STEPS: FlowStep[] = [
     icon: <Zap size={22} />,
     label: 'INTENT DETECTION',
     sublabel: 'Function Calling',
-    description: 'SO-00 Sovereign recognizes the command → Triggers the recursive SwarmProtocol.',
+    description: 'GENIUS (SO-00) recognizes the command → Triggers the recursive SwarmProtocol.',
     color: '#00E5FF',
     tech: 'Gemini 2.0 Flash · BidiProtocol · IntentPulse',
     duration: 1400,
@@ -58,8 +58,8 @@ const STEPS: FlowStep[] = [
     id: 4,
     icon: <Layers size={22} />,
     label: 'SWARM EXECUTION',
-    sublabel: 'CC06 · DA03 · VE01',
-    description: 'CC06 writes copy. DA03 generates images. VE01 synthesizes cinematic motion — simultaneously.',
+    sublabel: 'SP01 · CC06 · DA03 · VE01',
+    description: 'SP01 designs the strategy. CC06 writes copy. DA03 generates images. VE01 synthesizes motion — simultaneously.',
     color: '#FF007A',
     tech: 'Imagen 3 · Cinematic Forge · SwarmBus',
     duration: 2600,
@@ -142,7 +142,7 @@ export function VoiceFlowSection() {
           </motion.h2>
           <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
             className="font-mono text-white/40 text-lg max-w-2xl mx-auto leading-relaxed">
-            Give a voice command. Gemini 2.0 identifies your intent and triggers 5 specialized
+            Give a voice command. Gemini 2.0 identifies your intent and triggers 8 specialized
             agents in milliseconds — thinking, writing, visualizing, and auditing in parallel.
           </motion.p>
         </div>

@@ -19,7 +19,10 @@ export function GeopoliticsHub() {
   const fetchNodes = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/sovereign/nodes`);
-      if (res.ok) setNodes(await res.json());
+      if (res.ok) {
+        const payload = await res.json();
+        setNodes(payload.data || []);
+      }
     } catch {
       console.error('Failed to fetch global nodes');
     }
@@ -204,7 +207,7 @@ export function GeopoliticsHub() {
                          </td>
                          <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
-                               <div className={`w-1.5 h-1.5 rounded-full ${node.status === 'sovereign' ? 'bg-accent' : node.status === 'syncing' ? 'bg-gold' : 'bg-emerald'} animate-pulse`} />
+                               <div className={`w-1.5 h-1.5 rounded-full ${node.status === 'sovereign' ? 'bg-accent' : node.status === 'syncing' ? 'bg-gold' : 'bg-emerald'} ${node.status === 'syncing' ? 'animate-pulse' : ''}`} />
                                <span className="uppercase text-white/40">{node.status}</span>
                             </div>
                          </td>

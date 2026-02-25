@@ -10,14 +10,16 @@
 
 AGENTICUM G5 GENIUS is a **Hyper-Autonomous Agency Operating System**. It moves beyond simple task execution into a complete, immersive environment where the user ("The Boss") orchestrates a swarm of specialized agents to build, market, and scale digital products.
 
-### The Swarm (The 6 Pillars)
+### The Swarm (The 8 Pillars)
 
 - **SN-00 (Nexus Prime)**: The Orchestrator. Triggers workflows and manages agent dialogue.
+- **SO-00 (Sovereign Core)**: The "Sentient" layer. Fuses user vision with technical congruence.
 - **SP-01 (Strategic Cortex)**: Market Intelligence, Competitive Analysis, and SEO Strategy.
 - **CC-06 (Cognitive Core)**: Copywriting, Brand Voice, and High-Conversion Sales Text.
 - **DA-03 (Design Architect)**: Visual Assets (Imagen 3), UI/UX Layouts, and Creative Direction.
-- **RA-01 (Security Cortex)**: Compliance, Brand Safety, and Output Auditing (The Senate).
 - **BA-07 (Browser Architect)**: Live Intelligence gathering, Deep Research, and Browser-based Automation.
+- **VE-01 (Motion Director)**: Video Synthesis, Cinematic Forge storyboarding, and motion branding.
+- **RA-01 (Security Cortex)**: Compliance, Brand Safety, and Output Auditing (The Senate).
 
 ---
 

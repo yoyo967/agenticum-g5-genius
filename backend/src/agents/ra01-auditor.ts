@@ -35,7 +35,7 @@ export class RA01Auditor extends BaseAgent {
     super({
       id: 'ra01',
       name: 'Adversarial Auditor Genius',
-      color: '#EA4335'
+      color: '#00FF88'
     });
   }
 

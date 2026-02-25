@@ -4,7 +4,7 @@ import {
   Bot, Shield, Cpu, Zap, Palette, Film, 
   Terminal, Activity, CheckCircle2, 
   Sparkles, Scale, DollarSign, Leaf,
-  Mic, MicOff, Volume2, Link2Off, AlertCircle
+  Mic, MicOff, Volume2, Link2Off, AlertCircle, FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ExportMenu } from './ui';
@@ -284,7 +284,7 @@ export function GeniusConsole() {
       setOutput(null);
       ws.current?.send(JSON.stringify({ 
         type: 'start', 
-        input: 'Erstelle eine Pillar-Page Strategie für AGENTICUM G5.' 
+        input: 'Create a Pillar-Page strategy for AGENTICUM G5.' 
       }));
       addLog('action', 'Initializing Neural Orchestration...');
     }
@@ -346,13 +346,14 @@ export function GeniusConsole() {
     const aid = id.toLowerCase().replace('-', '');
     switch (aid) {
       case 'sn00': return <Cpu size={16} />;
+      case 'so00': return <Cpu size={16} />;
       case 'sp01': return <Zap size={16} />;
-      case 'cc06': return <Film size={16} />;
+      case 'cc06': return <FileText size={16} />;
       case 'da03': return <Palette size={16} />;
+      case 'ba07': return <Sparkles size={16} />;
       case 'ra01': return <Shield size={16} />;
       case 'pm07': return <Bot size={16} />;
       case 've01': return <Film size={16} />;
-      case 'prom07': return <Activity size={16} />;
       default: return <Bot size={16} />;
     }
   };
@@ -500,11 +501,11 @@ export function GeniusConsole() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className={`p-3 rounded-lg border transition-all ${agent.state !== 'idle' ? 'bg-white/3' : 'opacity-40'}`}
-                style={{ borderColor: agent.state !== 'idle' ? `${agent.color}33` : 'transparent' }}
+                style={{ borderColor: agent.state === 'error' ? '#EA433566' : agent.state !== 'idle' ? `${agent.color}33` : 'transparent' }}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded bg-white/5" style={{ color: agent.color }}>
+                    <div className="p-1.5 rounded bg-white/5" style={{ color: agent.state === 'error' ? '#EA4335' : agent.color }}>
                       {getAgentIcon(agent.id)}
                     </div>
                     <span className="text-[10px] uppercase font-bold tracking-tight">{agent.id}</span>
@@ -540,6 +541,7 @@ export function GeniusConsole() {
                   <div className="flex justify-between items-center text-[8px] uppercase tracking-widest font-black">
                     <span 
                       className={`px-1 rounded ${
+                        agent.state === 'error' ? 'text-red-500 bg-red-500/10' : 
                         agent.state === 'thinking' ? 'text-neural-gold bg-neural-gold/10' : 
                         agent.state === 'working' ? 'text-neural-blue bg-neural-blue/10' : 
                         agent.state === 'done' ? 'text-green-500 bg-green-500/10' : 'opacity-30'
@@ -552,7 +554,7 @@ export function GeniusConsole() {
                   <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                     <motion.div 
                       className="h-full" 
-                      style={{ backgroundColor: agent.color }}
+                      style={{ backgroundColor: agent.state === 'error' ? '#EA4335' : agent.color }}
                       animate={{ width: `${agent.progress}%` }}
                       transition={{ type: 'spring', stiffness: 50, damping: 20 }}
                     />
@@ -561,7 +563,7 @@ export function GeniusConsole() {
                     {agent.state === 'thinking' && (
                       <span className="w-1.5 h-1.5 rounded-full bg-neural-gold animate-ping shrink-0" />
                     )}
-                    <p className="text-[9px] opacity-60 truncate italic font-medium flex-1 overflow-hidden">{agent.lastStatus}</p>
+                    <p className={`text-[9px] truncate italic font-medium flex-1 overflow-hidden ${agent.state === 'error' ? 'text-red-500 opacity-100' : 'opacity-60'}`}>{agent.lastStatus}</p>
                   </div>
                 </div>
               </motion.div>
@@ -627,7 +629,7 @@ export function GeniusConsole() {
                     <div className="absolute inset-0 bg-linear-to-br from-neural-blue/5 to-neural-gold/5 opacity-50 pointer-events-none" />
                     
                     <div className="relative mb-8">
-                      {/* Jarvis Pulse Core */}
+                      {/* Genius Pulse Core */}
                       <motion.div 
                         animate={{ 
                           scale: [1, 1.2, 1],
@@ -660,14 +662,14 @@ export function GeniusConsole() {
                       <motion.div animate={{ rotate: -360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute inset-[-40px] rounded-full border border-solid border-neural-gold/10" />
                     </div>
 
-                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-[0.2em] mb-2 drop-shadow-sm">J.A.R.V.I.S Active</h3>
+                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-[0.2em] mb-2 drop-shadow-sm">GENIUS Active</h3>
                     <p className="text-[10px] text-neural-blue/80 uppercase tracking-[0.5em] font-mono font-bold">Multimodal Neural Uplink Synchronized</p>
                     
                     <div className="flex items-center gap-2 mt-10 h-16 w-full max-w-lg justify-center">
                       {[1.0, 0.4, 1.2, 0.3, 0.8, 0.6, 1.1, 0.5, 0.9, 0.4, 0.7, 0.5, 0.3, 1.0, 0.6, 1.3, 0.4, 0.8, 0.5, 0.3, 1.1, 0.6, 0.9, 0.4].map((val, i) => (
                         <motion.div
                            key={i}
-                           className={`w-1.5 rounded-full ${i % 3 === 0 ? 'bg-neural-gold' : 'bg-neural-blue'}`}
+                           className={`w-1.5 rounded-full ${i % 3 === 0 ? 'bg-neural-gold' : 'bg-accent'}`}
                            animate={{ height: ['15%', `${val * 80}%`, '15%'] }}
                            transition={{ repeat: Infinity, duration: 0.3 + (i % 6) * 0.1, ease: "easeInOut" }}
                         />
@@ -800,9 +802,9 @@ export function GeniusConsole() {
                                 log.type === 'system' ? 'text-white/30' :
                                 log.type === 'error' ? 'text-red-500' :
                                 log.type === 'action' ? 'text-neural-gold' :
-                                log.type === 'agent' ? (log.message.includes('PROMETHEUS') ? 'text-neural-blue brightness-150 drop-shadow-[0_0_10px_rgba(0,229,255,0.4)]' : 'text-neural-blue') :
+                                log.type === 'agent' ? (log.message?.includes('PROMETHEUS') ? 'text-neural-blue brightness-150 drop-shadow-[0_0_10px_rgba(0,229,255,0.4)]' : 'text-neural-blue') :
                                 log.type === 'success' ? 'text-neural-gold drop-shadow-[0_0_8px_rgba(251,188,4,0.4)]' : 'text-neural-blue'
-                              }`}>{log.type === 'success' ? 'SOVEREIGN' : log.message.includes('PROMETHEUS') ? 'PROMETHEUS' : log.type}</span>
+                              }`}>{log.type === 'success' ? 'SOVEREIGN' : log.message?.includes('PROMETHEUS') ? 'PROMETHEUS' : log.type}</span>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[11px] opacity-80 leading-normal">{log.message}</p>
                                 {log.imageUrl && (

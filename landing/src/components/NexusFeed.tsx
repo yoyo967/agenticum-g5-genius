@@ -45,24 +45,24 @@ export const NexusFeed = () => {
 
     fetchFeed();
 
-    // Simulate sentient consciousness stream
-    const fragments = [
-      "Optimizing semantic resonance for [Strategic Pillar 4]...",
-      "RA-01 detecting White Space opportunity in 'Post-Sovereign Marketing' keywords",
-      "CC-06 generating high-conversion narrative hooks for 'Sentient UX'...",
-      "Nexus historical precedent [2026-02-23] successfully injected into current manifold",
-      "DA-03 scavenging visual aesthetics for 'Maximum Excellence' standard...",
-      "Swarm throughput stabilized at 4.2k tokens/sec. Intelligence density nominal."
-    ];
-    
-    const interval = setInterval(() => {
-      setCognitiveThreads(prev => {
-        const next = [...prev, fragments[Math.floor(Math.random() * fragments.length)]];
-        return next.slice(-5); // Keep last 5
-      });
-    }, 3000);
+    // Listen for real Nexus/Swarm events
+    const handleNexusEvent = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.message || detail?.thought) {
+        setCognitiveThreads(prev => {
+          const next = [...prev, detail.message || detail.thought];
+          return next.slice(-5);
+        });
+      }
+    };
 
-    return () => clearInterval(interval);
+    window.addEventListener('swarm-payload', handleNexusEvent);
+    window.addEventListener('swarm-status', handleNexusEvent);
+    
+    return () => {
+      window.removeEventListener('swarm-payload', handleNexusEvent);
+      window.removeEventListener('swarm-status', handleNexusEvent);
+    };
   }, []);
 
   if (loading) {

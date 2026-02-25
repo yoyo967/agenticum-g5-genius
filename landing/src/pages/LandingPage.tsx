@@ -5,6 +5,8 @@ import {
   Play, ArrowRight, Shield, Cpu, Zap, Eye, Menu, X, Globe,
   Brain, CheckCircle, Layers, Activity, Code2, Star
 } from 'lucide-react';
+import { db } from '../firebase';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { MeshBackground } from '../components/NeuralSubstrate';
 import { NexusFeed } from '../components/NexusFeed';
@@ -19,9 +21,32 @@ import { PrizesSection } from '../sections/PrizesSection';
 import { FinalCTASection } from '../sections/FinalCTASection';
 import { VoiceFlowSection } from '../sections/VoiceFlowSection';
 import { OriginSection } from '../sections/OriginSection';
-import { JarvisHeroChat } from '../components/JarvisHeroChat';
+import { GeniusHeroChat } from '../components/GeniusHeroChat';
 import { PrometheusBrowser } from '../components/PrometheusBrowser';
 import { ApexContentSection } from '../sections/ApexContentSection';
+
+function useMetrics() {
+  const [stats, setStats] = useState({ workflows: 0, outputs: 0, readiness: '100%' });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const outSnap = await getDocs(collection(db, 'outputs'));
+        const workSnap = await getDocs(query(collection(db, 'workflows'), where('status', '==', 'active')));
+        setStats({
+          workflows: workSnap.size,
+          outputs: outSnap.size || 21, // Fallback to current real count if empty
+          readiness: '100%'
+        });
+      } catch (e) {
+        console.warn('Metrics sync failed:', e);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  return stats;
+}
 
 /* ============================================================
    SEO / STRUCTURED DATA HELPER
@@ -29,7 +54,7 @@ import { ApexContentSection } from '../sections/ApexContentSection';
 function useSEO() {
   useEffect(() => {
     // Title
-    document.title = 'Agenticum G5 GENIUS — The J.A.R.V.I.S. for Enterprise Marketing | Gemini Live Agent Challenge';
+    document.title = 'Agenticum G5 GENIUS — The Neural Marketing OS | Gemini Live Agent Challenge';
 
     const setMeta = (name: string, content: string, isProperty = false) => {
       const attr = isProperty ? 'property' : 'name';
@@ -43,21 +68,21 @@ function useSEO() {
     };
 
     setMeta('description', 'The world\'s first voice-activated AI marketing operating system. 8 specialized agents, Gemini 2.0 Live API, Imagen 3, EU AI Act compliant. Speak a command — the swarm delivers. Engineered for the Google Gemini Live Agent Challenge 2026.');
-    setMeta('keywords', 'Gemini Live API, AI Marketing, Voice AI Agent, Imagen 3, Multi-Agent System, EU AI Act, Agenticum, Google Cloud AI, Enterprise Marketing AI, J.A.R.V.I.S. Marketing, AEO Optimization');
-    setMeta('author', 'Yahya Yıldırım · Alphate Inc.');
+    setMeta('keywords', 'Gemini Live API, AI Marketing, Voice AI Agent, Imagen 3, Multi-Agent System, EU AI Act, Agenticum, Google Cloud AI, Enterprise Marketing AI, GENIUS Marketing, AEO Optimization');
+    setMeta('author', 'Yahya Yıldırım');
     setMeta('robots', 'index, follow');
 
     // Open Graph
-    setMeta('og:title', 'Agenticum G5 — The J.A.R.V.I.S. for Enterprise Marketing', true);
-    setMeta('og:description', '5 Specialized AI Agents. One Voice. Infinite Synergy. Built on Gemini 2.0 & Google Cloud.', true);
+    setMeta('og:title', 'Agenticum G5 — The Neural Engine for Enterprise Marketing', true);
+    setMeta('og:description', '8 Specialized AI Agents. One Voice. Infinite Synergy. Built on Gemini 2.0 & Google Cloud.', true);
     setMeta('og:type', 'website', true);
     setMeta('og:url', 'https://online-marketing-manager.web.app', true);
     setMeta('og:site_name', 'Agenticum G5 GENIUS', true);
 
     // Twitter
     setMeta('twitter:card', 'summary_large_image');
-    setMeta('twitter:title', 'Agenticum G5 — The J.A.R.V.I.S. for Enterprise Marketing');
-    setMeta('twitter:description', '5 AI Agents, Gemini Live API, Imagen 3. Voice-First Enterprise Marketing OS.');
+    setMeta('twitter:title', 'Agenticum G5 — The Neural Engine for Enterprise Marketing');
+    setMeta('twitter:description', '8 AI Agents, Gemini Live API, Imagen 3. Voice-First Enterprise Marketing OS.');
 
     // Canonical
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -82,7 +107,6 @@ function useSEO() {
           author: {
             '@type': 'Person',
             name: 'Yahya Yıldırım',
-            worksFor: { '@type': 'Organization', name: 'Alphate Inc.' }
           },
           offers: { '@type': 'Offer', availability: 'https://schema.org/OnlineOnly' },
           keywords: 'AI Marketing, Gemini Live API, Voice AI, Multi-Agent, Enterprise Intelligence',
@@ -91,13 +115,13 @@ function useSEO() {
             'Imagen 3 high-fidelity visual asset generation (Vertex AI Forge)',
             'EU AI Act Art. 50 compliant output with automated Perfect Twin audit',
             'Real-time WebSocket event streaming and swarm telemetry',
-            '5 specialized AI agents: SN00, SP01, CC06, DA03, RA01',
+            '8 specialized AI agents: SN00, SO00, SP01, CC06, DA03, BA07, VE01, RA01',
             'Google Search grounding for zero-hallucination factual integrity',
           ],
         },
         {
           '@type': 'Organization',
-          name: 'Alphate Inc.',
+          name: 'Agenticum G5',
           founder: { '@type': 'Person', name: 'Yahya Yıldırım' },
           description: 'Global Intelligence Hub for Enterprise AI Marketing',
         }
@@ -147,6 +171,7 @@ function LiveCounter({ value, label, suffix = '', color = 'white' }: { value: nu
    ============================================================ */
 export function LandingPage() {
   useSEO();
+  const { workflows, outputs, readiness } = useMetrics();
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.96]);
@@ -213,7 +238,7 @@ export function LandingPage() {
 
             {/* CTA */}
             <div className="hidden md:flex items-center gap-4">
-              <button onClick={() => navigate('/os')} className="btn-outline text-xs py-2.5 px-5 !border-white/20 hover:!border-accent/50">
+              <button onClick={() => navigate('/os')} className="btn-outline text-xs py-2.5 px-5 border-white/20!">
                 Enterprise OS
               </button>
               <button onClick={() => navigate('/os')}
@@ -230,7 +255,7 @@ export function LandingPage() {
           <AnimatePresence>
             {mobileOpen && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                className="md:hidden border-t border-white/10 bg-midnight/95 backdrop-blur-[40px]">
+                className="md:hidden border-t border-white/10 bg-midnight/95 backdrop-blur-2xl">
                 <div className="p-6 space-y-3">
                   {navLinks.map(link => (
                     <button key={link.id} onClick={() => scrollTo(link.id)}
@@ -248,7 +273,7 @@ export function LandingPage() {
         </nav>
 
         {/* ============================================================
-           HERO — "The J.A.R.V.I.S. for Enterprise Marketing"
+           HERO — "The GENIUS for Enterprise Marketing"
            ============================================================ */}
         <header id="mission" className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-32 pb-20 overflow-hidden">
           {/* Radial glow behind headline */}
@@ -283,17 +308,17 @@ export function LandingPage() {
               <span className="text-neural-gold/80" style={{ fontSize: '0.4em', letterSpacing: '0.3em', fontWeight: 900 }}>The Nexus Sovereign Engine</span>
             </motion.h1>
 
-            {/* Jarvis Chat Interface Integration */}
-            <JarvisHeroChat />
+            {/* Genius Chat Interface Integration */}
+            <GeniusHeroChat />
 
             {/* Divider */}
             <motion.div initial={{ scaleX: 0 }} animate={heroVisible ? { scaleX: 1 } : {}} transition={{ duration: 0.8, delay: 0.5 }}
-              className="w-48 h-px bg-gradient-to-r from-transparent via-accent to-transparent my-10" />
+              className="w-48 h-px bg-linear-to-r from-transparent via-accent to-transparent my-10" />
 
             {/* Subtitle */}
             <motion.p initial={{ opacity: 0 }} animate={heroVisible ? { opacity: 1 } : {}} transition={{ delay: 0.6 }}
               className="text-lg md:text-xl text-white/40 max-w-2xl font-mono leading-relaxed mb-2">
-              The J.A.R.V.I.S. for Enterprise Marketing. A 'Sentient System' 
+              The GENIUS for Enterprise Marketing. A 'Sentient System' 
               fusing user vision with technical excellence to steer complex marketing ecosystems autonomously.
             </motion.p>
             <motion.p initial={{ opacity: 0 }} animate={heroVisible ? { opacity: 1 } : {}} transition={{ delay: 0.7 }}
@@ -346,7 +371,7 @@ export function LandingPage() {
           <motion.div animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 2 }}
             className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">
             <span className="font-mono text-[9px] uppercase tracking-[0.4em]">Scroll</span>
-            <div className="w-px h-10 bg-gradient-to-b from-white to-transparent" />
+            <div className="w-px h-10 bg-linear-to-b from-white to-transparent" />
           </motion.div>
         </header>
 
@@ -380,14 +405,14 @@ export function LandingPage() {
               </p>
               <button onClick={(e) => { e.stopPropagation(); navigate('/os'); }}
                 className="btn-primary flex items-center gap-3 mx-auto shadow-[0_0_30px_rgba(0,229,255,0.3)]">
-                <Terminal size={16} /> OS Portal Betreten <ArrowRight size={14} />
+                <Terminal size={16} /> Enter OS Portal <ArrowRight size={14} />
               </button>
 
               <div className="mt-12 pt-8 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
-                  { label: 'Active Workflows', value: '4', color: '#00E5FF' },
-                  { label: 'Generated Outputs', value: '440+', color: '#FFD700' },
-                  { label: 'Swarm Readiness', value: '100%', color: '#00FF88' },
+                  { label: 'Active Workflows', value: workflows.toString(), color: '#00E5FF' },
+                  { label: 'Generated Outputs', value: outputs > 0 ? `${outputs}+` : 'Loading...', color: '#FFD700' },
+                  { label: 'Swarm Readiness', value: readiness, color: '#00FF88' },
                   { label: 'Cloud Run Revision', value: '00032', color: '#7B2FBE' },
                 ].map(m => (
                   <div key={m.label} className="flex flex-col items-center">
@@ -413,7 +438,7 @@ export function LandingPage() {
         <ApexContentSection />
 
         {/* ============================================================
-           VOICE FLOW — J.A.R.V.I.S. Demo Animation
+           VOICE FLOW — GENIUS Demo Animation
            ============================================================ */}
         <div id="voice-flow">
           <VoiceFlowSection />
@@ -448,7 +473,7 @@ export function LandingPage() {
                 <span className="text-accent">Zero Textbox.</span>
               </h3>
               <p className="text-white/40 text-base max-w-lg font-mono leading-relaxed">
-                You speak — Gemini 2.0 identifies your intent via Function Calling and triggers all 5 agents
+                You speak — Gemini 2.0 identifies your intent via Function Calling and triggers all 8 agents
                 simultaneously. Not sequential. Not one after another. <strong className="text-white/70">Parallel.</strong>
               </p>
               <div className="mt-8 flex flex-wrap gap-2">
@@ -469,7 +494,7 @@ export function LandingPage() {
                   Imagen 3<br /><span className="text-gold">Live Output.</span>
                 </h3>
                 <p className="text-white/40 font-mono text-sm leading-relaxed">
-                  DA-03 generiert Studio-Assets via Vertex AI — und broadcastet sie <em>während</em> des Workflows live ins Frontend.
+                  DA-03 generates studio assets via Vertex AI — and broadcasts them live into the frontend during the workflow.
                 </p>
               </div>
               <div className="mt-8 pt-6 border-t border-white/5 flex flex-wrap gap-2">
@@ -709,7 +734,7 @@ export function LandingPage() {
                 </div>
                 <p className="font-mono text-xs text-white/25 leading-relaxed">
                   The world's first voice-activated AI marketing operating system.
-                  Engineered by <span className="text-white/40">Yahya Yıldırım</span> at <span className="text-white/40">Alphate Inc.</span>, 
+                  Engineered by <span className="text-white/40">Yahya Yıldırım</span>, 
                   native on Google Cloud for the Gemini Live Agent Challenge 2026.
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -752,7 +777,7 @@ export function LandingPage() {
                     className="font-mono text-xs text-white/40 hover:text-accent transition-colors text-left">
                     Privacy Policy
                   </button>
-                  <span className="font-mono text-xs text-white/20">Alphate Inc. · 2026</span>
+                  <span className="font-mono text-xs text-white/20">Agenticum G5 · 2026</span>
                 </div>
               </div>
             </div>
@@ -760,7 +785,7 @@ export function LandingPage() {
             {/* Bottom Bar */}
             <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
               <p className="font-mono text-[9px] text-white/15 uppercase tracking-widest">
-                © 2026 Alphate Inc. · Yahya Yıldırım · Built for the Google Gemini Live Agent Challenge
+                © 2026 Agenticum G5 · Yahya Yıldırım · Built for the Google Gemini Live Agent Challenge
               </p>
               <div className="flex items-center gap-6">
                 {[

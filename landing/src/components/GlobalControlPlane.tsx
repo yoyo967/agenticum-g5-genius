@@ -18,7 +18,7 @@ export function GlobalControlPlane() {
     tokenLimit: 8192,
     safetyThreshold: 'BLOCK_MEDIUM_AND_ABOVE',
     swarms: {
-      sn00: true, sp01: true, cc06: true, da03: true, ra01: true, pm07: true, ve01: true
+      sn00: true, so00: true, sp01: true, cc06: true, da03: true, ba07: true, ve01: true, ra01: true
     }
   });
 
@@ -186,27 +186,28 @@ export function GlobalControlPlane() {
           <div className="space-y-3">
             {[
               { key: 'sn00', name: 'sn00', role: 'Orchestrator', color: 'var(--color-accent)' },
+              { key: 'so00', name: 'so00', role: 'Pilot', color: 'var(--color-accent)' },
               { key: 'sp01', name: 'sp01', role: 'Strategist', color: 'var(--color-gold)' },
               { key: 'cc06', name: 'cc06', role: 'Copywriter', color: 'var(--color-emerald)' },
               { key: 'da03', name: 'da03', role: 'Visual Architect', color: 'var(--color-magenta)' },
-              { key: 'ra01', name: 'ra01', role: 'Auditor', color: 'var(--color-gold)' },
-              { key: 'pm07', name: 'pm07', role: 'Pillar Master', color: 'var(--color-emerald)' },
+              { key: 'ba07', name: 'ba07', role: 'Researcher', color: 'var(--color-emerald)' },
               { key: 've01', name: 've01', role: 'Motion Director', color: '#FF6B00' },
+              { key: 'ra01', name: 'ra01', role: 'Auditor', color: 'var(--color-gold)' },
             ].map(agent => (
-              <div key={agent.key} className="flex items-center justify-between p-3 rounded-lg bg-white/2 border border-white/5 group hover:border-white/10 transition-colors">
+              <div key={agent.key} className="flex items-center justify-between p-2 rounded-lg bg-white/2 border border-white/5 group hover:border-white/10 transition-colors">
                 <div className="flex items-center gap-3">
                   <span className={`status-dot ${(settings.swarms as Record<string, boolean>)[agent.key] ? 'processing' : 'offline'}`} />
                   <div>
-                    <span className="font-display text-xs uppercase" style={{ color: agent.color }}>{agent.name}</span>
-                    <span className="font-mono text-[9px] text-white/25 block">{agent.role}</span>
+                    <span className="font-display text-[10px] uppercase" style={{ color: agent.color }}>{agent.name}</span>
+                    <span className="font-mono text-[8px] text-white/25 block">{agent.role}</span>
                   </div>
                 </div>
                 <button onClick={() => setSettings(prev => ({
                   ...prev,
                   swarms: { ...prev.swarms, [agent.key]: !(prev.swarms as Record<string, boolean>)[agent.key] }
                 }))}
-                  className={`w-10 h-5 rounded-full transition-colors ${(settings.swarms as Record<string, boolean>)[agent.key] ? 'bg-emerald' : 'bg-white/10'}`}>
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${(settings.swarms as Record<string, boolean>)[agent.key] ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                  className={`w-8 h-4 rounded-full transition-colors ${(settings.swarms as Record<string, boolean>)[agent.key] ? 'bg-emerald' : 'bg-white/10'}`}>
+                  <div className={`w-3 h-3 rounded-full bg-white transition-transform ${(settings.swarms as Record<string, boolean>)[agent.key] ? 'translate-x-4' : 'translate-x-0.5'}`} />
                 </button>
               </div>
             ))}

@@ -15,6 +15,7 @@ import senateRoutes from './routes/senate';
 import deploymentRoutes from './routes/deployment';
 import clientsRouter from './routes/clients';
 import bridgeRoutes from './routes/bridge';
+import columnaRoutes from './routes/columna';
 import { sovereignService } from './services/sovereign-service';
 import { autopilotService } from './services/cron';
 import { clientManager } from './services/client-manager';
@@ -58,6 +59,7 @@ app.use('/api/v1/senate', senateRoutes);
 app.use('/api/v1/deploy', deploymentRoutes);
 app.use('/api/v1/clients', clientsRouter);
 app.use('/api/v1/bridge', bridgeRoutes);
+app.use('/api/v1/columna', columnaRoutes);
 
 // --- SOVEREIGN AI / GEOPOLITICS ROUTES ---
 

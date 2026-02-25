@@ -45,7 +45,7 @@ export class SN00Orchestrator extends BaseAgent {
     super({
       id: 'sn00',
       name: 'Neural Orchestrator',
-      color: '#4285F4'
+      color: '#00E5FF'
     });
     this.strategist = new SP01Strategist();
     this.auditor = new RA01Auditor();

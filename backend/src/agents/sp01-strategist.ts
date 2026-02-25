@@ -23,7 +23,7 @@ export class SP01Strategist extends BaseAgent {
     super({
       id: 'sp01',
       name: 'Strategic Intelligence Genius',
-      color: '#34A853'
+      color: '#00FF88'
     });
   }
 
@@ -50,12 +50,13 @@ export class SP01Strategist extends BaseAgent {
       ${groundingData}
       
       CRITICAL INSTRUCTIONS:
-      1. INTEGRATE VAULT: You MUST prioritize the "VAULT INTELLIGENCE" provided above. Cite specific files (e.g., DA03_DESIGN_THEORY.md) if they appear in the snippets.
-      2. SEARCH & CITE: Use the live internet to find current market trends, competitor pricing, and news relevant to "${input}".
-      3. EVIDENCE: You MUST include a "SOURCES & EVIDENCE" section, citing both Vault snippets and live URLs.
-      4. FRAMEWORK: Apply the StoryBrand Framework to define the Customer as the Hero.
-      5. PSYCHOLOGY: Integrate Kahneman's "Availability Heuristic" and "Loss Aversion" into the narrative.
-      6. DESIGN: Propose a "Bauhaus-Inspired" visual direction for this strategy.
+      1. MAXIMAL DEPTH: AVOID MARKETING SUMMARIES. Deliver an exhaustive technical blueprint (minimum 1500 words equivalent logic density).
+      2. INTEGRATE VAULT: You MUST prioritize the "VAULT INTELLIGENCE" provided above. Cite specific files (e.g., DA03_DESIGN_THEORY.md) if they appear in the snippets.
+      3. SEARCH & CITE: Use the live internet to find current market trends, competitor pricing, and news relevant to "${input}".
+      4. EVIDENCE: You MUST include a "SOURCES & EVIDENCE" section, citing both Vault snippets and live URLs.
+      5. FRAMEWORK: Apply the StoryBrand Framework to define the Customer as the Hero.
+      6. PSYCHOLOGY: Integrate Kahneman's "Availability Heuristic" and "Loss Aversion" into the narrative.
+      7. DESIGN: Propose a "Bauhaus-Inspired" visual direction for this strategy.
       
       OUTPUT FORMAT (MARKDOWN):
       # STRATEGIC MASTER BRIEF: ${input}

@@ -1,16 +1,41 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Globe, Shield, Zap, ExternalLink, Cpu, Layers } from 'lucide-react';
+import { Search, Globe, Shield, Zap, ExternalLink, Layers } from 'lucide-react';
 
 export function PrometheusBrowser() {
   const [activeLayer, setActiveLayer] = useState(0);
-  
+  const [researchLogs, setResearchLogs] = useState<{ text: string; source: string; timestamp: string }[]>([
+    { text: "Detected shift from manual SEO to agentic clustering. Global market is moving towards multi-model orchestration.", source: "market-intel.nexus", timestamp: new Date().toLocaleTimeString() },
+    { text: "Technical paradigm audit reveals significant 'Latency-Stall' in legacy competitor dashboards.", source: "tech-audit.log", timestamp: new Date().toLocaleTimeString() }
+  ]);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.id === 'prom07' || detail?.agentId === 'prom07') {
+        const message = detail.lastStatus || detail.thought || detail.message;
+        if (message) {
+          setResearchLogs(prev => [
+            { text: message, source: 'PROMETHEUS_LIVE_STREAM', timestamp: new Date().toLocaleTimeString() },
+            ...prev
+          ].slice(0, 10));
+        }
+      }
+    };
+    window.addEventListener('swarm-status', handler);
+    window.addEventListener('swarm-payload', handler);
+    return () => {
+      window.removeEventListener('swarm-status', handler);
+      window.removeEventListener('swarm-payload', handler);
+    };
+  }, []);
+
   const researchLayers = [
-    { title: "Layer 1: Competitive Scavenging", status: "Active", details: "Scanned 15+ competitor sitemaps. Identified structural gaps in SEO clustering." },
-    { title: "Layer 2: Technical Paradigm Audit", status: "Active", details: "Analyzing technology stacks via Wappalyzer-grade signatures. Detected Legacy-Stall." },
-    { title: "Layer 3: Global Grounding", status: "Active", details: "Verified factual claims via Google Search Grounding engine. 100% Truth Score achieved." },
-    { title: "Layer 4: Nexus Synthesis", status: "Active", details: "Injected findings into SO-00 Sovereign Core for strategic redirection." },
-    { title: "Layer 5: White Space Discovery", status: "Synthesizing", details: "Detecting untapped market vectors based on recursive trend analysis." }
+    { title: "Layer 1: Competitive Scavenging", status: "Active", details: "Scanned competitor sitemaps. Identifying structural gaps." },
+    { title: "Layer 2: Technical Paradigm Audit", status: "Active", details: "Analyzing technology stacks via Wappalyzer signatures. Detecting Legacy-Stall." },
+    { title: "Layer 3: Global Grounding", status: "Active", details: "Verifying factual claims via Google Search Grounding engine." },
+    { title: "Layer 4: Nexus Synthesis", status: "Active", details: "Fusing findings into SO-00 Sovereign Core for strategic redirection." },
+    { title: "Layer 5: White Space Discovery", status: "Synthesizing", details: "Detecting untapped market vectors." }
   ];
 
   return (
@@ -41,30 +66,21 @@ export function PrometheusBrowser() {
           </div>
 
           <div className="glass-card p-6 border-white/10 bg-black/40 h-[400px] overflow-y-auto scrollbar-hide space-y-6">
-            <div className="pb-6 border-b border-white/5">
-              <div className="flex items-center gap-2 text-accent/80 font-mono text-[10px] uppercase tracking-widest mb-3">
-                <Globe size={12} /> Target: enterprise-marketing-trends.com
+            {researchLogs.map((log, i) => (
+              <div key={i} className={`pb-6 border-b border-white/5 ${i > 0 ? 'opacity-60' : ''}`}>
+                <div className="flex items-center gap-2 text-accent/80 font-mono text-[10px] uppercase tracking-widest mb-3">
+                  <Globe size={12} /> Source: {log.source}
+                </div>
+                <p className="text-white/60 text-sm font-mono leading-relaxed italic">
+                  "{log.text}"
+                </p>
+                <div className="mt-4 flex gap-4">
+                  <div className="text-[10px] font-mono text-white/30 truncate max-w-[200px]">TIMESTAMP: {log.timestamp}</div>
+                  <ExternalLink size={10} className="text-white/20" />
+                </div>
               </div>
-              <p className="text-white/60 text-sm font-mono leading-relaxed italic">
-                "Detected shift from manual SEO to agentic clustering. Competitors are still relying on GPT-4 wrappers. 
-                Massive white-space opportunity for AGENTICUM G5 'Sentient-Pilot' architecture..."
-              </p>
-              <div className="mt-4 flex gap-4">
-                <div className="text-[10px] font-mono text-white/30 truncate max-w-[200px]">SOURCE: https://market-intel.nexus/report_2026</div>
-                <ExternalLink size={10} className="text-white/20" />
-              </div>
-            </div>
-
-            <div className="pb-6 border-b border-white/5 opacity-60">
-              <div className="flex items-center gap-2 text-neural-gold/80 font-mono text-[10px] uppercase tracking-widest mb-3">
-                <Cpu size={12} /> Analysis: Technical Stack Decompilation
-              </div>
-              <p className="text-white/40 text-sm font-mono leading-relaxed">
-                "Technical paradigm audit reveals significant 'Latency-Stall' in competitor dashboards. 
-                G5 42ms response time provides 12x competitive advantage..."
-              </p>
-            </div>
-
+            ))}
+            
             <motion.div 
               animate={{ opacity: [0.4, 1, 0.4] }} 
               transition={{ duration: 2, repeat: Infinity }}
@@ -112,7 +128,7 @@ export function PrometheusBrowser() {
           <div className="mt-8 p-6 glass rounded-2xl border-accent/20 bg-accent/5 text-center">
             <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.3em] block mb-2">Current Genius Score</span>
             <div className="text-4xl font-display font-black text-accent">98.4</div>
-            <div className="mt-2 text-[8px] font-mono text-accent/60 uppercase tracking-widest italic">Recursive Veredelung Active</div>
+            <div className="mt-2 text-[8px] font-mono text-accent/60 uppercase tracking-widest italic">Recursive Refinement Active</div>
           </div>
         </div>
       </div>

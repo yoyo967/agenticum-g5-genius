@@ -19,7 +19,7 @@ export class PM07Manager extends BaseAgent {
     super({
       id: 'pm07',
       name: 'Persistent Mission Genius',
-      color: '#607D8B'
+      color: '#00E5FF'
     });
   }
 

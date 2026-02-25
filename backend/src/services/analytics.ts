@@ -195,7 +195,7 @@ export class AnalyticsService {
         id: 'sys-boot',
         time: timeStr(now),
         agent: 'SYS.CORE',
-        text: `Firestore connected. ${totalOutputs} outputs indexed. 5 agents online.`,
+        text: `Firestore connected. ${totalOutputs} outputs indexed. 8 agents online.`,
         type: 'success',
       });
 
@@ -237,9 +237,12 @@ export class AnalyticsService {
   async getAgentsData(): Promise<{ id: string; name: string; role: string; color: string; tokensUsed: number; latencyMs: number; successRate: number; state: string }[]> {
     const agents = [
       { id: 'SN-00', name: 'NEXUS PRIME', role: 'Orchestrator', color: 'var(--color-agent-sn00)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+      { id: 'SO-00', name: 'SOVEREIGN CORE', role: 'Pilot', color: 'var(--color-agent-sn00)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
       { id: 'SP-01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: 'var(--color-agent-sp01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
       { id: 'CC-06', name: 'COGNITIVE CORE', role: 'Copywriter', color: 'var(--color-agent-cc06)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
       { id: 'DA-03', name: 'DESIGN ARCHITECT', role: 'Visual Artist', color: 'var(--color-agent-da03)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+      { id: 'BA-07', name: 'BROWSER ARCHITECT', role: 'Researcher', color: 'var(--color-agent-cc06)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+      { id: 'VE-01', name: 'MOTION DIRECTOR', role: 'Video Synthesis', color: 'var(--color-agent-da03)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
       { id: 'RA-01', name: 'SECURITY CORTEX', role: 'Auditor', color: 'var(--color-agent-ra01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
     ];
 

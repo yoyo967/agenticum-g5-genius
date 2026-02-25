@@ -31,13 +31,13 @@ const PROBLEM_POINTS = [
     icon: <Zap size={18} />,
     title: 'The Insight',
     color: '#FFD700',
-    text: "Tony Stark doesn't type. He speaks into the room, and J.A.R.V.I.S. thinks along, acts proactively, and delivers in real-time. Why should enterprise marketing be different?",
+    text: "Tony Stark doesn't type. He speaks into the room, and GENIUS thinks along, acts proactively, and delivers in real-time. Why should enterprise marketing be different?",
   },
   {
     icon: <Brain size={18} />,
     title: 'The Solution',
     color: '#00E5FF',
-    text: 'Agenticum G5 is the J.A.R.V.I.S. for enterprise online marketing. Voice-in, live-output. 5 specialized AI agents. EU AI Act compliant. Not a chatbot. A command center.',
+    text: 'Agenticum G5 is the GENIUS for enterprise online marketing. Voice-in, live-output. 8 specialized AI agents. EU AI Act compliant. Not a chatbot. A command center.',
   },
 ];
 
@@ -117,7 +117,7 @@ export function OriginSection() {
               </div>
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-widest text-white/30 mb-1">The Vision</p>
-                <h3 className="font-display text-2xl font-bold uppercase">Alphate Inc.</h3>
+                <h3 className="font-display text-2xl font-bold uppercase">Agenticum G5</h3>
               </div>
             </div>
             <p className="font-mono text-sm text-white/50 leading-relaxed mb-6">
@@ -164,7 +164,7 @@ export function OriginSection() {
             <span className="label-active block mb-4">The Swarm Architecture</span>
             <h2 className="font-display font-bold uppercase tracking-tight"
               style={{ fontSize: 'clamp(32px, 4.5vw, 72px)' }}>
-              5 Minds. <span className="text-accent">One System.</span>
+              8 Minds. <span className="text-accent">One System.</span>
             </h2>
           </div>
 

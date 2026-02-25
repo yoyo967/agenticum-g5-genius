@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Send, Bot, Sparkles, Zap, Command } from 'lucide-react';
 
-export function JarvisHeroChat() {
+export function GeniusHeroChat() {
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<{ role: 'user' | 'jarvis', text: string }[]>([
-    { role: 'jarvis', text: "Welcome to the Nexus. I am J.A.R.V.I.S. (G5 Sovereign). How shall we orchestrate your marketing ecosystem today?" }
+  const [messages, setMessages] = useState<{ role: 'user' | 'genius', text: string }[]>([
+    { role: 'genius', text: "Welcome to the Nexus. I am GENIUS. How shall we orchestrate your marketing ecosystem today?" }
   ]);
   const [isThinking, setIsThinking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -24,12 +24,11 @@ export function JarvisHeroChat() {
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsThinking(true);
 
-    // Simulated JARVIS logic for the Hero Section
-    // In production, this would connect to the Bidi API or Sovereign Agent
+    // GENIUS logic for the Hero Section
     setTimeout(() => {
       setMessages(prev => [...prev, { 
-        role: 'jarvis', 
-        text: `Command received: "${userMsg}". Initializing Swarm Protocol. SN00 is decomposing the intent... All agents standing by.` 
+        role: 'genius', 
+        text: `Command received: "${userMsg}". Initializing Swarm Protocol. Genetic optimization in progress... All 8 agents standing by.` 
       }]);
       setIsThinking(false);
     }, 1500);
@@ -77,14 +76,14 @@ export function JarvisHeroChat() {
                 className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border shadow-lg ${
-                  msg.role === 'jarvis' 
+                  msg.role === 'genius' 
                     ? 'bg-accent/10 border-accent/20 text-accent group-hover:shadow-[0_0_15px_rgba(0,229,255,0.3)]' 
                     : 'bg-white/5 border-white/10 text-white/40'
                 }`}>
-                  {msg.role === 'jarvis' ? <Zap size={14} className="animate-pulse" /> : <Command size={14} />}
+                  {msg.role === 'genius' ? <Zap size={14} className="animate-pulse" /> : <Command size={14} />}
                 </div>
                 <div className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm font-mono leading-relaxed ${
-                  msg.role === 'jarvis'
+                  msg.role === 'genius'
                     ? 'bg-accent/5 border border-white/5 text-white/80'
                     : 'bg-white/5 text-white/60 italic'
                 }`}>
@@ -104,7 +103,7 @@ export function JarvisHeroChat() {
                 <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }}>.</motion.span>
                 <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }}>.</motion.span>
               </div>
-              Nexus Processing
+              GENIUS Processing
             </motion.div>
           )}
         </div>
@@ -120,7 +119,7 @@ export function JarvisHeroChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Speak to the Sovereign..."
+              placeholder="Speak to GENIUS..."
               className="flex-1 bg-transparent border-none outline-none font-mono text-sm text-white placeholder:text-white/20 py-2"
             />
             <button 
@@ -133,10 +132,10 @@ export function JarvisHeroChat() {
           <div className="mt-3 flex items-center justify-between px-2">
             <div className="flex gap-4">
               <span className="flex items-center gap-1.5 text-[9px] font-mono text-white/20 uppercase tracking-widest">
-                <Bot size={10} /> Sovereign Active
+                <Bot size={10} /> GENIUS Active
               </span>
               <span className="flex items-center gap-1.5 text-[9px] font-mono text-white/20 uppercase tracking-widest">
-                <Sparkles size={10} /> Zero Latenz
+                <Sparkles size={10} /> Zero Latency
               </span>
             </div>
             <span className="text-[8px] font-mono text-white/10 uppercase tracking-[0.2em]">

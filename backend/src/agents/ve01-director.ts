@@ -8,7 +8,7 @@ export class VE01Director extends BaseAgent {
     super({
       id: 've01',
       name: 'Motion Director',
-      color: '#FF6B00'
+      color: '#00E5FF'
     });
     this.vertexAI = VertexAIService.getInstance();
   }

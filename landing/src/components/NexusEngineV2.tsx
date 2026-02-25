@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Workflow, Play, CheckCircle2, Cpu, Zap, Film, Palette, Shield, Bot, ChevronRight } from 'lucide-react';
+import { Workflow, Play, CheckCircle2, Cpu, Zap, Film, Shield, Bot, ChevronRight, Sparkles, FileText } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
-type AgentId = 'sn00' | 'sp01' | 'cc06' | 'da03' | 'ra01' | 'pm07' | 'trigger';
+type AgentId = 'sn00' | 'so00' | 'sp01' | 'cc06' | 'da03' | 'ba07' | 've01' | 'ra01' | 'trigger';
 
 interface WorkflowTemplate {
   name: string;
@@ -17,25 +17,25 @@ const WORKFLOWS: WorkflowTemplate[] = [
     id: 'campaign-full',
     name: 'Campaign Full Cycle',
     desc: 'End-to-end campaign deployment through all tactical nodes.',
-    agents: ['sn00', 'sp01', 'cc06', 'da03', 'ra01']
+    agents: ['so00', 'sp01', 'cc06', 'da03', 've01', 'ra01']
   },
   {
-    id: 'copy-sprint',
-    name: 'Copy Sprint',
-    desc: 'Rapid iteration of high-conversion copy variants.',
-    agents: ['sn00', 'cc06', 'ra01']
+    id: 'intel-scavenge',
+    name: 'Global Intel Scavenge',
+    desc: 'Deep research and competitor infiltration scan.',
+    agents: ['sn00', 'ba07', 'sp01']
   },
   {
     id: 'visual-campaign',
     name: 'Visual Campaign',
     desc: 'Generation of brand-aligned visual assets.',
-    agents: ['sn00', 'da03', 'ra01']
+    agents: ['sn00', 'da03', 've01', 'ra01']
   },
   {
-    id: 'strategy-brief',
-    name: 'Strategy Brief',
-    desc: 'Deep analytical target audience synthesis.',
-    agents: ['sn00', 'sp01', 'ra01']
+    id: 'sovereign-launch',
+    name: 'Sovereign Launch',
+    desc: 'Total market entry orchestration with compliance gate.',
+    agents: ['so00', 'sp01', 'da03', 'ra01']
   }
 ];
 
@@ -44,30 +44,35 @@ export function NexusEngineV2() {
   const [toast, setToast] = useState<string | null>(null);
   const [agentProgress, setAgentProgress] = useState<Record<string, 'idle' | 'processing' | 'complete'>>({});
   const [isRunning, setIsRunning] = useState(false);
+  const [budget, setBudget] = useState(500);
+  const [market, setMarket] = useState('EU-DACH');
 
   const activeWorkflow = WORKFLOWS.find(w => w.id === activeWorkflowId) || WORKFLOWS[0];
 
   const getAgentIcon = (id: AgentId) => {
     switch (id) {
-      case 'sn00': return <Cpu size={16} />;
+      case 'sn00': return <Workflow size={16} />;
+      case 'so00': return <Cpu size={16} />;
       case 'sp01': return <Zap size={16} />;
-      case 'cc06': return <Film size={16} />;
-      case 'da03': return <Palette size={16} />;
+      case 'cc06': return <FileText size={16} />;
+      case 'ba07': return <Sparkles size={16} />;
+      case 've01': return <Film size={16} />;
       case 'ra01': return <Shield size={16} />;
-      case 'pm07': return <Bot size={16} />;
-      default: return <Cpu size={16} />;
+      default: return <Bot size={16} />;
     }
   };
 
   const getAgentColor = (id: AgentId) => {
     switch (id) {
-      case 'sn00': return 'text-neural-blue';
-      case 'sp01': return 'text-neural-gold';
-      case 'cc06': return 'text-neural-purple';
-      case 'da03': return 'text-white';
+      case 'sn00': return 'text-accent';
+      case 'so00': return 'text-neural-blue';
+      case 'sp01': return 'text-gold';
+      case 'cc06': return 'text-magenta';
+      case 'da03': return 'text-gold';
+      case 'ba07': return 'text-emerald';
+      case 've01': return 'text-magenta';
       case 'ra01': return 'text-red-500';
-      case 'pm07': return 'text-green-500';
-      default: return 'text-neural-blue';
+      default: return 'text-white';
     }
   };
 
@@ -101,7 +106,8 @@ export function NexusEngineV2() {
             id: `edge-${i}`,
             source: i === 0 ? 'trigger-0' : `node-${i-1}`,
             target: `node-${i}`
-          }))
+          })),
+          config: { budget, market, priority: 'MAX_EXCELLENCE' }
         })
       });
 
@@ -179,6 +185,35 @@ export function NexusEngineV2() {
           <div className="mb-8">
             <h1 className="text-3xl font-display font-black uppercase italic tracking-tighter text-white mb-2">{activeWorkflow.name}</h1>
             <p className="text-white/50">{activeWorkflow.desc}</p>
+          </div>
+
+          {/* Directive Setup Panel */}
+          <div className="mb-6 grid grid-cols-2 gap-4">
+             <div className="bg-white/5 border border-white/5 rounded-xl p-4">
+                <label className="text-[10px] uppercase font-black tracking-widest text-white/40 block mb-2">Resource Budget (G5-Units)</label>
+                <div className="flex items-center gap-4">
+                   <input 
+                     type="range" min="100" max="5000" step="100" 
+                     value={budget} 
+                     onChange={(e) => setBudget(Number(e.target.value))}
+                     className="flex-1 accent-neural-blue" 
+                   />
+                   <span className="font-mono text-sm text-neural-blue">${budget}</span>
+                </div>
+             </div>
+             <div className="bg-white/5 border border-white/5 rounded-xl p-4">
+                <label className="text-[10px] uppercase font-black tracking-widest text-white/40 block mb-2">Target Jurisdictional Zone</label>
+                <select 
+                  value={market}
+                  onChange={(e) => setMarket(e.target.value)}
+                  className="w-full bg-black/40 border-none text-xs font-mono text-white focus:ring-0"
+                >
+                   <option value="EU-DACH">EU-DACH (GDPR/AI-ACT)</option>
+                   <option value="US-EAST">US-EAST (FED-COMP)</option>
+                   <option value="APAC-TOKYO">APAC-TOKYO (APEC-PV)</option>
+                   <option value="GLOBAL-NEUTRAL">GLOBAL-NEUTRAL</option>
+                </select>
+             </div>
           </div>
 
           <div className="flex-1 bg-white/5 border border-white/5 rounded-2xl p-8 relative flex items-center justify-center min-h-[400px]">

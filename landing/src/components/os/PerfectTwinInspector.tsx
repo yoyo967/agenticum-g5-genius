@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Eye, Search, ExternalLink, CheckCircle, AlertTriangle, Info, Terminal } from 'lucide-react';
+import { Shield, Eye, Search, ExternalLink, CheckCircle, AlertTriangle, Info, Terminal, ArrowLeft } from 'lucide-react';
 import { db } from '../../firebase';
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
 
 interface AuditLog {
   id: string;
@@ -13,21 +13,41 @@ interface AuditLog {
   sources?: string[];
   score?: number;
   latency?: number;
-  timestamp: { toDate: () => Date } | string | number | null;
+  timestamp: any; // Keep any as temporary fallback for complex union
   severity: 'info' | 'success' | 'warning' | 'error';
 }
 
-export function PerfectTwinInspector() {
+interface InspectorProps {
+  runId?: string | null;
+  onClose?: () => void;
+  standalone?: boolean;
+}
+
+export function PerfectTwinInspector({ runId, onClose, standalone = true }: InspectorProps) {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [activeTab, setActiveTab] = useState<'live' | 'grounding' | 'senate'>('live');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Real-time subscription to perfect twin logs
-    const q = query(
-      collection(db, 'perfect_twin_logs'),
-      orderBy('timestamp', 'desc'),
-      limit(50)
-    );
+    const baseQuery = collection(db, 'perfect_twin_logs');
+    let q;
+
+    if (runId) {
+      q = query(
+        baseQuery,
+        where('run_id', '==', runId),
+        orderBy('timestamp', 'asc')
+      );
+    } else {
+      q = query(
+        baseQuery,
+        orderBy('timestamp', 'desc'),
+        limit(50)
+      );
+    }
+
+    setLoading(true); // Moved after query creation to minimize cascading
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newLogs = snapshot.docs.map(doc => ({
@@ -35,10 +55,11 @@ export function PerfectTwinInspector() {
         ...doc.data()
       })) as AuditLog[];
       setLogs(newLogs);
+      setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [runId]);
 
   const filteredLogs = logs.filter(log => {
     if (activeTab === 'live') return true;
@@ -47,17 +68,26 @@ export function PerfectTwinInspector() {
     return true;
   });
 
-  return (
-    <div className="h-full flex flex-col gap-4 font-sans text-white">
+  const content = (
+    <div className={`h-full flex flex-col gap-4 font-sans text-white ${!standalone ? 'p-6 bg-void' : ''}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
+          {onClose && (
+            <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full transition-colors mr-1">
+              <ArrowLeft size={16} className="text-white/60" />
+            </button>
+          )}
           <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center border border-accent/20">
             <Eye size={16} className="text-accent" />
           </div>
           <div>
-            <h3 className="font-display text-sm uppercase tracking-tight">Perfect Twin Inspector</h3>
-            <p className="font-mono text-[9px] text-white/30 truncate">Real-time Provenance & Audit Trail</p>
+            <h3 className="font-display text-sm uppercase tracking-tight">
+              {runId ? `Glass Box: ${runId}` : 'Perfect Twin Inspector'}
+            </h3>
+            <p className="font-mono text-[9px] text-white/30 truncate">
+              {runId ? 'Targeted Session Provenance' : 'Real-time Provenance & Audit Trail'}
+            </p>
           </div>
         </div>
         <div className="flex bg-white/5 p-1 rounded-lg border border-white/5">
@@ -80,6 +110,7 @@ export function PerfectTwinInspector() {
             <Terminal size={10} className="text-accent" />
             <span className="font-mono text-[9px] uppercase tracking-widest text-white/40">Audit Terminal v2.1</span>
           </div>
+          {loading && <div className="text-[8px] font-mono text-accent animate-pulse">SYNCING...</div>}
           <div className="flex gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-red-500/50" />
             <div className="w-1.5 h-1.5 rounded-full bg-yellow-500/50" />
@@ -92,7 +123,9 @@ export function PerfectTwinInspector() {
             {filteredLogs.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center opacity-20">
                 <Search size={32} className="mb-2" />
-                <p className="font-mono text-[10px] uppercase">Awaiting Swarm Initialization...</p>
+                <p className="font-mono text-[10px] uppercase">
+                  {loading ? 'Consulting Infinite Memory...' : 'Awaiting Swarm Initialization...'}
+                </p>
               </div>
             ) : (
               filteredLogs.map((log: AuditLog) => (
@@ -100,7 +133,7 @@ export function PerfectTwinInspector() {
                   key={log.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="group flex gap-3 p-3 rounded-lg bg-white/2 border border-white/5 hover:bg-white/4 transition-colors"
+                  className="group flex gap-3 p-3 rounded-lg bg-white/2 border border-white/5 hover:bg-white/4 transition-all"
                 >
                   <div className="shrink-0 mt-0.5">
                     {log.severity === 'success' && <CheckCircle size={14} className="text-emerald" />}
@@ -112,7 +145,7 @@ export function PerfectTwinInspector() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-mono text-[10px] uppercase tracking-wider text-accent">{log.agent}</span>
                       <span className="font-mono text-[8px] text-white/20">
-                        {log.latency ? `${log.latency}ms` : (log.timestamp && typeof log.timestamp === 'object' && 'toDate' in log.timestamp ? log.timestamp.toDate().toLocaleTimeString() : 'RECENT')}
+                        {log.latency ? `${log.latency}ms` : 'SYNC'}
                       </span>
                     </div>
                     <p className="text-xs text-white/70 leading-relaxed mb-2">{log.message}</p>
@@ -145,15 +178,6 @@ export function PerfectTwinInspector() {
                         <span className="font-mono text-[9px] text-white/40">{log.score}% Quality</span>
                       </div>
                     )}
-
-                    {log.type === 'senate' && (
-                      <button 
-                        onClick={() => alert(JSON.stringify(log, null, 2))}
-                        className="mt-2 text-[8px] font-mono text-white/20 hover:text-white transition-colors"
-                      >
-                        [VIEW_RAW_DATA]
-                      </button>
-                    )}
                   </div>
                 </motion.div>
               ))
@@ -165,17 +189,36 @@ export function PerfectTwinInspector() {
       {/* Compliance Indicator */}
       <div className="glass p-4 rounded-xl flex items-center justify-between border-emerald/20">
         <div className="flex items-center gap-3">
-          <Shield size={18} className="text-emerald" />
+          <Shield size={18} className={`transition-colors ${filteredLogs.some(l => l.severity === 'error') ? 'text-red-500' : 'text-emerald'}`} />
           <div>
             <span className="text-[10px] font-mono uppercase text-white/30 block leading-none mb-1">Senate Compliance Gate</span>
-            <span className="text-[11px] font-display uppercase tracking-widest text-emerald">Active // Zero Veto Protocol</span>
+            <span className={`text-[11px] font-display uppercase tracking-widest ${filteredLogs.some(l => l.severity === 'error') ? 'text-red-500' : 'text-emerald'}`}>
+              {filteredLogs.some(l => l.severity === 'error') ? 'VETO DETECTED' : 'Active // Zero Veto Protocol'}
+            </span>
           </div>
         </div>
         <div className="text-right">
           <span className="text-[8px] font-mono text-white/20 block">EU AI Act (Art. 50)</span>
-          <span className="text-[10px] font-mono text-emerald">FULFILLED</span>
+          <span className={`text-[10px] font-mono ${filteredLogs.some(l => l.severity === 'error') ? 'text-red-500' : 'text-emerald'}`}>
+            {filteredLogs.some(l => l.severity === 'error') ? 'NON-COMPLIANT' : 'FULFILLED'}
+          </span>
         </div>
       </div>
     </div>
+  );
+
+  if (!standalone) return content;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 20 }}
+        className="h-full"
+      >
+        {content}
+      </motion.div>
+    </AnimatePresence>
   );
 }

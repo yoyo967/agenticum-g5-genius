@@ -12,6 +12,14 @@ const AGENTS = [
     stats: { latency: "42ms", success: "99.9%" }
   },
   {
+    id: "so00",
+    role: "Sovereign Core",
+    description: "The systems consciousness. Fuses user vision with machine-logic to maintain 'Maximal Excellence' across the entire swarm.",
+    color: "#FFD700",
+    icon: Cpu,
+    stats: { latency: "25ms", success: "100%" }
+  },
+  {
     id: "sp01",
     role: "Strategic Intelligence",
     description: "The strategic brain. Runs market analysis and competitive scavenging using the Columna Radar for real-time monitoring.",
@@ -70,13 +78,13 @@ export const AgentShowcase = () => {
           Meet The Swarm.
         </h2>
         <p className="text-white/40 max-w-2xl mx-auto text-xl font-light italic leading-relaxed">
-          Five purpose-built AI agents, each an absolute specialist. <br className="hidden md:block"/> 
+          Eight purpose-built AI agents, each an absolute specialist. <br className="hidden md:block"/> 
           Together, they form an unstoppable creative matrix.
         </p>
       </div>
 
       {/* Grid container with horizontal scroll snapping on mobile */}
-      <div className="flex md:grid md:grid-cols-5 gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory px-6 pb-12 hide-scrollbar">
+      <div className="flex md:grid md:grid-cols-4 lg:grid-cols-8 gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory px-6 pb-12 hide-scrollbar">
         {AGENTS.map((agent, i) => (
           <motion.div
             key={agent.id}
