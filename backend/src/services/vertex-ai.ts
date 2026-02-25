@@ -23,6 +23,14 @@ export class VertexAIService {
     });
   }
 
+  /**
+   * Standardizes on Gemini 2.0 Flash as the primary engine for high-speed
+   * multimodality and reasoning efficiency.
+   */
+  private getStandardModel(): string {
+    return 'gemini-2.0-flash';
+  }
+
   public static getInstance(): VertexAIService {
     if (!VertexAIService.instance) {
       VertexAIService.instance = new VertexAIService();

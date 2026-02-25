@@ -4,7 +4,7 @@ import {
   Terminal, Palette, 
   Settings, Shield, Eye, Film, Globe, Search, 
   ChevronLeft, Command, Database, Users, GitMerge, Activity, 
-  FolderHeart, Network, Target, LayoutGrid, FileText, Radar, Mic
+  FolderHeart, Network, Target, LayoutGrid, FileText, Radar, Mic, Wand2, Maximize2
 } from 'lucide-react';
 import { StatusBadge } from '../components/ui';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -29,11 +29,14 @@ import { GeopoliticsHub } from '../components/GeopoliticsHub';
 import { ColumnaRadar } from '../components/os/ColumnaRadar';
 import { PerfectTwinInspector } from '../components/os/PerfectTwinInspector';
 import { SystemHeartbeat } from '../components/os/SystemHeartbeat';
+import { ElementLibrary } from '../components/creative/ElementLibrary';
+import { ScriptWizard } from '../components/creative/ScriptWizard';
+import { ProjectPlayground } from '../components/playground/ProjectPlayground';
 
 import { GeniusPulsar } from '../components/os/GeniusPulsar';
 import { ConsciousnessStream } from '../components/os/ConsciousnessStream';
 
-type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics';
+type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground';
 
 const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   dashboard: { label: 'Executive Dashboard', subtitle: 'Global Metrics' },
@@ -52,6 +55,9 @@ const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   'perfect-twin': { label: 'Perfect Twin', subtitle: 'Real-time Audit' },
   'client-nexus': { label: 'Client Nexus', subtitle: 'White-Label Portal' },
   cinematic: { label: 'Cinematic Forge', subtitle: 'Multi-Modal Hub' },
+  'element-library': { label: 'Element Library', subtitle: 'Asset Marketplace' },
+  'script-wizard': { label: 'Script Wizard', subtitle: 'Narrative Pipeline' },
+  playground: { label: 'Project Playground', subtitle: 'Immersion State' },
   geopolitics: { label: 'Geopolitics Hub', subtitle: 'Sovereign AI Mesh' },
   settings: { label: 'Global Config', subtitle: 'System Parameters' },
 };
@@ -163,6 +169,9 @@ export function OSPortal() {
               <SidebarButton icon={<Eye size={16} />} label="Perfect Twin" active={activeModule === 'perfect-twin'} onClick={() => setActiveModule('perfect-twin')} />
               <SidebarButton icon={<Shield className="text-accent" size={16} />} label="Client Nexus" active={activeModule === 'client-nexus'} onClick={() => setActiveModule('client-nexus')} />
               <SidebarButton icon={<Film className="text-magenta" size={16} />} label="Cinematic Forge" active={activeModule === 'cinematic'} onClick={() => setActiveModule('cinematic')} />
+              <SidebarButton icon={<Database size={16} className="text-accent" />} label="Elements" active={activeModule === 'element-library'} onClick={() => setActiveModule('element-library')} />
+              <SidebarButton icon={<Wand2 size={16} className="text-accent" />} label="Script Wizard" active={activeModule === 'script-wizard'} onClick={() => setActiveModule('script-wizard')} />
+              <SidebarButton icon={<Maximize2 size={16} className="text-accent" />} label="Playground" active={activeModule === 'playground'} onClick={() => setActiveModule('playground')} />
               <SidebarButton icon={<Globe className="text-accent" size={16} />} label="Geopolitics Hub" active={activeModule === 'geopolitics'} onClick={() => setActiveModule('geopolitics')} />
               
               <div className="w-full h-px bg-white/5 my-3 hidden md:block" />
@@ -333,6 +342,9 @@ export function OSPortal() {
                 {activeModule === 'synergy' && <SynergyMap />}
                 {activeModule === 'client-nexus' && <ClientNexus />}
                 {activeModule === 'cinematic' && <CinematicForge />}
+                {activeModule === 'element-library' && <ElementLibrary elements={[]} onAddElement={() => {}} onSelectElement={() => {}} />}
+                {activeModule === 'script-wizard' && <ScriptWizard />}
+                {activeModule === 'playground' && <ProjectPlayground />}
                 {activeModule === 'geopolitics' && <GeopoliticsHub />}
               </motion.div>
             )}

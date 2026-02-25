@@ -14,6 +14,7 @@
     "@google-cloud/discoveryengine": "^0.3.1",
     "@google-cloud/firestore": "^7.0.0",
     "@google-cloud/storage": "^7.0.0",
+    "@google-cloud/text-to-speech": "^6.4.0",
     "@google-cloud/vertexai": "^1.10.0",
     "@google/generative-ai": "^0.21.0",
     "axios": "^1.6.0",
