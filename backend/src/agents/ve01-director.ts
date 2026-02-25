@@ -26,7 +26,7 @@ export class VE01Director extends BaseAgent {
         try {
           const ai = new GoogleGenAI(apiKey);
           const model = ai.getGenerativeModel({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-2.0-flash',
             generationConfig: {
               responseMimeType: 'application/json',
               responseSchema: {
@@ -86,7 +86,7 @@ ${storyboard?.scenes?.map((s: any) => `### Scene ${s.id}: ${s.camera}\n${s.visua
 [View Generated Motion Asset](${videoUrl})
 
 ---
-*Veo-1 / Imagen Temporal Engine: 4K Synthesis Verified.*
+*Vertex AI Neural Engine: 4K Synthesis Verified.*
       `;
     } catch (e) {
       this.logger.error('Video generation failed', e as Error);

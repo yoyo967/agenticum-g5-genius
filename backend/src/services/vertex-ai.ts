@@ -237,7 +237,7 @@ export class VertexAIService {
     try {
       const ai = new GoogleGenAI(apiKey);
       const model = ai.getGenerativeModel({ 
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.0-flash',
         generationConfig: {
           responseMimeType: 'application/json'
         }

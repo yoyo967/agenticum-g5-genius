@@ -178,6 +178,26 @@ export const ScriptWizard: React.FC = () => {
                            Drafting {currentStep}...
                         </div>
                         <div className="flex items-center gap-2">
+                           <button className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-white transition-colors">
+                              <RefreshCw size={14} />
+                           </button>
+                        </div>
+                     </div>
+
+                     <div className="space-y-6 text-sm text-white/70 leading-relaxed font-mono whitespace-pre-wrap">
+                        {content[currentStep] || (
+                          <p className="border-l-2 border-accent/20 pl-4 py-1 italic text-accent/40">
+                             Neural sequence engaged. Synthesizing cinematic fragments based on seed idea...
+                          </p>
+                        )}
+                        {isGenerating && <div className="typing-cursor w-2 h-4 bg-accent/40 inline-block animate-pulse" />}
+                     </div>
+                  </div>
+
+                  {isGenerating && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5">
+                      <motion.div 
+                        initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
                         className="h-full bg-accent"
                       />

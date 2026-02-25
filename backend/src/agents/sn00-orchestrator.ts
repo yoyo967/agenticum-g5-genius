@@ -106,7 +106,7 @@ ${contentSnippet}...
         const { GoogleGenerativeAI: GoogleGenAI, SchemaType: Type } = await import('@google/generative-ai');
         const ai = new GoogleGenAI(process.env.GEMINI_API_KEY as string);
         const model = ai.getGenerativeModel({
-           model: 'gemini-2.0-flash-exp',
+           model: 'gemini-2.0-flash',
            generationConfig: {
               responseMimeType: 'application/json',
               responseSchema: {

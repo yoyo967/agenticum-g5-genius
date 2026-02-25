@@ -161,7 +161,7 @@ export const ProjectPlayground: React.FC = () => {
                             >
                                <Play size={32} className="text-accent translate-x-1" />
                             </motion.div>
-                            <span className="mt-4 text-[10px] font-mono text-accent uppercase tracking-[0.5em] animate-pulse">Syncing Neural Audio...</span>
+                            <span className="mt-4 text-[10px] font-mono text-accent uppercase tracking-[0.5em] animate-pulse">Synthesizing Neural Assets with Imagen 3...</span>
                          </div>
                          
                          {/* Scanlines Overlay */}
@@ -184,9 +184,9 @@ export const ProjectPlayground: React.FC = () => {
                          <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
                             <Sparkles className="text-accent animate-pulse" size={18} />
                          </div>
-                         <div>
+                          <div>
                             <h4 className="text-white text-sm font-bold">A.I. Director Suggestions</h4>
-                            <p className="text-[10px] text-white/40 uppercase tracking-widest mt-0.5">Veo Model: Suggesting shot transition uplift</p>
+                            <p className="text-[10px] text-white/40 uppercase tracking-widest mt-0.5">Engine: Gemini 2.0 Flash // Cinematic Uplift</p>
                          </div>
                       </div>
                       <button className="px-6 py-2 rounded-xl bg-accent text-void font-bold text-[10px] uppercase tracking-widest shadow-[0_0_15px_rgba(0,229,255,0.4)] hover:scale-105 transition-transform">
@@ -229,10 +229,10 @@ export const ProjectPlayground: React.FC = () => {
                Neural Synergy
             </h3>
             <div className="space-y-4 font-mono text-[9px] text-white/20 leading-relaxed uppercase">
-               <p className="text-accent/60">[08:42:01] Parsing storyboard for scene 01...</p>
-               <p>[08:42:03] Tagging entity: Chronos Watch (Object)</p>
-               <p>[08:42:05] Orchestrating lighting: Tech-Noir Noir-Gold</p>
-               <p className="text-green-400/40">[08:42:08] Element synced: The Agent (Character)</p>
+               <p className="text-accent/60">[08:42:01] Parsing storyboard: Gemini 2.0 active...</p>
+               <p>[08:42:03] Tagging entity: Chronos Watch (Imagen 3.0)</p>
+               <p>[08:42:05] Orchestrating lighting: Google Cloud Neural Rendering</p>
+               <p className="text-green-400/40">[08:42:08] Audio Synthesis: GCP Text-to-Speech Ready</p>
                <p className="animate-pulse">_</p>
             </div>
          </div>
