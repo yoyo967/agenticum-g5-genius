@@ -253,4 +253,34 @@ router.post('/cinematic/synthesize-video', async (req: Request, res: Response) =
   }
 });
 
+// --- SCRIPT WIZARD ROUTES ---
+
+router.post('/script-wizard/generate', async (req: Request, res: Response) => {
+  try {
+    const { idea, step, context } = req.body;
+    const vertexAI = cinematicService.getVertexAI(); // I'll need to expose this or use it via service
+    
+    let prompt = '';
+    switch (step) {
+      case 'concept':
+        prompt = `IDENTITY: You are the GenIUS Creative Director. TASK: Transform this seed idea into a high-level cinematic concept with a title, primary mood, and core narrative hook. IDEA: "${idea}"`;
+        break;
+      case 'outline':
+        prompt = `IDENTITY: You are a Master Screenwriter. TASK: Create a detailed 5-point narrative outline based on this concept: "${context}". Seed idea was: "${idea}"`;
+        break;
+      case 'script':
+        prompt = `IDENTITY: You are a Director of Photography and Scriptwriter. TASK: Write a full cinematic script with visual descriptions, camera angles, and dialogue/voiceover based on this outline: "${context}". Focus on technical precision and brand resonance.`;
+        break;
+      default:
+        return res.status(400).json({ error: 'Invalid step' });
+    }
+
+    const result = await vertexAI.generateContent(prompt);
+    res.json({ result });
+  } catch (error) {
+      console.error('Script Wizard generation failed', error);
+      res.status(500).json({ error: 'Narrative synthesis failed.' });
+  }
+});
+
 export default router;

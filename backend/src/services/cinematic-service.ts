@@ -35,6 +35,10 @@ export class CinematicService {
 
   private constructor() {}
 
+  public getVertexAI() {
+    return this.vertexAI;
+  }
+
   public static getInstance(): CinematicService {
     if (!CinematicService.instance) {
       CinematicService.instance = new CinematicService();

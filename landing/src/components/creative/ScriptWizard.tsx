@@ -7,11 +7,19 @@ import {
   Type, Layout, Image as ImageIcon
 } from 'lucide-react';
 
+import { API_BASE_URL } from '../../config';
+
 type WizardStep = 'idea' | 'concept' | 'outline' | 'script';
 
 export const ScriptWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<WizardStep>('idea');
   const [idea, setIdea] = useState('');
+  const [content, setContent] = useState<Record<WizardStep, string>>({
+    idea: '',
+    concept: '',
+    outline: '',
+    script: ''
+  });
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -22,20 +30,37 @@ export const ScriptWizard: React.FC = () => {
     { key: 'script', label: 'Cinematic Script', icon: <FileText size={16} /> },
   ];
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    if (isGenerating) return;
     setIsGenerating(true);
-    let p = 0;
-    const interval = setInterval(() => {
-      p += 5;
-      setProgress(p);
-      if (p >= 100) {
-        clearInterval(interval);
-        setIsGenerating(false);
-        const nextStep = currentStep === 'idea' ? 'concept' : currentStep === 'concept' ? 'outline' : 'script';
-        setCurrentStep(nextStep);
-        setProgress(0);
-      }
-    }, 100);
+    setProgress(10);
+
+    const stepOrder: WizardStep[] = ['idea', 'concept', 'outline', 'script'];
+    const currentIndex = stepOrder.indexOf(currentStep);
+    const nextStep = stepOrder[currentIndex + 1];
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/blog/script-wizard/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          idea, 
+          step: nextStep,
+          context: content[currentStep] 
+        })
+      });
+
+      if (!response.ok) throw new Error('Generation failed');
+      
+      const data = await response.json();
+      setContent(prev => ({ ...prev, [nextStep]: data.result }));
+      setCurrentStep(nextStep);
+    } catch (error) {
+      console.error('Wizard failed:', error);
+    } finally {
+      setIsGenerating(false);
+      setProgress(0);
+    }
   };
 
   return (
@@ -153,25 +178,6 @@ export const ScriptWizard: React.FC = () => {
                            Drafting {currentStep}...
                         </div>
                         <div className="flex items-center gap-2">
-                           <button className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-white transition-colors">
-                              <RefreshCw size={14} />
-                           </button>
-                        </div>
-                     </div>
-
-                     <div className="space-y-6 text-sm text-white/70 leading-relaxed font-mono">
-                        <p className="border-l-2 border-accent/20 pl-4 py-1 italic text-accent/40">
-                           Neural sequence engaged. Synthesizing cinematic fragments based on seed idea...
-                        </p>
-                        {/* Mock generated content will be refined after P29 model upgrades */}
-                        <div className="typing-cursor w-2 h-4 bg-accent/40 inline-block animate-pulse" />
-                     </div>
-                  </div>
-
-                  {isGenerating && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5">
-                      <motion.div 
-                        initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
                         className="h-full bg-accent"
                       />
