@@ -229,28 +229,43 @@ export function NexusEngineV2() {
                     transition={{ delay: index * 0.1 }}
                     className="flex flex-col items-center gap-3 relative z-10"
                   >
-                    <div className={`w-16 h-16 rounded-full border glass bg-black/40 flex items-center justify-center relative shadow-xl transition-all duration-500 ${
-                      agentProgress[agent] === 'processing' ? 'border-neural-gold/60 shadow-[0_0_20px_rgba(255,215,0,0.4)] scale-110' :
-                      agentProgress[agent] === 'complete' ? 'border-green-500/60 shadow-[0_0_20px_rgba(34,197,94,0.4)]' :
-                      'border-white/10'
-                    }`}>
-                      <div className={`absolute inset-0 rounded-full border blur-sm ${
-                        agentProgress[agent] === 'processing' ? 'border-neural-gold/40 animate-pulse' :
-                        agentProgress[agent] === 'complete' ? 'border-green-500/30' :
-                        'border-neural-blue/20 animate-pulse'
-                      }`} />
-                      {agentProgress[agent] === 'complete' ? (
-                        <CheckCircle2 size={16} className="text-green-500" />
-                      ) : agentProgress[agent] === 'processing' ? (
-                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
-                          <Cpu size={16} className="text-neural-gold" />
-                        </motion.div>
-                      ) : (
-                        <div className={getAgentColor(agent)}>
-                          {getAgentIcon(agent)}
-                        </div>
-                      )}
-                    </div>
+                      <div className={`w-16 h-16 rounded-full border glass bg-black/40 flex items-center justify-center relative shadow-xl transition-all duration-500 ${
+                        agentProgress[agent] === 'processing' ? 'border-neural-gold/60 shadow-[0_0_20px_rgba(255,215,0,0.4)] scale-110' :
+                        agentProgress[agent] === 'complete' ? 'border-green-500/60 shadow-[0_0_20px_rgba(34,197,94,0.4)]' :
+                        'border-white/10'
+                      }`}>
+                        {/* Cognitive Assembly Rings */}
+                        {agentProgress[agent] === 'processing' && (
+                           <>
+                              <motion.div 
+                                 animate={{ rotate: 360, scale: [1, 1.2, 1] }}
+                                 transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                 className="absolute inset-[-4px] border border-neural-gold/20 rounded-full border-dashed"
+                              />
+                              <motion.div 
+                                 animate={{ rotate: -360, scale: [1, 1.1, 1] }}
+                                 transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                                 className="absolute inset-[-8px] border border-neural-blue/10 rounded-full border-dotted"
+                              />
+                           </>
+                        )}
+                        <div className={`absolute inset-0 rounded-full border blur-sm ${
+                          agentProgress[agent] === 'processing' ? 'border-neural-gold/40 animate-pulse' :
+                          agentProgress[agent] === 'complete' ? 'border-green-500/30' :
+                          'border-neural-blue/20 animate-pulse'
+                        }`} />
+                        {agentProgress[agent] === 'complete' ? (
+                          <CheckCircle2 size={16} className="text-green-500" />
+                        ) : agentProgress[agent] === 'processing' ? (
+                          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                            <Cpu size={16} className="text-neural-gold drop-shadow-[0_0_8px_rgba(251,188,4,0.6)]" />
+                          </motion.div>
+                        ) : (
+                          <div className={getAgentColor(agent)}>
+                            {getAgentIcon(agent)}
+                          </div>
+                        )}
+                      </div>
                     <span className={`text-[10px] font-black uppercase tracking-widest ${
                       agentProgress[agent] === 'complete' ? 'text-green-500' :
                       agentProgress[agent] === 'processing' ? 'text-neural-gold' :

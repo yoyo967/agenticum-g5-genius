@@ -150,14 +150,37 @@ export function SynergyMap() {
         {/* SVG Network Map */}
         <div className="lg:col-span-2 glass-card p-6">
           <svg ref={svgRef} viewBox="0 0 100 100" className="w-full" style={{ minHeight: '400px' }}>
-            {/* Connection Lines */}
+            {/* Connection Lines & Glowing Pulses */}
             {AGENTS.map((from, i) =>
               AGENTS.slice(i + 1).map(to => (
-                <line key={`${from.id}-${to.id}`}
-                  x1={from.cx} y1={from.cy} x2={to.cx} y2={to.cy}
-                  stroke="rgba(255,255,255,0.05)" strokeWidth="0.3" strokeDasharray="1,1" />
+                <g key={`${from.id}-${to.id}`}>
+                  <line
+                    x1={from.cx} y1={from.cy} x2={to.cx} y2={to.cy}
+                    stroke="rgba(255,255,255,0.05)" strokeWidth="0.3" strokeDasharray="1,1" />
+                  
+                  {/* JARVIS flowing light paths (when both agents are active) */}
+                  {(agentStates[from.id] === 'working' || agentStates[to.id] === 'working') && (
+                     <motion.line
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: [0, 1, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        x1={from.cx} y1={from.cy} x2={to.cx} y2={to.cy}
+                        stroke="url(#dataGradient)"
+                        strokeWidth="0.6"
+                        strokeLinecap="round"
+                     />
+                  )}
+                </g>
               ))
             )}
+
+            <defs>
+              <linearGradient id="dataGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#00E5FF" stopOpacity="0" />
+                <stop offset="50%" stopColor="#00E5FF" stopOpacity="1" />
+                <stop offset="100%" stopColor="#00E5FF" stopOpacity="0" />
+              </linearGradient>
+            </defs>
 
             {/* Animated Flow Particles */}
             <AnimatePresence>

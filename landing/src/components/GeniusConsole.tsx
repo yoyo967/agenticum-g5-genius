@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bot, Shield, Cpu, Zap, Palette, Film, 
-  Terminal, Activity, CheckCircle2, 
+  Activity, CheckCircle2, 
   Sparkles, Scale, DollarSign, Leaf,
   Mic, MicOff, Volume2, Link2Off, AlertCircle, FileText
 } from 'lucide-react';
@@ -196,6 +196,7 @@ export function GeniusConsole() {
 
           if (data.type === 'agent-thought') {
             addLog('agent', `[${data.agentId.toUpperCase()}] Cognitive Phase: ${data.thought}`);
+            window.dispatchEvent(new CustomEvent('agent-thought', { detail: data }));
           }
 
           if (data.type === 'nexus-state-update') {
@@ -400,22 +401,28 @@ export function GeniusConsole() {
           : '0 0 60px rgba(251, 188, 4, 0.05)'
       }}
       transition={{ duration: resonance > 0 ? 0.2 : 1 }}
-      className="w-full h-[800px] glass rounded-3xl overflow-hidden flex flex-col font-mono text-sm border border-white/5 relative bg-obsidian/40 backdrop-blur-3xl shadow-2xl"
+      className="w-full h-full ultra-lucid overflow-hidden flex flex-col font-mono text-sm border border-white/5 relative shadow-2xl"
     >
+      {/* JARVIS Scanlines Overlay */}
+      <div className="absolute inset-0 pointer-events-none z-50 opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
+      
+      {/* Vignette Depth */}
+      <div className="absolute inset-0 pointer-events-none z-40 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
+
       {/* Resonance Aura */}
       <AnimatePresence>
         {resonance > 0 && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-0 bg-linear-to-br from-neural-gold/5 via-transparent to-accent/5 pointer-events-none"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1.2 }}
+            exit={{ opacity: 0, scale: 1.5 }}
+            className="absolute inset-0 z-0 bg-linear-to-br from-neural-gold/5 via-transparent to-accent/5 pointer-events-none blur-[60px]"
           />
         )}
       </AnimatePresence>
 
       {/* Header Bar */}
-      <div className="bg-white/5 border border-white/5 p-4 rounded-xl flex items-center justify-between">
+      <div className="bg-white/3 border-b border-white/5 p-4 flex items-center justify-between z-10 relative">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
              <div className={`w-2 h-2 rounded-full ${
@@ -430,8 +437,8 @@ export function GeniusConsole() {
           </div>
           <div className="h-4 w-px bg-white/10" />
           <div className="flex items-center gap-2 text-white/60">
-            <Terminal size={14} />
-            <span className="text-[10px] uppercase tracking-widest font-bold">GenIUS_Console_v2.0</span>
+            <Bot size={14} className="text-accent" />
+            <span className="text-[10px] uppercase tracking-widest font-bold">GenIUS_Console_v5.0</span>
           </div>
         </div>
         
@@ -488,10 +495,10 @@ export function GeniusConsole() {
 
       <div className="flex-1 overflow-hidden flex">
         {/* Left Sidebar: Swarm Monitor */}
-        <div className="w-80 border-r border-white/5 p-6 flex flex-col gap-6 bg-white/5">
+        <div className="w-80 border-r border-white/5 p-6 flex flex-col gap-6 bg-black/40 z-10 relative">
           <div className="flex items-center gap-2 mb-2">
-            <Activity size={14} className="text-neural-blue" />
-             <span className="text-[10px] uppercase font-black tracking-widest">Active Swarm</span>
+            <Activity size={14} className="text-accent animate-pulse" />
+             <span className="text-[10px] uppercase font-black tracking-widest text-accent">Active Swarm Matrix</span>
           </div>
           
           <div className="flex flex-col gap-4">
