@@ -14,16 +14,54 @@ interface ElementLibraryProps {
   onSelectElement: (element: StoryboardElement) => void;
 }
 
+const MARKETPLACE_ELEMENTS: StoryboardElement[] = [
+  {
+    id: 'm1',
+    projectId: 'marketplace',
+    name: 'Cyberpunk Protagonist',
+    type: 'character',
+    prompt: 'Cinematic portrait of a street samurai in Neo-Tokyo, wearing a chrome-plated jacket, neon blue ocular implants, rain-slicked streets in background, 8k, hyper-realistic, volumetric lighting.',
+    images: ['https://storage.googleapis.com/online-marketing-manager-genius-assets/element-samurai.png']
+  },
+  {
+    id: 'm2',
+    projectId: 'marketplace',
+    name: 'Neural Void Laboratory',
+    type: 'environment',
+    prompt: 'Interior of a high-tech laboratory with pulsating neural networks, floating holographic data crystals, dark obsidian surfaces, teal and gold lighting, cinematic depth of field.',
+    images: ['https://storage.googleapis.com/online-marketing-manager-genius-assets/element-lab.png']
+  },
+  {
+    id: 'm3',
+    projectId: 'marketplace',
+    name: 'Quantum Logic Sphere',
+    type: 'object',
+    prompt: 'A floating crystalline sphere housing a quantum processor, intricate mechanical fractals, emitting golden energy pulses, bokeh laboratory background, 8k resolution.',
+    images: ['https://storage.googleapis.com/online-marketing-manager-genius-assets/element-sphere.png']
+  },
+  {
+    id: 'm4',
+    projectId: 'marketplace',
+    name: 'Corporate CEO (G5 Edition)',
+    type: 'character',
+    prompt: 'A professional executive with an AGENTICUM G5 neural link, futuristic business attire, minimalist office overlooking a Martian colony, sharp lighting, 8k.',
+    images: ['https://storage.googleapis.com/online-marketing-manager-genius-assets/element-ceo.png']
+  }
+];
+
 export const ElementLibrary: React.FC<ElementLibraryProps> = ({
   elements,
   onAddElement,
   onSelectElement
 }) => {
+  const [libraryMode, setLibraryMode] = useState<'local' | 'market'>('local');
   const [filter, setFilter] = useState<ElementType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const filteredElements = elements.filter(el => {
+  const displayElements = libraryMode === 'local' ? elements : MARKETPLACE_ELEMENTS;
+
+  const filteredElements = displayElements.filter(el => {
     const matchesFilter = filter === 'all' || el.type === filter;
     const matchesSearch = el.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          el.prompt.toLowerCase().includes(searchQuery.toLowerCase());
@@ -50,11 +88,21 @@ export const ElementLibrary: React.FC<ElementLibraryProps> = ({
               Element Library
             </h2>
             <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mt-1">
-              Reusable Storyboard Primitives
+              {libraryMode === 'local' ? 'Reusable Storyboard Primitives' : 'Global Collective Intelligence Hub'}
             </p>
           </div>
           
           <div className="flex items-center gap-2">
+            <div className="flex bg-white/5 rounded-xl p-1 mr-2 no-print">
+               <button onClick={() => setLibraryMode('local')} 
+                 className={`px-3 py-1.5 rounded-lg font-mono text-[10px] uppercase transition-all ${libraryMode === 'local' ? 'bg-white/10 text-white shadow-lg' : 'text-white/30 hover:text-white/60'}`}>
+                 My Library
+               </button>
+               <button onClick={() => setLibraryMode('market')} 
+                 className={`px-3 py-1.5 rounded-lg font-mono text-[10px] uppercase transition-all ${libraryMode === 'market' ? 'bg-accent/20 text-accent shadow-[0_0_15px_rgba(0,229,255,0.2)] border border-accent/20' : 'text-white/30 hover:text-white/60'}`}>
+                 Marketplace
+               </button>
+            </div>
             <button 
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-accent/20 text-accent' : 'text-white/40 hover:bg-white/5'}`}

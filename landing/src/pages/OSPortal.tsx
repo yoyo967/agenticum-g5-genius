@@ -32,11 +32,12 @@ import { SystemHeartbeat } from '../components/os/SystemHeartbeat';
 import { ElementLibrary } from '../components/creative/ElementLibrary';
 import { ScriptWizard } from '../components/creative/ScriptWizard';
 import { ProjectPlayground } from '../components/playground/ProjectPlayground';
+import { SwarmIntelligence } from '../components/telemetry/SwarmIntelligence';
 
 import { GeniusPulsar } from '../components/os/GeniusPulsar';
 import { ConsciousnessStream } from '../components/os/ConsciousnessStream';
 
-type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground';
+type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence';
 
 const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   dashboard: { label: 'Executive Dashboard', subtitle: 'Global Metrics' },
@@ -58,6 +59,7 @@ const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   'element-library': { label: 'Element Library', subtitle: 'Asset Marketplace' },
   'script-wizard': { label: 'Script Wizard', subtitle: 'Narrative Pipeline' },
   playground: { label: 'Project Playground', subtitle: 'Immersion State' },
+  'swarm-intelligence': { label: 'Swarm Intelligence', subtitle: 'Neural Telemetry' },
   geopolitics: { label: 'Geopolitics Hub', subtitle: 'Sovereign AI Mesh' },
   settings: { label: 'Global Config', subtitle: 'System Parameters' },
 };
@@ -163,6 +165,7 @@ export function OSPortal() {
               <div className="w-full h-px bg-white/5 my-3 hidden md:block" />
 
               <SidebarButton icon={<Users size={16} />} label="Swarm Analytics" active={activeModule === 'analytics'} onClick={() => setActiveModule('analytics')} />
+              <SidebarButton icon={<Activity size={16} className="text-accent" />} label="Swarm Intelligence" active={activeModule === 'swarm-intelligence'} onClick={() => setActiveModule('swarm-intelligence')} />
               <SidebarButton icon={<Network size={16} />} label="Synergy Map" active={activeModule === 'synergy'} onClick={() => setActiveModule('synergy')} />
               <SidebarButton icon={<Shield size={16} />} label="Security Senate" active={activeModule === 'senate'} onClick={() => setActiveModule('senate')} />
               <SidebarButton icon={<Radar size={16} />} label="Columna Radar" active={activeModule === 'columna-radar'} onClick={() => setActiveModule('columna-radar')} />
@@ -345,6 +348,7 @@ export function OSPortal() {
                 {activeModule === 'element-library' && <ElementLibrary elements={[]} onAddElement={() => {}} onSelectElement={() => {}} />}
                 {activeModule === 'script-wizard' && <ScriptWizard />}
                 {activeModule === 'playground' && <ProjectPlayground />}
+                {activeModule === 'swarm-intelligence' && <SwarmIntelligence />}
                 {activeModule === 'geopolitics' && <GeopoliticsHub />}
               </motion.div>
             )}
