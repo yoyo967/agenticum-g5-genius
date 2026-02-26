@@ -1,0 +1,34 @@
+name: Firebase Rules Emulator CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-rules:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Install Backend Test Dependencies
+        working-directory: ./backend
+        run: npm install @firebase/rules-unit-testing firebase-admin
+
+      - name: Start Firebase Emulator & Run Tests
+        working-directory: ./backend
+        run: |
+          # Use local emulators to test firestore.rules
+          # Java is natively available on the ubuntu-latest runner
+          firebase emulators:exec "npm run test:rules" --project demo-agenticum-ci

@@ -1,14 +1,20 @@
 const admin = require('firebase-admin');
 
+const TARGET_PROJECT_ID = 'online-marketing-manager';
+
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
-  projectId: 'online-marketing-manager'
+  projectId: TARGET_PROJECT_ID
 });
 
 const db = admin.firestore();
 
 async function backfillVisibility() {
   console.log("=== FIRESTORE DATA MIGRATION: BACKFILL VISIBILITY ===");
+  if (process.env.GCLOUD_PROJECT !== TARGET_PROJECT_ID && admin.app().options.projectId !== TARGET_PROJECT_ID) {
+     console.error(`❌ ERROR: Safety Guard. You are attempting to run this against an unknown project. Expected: ${TARGET_PROJECT_ID}`);
+     process.exit(1);
+  }
   const collectionsToMigrate = ['pillars', 'clusters'];
   
   for (const collName of collectionsToMigrate) {

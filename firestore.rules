@@ -37,16 +37,38 @@ service cloud.firestore {
 
     match /pillars/{docId} {
       allow read: if resource.data.visibility == 'public';
-      allow write: if request.auth != null && 
-                   request.resource.data.visibility is string && 
-                   request.resource.data.visibility in ['public', 'internal'];
+      
+      allow create: if request.auth != null && 
+                    request.resource.data.keys().hasAll(['title', 'slug', 'timestamp', 'visibility']) &&
+                    request.resource.data.title is string && 
+                    request.resource.data.slug is string && 
+                    request.resource.data.timestamp is string &&
+                    request.resource.data.visibility is string && 
+                    request.resource.data.visibility in ['public', 'internal'];
+                    
+      allow update: if request.auth != null && 
+                    (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['visibility']) || 
+                    (request.resource.data.visibility is string && request.resource.data.visibility in ['public', 'internal']));
+                    
+      allow delete: if request.auth != null;
     }
 
     match /clusters/{docId} {
       allow read: if resource.data.visibility == 'public';
-      allow write: if request.auth != null && 
-                   request.resource.data.visibility is string && 
-                   request.resource.data.visibility in ['public', 'internal'];
+      
+      allow create: if request.auth != null && 
+                    request.resource.data.keys().hasAll(['title', 'slug', 'timestamp', 'visibility']) &&
+                    request.resource.data.title is string && 
+                    request.resource.data.slug is string && 
+                    request.resource.data.timestamp is string &&
+                    request.resource.data.visibility is string && 
+                    request.resource.data.visibility in ['public', 'internal'];
+                    
+      allow update: if request.auth != null && 
+                    (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['visibility']) || 
+                    (request.resource.data.visibility is string && request.resource.data.visibility in ['public', 'internal']));
+                    
+      allow delete: if request.auth != null;
     }
 
     match /outputs/{docId} {

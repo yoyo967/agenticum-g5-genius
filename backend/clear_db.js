@@ -2,16 +2,25 @@ const admin = require('firebase-admin');
 
 // Initialize Firebase Admin with Application Default Credentials
 // Ensure you are authenticated via `gcloud auth application-default login`
+const TARGET_PROJECT_ID = 'online-marketing-manager';
+
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
-  projectId: 'online-marketing-manager'
+  projectId: TARGET_PROJECT_ID
 });
 
 const db = admin.firestore();
 
 async function clearAndSeed() {
-  console.log("Starting DB wipe...");
-  const collectionsToClear = ['pillars', 'outputs', 'perfect_twin_logs'];
+  console.log("=== DB SEED & MIGRATE ===");
+  if (process.env.GCLOUD_PROJECT !== TARGET_PROJECT_ID && admin.app().options.projectId !== TARGET_PROJECT_ID) {
+     console.error(`❌ ERROR: Safety Guard. You are attempting to run this against an unknown project. Expected: ${TARGET_PROJECT_ID}`);
+     process.exit(1);
+  }
+  
+  console.log("Starting DB wipe of test logs...");
+  // Safely ONLY clearing logs instead of structural pillars.
+  const collectionsToClear = ['outputs', 'perfect_twin_logs'];
   
   for (const collName of collectionsToClear) {
     const collRef = db.collection(collName);
@@ -26,9 +35,9 @@ async function clearAndSeed() {
     console.log(`Cleared ${snapshot.size} documents from ${collName}.`);
   }
 
-  // Seed a PERFECT pillar page so the Landing Page looks pristine and "completed", not like a construction site.
-  console.log("Seeding pristine Pillar Page...");
-  const newRef = db.collection('pillars').doc();
+  // Seed a PERFECT pillar page structure idempotently using a fixed ID
+  console.log("Seeding pristine Pillar Page (Idempotent)...");
+  const newRef = db.collection('pillars').doc('agenticum-g5-advantage-seed');
   await newRef.set({
     title: "The AGENTICUM G5 Advantage: Neural Marketing Architectures",
     slug: "agenticum-g5-advantage-neural-architectures",
