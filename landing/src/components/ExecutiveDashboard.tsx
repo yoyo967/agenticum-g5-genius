@@ -5,28 +5,9 @@ import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadPDF, downloadCSV, downloadPNG } from '../utils/export';
 import type { SwarmState } from '../types';
-import { db } from '../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { useAppStore } from '../store/useAppStore';
 
-interface ThroughputData {
-  day: string;
-  outputs: number;
-  tokensK: number;
-  blocked: number;
-}
-
-interface SwarmStats {
-  totalOutputs: number;
-  senateBlocked: number;
-  senatePending: number;
-  readiness: string;
-  activeWorkflows: number;
-  totalCampaigns: number;
-  totalPillars: number;
-  totalClusters: number;
-  agentActivity: ActivityLog[];
-}
+import type { ActivityLog } from '../hooks/useSwarmAnalytics';
+import { useSwarmAnalytics } from '../hooks/useSwarmAnalytics';
 
 interface SEORankings {
   domainAuthority: number;
@@ -35,19 +16,10 @@ interface SEORankings {
   rankings: { term: string; rank: number }[];
 }
 
-interface ActivityLog {
-  id: string;
-  time: string;
-  agent: string;
-  text: string;
-  type: 'success' | 'info' | 'warning' | 'error';
-}
-
 type NavigableModule = 'campaign' | 'vault' | 'settings' | 'synergy' | 'memory' | 'console' | 'studio' | 'senate';
 
 export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: NavigableModule) => void }) {
-  const [stats, setStats] = useState<SwarmStats | null>(null);
-  const [throughput, setThroughput] = useState<ThroughputData[]>([]);
+  const { stats, throughput, loading: analyticsLoading } = useSwarmAnalytics();
   const [swarmState, setSwarmState] = useState<SwarmState | null>(null);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [vaultAssets, setVaultAssets] = useState<{name: string, url: string}[]>([]);
@@ -56,44 +28,9 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  const { user } = useAppStore();
-
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [throughputRes, statsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/analytics/throughput`),
-        fetch(`${API_BASE_URL}/analytics/stats`),
-      ]);
-      
-      if (throughputRes.ok) {
-        const data = await throughputRes.json() as ThroughputData[];
-        setThroughput(data);
-      }
-
-      let realCampaignCount = 0;
-      try {
-        const uid = user?.uid || 'anonymous_demo_user';
-        const q = query(collection(db, 'campaigns'), where('userId', '==', uid));
-        const snap = await getDocs(q);
-        realCampaignCount = snap.size;
-      } catch (e) {
-        console.warn('Could not load real campaign count:', e);
-      }
-
-      if (statsRes.ok) {
-        const data = await statsRes.json() as SwarmStats;
-        
-        // Override the mock campaign count with REAL data
-        data.totalCampaigns = realCampaignCount;
-        data.activeWorkflows = realCampaignCount > 0 ? realCampaignCount * 4 : 0; // Assume 4 workflows per campaign
-
-        setStats(data);
-        if (data.agentActivity?.length) {
-          setLogs(data.agentActivity);
-        }
-      }
-
       // Fetch actual outputs for the gallery
       const [vaultRes, blogRes] = await Promise.all([
         fetch(`${API_BASE_URL}/vault/list`),
@@ -135,8 +72,16 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
   useEffect(() => {
     fetchData();
 
-    // Auto-refresh every 30 seconds
+    // Auto-refresh remaining API data (SEO/Vault) every 30 seconds
     const interval = setInterval(fetchData, 30000);
+
+    // Sync logs from the custom hook seamlessly
+    if (stats?.agentActivity) {
+      setLogs((prev) => {
+        // Only update if they look different otherwise we trigger re-renders
+        return stats.agentActivity.length > 0 ? stats.agentActivity : prev;
+      });
+    }
 
     // Listen for real-time swarm status from WebSocket
     const handleStatus = (e: Event) => {
@@ -166,10 +111,11 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
       window.removeEventListener('swarm-status', handleStatus);
       window.removeEventListener('swarm-payload', handlePayload);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [stats?.agentActivity]);
 
-  if (loading && !stats) {
+  const isDataLoading = loading || analyticsLoading;
+
+  if (isDataLoading && !stats) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, orderBy, where } from 'firebase/firestore';
 
 export interface Article {
   id: string;
@@ -37,7 +37,11 @@ export function useBlogFeed() {
       }
     };
 
-    const qPillars = query(collection(db, 'pillars'), orderBy('timestamp', 'desc'));
+    const qPillars = query(
+      collection(db, 'pillars'), 
+      where('visibility', '==', 'public'),
+      orderBy('timestamp', 'desc')
+    );
     const unsubscribePillars = onSnapshot(qPillars, (snapshot) => {
       pillarsData = snapshot.docs.map(doc => ({ id: doc.id, type: 'pillar', ...doc.data() } as Article));
       pillarsLoaded = true;
@@ -45,11 +49,16 @@ export function useBlogFeed() {
     }, (err) => {
       console.error("Error listening to pillars:", err);
       setError(err);
+      setLoading(false); // Ensure loading stops on error
       pillarsLoaded = true;
       updateCombined();
     });
 
-    const qClusters = query(collection(db, 'clusters'), orderBy('timestamp', 'desc'));
+    const qClusters = query(
+      collection(db, 'clusters'), 
+      where('visibility', '==', 'public'),
+      orderBy('timestamp', 'desc')
+    );
     const unsubscribeClusters = onSnapshot(qClusters, (snapshot) => {
       clustersData = snapshot.docs.map(doc => ({ id: doc.id, type: 'cluster', ...doc.data() } as Article));
       clustersLoaded = true;
@@ -57,6 +66,7 @@ export function useBlogFeed() {
     }, (err) => {
       console.error("Error listening to clusters:", err);
       setError(err);
+      setLoading(false); // Ensure loading stops on error
       clustersLoaded = true;
       updateCombined();
     });

@@ -25,7 +25,7 @@ export class BA07BrowserArchitect extends BaseAgent {
       name: 'Browser Architect',
       color: '#00E5FF'
     });
-    this.engineUrl = process.env.ENGINE_URL || process.env.BACKEND_URL || 'https://agenticum-backend-697051612685.europe-west1.run.app';
+    this.engineUrl = process.env.ENGINE_URL || 'https://agenticum-g5-backend-697051612685.europe-west1.run.app';
   }
 
   async execute(input: string, context?: any): Promise<string> {

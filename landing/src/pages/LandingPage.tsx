@@ -26,7 +26,7 @@ import { PrometheusBrowser } from '../components/PrometheusBrowser';
 import { ApexContentSection } from '../sections/ApexContentSection';
 
 function useMetrics() {
-  const [stats, setStats] = useState({ workflows: 0, outputs: 0, readiness: '100%' });
+  const [stats, setStats] = useState({ workflows: 0, outputs: 0, readiness: '100%', error: false });
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -36,10 +36,12 @@ function useMetrics() {
         setStats({
           workflows: workSnap.size,
           outputs: outSnap.size || 21, // Fallback to current real count if empty
-          readiness: '100%'
+          readiness: '100%',
+          error: false
         });
       } catch (e) {
         console.warn('Metrics sync failed:', e);
+        setStats(prev => ({ ...prev, error: true, readiness: 'ERR_DENIED' }));
       }
     };
     fetchStats();
@@ -171,7 +173,7 @@ function LiveCounter({ value, label, suffix = '', color = 'white' }: { value: nu
    ============================================================ */
 export function LandingPage() {
   useSEO();
-  const { workflows, outputs, readiness } = useMetrics();
+  const { workflows, outputs, readiness, error } = useMetrics();
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.96]);
@@ -410,9 +412,9 @@ export function LandingPage() {
 
               <div className="mt-12 pt-8 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
-                  { label: 'Active Workflows', value: workflows.toString(), color: '#00E5FF' },
-                  { label: 'Generated Outputs', value: outputs > 0 ? `${outputs}+` : 'Loading...', color: '#FFD700' },
-                  { label: 'Swarm Readiness', value: readiness, color: '#00FF88' },
+                  { label: 'Active Workflows', value: error ? '---' : workflows.toString(), color: '#00E5FF' },
+                  { label: 'Generated Outputs', value: error ? 'UNAVAILABLE' : (outputs > 0 ? `${outputs}+` : 'Loading...'), color: '#FFD700' },
+                  { label: 'Swarm Readiness', value: readiness, color: error ? '#FF007A' : '#00FF88' },
                   { label: 'Cloud Run Revision', value: '00032', color: '#7B2FBE' },
                 ].map(m => (
                   <div key={m.label} className="flex flex-col items-center">
@@ -792,7 +794,7 @@ export function LandingPage() {
                   'Neural Threading Active',
                   'Senate Substrate Online',
                   'Grounding Engine v2.0',
-                  'Cloud Run · 00009-q5w'
+                  `Cloud Run · SHA: ${import.meta.env.VITE_BUILD_SHA || 'dev'}`
                 ].map(t => (
                   <span key={t} className="font-mono text-[7px] uppercase tracking-widest text-white/10 hidden lg:block">{t}</span>
                 ))}

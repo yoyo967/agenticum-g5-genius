@@ -28,6 +28,9 @@ export function GenIUSConsole() {
   });
   const [output, setOutput] = useState<string | null>(null);
   const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'active' | 'error'>('disconnected');
+  const [messageQueue, setMessageQueue] = useState<string[]>([]);
+  const MAX_QUEUE_SIZE = 5;
+  const QUEUE_TIMEOUT_MS = 10000;
   const [isRecording, setIsRecording] = useState(false);
   const [settings, setSettings] = useState<{ projectId?: string; geminiKey?: string }>({});
   const [micStatus, setMicStatus] = useState<'pending' | 'granted' | 'denied'>('pending');
@@ -111,6 +114,8 @@ export function GenIUSConsole() {
   }
 
 
+  const connectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const connect = useCallback(() => {
     if (ws.current?.readyState === WebSocket.OPEN) {
       addLog('system', 'Neural Uplink already active.');
@@ -118,18 +123,41 @@ export function GenIUSConsole() {
     }
     
     setConnectionState('connecting');
-    setLogs([]);
     addLog('system', 'Initializing Neural Uplink... 🔌');
     console.log('🔌 Attempting Neural Uplink to:', WS_BASE_URL);
+
+    if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+    connectTimeoutRef.current = setTimeout(() => {
+      if (ws.current?.readyState !== WebSocket.OPEN) {
+        addLog('error', 'Connection Timeout (10s). Matrix Uplink Failed.');
+        setConnectionState('error');
+        setMessageQueue([]); // Flush queue on failure
+        if (ws.current) {
+           ws.current.close();
+        }
+      }
+    }, QUEUE_TIMEOUT_MS);
     
     try {
       const socket = new WebSocket(WS_BASE_URL);
       ws.current = socket;
 
       socket.onopen = () => {
+        if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
         console.log('✅ Neural Uplink Established');
         setConnectionState('connected');
         addLog('success', 'Neural Uplink Stable. Matrix Synchronized.');
+        
+        setMessageQueue(prev => {
+          if (prev.length > 0) {
+            addLog('system', `Flushing ${prev.length} queued directives...`);
+            prev.forEach(msg => {
+              socket.send(JSON.stringify({ type: 'start', input: msg }));
+              addLog('action', `Manual Directive: ${msg} (sent)`);
+            });
+          }
+          return [];
+        });
       };
 
       socket.onmessage = (event) => {
@@ -515,7 +543,7 @@ export function GenIUSConsole() {
           <button 
             onClick={handleStart}
             aria-label="Spawn Neural Swarm"
-            disabled={(connectionState !== 'connected' && connectionState !== 'active') || (swarm?.state !== 'idle' && swarm?.state !== 'done')}
+            disabled={(connectionState !== 'connected' && connectionState !== 'active') || (swarm && swarm.state !== 'idle' && swarm.state !== 'done')}
             className="bg-neural-blue/10 hover:bg-neural-blue text-neural-blue hover:text-obsidian px-4 py-1.5 rounded border border-neural-blue/20 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Spawn Swarm
@@ -759,7 +787,7 @@ export function GenIUSConsole() {
                     </AnimatePresence>
 
                      {connectionState === 'disconnected' ? (
-                       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center border border-red-500/20 rounded-xl p-8 shadow-2xl">
+                       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center border border-red-500/20 rounded-xl p-8 shadow-2xl" style={{ zIndex: 'var(--z-overlay)' }}>
                          <Link2Off size={48} className="text-red-500/50 mb-6" />
                          <h3 className="text-2xl font-display font-black text-red-500 uppercase tracking-tighter mb-2">Neural Fabric Offline</h3>
                          <p className="text-white/40 text-xs mb-8 max-w-sm text-center">System awaiting explicit connection directive.</p>
@@ -816,7 +844,7 @@ export function GenIUSConsole() {
                          </div>
                        </div>
                      ) : connectionState === 'error' ? (
-                       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center border border-red-500/20 rounded-xl p-8 shadow-2xl">
+                       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center border border-red-500/20 rounded-xl p-8 shadow-2xl" style={{ zIndex: 'var(--z-overlay)' }}>
                          <Link2Off size={48} className="text-red-500/50 mb-6" />
                          <h3 className="text-2xl font-display font-black text-red-500 uppercase tracking-tighter mb-2">Connection Failed</h3>
                          <div className="flex gap-4 mt-4">
@@ -825,49 +853,89 @@ export function GenIUSConsole() {
                            </button>
                          </div>
                        </div>
-                     ) : (
-                       <>
-                          {logs.map((log, i) => (
-                            <motion.div 
-                              key={i}
-                              initial={{ opacity: 0, x: -5 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              className="flex gap-4 items-start"
-                            >
-                              <span className="text-[9px] opacity-20 font-black tabular-nums">[{log.timestamp}]</span>
-                              <span className={`text-[10px] font-black uppercase tracking-tighter w-16 shrink-0 ${
-                                log.type === 'system' ? 'text-white/30' :
-                                log.type === 'error' ? 'text-red-500' :
-                                log.type === 'action' ? 'text-neural-gold' :
-                                log.type === 'agent' ? (log.message?.includes('PROMETHEUS') ? 'text-neural-blue brightness-150 drop-shadow-[0_0_10px_rgba(0,229,255,0.4)]' : 'text-neural-blue') :
-                                log.type === 'success' ? 'text-neural-gold drop-shadow-[0_0_8px_rgba(251,188,4,0.4)]' : 'text-neural-blue'
-                              }`}>{log.type === 'success' ? 'SOVEREIGN' : log.message?.includes('PROMETHEUS') ? 'PROMETHEUS' : log.type}</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[11px] opacity-80 leading-normal">{log.message}</p>
-                                {log.imageUrl && (
-                                  <motion.img
-                                    src={log.imageUrl}
-                                    alt="DA-03 generated asset"
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ duration: 0.4 }}
-                                    className="mt-3 rounded-xl w-full max-h-72 object-cover border border-neural-gold/30 shadow-[0_0_30px_rgba(251,188,4,0.15)]"
-                                  />
-                                )}
-                              </div>
-                            </motion.div>
-                          ))}
-                          {(swarm?.state !== 'idle' && swarm?.state !== 'done') && (
-                            <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="flex gap-4 items-center mt-4">
-                               <span className="text-[9px] opacity-20 font-black tabular-nums">[{new Date().toLocaleTimeString()}]</span>
-                               <span className="text-neural-blue font-black uppercase text-[10px] tracking-tighter">PROCESSING</span>
-                               <div className="flex gap-1 mt-1">
-                                 {[0, 1, 2].map(id => <div key={id} className="w-1.5 h-1.5 bg-neural-blue/40 rounded-full" />)}
-                               </div>
-                            </motion.div>
-                          )}
-                       </>
-                     )}
+                      ) : (
+                        <div className="flex flex-col h-full w-full justify-end">
+                          <div className="flex flex-col gap-4 overflow-y-auto mb-6 scrollbar-none pb-4">
+                            {logs.map((log, i) => (
+                              <motion.div 
+                                key={i}
+                                initial={{ opacity: 0, x: -5 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="flex gap-4 items-start"
+                              >
+                                <span className="text-[9px] opacity-20 font-black tabular-nums">[{log.timestamp}]</span>
+                                <span className={`text-[10px] font-black uppercase tracking-tighter w-16 shrink-0 ${
+                                  log.type === 'system' ? 'text-white/30' :
+                                  log.type === 'error' ? 'text-red-500' :
+                                  log.type === 'action' ? 'text-neural-gold' :
+                                  log.type === 'agent' ? (log.message?.includes('PROMETHEUS') ? 'text-neural-blue brightness-150 drop-shadow-[0_0_10px_rgba(0,229,255,0.4)]' : 'text-neural-blue') :
+                                  log.type === 'success' ? 'text-neural-gold drop-shadow-[0_0_8px_rgba(251,188,4,0.4)]' : 'text-neural-blue'
+                                }`}>{log.type === 'success' ? 'SOVEREIGN' : log.message?.includes('PROMETHEUS') ? 'PROMETHEUS' : log.type}</span>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[11px] opacity-80 leading-normal">{log.message}</p>
+                                  {log.imageUrl && (
+                                    <motion.img
+                                      src={log.imageUrl}
+                                      alt="DA-03 generated asset"
+                                      initial={{ opacity: 0, scale: 0.95 }}
+                                      animate={{ opacity: 1, scale: 1 }}
+                                      transition={{ duration: 0.4 }}
+                                      className="mt-3 rounded-xl w-full max-h-72 object-cover border border-neural-gold/30 shadow-[0_0_30px_rgba(251,188,4,0.15)]"
+                                    />
+                                  )}
+                                </div>
+                              </motion.div>
+                            ))}
+                            {(swarm && swarm.state !== 'idle' && swarm.state !== 'done') && (
+                              <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="flex gap-4 items-center mt-4">
+                                 <span className="text-[9px] opacity-20 font-black tabular-nums">[{new Date().toLocaleTimeString()}]</span>
+                                 <span className="text-neural-blue font-black uppercase text-[10px] tracking-tighter">PROCESSING</span>
+                                 <div className="flex gap-1 mt-1">
+                                   {[0, 1, 2].map(id => <div key={id} className="w-1.5 h-1.5 bg-neural-blue/40 rounded-full" />)}
+                                 </div>
+                              </motion.div>
+                            )}
+                          </div>
+                          
+                          {/* THE NEURAL PROMPT */}
+                          <div className="shrink-0 mt-auto bg-black border border-white/10 rounded-full p-1.5 flex items-center gap-3 relative shadow-[0_0_30px_rgba(0,229,255,0.05)] focus-within:shadow-[0_0_40px_rgba(0,229,255,0.15)] focus-within:border-accent/40 transition-all" style={{ zIndex: 'var(--z-console-input)' }}>
+                             <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0 ml-1">
+                               <Bot size={14} className="text-accent" />
+                             </div>
+                             <input 
+                               type="text" 
+                               placeholder={messageQueue.length >= MAX_QUEUE_SIZE ? "QUEUE FULL" : "Assign directive to swarm..."}
+                               disabled={connectionState === 'connecting' || messageQueue.length >= MAX_QUEUE_SIZE}
+                               className="flex-1 bg-transparent border-none text-white text-xs focus:outline-none placeholder:text-white/20 font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+                               autoComplete="off"
+                               onKeyDown={(e) => {
+                                 if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                                   const val = e.currentTarget.value.trim();
+                                   e.currentTarget.value = '';
+                                   if (connectionState === 'connected' || connectionState === 'active') {
+                                     setOutput(null);
+                                     ws.current?.send(JSON.stringify({ type: 'start', input: val }));
+                                     addLog('action', `Manual Directive: ${val} (sent)`);
+                                   } else {
+                                     if (messageQueue.length >= MAX_QUEUE_SIZE) {
+                                       addLog('error', 'Message Queue Full. Directive rejected.');
+                                       return;
+                                     }
+                                     
+                                     setMessageQueue(prev => [...prev, val]);
+                                     addLog('system', `Directive queued (${messageQueue.length + 1}/${MAX_QUEUE_SIZE}). Connecting...`);
+                                     
+                                     if (connectionState === 'disconnected' || connectionState === 'error') {
+                                       connect();
+                                     }
+                                   }
+                                 }
+                               }}
+                             />
+                             <span className="text-[8px] uppercase font-black text-white/20 tracking-widest px-4 mr-2">ENTER</span>
+                          </div>
+                        </div>
+                      )}
                   </motion.div>
                )}
              </AnimatePresence>
@@ -889,7 +957,7 @@ export function GenIUSConsole() {
       
       {/* Footer Branding */}
       <div className="px-6 py-3 border-t border-white/5 bg-white/1 flex justify-between items-center opacity-40">
-        <span className="text-[8px] font-black uppercase tracking-[0.5em]">Agenticum Genius G5 // Nexus Shell</span>
+        <span className="text-[8px] font-black uppercase tracking-[0.5em]">Agenticum Genius G5 // Nexus Shell // SHA: {import.meta.env.VITE_BUILD_SHA || 'dev'}</span>
         <div className="flex gap-4">
            {['Neural Threading', 'Senate Substrate', 'Grounding Engine'].map(t => (
              <span key={t} className="text-[7px] font-black uppercase tracking-widest px-2 py-0.5 border border-white/10 rounded-sm italic">{t}</span>

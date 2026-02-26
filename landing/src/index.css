@@ -71,6 +71,13 @@
   --spacing-section-sm: 80px;
   --spacing-card-pad: 24px;
   --spacing-sidebar: 260px;
+
+  /* === Z-Index Tokens === */
+  --z-base: 0;
+  --z-content: 10;
+  --z-overlay: 40;
+  --z-console-input: 50;
+  --z-modal: 100;
 }
 
 /* ============================================================
