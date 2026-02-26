@@ -21,15 +21,60 @@ export const SwarmIntelligence: React.FC = () => {
   ]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setNodes(prev => prev.map(node => ({
-        ...node,
-        status: Math.random() > 0.8 ? 'active' : Math.random() > 0.5 ? 'synced' : 'pending'
-      })));
-    }, 3000);
-
-    return () => clearInterval(interval);
+    const handleCalibration = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setNodes(prev => prev.map(node => {
+        if (node.agentId.toLowerCase() === detail.agentId.toLowerCase().replace('-', '')) {
+          return { ...node, status: 'active' };
+        }
+        return node;
+      }));
+    };
+    window.addEventListener('swarm-calibration', handleCalibration);
+    return () => window.removeEventListener('swarm-calibration', handleCalibration);
   }, []);
+
+  const CalibrationLogs = () => {
+    const [logs, setLogs] = useState<{agent: string, msg: string, type?: string}[]>([]);
+    
+    useEffect(() => {
+       const handler = (e: Event) => {
+          const detail = (e as CustomEvent).detail;
+          setLogs(prev => [{
+            agent: detail.agentId.toUpperCase(),
+            msg: `Self-Correction Iteration ${detail.iteration}: ${detail.status}`,
+            type: 'calibration'
+          }, ...prev.slice(0, 5)]);
+       };
+       window.addEventListener('swarm-calibration', handler);
+       return () => window.removeEventListener('swarm-calibration', handler);
+    }, []);
+
+    return (
+       <>
+          {logs.length === 0 ? (
+            <>
+               <Log agent="SN-00" msg="Orchestrating multi-layered storyboard parse..." />
+               <Log agent="SP-01" msg="Analyzing market saturation for Cyber-Samurai niche." />
+               <Log agent="CC-06" msg="Synthesizing emotional dialogue for Scene 04." />
+               <Log agent="DA-03" msg="Drafting visual prompts for environment elements." />
+               <Log agent="RA-01" msg="Auditing storyboard for brand compliance." />
+               <Log agent="SYSTEM" msg="Neural substrate synchronized. Ghost active." />
+            </>
+          ) : (
+            logs.map((log, i) => (
+               <motion.div 
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+               >
+                 <Log agent={log.agent} msg={log.msg} color={log.type === 'calibration' ? 'text-neural-gold' : undefined} />
+               </motion.div>
+            ))
+          )}
+       </>
+    );
+  };
 
   return (
     <div className="flex flex-col h-full bg-black/40 backdrop-blur-3xl border border-white/5 rounded-3xl overflow-hidden p-8">
@@ -47,6 +92,7 @@ export const SwarmIntelligence: React.FC = () => {
         <div className="flex items-center gap-6">
           <Stat icon={<Cpu size={14} />} label="Active Nodes" value="48" color="text-accent" />
           <Stat icon={<Zap size={14} />} label="Synaptic Load" value="12.4ms" color="text-gold" />
+          <Stat icon={<Layers size={14} />} label="Swarm Score" value="89.4" color="text-neural-blue" />
           <Stat icon={<Brain size={14} />} label="Sentience" value="98.2%" color="text-magenta" />
         </div>
       </div>
@@ -133,18 +179,13 @@ export const SwarmIntelligence: React.FC = () => {
               </div>
            </div>
 
-           <div className="flex-1 glass p-6 rounded-2xl border border-white/5 bg-white/3 overflow-hidden flex flex-col">
+            <div className="flex-1 glass p-6 rounded-2xl border border-white/5 bg-white/3 overflow-hidden flex flex-col">
               <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white mb-6 flex items-center gap-2">
                  <Layers size={12} className="text-gold" />
                  Knowledge Synthesis
               </h3>
               <div className="flex-1 overflow-y-auto space-y-3 scrollbar-none pr-2">
-                 <Log agent="SN-00" msg="Orchestrating multi-layered storyboard parse..." />
-                 <Log agent="SP-01" msg="Analyzing market saturation for Cyber-Samurai niche." />
-                 <Log agent="CC-06" msg="Synthesizing emotional dialogue for Scene 04." />
-                 <Log agent="DA-03" msg="Drafting visual prompts for environment elements." />
-                 <Log agent="RA-01" msg="Auditing storyboard for brand compliance." />
-                 <Log agent="SYSTEM" msg="Neural substrate synchronized. Ghost active." />
+                 <CalibrationLogs />
               </div>
            </div>
         </div>
@@ -179,9 +220,9 @@ const Progress = ({ label, value, color }: { label: string, value: number, color
   </div>
 );
 
-const Log = ({ agent, msg }: { agent: string, msg: string }) => (
+const Log = ({ agent, msg, color }: { agent: string, msg: string, color?: string }) => (
   <div className="flex gap-3 text-[10px] leading-relaxed">
-    <span className={`font-black shrink-0 ${agent === 'SN-00' ? 'text-accent' : agent === 'SYSTEM' ? 'text-white/20' : 'text-gold'}`}>[{agent}]</span>
+    <span className={`font-black shrink-0 ${color || (agent === 'SN-00' ? 'text-accent' : agent === 'SYSTEM' ? 'text-white/20' : 'text-gold')}`}>[{agent}]</span>
     <span className="text-white/40 italic">"{msg}"</span>
   </div>
 );

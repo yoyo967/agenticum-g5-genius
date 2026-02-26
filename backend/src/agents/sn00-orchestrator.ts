@@ -57,8 +57,21 @@ export class SN00Orchestrator extends BaseAgent {
     this.chainManager = ChainManager.getInstance();
   }
 
-  async execute(input: string): Promise<string> {
+  async execute(input: string, campaignId?: string): Promise<string> {
     this.updateStatus(AgentState.THINKING, 'Parsing user directive via Gemini 2.0 Pro...', 5);
+
+    if (campaignId) {
+      try {
+        const { db, Collections } = require('../services/firestore');
+        const admin = require('firebase-admin');
+        await db.collection(Collections.CAMPAIGNS).doc(campaignId).update({
+          status: 'ACTIVE_SWARM',
+          updatedAt: admin.firestore.FieldValue ? admin.firestore.FieldValue.serverTimestamp() : new Date()
+        });
+      } catch (e) {
+        console.warn(`Could not update campaign ${campaignId} start status`, e);
+      }
+    }
 
     // 0. Intelligent Intent Routing
     if (input.toLowerCase().includes('pillar') || input.toLowerCase().includes('artikel')) {
@@ -128,7 +141,7 @@ ${contentSnippet}...
            }
         });
         const result = await model.generateContent(`
-            IDENTITY: You are SN00 Neural Orchestrator.
+            IDENTITY: You are SN-00 GenIUS Orchestrator.
             TASK: Create a Swarm Execution Plan for the following directive: "${input}"
             SWARM_MEMORY (Past Logs):
             ${swarmMemory}
@@ -154,7 +167,7 @@ ${contentSnippet}...
         // --- PHASE 2: ULTIMATE NEURAL REFINEMENT ---
         this.updateStatus(AgentState.THINKING, 'Refining execution plan against Maximum Excellence Standard...', 12);
         const refinementPrompt = `
-          STRATEGIC_AUDIT_PROTOCOL: ULTIMATE_GENIUS_V3
+          STRATEGIC_AUDIT_PROTOCOL: ULTIMATE_GenIUS_V3
           PLAN_TO_AUDIT: ${JSON.stringify(executionPlan)}
           SYSTEM_TRUTH: ${nexusManager.getGlobalContext()}
           
@@ -206,6 +219,26 @@ ${contentSnippet}...
     await this.chainManager.executeProtocol(protocol);
 
     this.updateStatus(AgentState.DONE, 'Full orchestration cycle complete.', 100);
+
+    if (campaignId) {
+      try {
+        const { db, Collections } = require('../services/firestore');
+        const admin = require('firebase-admin');
+        const tasksSummary = protocol.tasks.map((t: any) => ({
+          agentId: t.agentId,
+          description: t.description,
+          result: String(t.result).substring(0, 500)
+        }));
+        
+        await db.collection(Collections.CAMPAIGNS).doc(campaignId).update({
+          status: 'COMPLETED',
+          updatedAt: admin.firestore.FieldValue ? admin.firestore.FieldValue.serverTimestamp() : new Date(),
+          outputLog: tasksSummary
+        });
+      } catch (e) {
+        console.warn(`Could not update campaign ${campaignId} completion status`, e);
+      }
+    }
 
     return `
 # NEURAL FABRIC OUTPUT: ${input}

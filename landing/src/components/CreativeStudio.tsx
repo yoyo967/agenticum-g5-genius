@@ -208,7 +208,7 @@ export function CreativeStudio() {
             <Palette size={20} className="text-purple-400" />
           </div>
           <div>
-            <h2 className="font-display text-xl uppercase tracking-tight">Creative Studio</h2>
+            <h2 className="font-display text-xl uppercase tracking-tight">GenIUS Creative Studio</h2>
             <p className="font-mono text-[10px] text-white/30">da03 Imagen 3 + cc06 Copy Engine</p>
           </div>
         </div>

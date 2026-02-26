@@ -12,12 +12,13 @@ import { downloadJSON, downloadTextFile } from '../utils/export';
 import { API_BASE_URL, WS_BASE_URL } from '../config';
 
 import { type SwarmState } from '../types';
+import { useAppStore } from '../store/useAppStore';
 
 import type { WorldState } from '../../../backend/src/services/nexus-manager';
 
 const SESSION_KEY = 'agenticum_g5_session';
 
-export function GeniusConsole() {
+export function GenIUSConsole() {
   const [swarm, setSwarm] = useState<SwarmState | null>(null);
   const [logs, setLogs] = useState<{ type: string; message: string; timestamp: string; imageUrl?: string }[]>(() => {
     try {
@@ -145,6 +146,12 @@ export function GeniusConsole() {
             addLog('action', `Data Transfer: ${String(data.from).toUpperCase()} → ${String(data.to).toUpperCase()}`);
             if (data.payloadType === 'IMAGE_ASSET' && data.payload) {
               addLog('agent', `[da03] Visual asset generated`, data.payload);
+              useAppStore.getState().addGlobalAsset({
+                url: data.payload,
+                type: 'IMAGE',
+                timestamp: new Date(),
+                agent: data.from || 'da03'
+              });
             } else {
               addLog('system', `Payload: [${data.payloadType}]`);
             }
@@ -158,7 +165,7 @@ export function GeniusConsole() {
 
           if (data.type === 'senate') {
             window.dispatchEvent(new CustomEvent('swarm-senate', { detail: data }));
-            addLog('error', `SENATE VETO: ra01 has haulted orchestration.`);
+            addLog('error', `SENATE VETO: RA-01 has halted orchestration.`);
             addLog('system', `Reason: ${data.payload}`);
           }
 
@@ -216,6 +223,16 @@ export function GeniusConsole() {
                addLog('system', `Intel Acquired: ${String(task.result).substring(0, 50)}...`);
             }
           }
+
+          if (data.type === 'awaiting-intervention') {
+            window.dispatchEvent(new CustomEvent('swarm-intervention', { detail: data.data }));
+            addLog('error', `EXECUTIVE ACTION REQUIRED: Task [${data.data.taskId}] is stalled.`);
+          }
+
+          if (data.type === 'swarm-calibration') {
+            window.dispatchEvent(new CustomEvent('swarm-calibration', { detail: data.data }));
+            addLog('success', `[SENTIENT LOOP] ${data.data.agentId.toUpperCase()} calibration: ${data.data.status}`);
+          }
         } catch (err) {
           console.error('Failed to parse socket message', err);
         }
@@ -246,13 +263,26 @@ export function GeniusConsole() {
         setOutput(null);
         ws.current?.send(JSON.stringify({ 
           type: 'start', 
-          input: detail.input || 'Initial brief' 
+          input: detail.directive || detail.input || 'Initial brief',
+          campaignId: detail.campaignId
         }));
         addLog('action', `External Directive: ${detail.workflowId || 'Manual Injection'}`);
       }
     };
 
     window.addEventListener('trigger-orchestration', handleTrigger);
+
+    const handleSendIntervention = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (ws.current?.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify({
+          type: 'executive-intervention',
+          data: detail
+        }));
+        addLog('success', `EXECUTIVE DIRECTIVE DISPATCHED: ${detail.directive}`);
+      }
+    };
+    window.addEventListener('send-intervention', handleSendIntervention);
 
     const handleNexusState = (e: Event) => {
       setNexusState((e as CustomEvent).detail);

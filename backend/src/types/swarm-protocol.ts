@@ -12,6 +12,9 @@ export interface Task {
   description: string;
   state: TaskState;
   dependencies: string[]; // IDs of tasks that must complete first
+  sentient?: boolean;     // If true, trigger self-correction loop
+  interventionRequired?: boolean; // If true, wait for executive directive
+  maxIterations?: number; // Override default iterations for loop
   result?: any;
   error?: string;
   startTime?: number;

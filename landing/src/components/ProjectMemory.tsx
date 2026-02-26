@@ -64,8 +64,8 @@ export function ProjectMemory() {
             <Database size={20} className="text-purple-400" />
           </div>
           <div>
-            <h2 className="font-display text-xl uppercase tracking-tight">Project Memory</h2>
-            <p className="font-mono text-[10px] text-white/30">Campaign History + Asset Archive</p>
+            <h2 className="font-display text-xl uppercase tracking-tight">GenIUS Project Memory</h2>
+            <p className="font-mono text-[10px] text-white/30">G5 Campaign History + Asset Archive</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

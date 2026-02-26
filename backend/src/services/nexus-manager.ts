@@ -95,7 +95,7 @@ export class NexusManager {
     
     eventFabric.broadcast({ 
       type: 'nexus-memory-uplink', 
-      pattern: `Strategy for [${task.substring(0, 20)}...] archived with Genius Score: ${score}` 
+      pattern: `Strategy for [${task.substring(0, 20)}...] archived with GenIUS Score: ${score}` 
     });
   }
 }

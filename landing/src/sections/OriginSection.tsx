@@ -31,13 +31,13 @@ const PROBLEM_POINTS = [
     icon: <Zap size={18} />,
     title: 'The Insight',
     color: '#FFD700',
-    text: "Tony Stark doesn't type. He speaks into the room, and GENIUS thinks along, acts proactively, and delivers in real-time. Why should enterprise marketing be different?",
+    text: "Tony Stark doesn't type. He speaks into the room, and GenIUS thinks along, acts proactively, and delivers in real-time. Why should enterprise marketing be different?",
   },
   {
     icon: <Brain size={18} />,
     title: 'The Solution',
     color: '#00E5FF',
-    text: 'Agenticum G5 is the GENIUS for enterprise online marketing. Voice-in, live-output. 8 specialized AI agents. EU AI Act compliant. Not a chatbot. A command center.',
+    text: 'Agenticum G5 is the GenIUS for enterprise online marketing. Voice-in, live-output. 8 specialized AI agents. EU AI Act compliant. Not a chatbot. A command center.',
   },
 ];
 

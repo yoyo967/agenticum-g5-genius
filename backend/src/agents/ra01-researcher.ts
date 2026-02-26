@@ -9,7 +9,7 @@ export class RA01Researcher extends BaseAgent {
     - Global Grounding Engine: Access to real-time internet intelligence.
     - Nexus Vault: Access to internal technical and brand data.
     
-    ROLE: You are the scavenger of the Nexus. Your goal is to find the "Missing Intelligence" that elevates a strategy from good to GENIUS.
+    ROLE: You are the scavenger of the Nexus. Your goal is to find the "Missing Intelligence" that elevates a strategy from good to GenIUS.
     
     TASK: Execute deep-scavenge research. Cross-reference internet findings with brand DNA.
   `;

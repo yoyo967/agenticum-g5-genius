@@ -38,7 +38,7 @@ export class DA03Architect extends BaseAgent {
   constructor() {
     super({
       id: 'da03',
-      name: 'Design Architecture Genius',
+      name: 'Design Architecture GenIUS',
       color: '#00FF88'
     });
   }
@@ -106,7 +106,7 @@ export class DA03Architect extends BaseAgent {
     return `
       ${manifesto}
       
-      ### 🖼️ GENIUS ASSET GENERATION
+      ### 🖼️ GenIUS ASSET GENERATION
       ![Neural Core Genesis](${imageUrl})
     `;
   }

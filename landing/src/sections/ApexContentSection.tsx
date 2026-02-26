@@ -4,20 +4,20 @@ import { Brain, Layers, Shield, Zap, TrendingUp, Cpu, Globe } from 'lucide-react
 export function ApexContentSection() {
   const content = [
     {
-      title: "The Evolution: From Chatbot to Sovereign OS",
-      text: "Agenticum G5 is not just an interface; it is an autonomous marketing ecosystem. We have moved past the era of simple chat prompts. G5 represents the transition from a passive tool to a proactive Digital Advertising Agency in a box — capable of steering multi-layer campaigns via voice alone.",
+      title: "The Evolution: From Chatbot to GenIUS OS",
+      text: "GenIUS G5 is not just an interface; it is an autonomous marketing ecosystem. We have moved past the era of reactive prompts. G5 represents the transition from a passive tool to a proactive Digital Advertising Agency in a box — capable of steering multi-layer campaigns via voice alone.",
       icon: <TrendingUp className="text-accent" />,
       color: "cyan"
     },
     {
       title: "The Ecosystem: Nexus & Sovereign",
-      text: "The Agenticum architecture rests on two pillars. The NEXUS is your tactical cockpit — a high-fidelity dashboard for real-time visualization. SOVEREIGN is the Intelligence itself: the G5 Sovereign Engine that fuses your vision with technical congruence to maintain 'Maximal Excellence' across all assets.",
+      text: "The GenIUS architecture rests on two pillars. The NEXUS is your tactical cockpit — a high-fidelity dashboard for real-time visualization. SOVEREIGN is the Intelligence itself: the G5 Sovereign Engine that fuses your vision with technical congruence to maintain 'Maximal Excellence' across all assets.",
       icon: <Layers className="text-neural-gold" />,
       color: "gold"
     },
     {
       title: "Kinetic Flow: Parallelism Over Queuing",
-      text: "Traditional AI tools work in sequence: one prompt, one answer. Agenticum G5 utilizes Parallel Swarm execution. While CC-06 is writing your semantic strategy, DA-03 is forging visuals, SP-01 is scanning competitors, and RA-01 is auditing for compliance — simultaneously. Speed is our primary currency.",
+      text: "Traditional AI tools work in sequence: one prompt, one answer. GenIUS utilizes Parallel Swarm execution. While CC-06 is writing your semantic strategy, DA-03 is forging visuals, SP-01 is scanning competitors, and RA-01 is auditing for compliance — simultaneously. Speed is our primary currency.",
       icon: <Zap className="text-magenta" />,
       color: "magenta"
     },
@@ -47,10 +47,10 @@ export function ApexContentSection() {
             >
               <span className="label-active block mb-6">Maximal Intelligence Briefing</span>
               <h2 className="font-display font-black uppercase tracking-tighter text-6xl md:text-8xl leading-[0.85] mb-8">
-                The <span className="text-accent italic">Genius</span> <br /> Manifesto.
+                The <span className="text-accent italic">GenIUS</span> <br /> Manifesto.
               </h2>
               <p className="font-mono text-sm text-white/40 leading-relaxed mb-10 max-w-sm">
-                A definitive guide to the AGENTICUM G5 Intelligence Fabric. 
+                A definitive guide to the GenIUS G5 Intelligence Fabric. 
                 Deconstructing how a voice command becomes a global enterprise campaign 
                 in under 60 seconds.
               </p>
@@ -90,12 +90,12 @@ export function ApexContentSection() {
                 </div>
                 {/* Decorative Elements */}
                 <div className="absolute top-4 right-4 text-[10px] font-mono text-white/5 uppercase tracking-widest font-black">
-                  PHASE 18 // MAX_INT
+                  PHASE 36 // MAX_INT
                 </div>
               </motion.div>
             ))}
 
-            {/* Final Content Summary - The 7 Specialists Summary */}
+            {/* Final Content Summary - The 7 Specialists Summary (Updated to 8) */}
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -108,14 +108,14 @@ export function ApexContentSection() {
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   {[
-                    { id: 'SN00', role: 'Orchestrator' },
-                    { id: 'SO00', role: 'Sovereign' },
-                    { id: 'SP01', role: 'Strategist' },
-                    { id: 'CC06', role: 'Copywriter' },
-                    { id: 'DA03', role: 'Visual AI' },
-                    { id: 'BA07', role: 'Deep-Intel' },
-                    { id: 'VE01', role: 'Motion' },
-                    { id: 'RA01', role: 'Auditor' }
+                    { id: 'SN-00', role: 'Orchestrator' },
+                    { id: 'SO-00', role: 'Sovereign' },
+                    { id: 'SP-01', role: 'Strategist' },
+                    { id: 'CC-06', role: 'Copywriter' },
+                    { id: 'DA-03', role: 'Visual AI' },
+                    { id: 'BA-07', role: 'Researcher' },
+                    { id: 'VE-01', role: 'Motion' },
+                    { id: 'RA-01', role: 'Auditor' }
                   ].map(agent => (
                     <div key={agent.id} className="text-left">
                       <div className="text-[10px] font-black font-display text-accent mb-0.5">{agent.id}</div>

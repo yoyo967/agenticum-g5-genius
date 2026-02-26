@@ -137,7 +137,7 @@ export function NexusEngineV2() {
         <div className="flex items-center gap-4">
           <Workflow size={16} className="text-neural-blue" />
           <h2 className="text-sm font-display font-black uppercase tracking-widest text-white">
-            NEXUS ENGINE V2 <span className="text-neural-blue/50">/</span> <span className="opacity-50">Autonomous Workflow Editor</span>
+            GenIUS NEXUS ENGINE V2 <span className="text-neural-blue/50">/</span> <span className="opacity-50">Autonomous Workflow Editor</span>
           </h2>
         </div>
       </div>

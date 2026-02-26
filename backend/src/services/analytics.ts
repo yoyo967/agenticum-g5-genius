@@ -369,7 +369,7 @@ export class AnalyticsService {
         { term: 'Neural Marketing', rank: 2 },
         { term: 'AI Content Swarm', rank: 1 },
         { term: 'Autonomous Ad Ops', rank: 4 },
-        { term: 'G5 Genius Platform', rank: 3 }
+        { term: 'G5 GenIUS Platform', rank: 3 }
       ]
     };
   }

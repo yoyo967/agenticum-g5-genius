@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, ShieldAlert, CheckCircle2, XCircle, AlertTriangle, Scale, RefreshCw, Clock } from 'lucide-react';
+import { Shield, ShieldAlert, CheckCircle2, XCircle, AlertTriangle, Scale, Clock } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadCSV, downloadPDF } from '../utils/export';
+import { db } from '../firebase';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 
 interface SenateCase {
   id: string;
@@ -26,62 +28,62 @@ export function SecuritySenate() {
   const [verdictReason, setVerdictReason] = useState('');
   const [castingVerdict, setCastingVerdict] = useState(false);
 
-  const fetchCases = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE_URL}/senate/docket`);
-      if (res.ok) {
-        const data = await res.json();
-        setCases(data.cases || []);
-      }
-    } catch (e) {
-      console.warn('[Senate] Backend unavailable:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchCases();
+    setLoading(true);
+    const q = query(collection(db, 'senate_docket'), orderBy('timestamp', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const list: SenateCase[] = [];
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        list.push({
+          id: docSnap.id,
+          agent: data.agent,
+          type: data.type,
+          risk: data.risk,
+          title: data.title,
+          payload: data.payload,
+          verdict: data.verdict,
+          reason: data.reason,
+          timestamp: data.timestamp?.toDate?.()?.toISOString() || data.timestamp,
+          reviewedAt: data.reviewedAt?.toDate?.()?.toISOString() || data.reviewedAt,
+        } as SenateCase);
+      });
+      setCases(list);
+      setLoading(false);
+    }, (error) => {
+      console.warn('[Senate] Firestore observer error:', error);
+      setLoading(false);
+    });
 
-    // Listen for real-time senate events
-    const handleSenate = (e: Event) => {
-      const customEvent = e as CustomEvent<{ cases?: SenateCase[] }>;
-      if (customEvent.detail?.cases) setCases(customEvent.detail.cases);
-    };
-    window.addEventListener('senate-update', handleSenate);
-    return () => window.removeEventListener('senate-update', handleSenate);
+    return () => unsubscribe();
   }, []);
 
   const castVerdict = async (caseId: string, verdict: 'APPROVED' | 'REJECTED') => {
     setCastingVerdict(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/senate/verdict/${caseId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ verdict, reason: verdictReason }),
+      await updateDoc(doc(db, 'senate_docket', caseId), {
+        verdict,
+        reason: verdictReason,
+        reviewedAt: new Date()
       });
       
-      if (res.ok) {
-        // If approved, find if there's a related article to publish
-        if (verdict === 'APPROVED' && selectedCase) {
-          // Extract slug from payload if possible (format: "Audit: slug...")
-          const slugMatch = selectedCase.title.match(/Audit: (.*)\.\.\./);
-          const slug = slugMatch ? slugMatch[1].trim() : null;
-          
-          if (slug) {
-            await fetch(`${API_BASE_URL}/blog/article/${slug}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: 'published' }),
-            });
-          }
+      // If approved, trigger blog publish via backend since it needs backend secrets to connect to CMS.
+      // Or we can just do the same REST call for the specific backend action (publishing)
+      if (verdict === 'APPROVED' && selectedCase) {
+        const slugMatch = selectedCase.title.match(/Audit: (.*)\.\.\./);
+        const slug = slugMatch ? slugMatch[1].trim() : null;
+        
+        if (slug) {
+          await fetch(`${API_BASE_URL}/blog/article/${slug}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'published' }),
+          }).catch(console.warn);
         }
-
-        setCases(prev => prev.map(c => c.id === caseId ? { ...c, verdict, reason: verdictReason, reviewedAt: new Date().toISOString() } : c));
-        setSelectedCase(null);
-        setVerdictReason('');
       }
+
+      setSelectedCase(null);
+      setVerdictReason('');
     } catch (e) {
       console.warn('[Senate] Verdict cast failed:', e);
     } finally {
@@ -114,13 +116,6 @@ export function SecuritySenate() {
             <span className="badge badge-online">{approved} Approved</span>
             <span className="badge badge-error">{rejected} Rejected</span>
           </div>
-          <button 
-            onClick={fetchCases} 
-            aria-label="Refresh Senate Docket"
-            className="btn btn-ghost btn-sm"
-          >
-            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-          </button>
           <ExportMenu options={[
             { label: 'JSON Docket', format: 'JSON', onClick: () => downloadJSON({ cases: filtered, stats: { pending, approved, rejected } }, 'G5_Senate_Docket') },
             { label: 'CSV Report', format: 'CSV', onClick: () => downloadCSV(filtered.map(c => ({ id: c.id, agent: c.agent, type: c.type, risk: c.risk, title: c.title, verdict: c.verdict, reason: c.reason || '', timestamp: c.timestamp || '' })), 'G5_Senate_Report') },

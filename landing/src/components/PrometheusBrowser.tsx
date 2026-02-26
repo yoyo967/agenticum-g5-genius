@@ -126,7 +126,7 @@ export function PrometheusBrowser() {
           </div>
 
           <div className="mt-8 p-6 glass rounded-2xl border-accent/20 bg-accent/5 text-center">
-            <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.3em] block mb-2">Current Genius Score</span>
+            <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.3em] block mb-2">Current GenIUS Score</span>
             <div className="text-4xl font-display font-black text-accent">98.4</div>
             <div className="mt-2 text-[8px] font-mono text-accent/60 uppercase tracking-widest italic">Recursive Refinement Active</div>
           </div>

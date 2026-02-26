@@ -59,7 +59,7 @@ export function SynergyMap() {
     return () => window.removeEventListener('swarm-status', handler);
   }, []);
 
-  // Listen for payload events from GeniusConsole
+  // Listen for payload events from GenIUSConsole
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ from: string; to: string; payloadType: string }>).detail;
@@ -261,7 +261,7 @@ export function SynergyMap() {
             </AnimatePresence>
             {flows.length === 0 && (
               <div className="h-full flex items-center justify-center">
-                <p className="label text-center">Waiting for agent activity...<br/>Connect via Genius Console to see live data.</p>
+                <p className="label text-center">Waiting for agent activity...<br/>Connect via GenIUS Console to see live data.</p>
               </div>
             )}
           </div>

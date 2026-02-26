@@ -142,16 +142,56 @@ export class ChainManager {
         `RESULT FROM [${t?.agentId}]:\n${t?.result}`
       ).join('\n\n');
 
-      const fullPrompt = contextFromDeps 
-        ? `TASK: ${task.description}\n\nDEPENDENCY CONTEXT:\n${contextFromDeps}`
-        : task.description;
+      const { nexusManager } = require('./nexus-manager');
+      const globalContext = nexusManager.getGlobalContext();
 
-      const result = await agent.execute(fullPrompt); 
+      const fullPrompt = `
+        ${globalContext}
+        
+        TASK: ${task.description}
+        ${contextFromDeps ? `\nDEPENDENCY CONTEXT:\n${contextFromDeps}` : ''}
+      `.trim();
+
+      let finalPrompt = fullPrompt;
+      if (task.interventionRequired) {
+        const { InterventionManager } = require('./intervention-manager');
+        const directive = await InterventionManager.getInstance().waitForIntervention(task.id);
+        if (directive) {
+          finalPrompt = `EXECUTIVE DIRECTIVE:\n${directive}\n\nORIGINAL TASK:\n${fullPrompt}`;
+          this.logger.info(`Applying executive directive to Task [${task.id}]`);
+        }
+      }
+
+      let result;
+      if (task.sentient) {
+        const { SentientLoopService } = require('./sentient-loop');
+        const loop = await SentientLoopService.getInstance().refine(
+          task.agentId,
+          fullPrompt,
+          task.maxIterations || 3
+        );
+        result = loop.finalOutput;
+      } else {
+        result = await agent.execute(fullPrompt); 
+      }
+      
       task.result = result;
       task.state = TaskState.COMPLETED;
       task.endTime = Date.now();
       
-      this.logger.info(`Task [${task.id}] Completed.`);
+      // Phase 33: Dynamic Knowledge Persistence
+      nexusManager.recordSuccess(
+        task.description, 
+        85, // Default score
+        typeof result === 'string' ? result.substring(0, 500) : 'Structured Data Outcome'
+      );
+
+      nexusManager.updateState({
+        lastCognitiveEvent: `Task [${task.id}] finalized by ${task.agentId}`,
+        globalKnowledge: [...nexusManager.getState().globalKnowledge, `INTEL_${task.agentId}: ${task.description.substring(0, 50)}...`].slice(-20)
+      });
+
+      this.logger.info(`Task [${task.id}] Completed and archived in Nexus.`);
       eventFabric.broadcast({ type: 'task-update', task });
     } catch (err: any) {
       this.logger.error(`Task [${task.id}] Failed: ${err.message}`);

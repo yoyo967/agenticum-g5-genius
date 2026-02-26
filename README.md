@@ -1,14 +1,36 @@
-# 🛰️ AGENTICUM G5 GENIUS: Neural Fabric OS
+# 🛰️ GenIUS: The Neural Fabric OS
 
 > **The Ultimate Multi-Agent Orchestration Layer for the Autonomous Enterprise.**
 
-AGENTICUM G5 is a hypermodern Enterprise OS designed to orchestrate complex swarms of autonomous agents. Powered by **Gemini 2.0 Flash** and **Imagen 3**, it bridges the gap between static automation and sentient workflow choreography.
+GenIUS is a hypermodern Enterprise Operating System designed to orchestrate complex swarms of autonomous agents. Powered by **Gemini 2.0 Flash** and the **Gemini Live API**, GenIUS bridges the gap between static automation and sentient workflow choreography, providing a zero-click marketing command center for the next industrial revolution.
 
 ---
 
-## 🧠 Neural Architecture: The Genius Five
+## 🧠 Neural Architecture: The Swarm Fabric
 
-The system operates via a core matrix of five specialized autonomous nodes (The Genius Five), coordinated by the **SN-00 Orchestrator**:
+GenIUS operates via a core matrix of specialized autonomous nodes, coordinated by the **SN-00 GenIUS Orchestrator**. The system utilizes a recursive **SwarmProtocol** to ensure mission alignment and real-time synchronization.
+
+```mermaid
+graph TD
+    User((Executive User)) -- "Voice Interaction" --> GL[Gemini Live API]
+    GL -- "Real-time Directive" --> SN00[SN-00 Orchestrator]
+
+    subgraph "The GenIUS Neural Fabric"
+    SN00 -- "Mission Blueprint" --> SP01[SP-01 Strategist]
+    SP01 -- "Strategic Consensus" --> SN00
+    SN00 -- "Visual Specification" --> DA03[DA-03 Architect]
+    DA03 -- "Imagen 3 Assets" --> SN00
+    SN00 -- "Content Synthesis" --> CC06[CC-06 Director]
+    CC06 -- "Cinematic Flux" --> SN00
+    SN00 -- "Final Audit" --> RA01[RA-01 Auditor]
+    RA01 -- "Senate Veto/Approval" --> SN00
+    end
+
+    SN00 -- "Live Output" --> GC[GenIUS Console]
+    SN00 -- "Global Visibility" --> ED[Executive Dashboard]
+```
+
+### The Specialist Matrix
 
 1.  **SN-00 Orchestrator (OODA Node)**: High-speed parallel dispatch and mission consensus.
 2.  **SP-01 Strategist (Blueprint Node)**: Grounded strategic planning using McKinsey-level mental models.
@@ -16,29 +38,39 @@ The system operates via a core matrix of five specialized autonomous nodes (The 
 4.  **CC-06 Director (Grammar Node)**: Cinematic content orchestration and prompt engineering.
 5.  **RA-01 Auditor (Senate Node)**: Adversarial security and ethical alignment tribunal.
 
+---
+
 ## 🚀 Key Modules
 
-- **Genius Console**: Real-time multimodal (Voice/Audio) interface with Gemini Live API.
-- **Synergy Map**: Live visual telemetry of inter-agent payload transmissions.
-- **Creative Studio**: Integrated design workspace for Imagen 3 & Gemini content collaboration.
-- **Nexus Engine**: Direct blueprint-to-orchestration execution gateway.
-- **Executive Dashboard**: Global swarm health and mission throughput analytics.
+- **GenIUS Console**: A real-time multimodal (Voice/Audio) interface powered by **Gemini Live API (WebSockets)**, allowing for seamless human-AI collaboration.
+- **Synergy Map**: Live visual telemetry of inter-agent payload transmissions, providing absolute transparency into the swarm's recursive thinking.
+- **Creative Studio**: Integrated design workspace for **Imagen 3** and **Gemini 2.0 Flash** collaborative asset forging.
+- **Nexus Engine**: Direct blueprint-to-orchestration execution gateway for rapid deployment of complex marketing workflows.
+- **Executive Dashboard**: Global swarm health, mission throughput, and real-time ROI optimization analytics.
 
-## 🛠️ Technical Stack
+---
 
-- **Frontend**: React 19, TypeScript, Framer Motion (Spatial Physics), Lucide Icons.
-- **Backend**: Node.js, Express, WebSockets (Bi-directional Audio), Vertex AI SDK.
-- **AI Core**: Gemini 2.0 Flash (Reasoning), Imagen 3 (Visuals), Gemini Live (Voice).
-- **Storage**: Google Cloud Storage & Firestore for persistent agent memory.
+## ⚡ Technical Stack
 
-## ⚡ Quick Start
+- **AI Core**:
+  - **Gemini 2.0 Flash**: Core reasoning, recursive logic, and multimodal processing.
+  - **Gemini Live API**: Low-latency WebSocket orchestration for voice-driven intent discovery.
+  - **Imagen 3**: High-fidelity visual asset generation within the SwarmProtocol.
+- **Frontend**: React 19, TypeScript, Framer Motion (Spatial Physics Engine), Tailwind CSS.
+- **Backend**: Node.js, Express, WebSockets, Vertex AI SDK, Cloud Run.
+- **Infrastructure**: Google Cloud Platform (Firestore, Cloud Storage, Vertex AI).
 
-1.  **Clone the Substrate**: `git clone <repo>`
-2.  **Configure Matrix**: Add `GEMINI_API_KEY` to `.env`.
-3.  **Boot Backend**: `cd backend && npm install && npm run dev`
-4.  **Launch OS**: `cd landing && npm install && npm run dev`
+---
+
+## 🌍 Impact & Vision: The Zero-Click Future
+
+GenIUS is not just a tool; it's a paradigm shift. By moving away from chat-based interfaces toward a **Sentient OS**, we enable enterprises to:
+
+- **Speak into existence**: Direct voice-to-execution workflows.
+- **Autonomous Alignment**: Multi-agent consensus ensures compliance and strategic depth.
+- **Infinite Scalability**: A swarm that thinks and acts faster than any traditional marketing department.
 
 ---
 
 **Built for the Google AI Hackathon 2026.**
-_Neural Fabric Activation Status: 100% COMPLETE // ACCESS GRANTED_
+_GenIUS Status: 100% OPERATIONAL // MISSION READY_

@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Send, Bot, Sparkles, Zap, Command } from 'lucide-react';
 
-export function GeniusHeroChat() {
+export function GenIUSHeroChat() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<{ role: 'user' | 'genius', text: string }[]>([
-    { role: 'genius', text: "Welcome to the Nexus. I am GENIUS. How shall we orchestrate your marketing ecosystem today?" }
+    { role: 'genius', text: "Welcome to the Nexus. I am GenIUS. How shall we orchestrate your marketing ecosystem today?" }
   ]);
   const [isThinking, setIsThinking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -24,7 +24,7 @@ export function GeniusHeroChat() {
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsThinking(true);
 
-    // GENIUS logic for the Hero Section
+    // GenIUS logic for the Hero Section
     setTimeout(() => {
       setMessages(prev => [...prev, { 
         role: 'genius', 
@@ -103,7 +103,7 @@ export function GeniusHeroChat() {
                 <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }}>.</motion.span>
                 <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }}>.</motion.span>
               </div>
-              GENIUS Processing
+              GenIUS Processing
             </motion.div>
           )}
         </div>
@@ -119,7 +119,7 @@ export function GeniusHeroChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Speak to GENIUS..."
+              placeholder="Speak to GenIUS..."
               className="flex-1 bg-transparent border-none outline-none font-mono text-sm text-white placeholder:text-white/20 py-2"
             />
             <button 
@@ -132,7 +132,7 @@ export function GeniusHeroChat() {
           <div className="mt-3 flex items-center justify-between px-2">
             <div className="flex gap-4">
               <span className="flex items-center gap-1.5 text-[9px] font-mono text-white/20 uppercase tracking-widest">
-                <Bot size={10} /> GENIUS Active
+                <Bot size={10} /> GenIUS Active
               </span>
               <span className="flex items-center gap-1.5 text-[9px] font-mono text-white/20 uppercase tracking-widest">
                 <Sparkles size={10} /> Zero Latency

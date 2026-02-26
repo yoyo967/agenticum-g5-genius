@@ -21,7 +21,7 @@ import { PrizesSection } from '../sections/PrizesSection';
 import { FinalCTASection } from '../sections/FinalCTASection';
 import { VoiceFlowSection } from '../sections/VoiceFlowSection';
 import { OriginSection } from '../sections/OriginSection';
-import { GeniusHeroChat } from '../components/GeniusHeroChat';
+import { GenIUSHeroChat } from '../components/GenIUSHeroChat';
 import { PrometheusBrowser } from '../components/PrometheusBrowser';
 import { ApexContentSection } from '../sections/ApexContentSection';
 
@@ -54,7 +54,7 @@ function useMetrics() {
 function useSEO() {
   useEffect(() => {
     // Title
-    document.title = 'Agenticum G5 GENIUS — The Neural Marketing OS | Gemini Live Agent Challenge';
+    document.title = 'Agenticum G5 GenIUS — The Neural Marketing OS | Gemini Live Agent Challenge';
 
     const setMeta = (name: string, content: string, isProperty = false) => {
       const attr = isProperty ? 'property' : 'name';
@@ -68,7 +68,7 @@ function useSEO() {
     };
 
     setMeta('description', 'The world\'s first voice-activated AI marketing operating system. 8 specialized agents, Gemini 2.0 Live API, Imagen 3, EU AI Act compliant. Speak a command — the swarm delivers. Engineered for the Google Gemini Live Agent Challenge 2026.');
-    setMeta('keywords', 'Gemini Live API, AI Marketing, Voice AI Agent, Imagen 3, Multi-Agent System, EU AI Act, Agenticum, Google Cloud AI, Enterprise Marketing AI, GENIUS Marketing, AEO Optimization');
+    setMeta('keywords', 'Gemini Live API, AI Marketing, Voice AI Agent, Imagen 3, Multi-Agent System, EU AI Act, Agenticum, Google Cloud AI, Enterprise Marketing AI, GenIUS Marketing, AEO Optimization');
     setMeta('author', 'Yahya Yıldırım');
     setMeta('robots', 'index, follow');
 
@@ -77,7 +77,7 @@ function useSEO() {
     setMeta('og:description', '8 Specialized AI Agents. One Voice. Infinite Synergy. Built on Gemini 2.0 & Google Cloud.', true);
     setMeta('og:type', 'website', true);
     setMeta('og:url', 'https://online-marketing-manager.web.app', true);
-    setMeta('og:site_name', 'Agenticum G5 GENIUS', true);
+    setMeta('og:site_name', 'Agenticum G5 GenIUS', true);
 
     // Twitter
     setMeta('twitter:card', 'summary_large_image');
@@ -99,7 +99,7 @@ function useSEO() {
       '@graph': [
         {
           '@type': 'SoftwareApplication',
-          name: 'Agenticum G5 GENIUS',
+          name: 'Agenticum G5 GenIUS',
           applicationCategory: 'BusinessApplication',
           operatingSystem: 'Web Browser',
           description: 'Autonomous voice-commanded multi-agent AI system for global enterprise marketing. Features real-time orchestration via Gemini 2.0 Live API.',
@@ -221,7 +221,7 @@ export function LandingPage() {
               </div>
               <div>
                 <span className="font-display font-black text-white text-xl uppercase tracking-wider">Agenticum</span>
-                <span className="font-mono text-[9px] text-accent/60 uppercase tracking-widest block -mt-1">GENIUS · Enterprise OS</span>
+                <span className="font-mono text-[9px] text-accent/60 uppercase tracking-widest block -mt-1">GenIUS · Enterprise OS</span>
               </div>
             </div>
 
@@ -273,7 +273,7 @@ export function LandingPage() {
         </nav>
 
         {/* ============================================================
-           HERO — "The GENIUS for Enterprise Marketing"
+           HERO — "The GenIUS for Enterprise Marketing"
            ============================================================ */}
         <header id="mission" className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-32 pb-20 overflow-hidden">
           {/* Radial glow behind headline */}
@@ -308,8 +308,8 @@ export function LandingPage() {
               <span className="text-neural-gold/80" style={{ fontSize: '0.4em', letterSpacing: '0.3em', fontWeight: 900 }}>The Nexus Sovereign Engine</span>
             </motion.h1>
 
-            {/* Genius Chat Interface Integration */}
-            <GeniusHeroChat />
+            {/* GenIUS Chat Interface Integration */}
+            <GenIUSHeroChat />
 
             {/* Divider */}
             <motion.div initial={{ scaleX: 0 }} animate={heroVisible ? { scaleX: 1 } : {}} transition={{ duration: 0.8, delay: 0.5 }}
@@ -318,7 +318,7 @@ export function LandingPage() {
             {/* Subtitle */}
             <motion.p initial={{ opacity: 0 }} animate={heroVisible ? { opacity: 1 } : {}} transition={{ delay: 0.6 }}
               className="text-lg md:text-xl text-white/40 max-w-2xl font-mono leading-relaxed mb-2">
-              The GENIUS for Enterprise Marketing. A 'Sentient System' 
+              The GenIUS for Enterprise Marketing. A 'Sentient System' 
               fusing user vision with technical excellence to steer complex marketing ecosystems autonomously.
             </motion.p>
             <motion.p initial={{ opacity: 0 }} animate={heroVisible ? { opacity: 1 } : {}} transition={{ delay: 0.7 }}
@@ -396,7 +396,7 @@ export function LandingPage() {
                 <Activity size={9} /> LIVE · Enterprise Control Plane
               </span>
               <h2 className="font-display text-4xl md:text-6xl font-black uppercase tracking-tight mb-6">
-                Access The <span className="text-accent">Genius OS</span>
+                Access The <span className="text-accent">GenIUS OS</span>
               </h2>
               <p className="text-white/40 max-w-2xl mx-auto font-mono text-sm leading-relaxed mb-12">
                 The Agenticum G5 Enterprise Command Console. SN00 is awaiting your command.
@@ -438,7 +438,7 @@ export function LandingPage() {
         <ApexContentSection />
 
         {/* ============================================================
-           VOICE FLOW — GENIUS Demo Animation
+           VOICE FLOW — GenIUS Demo Animation
            ============================================================ */}
         <div id="voice-flow">
           <VoiceFlowSection />
@@ -651,7 +651,7 @@ export function LandingPage() {
               Visual <span className="text-gold">Outputs</span>
             </h2>
             <p className="font-mono text-sm text-white/30 max-w-lg mx-auto">
-              Generated by DA-03 via Imagen 3 on Vertex AI. Broadcasted live to the Genius Console during swarm execution.
+              Generated by DA-03 via Imagen 3 on Vertex AI. Broadcasted live to the GenIUS Console during swarm execution.
             </p>
           </div>
           <ImagenGallery />
@@ -729,7 +729,7 @@ export function LandingPage() {
                   </div>
                   <div>
                     <span className="font-display font-black text-2xl uppercase tracking-wider block">Agenticum</span>
-                    <span className="font-mono text-[9px] text-accent/50 uppercase tracking-widest">GENIUS · Enterprise OS</span>
+                    <span className="font-mono text-[9px] text-accent/50 uppercase tracking-widest">GenIUS · Enterprise OS</span>
                   </div>
                 </div>
                 <p className="font-mono text-xs text-white/25 leading-relaxed">
@@ -750,7 +750,7 @@ export function LandingPage() {
                   <span className="font-mono text-[10px] uppercase tracking-widest text-white/20 mb-1">System</span>
                   {[
                     { label: 'OS Portal', path: '/os' },
-                    { label: 'Genius Console', path: '/os?module=console' },
+                    { label: 'GenIUS Console', path: '/os?module=console' },
                     { label: 'Creative Studio', path: '/os?module=studio' },
                     { label: 'Synergy Map', path: '/os?module=synergy' },
                   ].map(l => (

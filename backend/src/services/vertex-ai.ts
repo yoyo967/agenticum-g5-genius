@@ -54,6 +54,12 @@ export class VertexAIService {
   }
 
   async generateContent(prompt: string): Promise<string> {
+    const { budgetGuardrail } = require('./budget-guardrail');
+    if (!budgetGuardrail.canProceed()) {
+      this.logger.warn('Budget threshold reached. Generator paused.');
+      return '[BUDGET_EXCEEDED] Please top up your neural credits to continue.';
+    }
+
     const apiKey = this.getApiKey();
     try {
       this.logger.info(`Generating content for prompt: ${prompt.substring(0, 50)}...`);
@@ -63,7 +69,12 @@ export class VertexAIService {
           const model = ai.getGenerativeModel({ model: 'gemini-2.0-flash' });
           const result = await model.generateContent(prompt);
           const response = await result.response;
-          return response.text() || '';
+          const text = response.text() || '';
+          
+          const { budgetGuardrail } = require('./budget-guardrail');
+          budgetGuardrail.trackUsage('gemini-2.0-flash-api', text.length / 4); // Char count to token approx
+          
+          return text;
         } catch (error: any) {
           if (error.status === 403 || error.message?.includes('403')) {
             this.logger.warn('API Key restricted (403). Falling back to Vertex AI SDK.');
@@ -75,7 +86,12 @@ export class VertexAIService {
       
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
-      return response.candidates?.[0].content.parts[0].text || '';
+      const text = response.candidates?.[0].content.parts[0].text || '';
+      
+      const { budgetGuardrail } = require('./budget-guardrail');
+      budgetGuardrail.trackUsage('gemini-2.0-flash-vertex', text.length / 4);
+      
+      return text;
 
     } catch (error) {
       this.logger.error('Error generating content, providing simulated response', error as Error);
@@ -98,6 +114,11 @@ export class VertexAIService {
   }
 
   async generateGroundedContent(prompt: string): Promise<string> {
+    const { budgetGuardrail } = require('./budget-guardrail');
+    if (!budgetGuardrail.canProceed()) {
+      return '[BUDGET_EXCEEDED] Sovereign Intelligence (Grounding) paused for cost control.';
+    }
+
     const apiKey = this.getApiKey();
     try {
       this.logger.info(`Generating grounded content for prompt: ${prompt.substring(0, 50)}...`);
@@ -112,14 +133,24 @@ export class VertexAIService {
         });
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        return response.text() || '';
+        const text = response.text() || '';
+
+        const { budgetGuardrail } = require('./budget-guardrail');
+        budgetGuardrail.trackUsage('gemini-2.0-flash-grounding-api', text.length / 4);
+
+        return text;
       } else {
         const result = await this.model.generateContent({
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             tools: [{ googleSearchRetrieval: {} }] as any
         });
         const response = await result.response;
-        return response.candidates?.[0].content.parts[0].text || '';
+        const text = response.candidates?.[0].content.parts[0].text || '';
+
+        const { budgetGuardrail } = require('./budget-guardrail');
+        budgetGuardrail.trackUsage('gemini-2.0-flash-grounding-vertex', text.length / 4);
+
+        return text;
       }
     } catch (error: any) {
       if (error.status === 403 || error.message?.includes('403') || error.message?.includes('PermissionDenied')) {

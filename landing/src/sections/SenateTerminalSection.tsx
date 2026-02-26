@@ -57,7 +57,7 @@ export const SenateTerminalSection: React.FC = () => {
             <div className="w-3 h-3 rounded-full bg-amber-500" />
             <div className="w-3 h-3 rounded-full bg-emerald-500" />
             <span className="ml-3 text-xs font-mono text-slate-500">
-              agenticum-g5 · senate-terminal · genius-backend · cloud-run
+              agenticum-g5 · senate-terminal · GenIUS-backend · cloud-run
             </span>
           </div>
 

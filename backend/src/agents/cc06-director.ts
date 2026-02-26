@@ -55,7 +55,7 @@ export class CC06Director extends BaseAgent {
   constructor() {
     super({
       id: 'cc06',
-      name: 'Content & Video Director Genius',
+      name: 'Content & Video Director GenIUS',
       color: '#00FF88'
     });
   }

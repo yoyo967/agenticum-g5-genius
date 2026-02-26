@@ -101,20 +101,31 @@ app.post('/api/v1/sovereign/audit', async (req, res) => {
 logger.info('API Routes Registered: /api/blog, /api/vault, /api/workflow, /api/settings, /api/pmax, /api/analytics, /api/senate, /api/deploy, /api/clients, /api/sovereign, /api/bridge');
 app.use('/vault', express.static(join(process.cwd(), 'data', 'vault')));
 
-wss.on('connection', (ws: WebSocket) => {
-  liveApi.handleConnection(ws);
-});
-
 app.get('/api/v1/health', (_req: express.Request, res: express.Response) => {
   res.json({
     success: true,
-    data: { status: 'healthy', project: 'AGENTICUM G5 GENIUS' },
+    data: { status: 'healthy', project: 'AGENTICUM G5 GenIUS' },
     meta: { timestamp: new Date().toISOString() }
   });
 });
 
+wss.on('connection', (ws: WebSocket) => {
+  ws.on('message', (data: string) => {
+    try {
+      const message = JSON.parse(data);
+      if (message.type === 'executive-intervention') {
+        const { InterventionManager } = require('./services/intervention-manager');
+        InterventionManager.getInstance().handleIntervention(message.data);
+      }
+    } catch (e) {
+      // Ignore malformed messages
+    }
+  });
+  liveApi.handleConnection(ws);
+});
+
 httpServer.listen(port, async () => {
-  logger.info(`AGENTICUM G5 OS [GENIUS] active on port ${port}`);
+  logger.info(`AGENTICUM G5 OS [GenIUS] active on port ${port}`);
   
   try {
     // 1. Initialize Global Settings FIRST

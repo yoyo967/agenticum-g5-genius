@@ -1,50 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
-
-interface Story {
-  tag: string;
-  title: string;
-  author?: string;
-  authorAgent?: string;
-  excerpt: string;
-  slug?: string;
-  timestamp?: string;
-  content?: string;
-  pillarId?: string;
-}
+import { useBlogFeed } from '../hooks/useBlogFeed';
 
 export const NexusFeed = () => {
   const navigate = useNavigate();
-  const [stories, setStories] = useState<Story[]>([]);
+  const { articles, loading } = useBlogFeed();
   const [cognitiveThreads, setCognitiveThreads] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const stories = useMemo(() => {
+    return articles
+      .filter(a => a.status === 'published')
+      .map(a => ({
+        ...a,
+        tag: a.type === 'pillar' ? 'STRATEGY' : 'ANALYSIS',
+        excerpt: a.excerpt || a.content?.substring(0, 150) || ''
+      }));
+  }, [articles]);
 
   useEffect(() => {
-    const fetchFeed = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/blog/feed`);
-        if (!response.ok) throw new Error('Nexus Sync Failed');
-        const data = await response.json();
-        
-        // Flatten pillars and clusters for the feed
-        const allStories: Story[] = [
-          ...data.pillars.map((p: Story) => ({ ...p, tag: 'STRATEGY', slug: p.slug })),
-          ...data.clusters.map((c: Story) => ({ ...c, tag: 'ANALYSIS', slug: c.slug }))
-        ].sort((a, b) => new Date(b.timestamp as string).getTime() - new Date(a.timestamp as string).getTime());
-
-        setStories(allStories);
-      } catch (err) {
-        console.error(`[Neural Fabric] Nexus Feed Sync Failed: Backend at ${API_BASE_URL} may be offline.`, err);
-        setStories([]); // Empty state — no mock fallback
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFeed();
-
     // Listen for real Nexus/Swarm events
     const handleNexusEvent = (e: Event) => {
       const detail = (e as CustomEvent).detail;

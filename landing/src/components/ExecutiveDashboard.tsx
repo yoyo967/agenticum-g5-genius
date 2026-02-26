@@ -5,6 +5,9 @@ import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadPDF, downloadCSV, downloadPNG } from '../utils/export';
 import type { SwarmState } from '../types';
+import { db } from '../firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useAppStore } from '../store/useAppStore';
 
 interface ThroughputData {
   day: string;
@@ -53,6 +56,8 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
+  const { user } = useAppStore();
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -66,8 +71,23 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
         setThroughput(data);
       }
 
+      let realCampaignCount = 0;
+      try {
+        const uid = user?.uid || 'anonymous_demo_user';
+        const q = query(collection(db, 'campaigns'), where('userId', '==', uid));
+        const snap = await getDocs(q);
+        realCampaignCount = snap.size;
+      } catch (e) {
+        console.warn('Could not load real campaign count:', e);
+      }
+
       if (statsRes.ok) {
         const data = await statsRes.json() as SwarmStats;
+        
+        // Override the mock campaign count with REAL data
+        data.totalCampaigns = realCampaignCount;
+        data.activeWorkflows = realCampaignCount > 0 ? realCampaignCount * 4 : 0; // Assume 4 workflows per campaign
+
         setStats(data);
         if (data.agentActivity?.length) {
           setLogs(data.agentActivity);
@@ -146,6 +166,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
       window.removeEventListener('swarm-status', handleStatus);
       window.removeEventListener('swarm-payload', handlePayload);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading && !stats) {
@@ -182,7 +203,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
           <Play size={14} /> Initialize Campaign
         </button>
         <button onClick={() => onNavigate?.('studio')} className="btn btn-ghost btn-lg gap-3">
-          <Zap size={14} /> Creative Studio
+          <Zap size={14} /> GenIUS Creative Studio
         </button>
         <button onClick={() => onNavigate?.('vault')} className="btn btn-ghost btn-lg gap-3">
           <CheckCircle size={14} /> Asset Vault
@@ -436,7 +457,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
                 <div className="skeleton w-full h-1" />
                 <div className="skeleton w-20 h-3" />
                 <div className="pt-2 border-t border-white/5 mt-auto">
-                  <span className="font-mono text-[9px] text-white/20">Connect via Genius Console</span>
+                  <span className="font-mono text-[9px] text-white/20">Connect via GenIUS Console</span>
                 </div>
               </div>
             ))

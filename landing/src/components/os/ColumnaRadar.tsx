@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Zap, Activity, Globe, BarChart3, Plus, Cpu, Loader2 } from 'lucide-react';
 import { db } from '../../firebase';
-import { collection, onSnapshot, query, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { API_BASE_URL } from '../../config';
 
 interface CompetitorIntel {
@@ -12,7 +12,7 @@ interface CompetitorIntel {
   threat_score: number;
   skeleton?: Array<{ level: string; text: string } | string>;
   status: 'monitoring' | 'decompiling' | 'archived';
-  timestamp: any; // Firebase Timestamp is complex to type without imports
+  timestamp: Timestamp; // Firebase Timestamp is complex to type without imports
 }
 
 export function ColumnaRadar() {

@@ -22,7 +22,7 @@ export class SP01Strategist extends BaseAgent {
   constructor() {
     super({
       id: 'sp01',
-      name: 'Strategic Intelligence Genius',
+      name: 'Strategic Intelligence GenIUS',
       color: '#00FF88'
     });
   }

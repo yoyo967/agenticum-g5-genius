@@ -37,7 +37,7 @@ export function GeopoliticsHub() {
       const res = await fetch(`${API_BASE_URL}/sovereign/sync`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
-        setSyncStatus(`Sync Successful: ${data.dataExchangedKB} KB of intelligence shared.`);
+        setSyncStatus(`Sync Successful: ${data.dataExchangedKB} KB shared. Intelligence Brief: ${data.summary}`);
         fetchNodes();
       }
     } catch {

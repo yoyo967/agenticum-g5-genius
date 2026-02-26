@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Layout, Maximize2, Minimize2, 
@@ -8,10 +8,38 @@ import {
 } from 'lucide-react';
 import { ElementLibrary } from '../creative/ElementLibrary';
 import { ScriptWizard } from '../creative/ScriptWizard';
+import { useAppStore } from '../../store/useAppStore';
 
 export const ProjectPlayground: React.FC = () => {
+  const { globalAssets, activeCampaigns } = useAppStore();
   const [activeTab, setActiveTab] = useState<'board' | 'wizard' | 'elements'>('board');
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [logs, setLogs] = useState<string[]>([
+    '[08:42:01] Parsing storyboard: Gemini 2.0 active...',
+    '[08:42:03] Tagging entity: Chronos Watch (Imagen 3.0)',
+    '[08:42:05] Orchestrating lighting: Google Cloud Neural Rendering'
+  ]);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { type, data, task } = (e as CustomEvent).detail || {};
+      let msg = '';
+      if (type === 'swarm-status') msg = `[${new Date().toLocaleTimeString()}] ${data.id}: ${data.lastStatus.substring(0, 30)}...`;
+      if (type === 'task-update') msg = `[${new Date().toLocaleTimeString()}] Task ${task.id} finalized: ${task.state}`;
+      if (type === 'swarm-calibration') msg = `[${new Date().toLocaleTimeString()}] CALIBRATION: ${data.agentId} refining...`;
+      
+      if (msg) setLogs(prev => [msg, ...prev.slice(0, 8)]);
+    };
+
+    window.addEventListener('swarm-status', handler);
+    window.addEventListener('task-update', handler);
+    window.addEventListener('swarm-calibration', handler);
+    return () => {
+      window.removeEventListener('swarm-status', handler);
+      window.removeEventListener('task-update', handler);
+      window.removeEventListener('swarm-calibration', handler);
+    };
+  }, []);
 
   return (
     <div className={`flex flex-col h-full bg-void/40 backdrop-blur-3xl border border-white/5 rounded-3xl overflow-hidden transition-all duration-700 ${isFullScreen ? 'fixed inset-4 z-50 shadow-[0_0_100px_rgba(0,0,0,0.8)]' : ''}`}>
@@ -94,16 +122,16 @@ export const ProjectPlayground: React.FC = () => {
                       </div>
                       <h3 className="text-accent text-[10px] font-black uppercase tracking-[0.3em] mb-4">Project Briefing</h3>
                       <p className="text-xl font-display font-medium text-white mb-6">
-                         Luxury Cyberpunk Watch Launch: "Chronos Nexus"
+                         {activeCampaigns[0]?.name || 'Luxury Cyberpunk Watch Launch: "Chronos Nexus"'}
                       </p>
                       <div className="space-y-4">
                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="text-white/30 uppercase tracking-widest">Target Mood</span>
-                            <span className="text-gold uppercase font-black">Noir-Gold / Ultra-Tech</span>
+                            <span className="text-white/30 uppercase tracking-widest">Target Objective</span>
+                            <span className="text-gold uppercase font-black">{activeCampaigns[0]?.objective || 'LEAD GENERATION'}</span>
                          </div>
                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="text-white/30 uppercase tracking-widest">Market</span>
-                            <span className="text-white/60 uppercase font-black">Tier-1 Digital Natives</span>
+                            <span className="text-white/30 uppercase tracking-widest">Budget Allocation</span>
+                            <span className="text-white/60 uppercase font-black">{activeCampaigns[0]?.budget ? `$${activeCampaigns[0].budget}/day` : 'Tier-1 High Value'}</span>
                          </div>
                       </div>
                       <div className="mt-8">
@@ -124,9 +152,9 @@ export const ProjectPlayground: React.FC = () => {
                          <button className="text-accent hover:underline text-[8px]">Open Library</button>
                       </h3>
                       <div className="grid grid-cols-2 gap-4">
-                         <EntityCard name="The Agent" type="character" image="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=200&q=80" />
-                         <EntityCard name="Neon Hub" type="environment" image="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=200&q=80" />
-                         <EntityCard name="Temporal Watch" type="object" image="https://images.unsplash.com/photo-1542491595-3015cbb968cf?auto=format&fit=crop&w=200&q=80" />
+                         <EntityCard name="Primary Asset" type="Hero" image={globalAssets[0]?.url || "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=200&q=80"} />
+                         <EntityCard name="Secondary Asset" type="Environment" image={globalAssets[1]?.url || "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=200&q=80"} />
+                         <EntityCard name="Tertiary Asset" type="Object" image={globalAssets[2]?.url || "https://images.unsplash.com/photo-1542491595-3015cbb968cf?auto=format&fit=crop&w=200&q=80"} />
                          <AddEntityCard />
                       </div>
                    </div>
@@ -147,7 +175,7 @@ export const ProjectPlayground: React.FC = () => {
 
                       <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/5 bg-black/60 shadow-inner group/stage">
                          <img 
-                            src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80" 
+                            src={globalAssets.find(a => a.type === 'IMAGE')?.url || "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80"} 
                             alt="Preview" 
                             className="w-full h-full object-cover opacity-50 blur-sm group-hover/stage:opacity-80 group-hover/stage:blur-none transition-all duration-1000"
                          />
@@ -228,13 +256,21 @@ export const ProjectPlayground: React.FC = () => {
                <Activity size={12} />
                Neural Synergy
             </h3>
-            <div className="space-y-4 font-mono text-[9px] text-white/20 leading-relaxed uppercase">
-               <p className="text-accent/60">[08:42:01] Parsing storyboard: Gemini 2.0 active...</p>
-               <p>[08:42:03] Tagging entity: Chronos Watch (Imagen 3.0)</p>
-               <p>[08:42:05] Orchestrating lighting: Google Cloud Neural Rendering</p>
-               <p className="text-green-400/40">[08:42:08] Audio Synthesis: GCP Text-to-Speech Ready</p>
-               <p className="animate-pulse">_</p>
-            </div>
+             <div className="space-y-4 font-mono text-[9px] text-white/20 leading-relaxed uppercase">
+                <AnimatePresence initial={false}>
+                  {logs.map((log, i) => (
+                    <motion.p 
+                      key={log + i} 
+                      initial={{ opacity: 0, x: -5 }} 
+                      animate={{ opacity: 1, x: 0 }}
+                      className={log.includes('CALIBRATION') ? 'text-gold' : log.includes('Task') ? 'text-accent/60' : ''}
+                    >
+                      {log}
+                    </motion.p>
+                  ))}
+                </AnimatePresence>
+                <p className="animate-pulse">_</p>
+             </div>
          </div>
       </div>
     </div>

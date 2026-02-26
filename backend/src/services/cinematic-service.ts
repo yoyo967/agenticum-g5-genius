@@ -78,8 +78,16 @@ export class CinematicService {
     `;
 
     try {
-      // Use the ve01 Agent to leverage its specialized prompts and eventFabric status updates
-      const responseText = await this.ve01.execute(topic);
+      // Phase 33: Ultimate Intelligence Sync - Sentient Loop Integration
+      const { SentientLoopService } = require('./sentient-loop');
+      const loop = await SentientLoopService.getInstance().refine(
+        've01', 
+        `Create a detailed 5-shot cinematic storyboard for: "${topic}". Ensure high brand alignment and aesthetic cohesion.`,
+        2, // Max 2 iterations for speed
+        80 // Target score
+      );
+      
+      const responseText = loop.finalOutput;
       
       // The agent returns markdown with a JSON block for the storyboard
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);

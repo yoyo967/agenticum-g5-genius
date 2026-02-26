@@ -9,7 +9,7 @@ import {
 import { StatusBadge } from '../components/ui';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MeshBackground } from '../components/NeuralSubstrate';
-import { GeniusConsole } from '../components/GeniusConsole';
+import { GenIUSConsole } from '../components/GenIUSConsole';
 import { AssetVault } from '../components/AssetVault';
 import { CreativeStudio } from '../components/CreativeStudio';
 import { WorkflowBuilder } from '../components/WorkflowBuilder';
@@ -34,15 +34,18 @@ import { ScriptWizard } from '../components/creative/ScriptWizard';
 import { ProjectPlayground } from '../components/playground/ProjectPlayground';
 import { SwarmIntelligence } from '../components/telemetry/SwarmIntelligence';
 
-import { GeniusPulsar } from '../components/os/GeniusPulsar';
+import { GenIUSPulsar } from '../components/os/GenIUSPulsar';
 import { ConsciousnessStream } from '../components/os/ConsciousnessStream';
+import { ExecutiveIntervention } from '../components/os/ExecutiveIntervention';
+import { JuryPresentation } from '../components/ui/JuryPresentation';
+import { OSAuthGate } from '../components/auth/OSAuthGate';
 
 type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence';
 
 const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   dashboard: { label: 'Executive Dashboard', subtitle: 'Global Metrics' },
   campaign: { label: 'Campaign Hub', subtitle: 'Agency Directives' },
-  console: { label: 'Genius Console', subtitle: 'Live Agent Matrix' },
+  console: { label: 'GenIUS Console', subtitle: 'Live Agent Matrix' },
   'nexus-engine': { label: 'Nexus Engine V2', subtitle: 'Autonomous Workflows' },
   'pillar-blog': { label: 'Pillar Blog Engine', subtitle: 'Content Pipeline' },
   studio: { label: 'Creative Studio', subtitle: 'Asset Forge' },
@@ -73,7 +76,8 @@ export function OSPortal() {
   const [activeModule, setActiveModule] = useState<ModuleKey>(initialModule);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [osMode, setOsMode] = useState<OSMode>('command');
-  const [geniusState, setGeniusState] = useState<'idle' | 'listening' | 'thinking' | 'speaking'>('idle');
+  const [geniusState, setGenIUSState] = useState<'idle' | 'listening' | 'thinking' | 'speaking'>('idle');
+  const [showJuryTour, setShowJuryTour] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -111,9 +115,10 @@ export function OSPortal() {
   }, [osMode]);
 
   return (
-    <div className={`min-h-screen text-white flex overflow-hidden relative selection:bg-accent/30 ${osMode === 'command' ? 'bg-midnight' : 'bg-obsidian/95'}`}>
-      {/* Animated Mesh Gradient Background */}
-      <MeshBackground />
+    <OSAuthGate>
+      <div className={`min-h-screen text-white flex overflow-hidden relative selection:bg-accent/30 ${osMode === 'command' ? 'bg-midnight' : 'bg-obsidian/95'}`}>
+        {/* Animated Mesh Gradient Background */}
+        <MeshBackground />
       
       {/* Neural Substrate Sync Overlay */}
       <div className="neural-substrate-sync pulsing-substrate" />
@@ -146,7 +151,7 @@ export function OSPortal() {
               </motion.div>
               <div className="hidden md:block">
                 <span className="font-display font-bold tracking-tight text-lg uppercase block leading-none">Agenticum</span>
-                <span className="font-mono text-[9px] text-white/30 uppercase tracking-[0.2em]">Genius OS</span>
+                <span className="font-mono text-[9px] text-white/30 uppercase tracking-[0.2em]">GenIUS OS</span>
               </div>
             </div>
 
@@ -154,7 +159,7 @@ export function OSPortal() {
             <nav className="flex-1 flex flex-col gap-1 px-3 overflow-y-auto scrollbar-none">
               <SidebarButton icon={<Activity size={16} />} label="Dashboard" active={activeModule === 'dashboard'} onClick={() => setActiveModule('dashboard')} />
               <SidebarButton icon={<Target size={16} />} label="Campaign Hub" active={activeModule === 'campaign'} onClick={() => setActiveModule('campaign')} />
-              <SidebarButton icon={<Terminal size={16} />} label="Genius Console" active={activeModule === 'console'} onClick={() => setActiveModule('console')} accent />
+              <SidebarButton icon={<Terminal size={16} />} label="GenIUS Console" active={activeModule === 'console'} onClick={() => setActiveModule('console')} accent />
               <SidebarButton icon={<LayoutGrid size={16} />} label="Nexus Engine" active={activeModule === 'nexus-engine'} onClick={() => setActiveModule('nexus-engine')} />
               <SidebarButton icon={<FileText size={16} />} label="Blog Engine" active={activeModule === 'pillar-blog'} onClick={() => setActiveModule('pillar-blog')} />
               <SidebarButton icon={<Palette size={16} />} label="Creative Studio" active={activeModule === 'studio'} onClick={() => setActiveModule('studio')} />
@@ -190,7 +195,7 @@ export function OSPortal() {
             <div className="px-3 pt-4 border-t border-white/5">
               <button 
                 onClick={() => navigate('/')}
-                className="sidebar-item w-full group"
+                className="sidebar-item w-full"
               >
                 <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                 <span className="hidden md:block">Exit Matrix</span>
@@ -212,7 +217,7 @@ export function OSPortal() {
       {/* Main OS Content Area */}
       <main className="flex-1 relative h-screen overflow-hidden flex flex-col z-10 transition-all duration-700">
         
-        {/* Genius Mode View (Holographic Pulsar) */}
+        {/* GenIUS Mode View (Holographic Pulsar) */}
         <AnimatePresence>
           {osMode === 'genius' && (
             <motion.div
@@ -223,7 +228,7 @@ export function OSPortal() {
             >
               <div className="relative mb-12">
                 <div className="absolute inset-0 bg-accent/5 blur-[100px] rounded-full pulsar-glow" />
-                <GeniusPulsar state={geniusState} />
+                <GenIUSPulsar state={geniusState} />
               </div>
               
               <motion.div
@@ -232,14 +237,14 @@ export function OSPortal() {
                 className="text-center"
               >
                 <h1 className="text-4xl font-display font-black tracking-tighter italic text-white mb-2">
-                  AGENTICUM <span className="text-accent drop-shadow-[0_0_15px_rgba(0,229,255,0.4)]">G5</span> GENIUS
+                  AGENTICUM <span className="text-accent drop-shadow-[0_0_15px_rgba(0,229,255,0.4)]">G5</span> GenIUS
                 </h1>
                 <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-white/30 animate-pulse">
                   Neural Fabric Online // Ghost Active
                 </p>
               </motion.div>
 
-              {/* Quick Prompt Interface in Genius Mode */}
+              {/* Quick Prompt Interface in GenIUS Mode */}
               <div className="mt-12 w-full max-w-xl px-6">
                  <div className="ultra-lucid p-1 flex items-center gap-2 group focus-within:border-accent/40 transition-all">
                     <div className="w-10 h-10 flex items-center justify-center text-accent/40 group-focus-within:text-accent transition-colors">
@@ -250,11 +255,11 @@ export function OSPortal() {
                        placeholder="Assign directive to swarm..."
                        onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                             setGeniusState('thinking');
+                             setGenIUSState('thinking');
                              setTimeout(() => {
                                 setOsMode('command');
                                 setActiveModule('console');
-                                setGeniusState('idle');
+                                setGenIUSState('idle');
                              }, 1500);
                           }
                        }}
@@ -283,7 +288,7 @@ export function OSPortal() {
                   onClick={() => setOsMode('genius')}
                 >
                   <div className="w-8 h-8 relative scale-[0.4] origin-center -ml-2 -mr-2">
-                    <GeniusPulsar state={geniusState} />
+                    <GenIUSPulsar state={geniusState} />
                   </div>
                   <div className="flex flex-col">
                     <span className="font-display text-sm uppercase tracking-wide italic group-hover/pulsar:text-accent transition-colors">{MODULE_META[activeModule]?.label}</span>
@@ -300,6 +305,13 @@ export function OSPortal() {
                   <span className="font-mono text-[10px] uppercase tracking-widest">Omniscient Search</span>
                   <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[9px] font-mono ml-3 text-white/20">⌘K</kbd>
                 </button>
+                <button 
+                  onClick={() => setShowJuryTour(true)}
+                  className="hidden xl:flex items-center gap-2 bg-accent/10 border border-accent/30 px-4 py-1.5 rounded-lg text-accent hover:bg-accent hover:text-void transition-all group shadow-[0_0_15px_rgba(0,229,255,0.2)]"
+                >
+                  <Wand2 size={12} className="animate-pulse" />
+                  <span className="font-display text-[10px] font-black uppercase tracking-widest">Launch Jury Tour</span>
+                </button>
                 <StatusBadge status="processing" label="SENTIENT CORE v5.1" size="md" />
               </div>
             </motion.header>
@@ -309,10 +321,10 @@ export function OSPortal() {
         {/* Dynamic Module Rendering */}
         <section className={`flex-1 overflow-y-auto p-4 md:p-6 relative transition-opacity duration-700 ${osMode === 'command' ? 'opacity-100' : 'opacity-0'}`}>
           
-          {/* Persistent Genius Console (Maintains WebSocket & Audio) */}
+          {/* Persistent GenIUS Console (Maintains WebSocket & Audio) */}
           <div className="absolute inset-4 md:inset-6" style={{ display: activeModule === 'console' ? 'block' : 'none', zIndex: 10 }}>
              <div className="h-full ultra-lucid p-1 rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-               <GeniusConsole />
+               <GenIUSConsole />
              </div>
           </div>
 
@@ -364,7 +376,18 @@ export function OSPortal() {
       />
 
       <ConsciousnessStream />
+      <ExecutiveIntervention />
+
+      <AnimatePresence>
+        {showJuryTour && (
+          <JuryPresentation 
+            onModuleChange={(module) => setActiveModule(module as ModuleKey)} 
+            onClose={() => setShowJuryTour(false)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
+    </OSAuthGate>
   );
 }
 

@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 
-// const URL = 'wss://genius-backend-697051612685.europe-west1.run.app';
+// const URL = 'wss://genIUS-backend-697051612685.europe-west1.run.app';
 const URL = 'ws://localhost:8080'; // Alternativ für lokales Testing
 
 console.log(`🚀 Connecting to GenIUS Neural Fabric at ${URL}...`);

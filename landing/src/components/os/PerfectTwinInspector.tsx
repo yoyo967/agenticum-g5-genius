@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Eye, Search, ExternalLink, CheckCircle, AlertTriangle, Info, Terminal, ArrowLeft } from 'lucide-react';
 import { db } from '../../firebase';
-import { collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, where, Timestamp } from 'firebase/firestore';
 
 interface AuditLog {
   id: string;
@@ -13,7 +13,7 @@ interface AuditLog {
   sources?: string[];
   score?: number;
   latency?: number;
-  timestamp: any; // Keep any as temporary fallback for complex union
+  timestamp: Timestamp;
   severity: 'info' | 'success' | 'warning' | 'error';
 }
 
@@ -27,6 +27,14 @@ export function PerfectTwinInspector({ runId, onClose, standalone = true }: Insp
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [activeTab, setActiveTab] = useState<'live' | 'grounding' | 'senate'>('live');
   const [loading, setLoading] = useState(true);
+  const [prevRunId, setPrevRunId] = useState(runId);
+
+  // Adjust state when props change (Standard React Pattern)
+  if (runId !== prevRunId) {
+    setPrevRunId(runId);
+    setLoading(true);
+    setLogs([]);
+  }
 
   useEffect(() => {
     // Real-time subscription to perfect twin logs
@@ -46,8 +54,6 @@ export function PerfectTwinInspector({ runId, onClose, standalone = true }: Insp
         limit(50)
       );
     }
-
-    setLoading(true); // Moved after query creation to minimize cascading
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newLogs = snapshot.docs.map(doc => ({

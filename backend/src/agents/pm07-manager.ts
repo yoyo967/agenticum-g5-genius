@@ -18,7 +18,7 @@ export class PM07Manager extends BaseAgent {
   constructor() {
     super({
       id: 'pm07',
-      name: 'Persistent Mission Genius',
+      name: 'Persistent Mission GenIUS',
       color: '#00E5FF'
     });
   }

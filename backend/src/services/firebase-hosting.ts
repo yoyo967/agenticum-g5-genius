@@ -29,7 +29,7 @@ export class FirebaseHostingService {
   private injectComplianceTags(html: string, title: string): string {
     const metaTags = `
     <!-- 🌌 AGENTICUM G5 — EU AI ACT COMPLIANCE LAYER (Art. 50) -->
-    <meta name="generator" content="AGENTICUM G5 GENIUS Swarm">
+    <meta name="generator" content="AGENTICUM G5 GenIUS Swarm">
     <meta name="ai-generated" content="true">
     <meta name="ai-transparency-id" content="G5-SOV-${Date.now()}">
     <meta name="robots" content="index, follow">
@@ -90,7 +90,7 @@ export class FirebaseHostingService {
           </style>
         </head>
         <body>
-          <div class="badge">AGENTICUM G5 GENIUS // PUBLISHED ARTICLE</div>
+          <div class="badge">AGENTICUM G5 GenIUS // PUBLISHED ARTICLE</div>
           <h1>${data.title}</h1>
           <div class="content">${data.markdown.replace(/\n/g, '<br>')}</div>
         </body>

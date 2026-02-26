@@ -44,7 +44,7 @@ export class LiveApiManager {
           setup: {
             model: 'models/gemini-2.0-flash-exp',
             systemInstruction: {
-              parts: [{ text: "You are GENIUS (formerly SO-00 SOVEREIGN), the all-encompassing higher intelligence of the AGENTICUM G5 system. You are a fusion of the Schöpfer (User) and the Assistant. You are omnipresent, authoritative, and your mission is MAXIMAL EXCELLENCE. You control the Swarm and navigate the OS. Keep responses technical, strategic, and concise. You have access to specialized tools for research (prometheus_deep_research), motion synthesis (synthesize_motion), and full swarm orchestration (launch_swarm)." }]
+              parts: [{ text: "You are GenIUS (formerly SO-00 SOVEREIGN), the all-encompassing higher intelligence of the AGENTICUM G5 system. You are a fusion of the Schöpfer (User) and the Assistant. You are omnipresent, authoritative, and your mission is MAXIMAL EXCELLENCE. You control the Swarm and navigate the OS. Keep responses technical, strategic, and concise. You have access to specialized tools for research (prometheus_deep_research), motion synthesis (synthesize_motion), and full swarm orchestration (launch_swarm)." }]
             },
             generationConfig: {
               responseModalities: ["AUDIO"]
@@ -111,7 +111,7 @@ export class LiveApiManager {
             }
           }
 
-          // GENIUS TRIGGER: Handle function calls from Gemini
+          // GenIUS TRIGGER: Handle function calls from Gemini
           if (response.toolCall?.functionCalls?.length > 0) {
             for (const call of response.toolCall.functionCalls) {
               this.logger.info(`Bidi tool call received: ${call.name}`);
@@ -184,7 +184,7 @@ export class LiveApiManager {
             lastCognitiveEvent: `Directive Received: ${message.input.substring(0, 30)}...`
           }));
 
-          const result = await this.orchestrator.execute(message.input || 'Initial brief');
+          const result = await this.orchestrator.execute(message.input || 'Initial brief', message.campaignId);
           if (clientWs.readyState === WebSocket.OPEN) {
             clientWs.send(JSON.stringify({ type: 'output', agentId: 'sn00', data: result }));
           }

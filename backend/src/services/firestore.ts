@@ -79,7 +79,7 @@ export const reinitializeFirestore = (projectId?: string) => manager.reinitializ
 export const Collections = {
   PILLARS: 'pillars',
   CLUSTERS: 'clusters',
-  CAMPAIGNS: 'pmax_campaigns',
+  CAMPAIGNS: 'campaigns',
   SENATE_DOCKET: 'senate_docket',
   KPI_METRICS: 'kpi_metrics',
   AB_TESTS: 'ab_tests',

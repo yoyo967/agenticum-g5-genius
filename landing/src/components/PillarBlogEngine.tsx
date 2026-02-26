@@ -1,30 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Bot, Shield, Cpu, FileText, Plus, RefreshCw, ExternalLink, Eye, Clock, Tag } from 'lucide-react';
+import { Sparkles, Bot, Shield, Cpu, FileText, Plus, ExternalLink, Eye, Clock, Tag, RefreshCw } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadTextFile } from '../utils/export';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
-interface Article {
-  id: string;
-  title: string;
-  slug: string;
-  status: 'draft' | 'optimizing' | 'published';
-  timestamp: string;
-  agent?: string;
-  excerpt?: string;
-  content?: string;
-  tag?: string;
-  type?: string;
-}
+import { useBlogFeed } from '../hooks/useBlogFeed';
+import type { Article } from '../hooks/useBlogFeed';
 
 type ViewMode = 'pipeline' | 'generate';
 
 export function PillarBlogEngine() {
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { articles, loading } = useBlogFeed();
   const [viewMode, setViewMode] = useState<ViewMode>('pipeline');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
@@ -42,26 +30,6 @@ export function PillarBlogEngine() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishStatus, setPublishStatus] = useState('');
   const [scheduleDate, setScheduleDate] = useState('');
-
-  const fetchArticles = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE_URL}/blog/feed`);
-      if (res.ok) {
-        const data = await res.json();
-        const all: Article[] = [
-          ...(data.pillars || []).map((p: Article) => ({ ...p, type: 'pillar' })),
-          ...(data.clusters || []).map((c: Article) => ({ ...c, type: 'cluster' })),
-        ];
-        all.sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime());
-        setArticles(all);
-      }
-    } catch (e) {
-      console.warn('[BlogEngine] Backend unavailable:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchArticleContent = async (slug: string) => {
     try {
@@ -89,8 +57,6 @@ export function PillarBlogEngine() {
         const data = await res.json();
         setGenerateResult(data.message || 'Agent dispatched successfully.');
         setTopic('');
-        // Refresh after a delay (agent is generating in the background)
-        setTimeout(fetchArticles, 5000);
       }
     } catch {
       setGenerateResult('Failed to dispatch agent. Is the backend running?');
@@ -98,8 +64,6 @@ export function PillarBlogEngine() {
       setIsGenerating(false);
     }
   };
-
-  useEffect(() => { fetchArticles(); }, []);
 
   return (
     <div className="h-full flex flex-col gap-5 overflow-hidden">
@@ -116,9 +80,6 @@ export function PillarBlogEngine() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={fetchArticles} className="btn btn-ghost btn-sm">
-            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
-          </button>
           <ExportMenu options={[
             { label: 'JSON All', format: 'JSON', onClick: () => downloadJSON({ articles: articles.map(a => ({ title: a.title, slug: a.slug, status: a.status, tag: a.tag, content: a.content })) }, 'G5_Blog_Articles') },
             { label: 'Markdown All', format: 'MD', onClick: () => downloadTextFile(articles.map(a => `# ${a.title}\n\n**Tag:** ${a.tag || 'N/A'} | **Status:** ${a.status}\n\n${a.content || a.excerpt || ''}`).join('\n\n---\n\n'), 'G5_Blog_Export', 'md') },
@@ -343,7 +304,6 @@ export function PillarBlogEngine() {
                             if (res.ok) {
                               setPublishStatus('Senate Audit Request Submitted.');
                                setSelectedArticle({ ...selectedArticle, status: 'optimizing' });
-                               setArticles(prev => prev.map(a => a.id === selectedArticle.id ? { ...a, status: 'optimizing' } : a));
                             }
                           } catch (e) {
                             console.error('Audit submission failed:', e);

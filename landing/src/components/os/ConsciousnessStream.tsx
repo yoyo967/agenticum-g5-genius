@@ -1,27 +1,20 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
-
-interface Fragment {
-  id: string;
-  agentId: string;
-  text: string;
-  type: 'thought' | 'scavenge' | 'verdict' | 'visual';
-}
+import { useEffect } from 'react';
+import { useAppStore } from '../../store/useAppStore';
 
 export const ConsciousnessStream: React.FC = () => {
-  const [fragments, setFragments] = useState<Fragment[]>([]);
+  const { globalThoughts, addGlobalThought } = useAppStore();
 
   useEffect(() => {
     // Listen for agent-thought and other raw events
     const handleThought = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      const newFragment: Fragment = {
+      addGlobalThought({
         id: Math.random().toString(36).substr(2, 9),
         agentId: detail.agentId || 'SYSTEM',
         text: detail.thought || detail.message || 'Processing cognitive node...',
         type: 'thought'
-      };
-      setFragments(prev => [newFragment, ...prev].slice(0, 10));
+      });
     };
 
     window.addEventListener('agent-thought', handleThought);
@@ -31,7 +24,7 @@ export const ConsciousnessStream: React.FC = () => {
       window.removeEventListener('agent-thought', handleThought);
       window.removeEventListener('swarm-payload', handleThought);
     };
-  }, []);
+  }, [addGlobalThought]);
 
   return (
     <div className="fixed bottom-12 right-12 w-80 z-50 pointer-events-none">
@@ -41,7 +34,7 @@ export const ConsciousnessStream: React.FC = () => {
            <span className="text-[10px] uppercase font-black tracking-[0.3em] text-white/30">Sentient Stream</span>
         </div>
         <AnimatePresence initial={false}>
-          {fragments.map((frag) => (
+          {globalThoughts.slice(0, 10).map((frag) => (
             <motion.div
               key={frag.id}
               initial={{ opacity: 0, x: 20, filter: 'blur(10px)' }}

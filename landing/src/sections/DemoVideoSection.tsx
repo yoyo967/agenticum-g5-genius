@@ -33,7 +33,7 @@ export const DemoVideoSection: React.FC = () => (
       {/* Proof of GCP Deployment */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { icon: "☁️", label: "Cloud Run", val: "genius-backend · europe-west1" },
+          { icon: "☁️", label: "Cloud Run", val: "GenIUS-backend · europe-west1" },
           { icon: "🗄️", label: "Firestore", val: "perfect_twin_logs · columna_intelligence" },
           { icon: "🚀", label: "Firebase Hosting", val: "online-marketing-manager.web.app" },
         ].map(item => (

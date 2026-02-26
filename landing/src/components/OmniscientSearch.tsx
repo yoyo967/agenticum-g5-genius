@@ -16,7 +16,7 @@ interface SearchItem {
 const MODULE_DATABASE: SearchItem[] = [
   { id: 'm-0', title: 'Executive Dashboard', type: 'module', icon: Activity, route: 'dashboard', color: 'text-accent' },
   { id: 'm-1', title: 'Campaign Hub', type: 'module', icon: Target, route: 'campaign', color: 'text-gold' },
-  { id: 'm-2', title: 'Genius Console', type: 'module', icon: Terminal, route: 'console', color: 'text-accent' },
+  { id: 'm-2', title: 'GenIUS Console', type: 'module', icon: Terminal, route: 'console', color: 'text-accent' },
   { id: 'm-3', title: 'Nexus Engine', type: 'module', icon: LayoutGrid, route: 'nexus-engine', color: 'text-neural-blue' },
   { id: 'm-4', title: 'Blog Engine', type: 'module', icon: FileText, route: 'pillar-blog', color: 'text-pink-500' },
   { id: 'm-5', title: 'Creative Studio', type: 'module', icon: Palette, route: 'studio', color: 'text-magenta' },

@@ -200,7 +200,7 @@ export function SwarmAnalytics() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Network size={20} className="text-accent" />
-          <h2 className="font-display text-2xl font-bold uppercase tracking-tight">Swarm Analytics</h2>
+          <h2 className="font-display text-2xl font-bold uppercase tracking-tight">GenIUS Swarm Analytics</h2>
           <span className="label text-white/20 mt-1">Real-time Agent Intelligence</span>
         </div>
         <div className="flex items-center gap-2">
@@ -349,7 +349,7 @@ export function SwarmAnalytics() {
             <div className="lg:col-span-2 glass-card p-6 border-gold/20">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-display text-lg font-bold uppercase flex items-center gap-2">
-                  <Activity size={18} className="text-gold" /> ROI Optimization Engine
+                  <Activity size={18} className="text-gold" /> GenIUS ROI Optimization Engine
                 </h3>
                 <button 
                   onClick={handleOptimizeROI}
@@ -400,7 +400,7 @@ export function SwarmAnalytics() {
             {/* A/B Creation Forge */}
             <div className="glass-card p-6 border-accent/20">
               <h3 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
-                <Network size={18} className="text-accent" /> A/B Creation Forge
+                <Network size={18} className="text-accent" /> G5 A/B Creation Forge
               </h3>
               <div className="space-y-4">
                 <div className="relative">

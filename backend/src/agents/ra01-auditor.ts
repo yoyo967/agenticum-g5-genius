@@ -34,7 +34,7 @@ export class RA01Auditor extends BaseAgent {
   constructor() {
     super({
       id: 'ra01',
-      name: 'Adversarial Auditor Genius',
+      name: 'Adversarial Auditor GenIUS',
       color: '#00FF88'
     });
   }
@@ -97,7 +97,7 @@ export class RA01Auditor extends BaseAgent {
 ### 🛡️ COMPLIANCE ANALYSIS
 ${complianceAudit}
 
-### 🔮 GENIUS SCORE: ${performanceScore.score}/100
+### 🔮 GenIUS SCORE: ${performanceScore.score}/100
 **Reasoning**: ${performanceScore.reasoning}
     `.trim();
   }

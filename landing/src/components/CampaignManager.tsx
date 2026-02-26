@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Terminal, Briefcase, Zap, Send, FileText, Image as ImageIcon, Cpu, Activity, CircleDashed, DollarSign, Crosshair, BarChart2, Plus, ChevronRight, RefreshCw, Clock, Download as DownloadIcon, Search, Film, Shield, Eye } from 'lucide-react';
+import { Target, Terminal, Briefcase, Zap, Send, FileText, Image as ImageIcon, Cpu, Activity, CircleDashed, DollarSign, Crosshair, BarChart2, Plus, ChevronRight, Clock, Download as DownloadIcon, Search, Film, Shield, Eye } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadCSV, downloadZIP, downloadPDF } from '../utils/export';
 import { PerfectTwinInspector } from './os/PerfectTwinInspector';
+import { db } from '../firebase';
+import { collection, query, where, onSnapshot, addDoc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { useAppStore } from '../store/useAppStore';
 
 interface Campaign {
   id: string;
   name: string;
-  status: 'ENABLED' | 'PAUSED' | 'DRAFT';
+  status: 'ENABLED' | 'PAUSED' | 'DRAFT' | 'PENDING_AGENTS';
   objective: string;
   budget: { dailyAmount: number; currency: string };
   biddingStrategy: { type: string; targetCpa?: number; targetRoas?: number };
   assetGroups?: { id: string; name: string; adStrength: string }[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 type AgentDraft = {
@@ -32,6 +35,7 @@ export function CampaignManager() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const { user } = useAppStore();
 
   // Create form
   const [clientName, setClientName] = useState('');
@@ -57,25 +61,27 @@ export function CampaignManager() {
     { agent: 'ra01', role: 'Audit', status: 'pending' },
   ]);
 
-  // Fetch campaigns from backend
-  const fetchCampaigns = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE_URL}/pmax/campaigns`);
-      if (res.ok) {
-        const data = await res.json();
-        setCampaigns(data.campaigns || []);
-      }
-    } catch (e) {
-      console.warn('[CampaignHub] Backend unavailable:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Real-time Firestore sync
   useEffect(() => {
-    fetchCampaigns();
-  }, []);
+    // If no user, we either show empty or anonymous data. For now, default to empty or mock context.
+    const uid = user?.uid || 'anonymous_demo_user';
+    const q = query(collection(db, 'campaigns'), where('userId', '==', uid), orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const activeCampaigns: Campaign[] = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Campaign[];
+      
+      setCampaigns(activeCampaigns);
+      setLoading(false);
+    }, (error) => {
+      console.warn('[CampaignHub] DB Subscription error:', error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   // Listen for swarm status updates
   useEffect(() => {
@@ -112,33 +118,35 @@ export function CampaignManager() {
     setShowInspector(true);
     setAgentTasks(prev => prev.map(t => ({ ...t, status: 'working', output: undefined })));
 
-    // Save campaign to Firestore via API
+    // Save campaign directly to Firestore
+    let firestoreCampaignId = '';
     try {
-      const res = await fetch(`${API_BASE_URL}/pmax/campaigns`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: clientName ? `${clientName} — ${objective}` : directive.slice(0, 60),
-          status: 'DRAFT',
-          objective: objective || 'LEADS',
-          budget: { dailyAmount: budget, currency: 'USD' },
-          biddingStrategy: { type: biddingStrategy, targetCpa: biddingStrategy === 'MAXIMIZE_CONVERSIONS' ? targetValue : undefined, targetRoas: biddingStrategy === 'MAXIMIZE_CONVERSION_VALUE' ? targetValue : undefined },
-          settings: { finalUrlExpansion: true, locationTargeting: ['Global'], languageTargeting: ['en'] },
-          assetGroups: [],
-        }),
+      const docRef = await addDoc(collection(db, 'campaigns'), {
+        userId: user?.uid || 'anonymous_demo_user',
+        name: clientName ? `${clientName} — ${objective}` : directive.slice(0, 60),
+        status: 'PENDING_AGENTS',
+        objective: objective || 'LEADS',
+        budget: { dailyAmount: budget, currency: 'USD' },
+        biddingStrategy: { 
+          type: biddingStrategy, 
+          targetCpa: biddingStrategy === 'MAXIMIZE_CONVERSIONS' ? targetValue : null, 
+          targetRoas: biddingStrategy === 'MAXIMIZE_CONVERSION_VALUE' ? targetValue : null 
+        },
+        settings: { finalUrlExpansion: true, locationTargeting: ['Global'], languageTargeting: ['en'] },
+        assetGroups: [],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       });
-      if (res.ok) {
-        const newCampaign = await res.json();
-        setCampaigns(prev => [newCampaign, ...prev]);
-      }
+      firestoreCampaignId = docRef.id;
     } catch (e) {
-      console.warn('[CampaignHub] Save failed, dispatching via WebSocket only:', e);
+      console.warn('[CampaignHub] Firestore save failed, dispatching via WebSocket only:', e);
     }
 
     // Dispatch to the global WebSocket orchestrator
     window.dispatchEvent(new CustomEvent('trigger-orchestration', {
       detail: {
         type: 'campaign_orchestration',
+        campaignId: firestoreCampaignId,
         client: clientName,
         objective,
         directive,
@@ -147,7 +155,7 @@ export function CampaignManager() {
     }));
 
     // Swarm Logic: handleDispatch initiates the chain. 
-    // The UI is updated via the 'swarm-status' listener (lines 75-99).
+    // The UI is updated via the 'swarm-status' listener.
   };
   
   const handleDownloadPackage = async (campaign: Campaign) => {
@@ -183,7 +191,6 @@ export function CampaignManager() {
       const data = await resp.json();
       setLaunchReport(data.report);
       setLaunchStatus('success');
-      fetchCampaigns(); // Refresh list
     } catch {
       setLaunchStatus('error');
     } finally {
@@ -217,12 +224,9 @@ export function CampaignManager() {
             <p className="font-mono text-xs text-white/40 mt-1">Multi-Agent PMax Campaign Orchestrator</p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={fetchCampaigns} className="btn btn-ghost btn-sm">
-              <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
-            </button>
             <ExportMenu options={[
               { label: 'JSON All', format: 'JSON', onClick: () => downloadJSON({ campaigns }, 'G5_Campaigns') },
-              { label: 'CSV Summary', format: 'CSV', onClick: () => downloadCSV(campaigns.map(c => ({ name: c.name, status: c.status, objective: c.objective, budget: c.budget?.dailyAmount ?? '', currency: c.budget?.currency ?? '', created: c.createdAt })), 'G5_Campaigns_Summary') },
+              { label: 'CSV Summary', format: 'CSV', onClick: () => downloadCSV(campaigns.map(c => ({ name: c.name, status: c.status, objective: c.objective, budget: c.budget?.dailyAmount ?? '', currency: c.budget?.currency ?? '' })), 'G5_Campaigns_Summary') },
             ]} />
             <button onClick={() => { resetForm(); setView('create'); }} className="btn btn-primary">
               <Plus size={14} /> New Campaign
