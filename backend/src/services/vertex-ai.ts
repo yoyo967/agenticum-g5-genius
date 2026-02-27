@@ -60,9 +60,10 @@ export class VertexAIService {
       return '[BUDGET_EXCEEDED] Please top up your neural credits to continue.';
     }
 
-    const apiKey = this.getApiKey();
+    // Bypassing API Key fallback entirely - Native Vertex SDK is robust and authorized.
     try {
       this.logger.info(`Generating content for prompt: ${prompt.substring(0, 50)}...`);
+      /*
       if (apiKey) {
         try {
           const ai = new GoogleGenAI(apiKey);
@@ -83,6 +84,7 @@ export class VertexAIService {
           }
         }
       }
+      */
       
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
@@ -119,12 +121,11 @@ export class VertexAIService {
       return '[BUDGET_EXCEEDED] Sovereign Intelligence (Grounding) paused for cost control.';
     }
 
-    const apiKey = this.getApiKey();
+    // Bypassing API Key fallback entirely for grounding.
     try {
       this.logger.info(`Generating grounded content for prompt: ${prompt.substring(0, 50)}...`);
       
-      // Try Cloud Native Vertex AI first if explicitly desired or as primary for PMax/Strategy
-      // For this hackathon, we use GoogleGenAI (API Key) as primary for grounding stability
+      /*
       if (apiKey) {
         const ai = new GoogleGenAI(apiKey);
         const model = ai.getGenerativeModel({
@@ -140,9 +141,10 @@ export class VertexAIService {
 
         return text;
       } else {
+      */
         const result = await this.model.generateContent({
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            tools: [{ googleSearchRetrieval: {} }] as any
+            tools: [{ googleSearchRetrieval: { dynamicRetrievalConfig: { mode: 'MODE_DYNAMIC', dynamicThreshold: 0.3 } } }] as any
         });
         const response = await result.response;
         const text = response.candidates?.[0].content.parts[0].text || '';
@@ -151,7 +153,7 @@ export class VertexAIService {
         budgetGuardrail.trackUsage('gemini-2.0-flash-grounding-vertex', text.length / 4);
 
         return text;
-      }
+      // }
     } catch (error: any) {
       if (error.status === 403 || error.message?.includes('403') || error.message?.includes('PermissionDenied')) {
         this.logger.warn('Grounding (Google Search) is restricted. Falling back to core reasoning via Vertex AI SDK.');

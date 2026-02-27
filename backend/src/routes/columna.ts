@@ -5,7 +5,7 @@ import { Logger } from '../utils/logger';
 const router = Router();
 const logger = new Logger('ColumnaBridge');
 
-const ENGINE_URL = process.env.ENGINE_URL || 'https://agenticum-backend-697051612685.europe-west1.run.app';
+const ENGINE_URL = process.env.ENGINE_URL || 'https://agenticum-g5-backend-697051612685.europe-west1.run.app';
 
 /**
  * POST /api/v1/columna/track

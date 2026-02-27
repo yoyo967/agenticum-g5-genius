@@ -1,0 +1,50 @@
+2026-02-26 03:58:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 03:58:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 03:58:51 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/blog/feed
+2026-02-26 03:58:51 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/vault/list
+2026-02-26 03:58:51 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/analytics/seo-rankings
+2026-02-26 03:58:51 [2026-02-26T03:58:51.272Z] [INFO] [AnalyticsService] Performing Neural SEO Visibility check... 
+2026-02-26 03:59:11 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 03:59:12 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 03:59:12 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 03:59:12 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 03:59:13 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 03:59:13 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 03:59:13 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 03:59:13 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 03:59:21 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/vault/list
+2026-02-26 03:59:21 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/blog/feed
+2026-02-26 03:59:21 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/analytics/seo-rankings
+2026-02-26 03:59:21 [2026-02-26T03:59:21.161Z] [INFO] [AnalyticsService] Performing Neural SEO Visibility check... 
+2026-02-26 03:59:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 03:59:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 03:59:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 03:59:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 03:59:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 03:59:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 03:59:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 03:59:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 03:59:51 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/vault/list
+2026-02-26 03:59:51 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/blog/feed
+2026-02-26 03:59:51 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/analytics/seo-rankings
+2026-02-26 03:59:51 [2026-02-26T03:59:51.177Z] [INFO] [AnalyticsService] Performing Neural SEO Visibility check... 
+2026-02-26 04:00:11 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 04:00:12 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 04:00:12 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 04:00:12 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 04:00:13 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 04:00:13 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 04:00:13 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 04:00:13 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 04:00:21 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/vault/list
+2026-02-26 04:00:21 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/blog/feed
+2026-02-26 04:00:21 GET 304 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/analytics/seo-rankings
+2026-02-26 04:00:21 [2026-02-26T04:00:21.161Z] [INFO] [AnalyticsService] Performing Neural SEO Visibility check... 
+2026-02-26 04:00:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 04:00:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 04:00:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 04:00:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/workflow/status
+2026-02-26 04:00:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 04:00:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 04:00:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health
+2026-02-26 04:00:22 GET 200 https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health

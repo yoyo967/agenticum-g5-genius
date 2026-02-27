@@ -34,7 +34,7 @@ import { ScriptWizard } from '../components/creative/ScriptWizard';
 import { ProjectPlayground } from '../components/playground/ProjectPlayground';
 import { SwarmIntelligence } from '../components/telemetry/SwarmIntelligence';
 
-import { GenIUSPulsar } from '../components/os/GenIUSPulsar';
+import { GeniusPulsar } from '../components/os/GeniusPulsar';
 import { ConsciousnessStream } from '../components/os/ConsciousnessStream';
 import { ExecutiveIntervention } from '../components/os/ExecutiveIntervention';
 import { JuryPresentation } from '../components/ui/JuryPresentation';
@@ -228,7 +228,7 @@ export function OSPortal() {
             >
               <div className="relative mb-12">
                 <div className="absolute inset-0 bg-accent/5 blur-[100px] rounded-full pulsar-glow" />
-                <GenIUSPulsar state={geniusState} />
+                <GeniusPulsar state={geniusState} />
               </div>
               
               <motion.div
@@ -288,7 +288,7 @@ export function OSPortal() {
                   onClick={() => setOsMode('genius')}
                 >
                   <div className="w-8 h-8 relative scale-[0.4] origin-center -ml-2 -mr-2">
-                    <GenIUSPulsar state={geniusState} />
+                    <GeniusPulsar state={geniusState} />
                   </div>
                   <div className="flex flex-col">
                     <span className="font-display text-sm uppercase tracking-wide italic group-hover/pulsar:text-accent transition-colors">{MODULE_META[activeModule]?.label}</span>
