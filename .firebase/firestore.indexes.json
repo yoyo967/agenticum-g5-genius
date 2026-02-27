@@ -1,0 +1,19 @@
+{
+    "indexes": [
+          {
+                  "collectionGroup": "nexus_archives",
+                  "queryScope": "Collection",
+                  "fields": [
+                            {
+                                        "fieldPath": "status",
+                                        "order": "ASCENDING"
+                            },
+                            {
+                                        "fieldPath": "createdAt",
+                                        "order": "DESCENDING"
+                            }
+                  ]
+          }
+    ],
+    "fieldOverrides": []
+}
