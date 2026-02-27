@@ -66,13 +66,13 @@ async function runTests() {
   // --- WRITE TESTS (Gate 2: Schema Validation) ---
   const authedDb = testEnv.authenticatedContext('user_123').firestore();
 
-  // Test 5: Writing with correct schema
+  // Test 5: Writing with correct schema (DENIED by nexus_archives rules)
   try {
     const validWrite = authedDb.collection('pillars').doc('valid-write');
-    await assertSucceeds(validWrite.set({ visibility: 'public', title: 'Allowed' }));
-    console.log("✅ PASS: Allowed write with visibility == 'public'");
+    await assertFails(validWrite.set({ visibility: 'public', title: 'Allowed' }));
+    console.log("✅ PASS: Denied valid write (no frontend creation allowed)");
   } catch(e) {
-    console.error("❌ FAIL: Denied valid write", e);
+    console.error("❌ FAIL: Allowed valid write", e);
     process.exit(1);
   }
 
