@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
 import { db } from '../firebase'; // Pfad anpassen falls abweichend
 import type { NexusArchiveDocument } from '../types/nexus';
 
@@ -11,6 +11,7 @@ export const useFeedData = (limitCount: number = 3) => {
   useEffect(() => {
     const q = query(
       collection(db, 'nexus_archives'),
+      where('status', '==', 'approved'),
       orderBy('createdAt', 'desc'),
       limit(limitCount)
     );
