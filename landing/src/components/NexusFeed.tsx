@@ -55,7 +55,11 @@ export const NexusFeed = () => {
         </div>
       </div>
 
-      {error && <p className="text-magenta font-mono mb-8">CRITICAL ERROR: {error.message}</p>}
+      {error && (
+        <div className="p-4 border border-cyan-500/20 bg-black font-mono text-cyan-500/40 text-xs">
+          FEED INITIALIZING... AWAITING FIRST INTELLIGENCE SYNC.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {loading ? (
