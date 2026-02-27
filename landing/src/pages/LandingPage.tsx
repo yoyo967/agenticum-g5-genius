@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
   Bot, Image as ImageIcon, BookOpen, Mic2, Terminal,
-  Play, ArrowRight, Shield, Cpu, Zap, Eye, Menu, X, Globe,
+  ArrowRight, Shield, Cpu, Zap, Eye, Menu, X, Globe,
   Brain, CheckCircle, Layers, Activity, Code2, Star
 } from 'lucide-react';
 import { db } from '../firebase';
@@ -24,7 +24,8 @@ import { OriginSection } from '../sections/OriginSection';
 import { GenIUSHeroChat } from '../components/GenIUSHeroChat';
 import { PrometheusBrowser } from '../components/PrometheusBrowser';
 import { ApexContentSection } from '../sections/ApexContentSection';
-
+import { VideoSection } from '../components/VideoSection';
+import heroBg from '../assets/hero-bg.jpg';
 function useMetrics() {
   const [stats, setStats] = useState({ workflows: 0, outputs: 0, readiness: '100%', error: false });
 
@@ -181,17 +182,54 @@ export function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
+  const [bootLog, setBootLog] = useState<string[]>([]);
 
   useEffect(() => {
     const t = setTimeout(() => setHeroVisible(true), 100);
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
-    return () => { window.removeEventListener('scroll', handleScroll); clearTimeout(t); };
+
+    // Boot sequence mock
+    const bootSequence = [
+      "INITIALIZING NEURAL CORE...",
+      "[OK] SwarmProtocol v3.0 online",
+      "[OK] Live API Websocket connected",
+      "[OK] 8 Agents standing by",
+      "SYSTEM READY. AWAITING DIRECTIVE."
+    ];
+    let step = 0;
+    const bootTimer = setInterval(() => {
+      if (step < bootSequence.length) {
+        setBootLog(prev => [...prev.slice(-3), bootSequence[step]]);
+        step++;
+      } else {
+        clearInterval(bootTimer);
+      }
+    }, 400);
+
+    return () => { window.removeEventListener('scroll', handleScroll); clearTimeout(t); clearInterval(bootTimer); };
   }, []);
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setMobileOpen(false);
+  };
+
+  const handleWatchDemoClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    // Prüfen ob die Video-ID in der Config existiert (Vite Environment Variable)
+    const videoId = import.meta.env.VITE_DEMO_VIDEO_ID;
+    
+    if (videoId) {
+      // Löst das Event für die VideoSection aus (spielt das Video ab und scrollt dorthin)
+      window.dispatchEvent(new Event('play-demo-video'));
+    } else {
+      // Fallback: Scroll zur Voice Flow Demo
+      const voiceFlowSection = document.getElementById('voice-flow');
+      if (voiceFlowSection) {
+        voiceFlowSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   };
 
   const navLinks = [
@@ -278,11 +316,21 @@ export function LandingPage() {
            HERO — "The GenIUS for Enterprise Marketing"
            ============================================================ */}
         <header id="mission" className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-32 pb-20 overflow-hidden">
-          {/* Radial glow behind headline */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[800px] h-[400px] rounded-full opacity-10 blur-[100px]"
-              style={{ background: 'radial-gradient(ellipse, #00E5FF 0%, #7B2FBE 50%, transparent 100%)' }} />
+          
+          {/* Stunning High-Fidelity Neural Core Background */}
+          <div className="absolute inset-0 z-0">
+            <img 
+              src={heroBg} 
+              alt="Neural Core Stage" 
+              className="w-full h-full object-cover opacity-[0.65] mix-blend-luminosity brightness-[1.2] saturate-[1.2]"
+            />
+            {/* Deep vignette to blend the image perfectly into the dark background */}
+            <div className="absolute inset-0 bg-linear-to-b from-transparent via-midnight/70 to-midnight" />
+            <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at center, transparent 0%, rgba(10,1,24,0.6) 40%, rgba(10,1,24,1) 95%)' }} />
           </div>
+
+          {/* Grid substrate behind headline instead of soft radial */}
+          <div className="absolute inset-0 z-10 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-size-[40px_40px] pointer-events-none" />
 
           <motion.div style={{ opacity: heroOpacity, scale: heroScale }} className="flex flex-col items-center relative z-20 w-full max-w-7xl">
 
@@ -309,6 +357,18 @@ export function LandingPage() {
               ACTIVATED.<br />
               <span className="text-neural-gold/80" style={{ fontSize: '0.4em', letterSpacing: '0.3em', fontWeight: 900 }}>The Nexus Sovereign Engine</span>
             </motion.h1>
+
+            {/* Boot Sequence Shell */}
+            <div className="mt-8 flex flex-col items-center h-16 pointer-events-none">
+              <AnimatePresence>
+                {bootLog.map((log, i) => (
+                  <motion.div key={i + log} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}
+                    className="font-mono text-xs text-accent/60 my-0.5">
+                    <span className="text-accent/30 mr-2">$</span>{log}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
 
             {/* GenIUS Chat Interface Integration */}
             <GenIUSHeroChat />
@@ -353,9 +413,15 @@ export function LandingPage() {
                 className="btn-primary flex items-center gap-3 text-base px-8 py-4 shadow-[0_0_40px_rgba(0,229,255,0.4)] hover:shadow-[0_0_60px_rgba(0,229,255,0.6)]">
                 <Mic2 size={18} /> Initialize Swarm <ArrowRight size={18} />
               </button>
-              <button onClick={() => scrollTo('voice-flow')}
-                className="btn-ghost flex items-center gap-3 text-sm px-6 py-4">
-                <Play size={16} /> Watch Live Demo
+              <button 
+                onClick={handleWatchDemoClick}
+                className="px-8 py-4 border border-cyan-500/50 text-cyan-400 font-mono hover:bg-cyan-500/10 hover:shadow-[0_0_20px_rgba(0,255,255,0.2)] transition-all flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                WATCH LIVE DEMO
               </button>
             </motion.div>
 
@@ -378,13 +444,25 @@ export function LandingPage() {
         </header>
 
         {/* ============================================================
-           ACCESS THE SWARM — Gateway Card
+           SEE IT LIVE — Demo Video Section
+           ============================================================ */}
+        <VideoSection videoId={import.meta.env.VITE_DEMO_VIDEO_ID} />
+
+        {/* ============================================================
+           ACCESS THE SWARM — Gateway Terminal
            ============================================================ */}
         <section className="px-6 -mt-10 relative z-20 max-w-5xl mx-auto mb-32">
           <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="glass-card p-12 md:p-16 text-center cursor-pointer group card-glow-cyan relative overflow-hidden"
+            className="ultra-lucid p-12 md:p-16 text-center cursor-pointer group card-glow-cyan relative overflow-hidden ring-1 ring-accent/30 shadow-[0_0_80px_rgba(0,229,255,0.1)]"
             onClick={() => navigate('/os')}>
-            {/* Background gradient */}
+            
+            {/* Terminal Bracketing top corners */}
+            <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent/40 rounded-tl-xl m-4" />
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent/40 rounded-tr-xl m-4" />
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-accent/40 rounded-bl-xl m-4" />
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent/40 rounded-br-xl m-4" />
+
+            {/* Background gradient structure */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
               style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.06), transparent 70%)' }} />
 
@@ -412,14 +490,18 @@ export function LandingPage() {
 
               <div className="mt-12 pt-8 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
-                  { label: 'Active Workflows', value: error ? '---' : workflows.toString(), color: '#00E5FF' },
-                  { label: 'Generated Outputs', value: error ? 'UNAVAILABLE' : (outputs > 0 ? `${outputs}+` : 'Loading...'), color: '#FFD700' },
-                  { label: 'Swarm Readiness', value: readiness, color: error ? '#FF007A' : '#00FF88' },
-                  { label: 'Cloud Run Revision', value: '00032', color: '#7B2FBE' },
+                  { label: 'Active Workflows', value: error ? '---' : workflows.toString() },
+                  { label: 'Generated Outputs', value: error ? 'UNAVAILABLE' : (outputs > 0 ? `${outputs}+` : 'Loading...') },
+                  { label: 'Swarm Readiness', value: readiness },
+                  { label: 'Cloud Run Revision', value: '00032' },
                 ].map(m => (
                   <div key={m.label} className="flex flex-col items-center">
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-white/20 mb-2">{m.label}</span>
-                    <span className="font-display font-black text-2xl" style={{ color: m.color }}>{m.value}</span>
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-white/40 mb-2">{m.label}</span>
+                    <span className="font-mono font-bold text-2xl text-white tracking-tight">
+                      {m.value === 'Loading...' ? <span className="w-10 h-6 bg-white/10 animate-pulse rounded inline-block" /> : m.value}
+                      {m.label === 'Active Workflows' && !error && <span className="ml-1 text-accent text-sm animate-pulse">●</span>}
+                      {m.label === 'Swarm Readiness' && !error && <span className="ml-1 text-[#00FF88] text-sm animate-pulse">●</span>}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -451,21 +533,29 @@ export function LandingPage() {
            ============================================================ */}
         <section id="tools" className="py-32 px-6 max-w-[1280px] mx-auto border-t border-white/5">
           <div className="text-center mb-20">
-            <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-              className="label-active block mb-4">Capabilities Matrix</motion.span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent/50 mb-4 block">
+              System Interface
+            </span>
             <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="font-display font-black uppercase tracking-tight"
-              style={{ fontSize: 'clamp(32px, 5vw, 80px)' }}>
+              className="font-display font-black uppercase tracking-tight text-white mb-6"
+              style={{ fontSize: 'clamp(32px, 5vw, 60px)' }}>
               The Arsenal
             </motion.h2>
+            <p className="text-white/40 text-lg max-w-2xl mx-auto font-mono">
+              Forget wrapper apps. This is a fully articulated, parallel-processing intelligence cluster 
+              built natively on Google Cloud.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
             {/* Primary — Parallel Synergy */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="md:col-span-8 glass-card p-12 card-glow-cyan relative overflow-hidden group">
+              className="md:col-span-8 ultra-lucid border-accent/20 p-12 card-glow-cyan relative overflow-hidden group">
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
                 style={{ background: 'radial-gradient(ellipse at 0% 50%, rgba(0,229,255,0.05), transparent 60%)' }} />
+              
+              {/* Tactical scan line */}
+              <div className="absolute inset-0 w-full h-[2px] bg-accent/20 blur-[1px] -translate-y-full group-hover:animate-[scanline_3s_linear_infinite]" />
               <div className="flex items-center gap-3 mb-6">
                 <Brain size={20} className="text-accent" />
                 <span className="label-active">Gemini 2.0 Flash · Live API · Function Calling</span>
@@ -474,7 +564,7 @@ export function LandingPage() {
                 Voice → Swarm.<br />
                 <span className="text-accent">Zero Textbox.</span>
               </h3>
-              <p className="text-white/40 text-base max-w-lg font-mono leading-relaxed">
+              <p className="text-white/40 text-sm max-w-lg font-mono leading-relaxed">
                 You speak — Gemini 2.0 identifies your intent via Function Calling and triggers all 8 agents
                 simultaneously. Not sequential. Not one after another. <strong className="text-white/70">Parallel.</strong>
               </p>
@@ -487,9 +577,10 @@ export function LandingPage() {
 
             {/* Imagen 3 */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
-              className="md:col-span-4 glass-card p-10 flex flex-col justify-between card-glow-gold group relative overflow-hidden">
+              className="md:col-span-4 ultra-lucid border-gold/20 p-10 flex flex-col justify-between card-glow-gold group relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-5 blur-3xl"
                 style={{ background: '#FFD700' }} />
+              <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-gold/40 rounded-tl-xl m-2 opacity-50" />
               <div>
                 <ImageIcon size={24} className="text-gold mb-6" />
                 <h3 className="font-display text-3xl font-black uppercase tracking-tight mb-4 leading-[0.9]">
@@ -508,8 +599,9 @@ export function LandingPage() {
 
             {/* Senate */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
-              className="md:col-span-4 glass-card p-10 card-glow-magenta relative overflow-hidden">
-              <Shield size={22} className="text-magenta mb-6" />
+              className="md:col-span-4 ultra-lucid border-magenta/20 p-10 card-glow-magenta relative overflow-hidden group">
+              <div className="absolute inset-x-0 bottom-0 h-1 bg-magenta/20 shadow-[0_0_20px_rgba(255,0,122,0.4)]" />
+              <Shield size={22} className="text-magenta mb-6 relative z-10" />
               <h3 className="font-display text-2xl font-black uppercase tracking-tight mb-4">
                 Algorithmic<br />Senate.
               </h3>
@@ -521,7 +613,8 @@ export function LandingPage() {
 
             {/* Perfect Twin */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
-              className="md:col-span-4 glass-card p-10 card-glow-cyan">
+              className="md:col-span-4 ultra-lucid border-accent/20 p-10 card-glow-cyan relative overflow-hidden">
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-accent/40 rounded-br-xl m-2 opacity-50" />
               <CheckCircle size={22} className="text-accent mb-6" />
               <h3 className="font-display text-2xl font-black uppercase tracking-tight mb-4">
                 Perfect Twin<br />Grounding.
@@ -534,7 +627,8 @@ export function LandingPage() {
 
             {/* Google ADK */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }}
-              className="md:col-span-4 glass-card p-10 card-glow-gold">
+              className="md:col-span-4 ultra-lucid border-gold/20 p-10 card-glow-gold relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-gold/40 rounded-tr-xl m-2 opacity-50" />
               <Code2 size={22} className="text-gold mb-6" />
               <h3 className="font-display text-2xl font-black uppercase tracking-tight mb-4">
                 @google/genai<br />SDK v1.42.0.
@@ -546,8 +640,10 @@ export function LandingPage() {
             </motion.div>
 
             {/* Compliance Large Card */}
+            {/* Compliance Large Card */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.5 }}
-              className="md:col-span-12 glass-card p-10 relative overflow-hidden">
+              className="md:col-span-12 ultra-lucid border-emerald/20 p-10 relative overflow-hidden card-glow-emerald">
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,136,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,136,0.02)_1px,transparent_1px)] bg-size-[16px_16px] pointer-events-none" />
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
                 <div className="flex items-center gap-6">
                   <div className="w-14 h-14 rounded-2xl bg-emerald/10 border border-emerald/20 flex items-center justify-center shrink-0">
@@ -574,7 +670,7 @@ export function LandingPage() {
         </section>
 
         {/* ============================================================
-           ORIGEN — Who Built This & Why
+           ORIGIN — Who Built This & Why
            ============================================================ */}
         <div id="origin">
           <OriginSection />
@@ -586,7 +682,14 @@ export function LandingPage() {
         <section id="codex" className="py-32 px-6 border-t border-white/5">
           <div className="max-w-[1280px] mx-auto">
             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="glass-card p-12 md:p-20 text-center relative overflow-hidden">
+              className="ultra-lucid border-accent/20 p-12 md:p-20 text-center relative overflow-hidden">
+              
+              {/* Terminal borders */}
+              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent/40 rounded-tl-xl m-4" />
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent/40 rounded-tr-xl m-4" />
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-accent/40 rounded-bl-xl m-4" />
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent/40 rounded-br-xl m-4" />
+
               <div className="absolute inset-0 opacity-5"
                 style={{ background: 'radial-gradient(ellipse at 50% 0%, #00E5FF, transparent 70%)' }} />
               <div className="relative z-10">
@@ -616,7 +719,7 @@ export function LandingPage() {
                     <motion.span
                       key={tech}
                       whileHover={{ scale: 1.05 }}
-                      className="glass-card px-5 py-2.5 font-mono text-[10px] uppercase tracking-wider text-accent border-accent/20 cursor-default">
+                      className="bg-midnight/60 border border-accent/20 px-5 py-2.5 font-mono text-[10px] uppercase tracking-wider text-accent cursor-default shadow-[inset_0_0_10px_rgba(0,229,255,0.05)]">
                       {tech}
                     </motion.span>
                   ))}

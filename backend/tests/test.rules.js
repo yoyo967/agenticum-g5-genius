@@ -91,6 +91,46 @@ async function runTests() {
     process.exit(1);
   }
 
+  // --- nexus_archives Tests ---
+
+  // PASS: approved Dokument ist öffentlich lesbar
+  it_allows_read_approved: try {
+    await adminDb.collection('nexus_archives').doc('test-approved').set({
+      title: 'Test', status: 'approved', senateScore: 99
+    });
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertSucceeds(db.collection('nexus_archives').doc('test-approved').get());
+    console.log("✅ PASS: Allowed read of approved nexus_archive");
+  } catch(e) {
+    console.error("❌ FAIL: Denied read of approved nexus_archive", e);
+    process.exit(1);
+  }
+
+  // FAIL: draft Dokument ist nicht lesbar
+  it_denies_read_draft: try {
+    await adminDb.collection('nexus_archives').doc('test-draft').set({
+      title: 'Draft', status: 'draft', senateScore: 50
+    });
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertFails(db.collection('nexus_archives').doc('test-draft').get());
+    console.log("✅ PASS: Denied read of draft nexus_archive");
+  } catch(e) {
+    console.error("❌ FAIL: Allowed read of draft nexus_archive", e);
+    process.exit(1);
+  }
+
+  // FAIL: Frontend-Write (create) ist blockiert
+  it_denies_frontend_write: try {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertFails(db.collection('nexus_archives').doc('evil-write').set({
+      title: 'Injected', status: 'approved'
+    }));
+    console.log("✅ PASS: Denied frontend write to nexus_archives");
+  } catch(e) {
+    console.error("❌ FAIL: Allowed frontend write to nexus_archives", e);
+    process.exit(1);
+  }
+
   console.log("========================================");
   console.log("ALL FIRESTORE EMULATOR CI TESTS PASSED.");
   console.log("========================================");
