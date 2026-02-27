@@ -52,4 +52,3 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ONLINE_MARKETING_MANAGER }}
           projectId: online-marketing-manager
-          target: landing
