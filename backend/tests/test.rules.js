@@ -6,17 +6,21 @@ async function runTests() {
     projectId: "online-marketing-manager",
     firestore: {
       rules: fs.readFileSync("../firestore.rules", "utf8"),
+      host: 'localhost',
+      port: 8080
     },
   });
 
-  const unauthedDb = testEnv.unauthenticatedContext().firestore();
-  
-  // 1. Seed the emulator with mock data using the admin (rules-disabled) context
-  const adminDb = testEnv.withSecurityRulesDisabled().firestore();
-  await adminDb.collection('pillars').doc('private-doc').set({ visibility: 'internal', content: 'FAILSAFE GROUNDING' });
-  await adminDb.collection('pillars').doc('public-doc').set({ visibility: 'public', content: 'Verified AI Report' });
-
   console.log("Starting CI Gate: Firestore Rules Integrity Audit...");
+
+  // 1. Seed the emulator with mock data using the admin (rules-disabled) context
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const adminDb = context.firestore();
+    await adminDb.collection('pillars').doc('private-doc').set({ visibility: 'internal', content: 'FAILSAFE GROUNDING' });
+    await adminDb.collection('pillars').doc('public-doc').set({ visibility: 'public', content: 'Verified AI Report' });
+  });
+
+  const unauthedDb = testEnv.unauthenticatedContext().firestore();
 
   // Test 1: Explicitly reading a private document
   try {
@@ -95,9 +99,13 @@ async function runTests() {
 
   // PASS: approved Dokument ist öffentlich lesbar
   it_allows_read_approved: try {
-    await adminDb.collection('nexus_archives').doc('test-approved').set({
-      title: 'Test', status: 'approved', senateScore: 99
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await adminDb.collection('nexus_archives').doc('test-approved').set({
+        title: 'Test', status: 'approved', senateScore: 99
+      });
     });
+    
     const db = testEnv.unauthenticatedContext().firestore();
     await assertSucceeds(db.collection('nexus_archives').doc('test-approved').get());
     console.log("✅ PASS: Allowed read of approved nexus_archive");
@@ -108,9 +116,13 @@ async function runTests() {
 
   // FAIL: draft Dokument ist nicht lesbar
   it_denies_read_draft: try {
-    await adminDb.collection('nexus_archives').doc('test-draft').set({
-      title: 'Draft', status: 'draft', senateScore: 50
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await adminDb.collection('nexus_archives').doc('test-draft').set({
+        title: 'Draft', status: 'draft', senateScore: 50
+      });
     });
+
     const db = testEnv.unauthenticatedContext().firestore();
     await assertFails(db.collection('nexus_archives').doc('test-draft').get());
     console.log("✅ PASS: Denied read of draft nexus_archive");
