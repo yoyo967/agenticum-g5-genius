@@ -1,31 +1,25 @@
 import { motion } from 'framer-motion';
-import { Brain, Layers, Shield, Zap, TrendingUp, Cpu, Globe } from 'lucide-react';
+import { Brain, Cpu, Globe, Mic } from 'lucide-react';
+import voiceWave from '../assets/g5_voice_autonomy.png';
+import nexusSentience from '../assets/g5_nexus_sovereignty.png';
 
 export function ApexContentSection() {
   const content = [
     {
-      title: "The Evolution: From Chatbot to GenIUS OS",
-      text: "GenIUS G5 is not just an interface; it is an autonomous marketing ecosystem. We have moved past the era of reactive prompts. G5 represents the transition from a passive tool to a proactive Digital Advertising Agency in a box — capable of steering multi-layer campaigns via voice alone.",
-      icon: <TrendingUp className="text-accent" />,
-      color: "cyan"
+      title: "THE END OF THE TEXTBOX.",
+      subtitle: "Status Quo: B2B dashboards are silent cockpits.",
+      text: "'Click. Read. Type.' - The 2015 paradigm is dead. GenIUS G5 replaces reactive input with Voice-First autonomy. Tony Stark doesn't type. He speaks into the room, and the system acts.",
+      image: voiceWave,
+      tag: "VOICE-FIRST AUTONOMY",
+      icon: <Mic className="text-accent" />
     },
     {
-      title: "The Ecosystem: Nexus & Sovereign",
-      text: "The GenIUS architecture rests on two pillars. The NEXUS is your tactical cockpit — a high-fidelity dashboard for real-time visualization. SOVEREIGN is the Intelligence itself: the G5 Sovereign Engine that fuses your vision with technical congruence to maintain 'Maximal Excellence' across all assets.",
-      icon: <Layers className="text-neural-gold" />,
-      color: "gold"
-    },
-    {
-      title: "Kinetic Flow: Parallelism Over Queuing",
-      text: "Traditional AI tools work in sequence: one prompt, one answer. GenIUS utilizes Parallel Swarm execution. While CC-06 is writing your semantic strategy, DA-03 is forging visuals, SP-01 is scanning competitors, and RA-01 is auditing for compliance — simultaneously. Speed is our primary currency.",
-      icon: <Zap className="text-magenta" />,
-      color: "magenta"
-    },
-    {
-      title: "Integrity: The Senate Tribunal",
-      text: "Excellence requires governance. The Security Senate (RA-01) functions as an adversarial tribunal. Every generation is audited against the EU AI Act, GDPR, and brand-specific commandments before it ever reaches the user. This is zero-hallucination marketing for the enterprise.",
-      icon: <Shield className="text-emerald" />,
-      color: "emerald"
+      title: "FROM CHATBOT TO SENTIENCE.",
+      subtitle: "The Nexus Sovereignty Evolution.",
+      text: "GenIUS G5 is not a passive bot. Nexus Sovereignty is built on three pillars: 1. Shared World State (all agents see the same reality), 2. Historical Memory (contextual awareness of past successes), and 3. Recursive Refinement (SN-00 audits its own plans).",
+      image: nexusSentience,
+      tag: "SENTIENCE EVOLUTION",
+      icon: <Brain className="text-neural-gold" />
     }
   ];
 
@@ -64,8 +58,8 @@ export function ApexContentSection() {
             </motion.div>
           </div>
 
-          {/* Right: Content Cards */}
-          <div className="lg:w-2/3 space-y-12">
+          {/* Right: Feature Showcases */}
+          <div className="lg:w-2/3 space-y-24">
             {content.map((item, i) => (
               <motion.div
                 key={i}
@@ -73,24 +67,30 @@ export function ApexContentSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.15 }}
-                className="glass-card p-10 group relative hover:border-white/20 transition-all duration-500"
+                className="group"
               >
-                <div className="flex flex-col md:flex-row gap-8">
-                  <div className="shrink-0 w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                    {item.icon}
+                <div className="flex flex-col gap-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                      {item.icon}
+                    </div>
+                    <span className="font-mono text-[10px] tracking-[0.3em] text-accent/60 uppercase">{item.tag}</span>
                   </div>
+                  
                   <div>
-                    <h3 className="font-display text-3xl font-black uppercase tracking-tight mb-4 group-hover:text-accent transition-colors">
+                    <h3 className="font-display text-4xl md:text-5xl font-black uppercase tracking-tight mb-2 group-hover:text-accent transition-colors">
                       {item.title}
                     </h3>
-                    <p className="font-mono text-sm text-white/50 leading-relaxed">
+                    <p className="font-display text-lg text-white/50 italic mb-6">{item.subtitle}</p>
+                    <p className="font-mono text-sm text-white/40 leading-relaxed max-w-2xl mb-8">
                       {item.text}
                     </p>
                   </div>
-                </div>
-                {/* Decorative Elements */}
-                <div className="absolute top-4 right-4 text-[10px] font-mono text-white/5 uppercase tracking-widest font-black">
-                  PHASE 36 // MAX_INT
+
+                  <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl transition-transform duration-700 group-hover:scale-[1.01]">
+                    <img src={item.image} alt={item.title} className="w-full h-auto opacity-90 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-linear-to-t from-midnight/40 to-transparent pointer-events-none" />
+                  </div>
                 </div>
               </motion.div>
             ))}

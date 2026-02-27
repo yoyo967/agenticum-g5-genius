@@ -20,12 +20,13 @@ import { DemoVideoSection } from '../sections/DemoVideoSection';
 import { PrizesSection } from '../sections/PrizesSection';
 import { FinalCTASection } from '../sections/FinalCTASection';
 import { VoiceFlowSection } from '../sections/VoiceFlowSection';
+import { MissionStatusSection } from '../sections/MissionStatusSection';
 import { OriginSection } from '../sections/OriginSection';
 import { GenIUSHeroChat } from '../components/GenIUSHeroChat';
 import { PrometheusBrowser } from '../components/PrometheusBrowser';
 import { ApexContentSection } from '../sections/ApexContentSection';
 import { VideoSection } from '../components/VideoSection';
-import heroBg from '../assets/hero-bg.jpg';
+import heroBg from '../assets/g5_hero_dashboard.png';
 function useMetrics() {
   const [stats, setStats] = useState({ workflows: 0, outputs: 0, readiness: '100%', error: false });
 
@@ -217,14 +218,14 @@ export function LandingPage() {
 
   const handleWatchDemoClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    // Prüfen ob die Video-ID in der Config existiert (Vite Environment Variable)
+    // Check if video ID exists in config (Vite Environment Variable)
     const videoId = import.meta.env.VITE_DEMO_VIDEO_ID;
     
     if (videoId) {
-      // Löst das Event für die VideoSection aus (spielt das Video ab und scrollt dorthin)
+      // Trigger VideoSection event (play and scroll)
       window.dispatchEvent(new Event('play-demo-video'));
     } else {
-      // Fallback: Scroll zur Voice Flow Demo
+      // Fallback: Scroll to Voice Flow Demo
       const voiceFlowSection = document.getElementById('voice-flow');
       if (voiceFlowSection) {
         voiceFlowSection.scrollIntoView({ behavior: 'smooth' });
@@ -353,9 +354,9 @@ export function LandingPage() {
               transition={{ duration: 0.9, delay: 0.1 }}
               className="font-display font-black uppercase tracking-tight leading-[0.85]"
               style={{ fontSize: 'clamp(48px, 9.5vw, 120px)' }}>
-              MAXIMAL <span className="text-accent">INTELLIGENCE</span><br />
-              ACTIVATED.<br />
-              <span className="text-neural-gold/80" style={{ fontSize: '0.4em', letterSpacing: '0.3em', fontWeight: 900 }}>The Nexus Sovereign Engine</span>
+              AGENTICUM <span className="text-accent underline decoration-accent/30 underline-offset-8">G5 GENIUS</span><br />
+              <span className="text-white/90" style={{ fontSize: '0.45em', letterSpacing: '0.05em', fontWeight: 700 }}>Enterprise Operating System</span><br />
+              <span className="text-neural-gold/80" style={{ fontSize: '0.25em', letterSpacing: '0.3em', fontWeight: 900 }}>J.A.R.V.I.S. for Enterprise Marketing — 100% Google Cloud Native</span>
             </motion.h1>
 
             {/* Boot Sequence Shell */}
@@ -380,8 +381,8 @@ export function LandingPage() {
             {/* Subtitle */}
             <motion.p initial={{ opacity: 0 }} animate={heroVisible ? { opacity: 1 } : {}} transition={{ delay: 0.6 }}
               className="text-lg md:text-xl text-white/40 max-w-2xl font-mono leading-relaxed mb-2">
-              The GenIUS for Enterprise Marketing. A 'Sentient System' 
-              fusing user vision with technical excellence to steer complex marketing ecosystems autonomously.
+              Beyond Reactive Chatbots. G5 is a 'Sentient Engine' 
+              orchestrating autonomous marketing ecosystems via the Gemini 2.0 Live Fabric.
             </motion.p>
             <motion.p initial={{ opacity: 0 }} animate={heroVisible ? { opacity: 1 } : {}} transition={{ delay: 0.7 }}
               className="text-sm text-accent/60 font-mono uppercase tracking-widest">
@@ -761,6 +762,11 @@ export function LandingPage() {
           </div>
           <ImagenGallery />
         </section>
+
+        {/* ============================================================
+           MISSION STATUS — Live Telemetry
+           ============================================================ */}
+        <MissionStatusSection />
 
         {/* ============================================================
            COLUMNA RADAR — Competitive Intelligence

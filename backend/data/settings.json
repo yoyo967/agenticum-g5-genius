@@ -1,6 +1,6 @@
 {
   "projectId": "online-marketing-manager",
-  "geminiKey": "AIzaSyB-REPLACE-IN-UI",
+  "geminiKey": "AIzaSyCSNyaivtyShbckcmb2v-Kk_Az2Ohue3Mo",
   "gcsBucket": "online-marketing-manager-genius-assets",
   "localFallback": "./data/vault/",
   "localOverride": true,

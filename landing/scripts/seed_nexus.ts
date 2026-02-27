@@ -1,13 +1,29 @@
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
+import fs from 'fs';
+import path from 'path';
 
 // HINWEIS: Service Account JSON lokal ablegen für den Seed-Lauf
-// Assuming standard relative path for backend firebase keys, please adjust if needed
-import serviceAccount from '../../backend/service-account.json' assert { type: 'json' };
+let credential = undefined;
+try {
+  const serviceAccountPath = path.resolve('../../backend/service-account.json');
+  if (fs.existsSync(serviceAccountPath)) {
+    const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+    credential = cert(serviceAccount);
+    console.log("[SYS] Using service-account.json for authentication.");
+  } else {
+    console.log("[SYS] No service-account.json found. Falling back to Application Default Credentials (ADC).");
+  }
+} catch (e) {
+  console.warn("[SYS] Failed to load service account: falling back to ADC.");
+}
 
-initializeApp({
-  credential: cert(serviceAccount)
-});
+const appOptions: any = {};
+if (credential) {
+  appOptions.credential = credential;
+}
+
+initializeApp(appOptions);
 
 const PROJECT_ID = 'online-marketing-manager';
 if (process.env.GCLOUD_PROJECT !== PROJECT_ID && 

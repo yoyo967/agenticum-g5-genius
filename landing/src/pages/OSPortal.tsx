@@ -33,6 +33,7 @@ import { ElementLibrary } from '../components/creative/ElementLibrary';
 import { ScriptWizard } from '../components/creative/ScriptWizard';
 import { ProjectPlayground } from '../components/playground/ProjectPlayground';
 import { SwarmIntelligence } from '../components/telemetry/SwarmIntelligence';
+import { GlobalRadarConsole } from '../components/os/GlobalRadarConsole';
 
 import { GeniusPulsar } from '../components/os/GeniusPulsar';
 import { ConsciousnessStream } from '../components/os/ConsciousnessStream';
@@ -40,7 +41,7 @@ import { ExecutiveIntervention } from '../components/os/ExecutiveIntervention';
 import { JuryPresentation } from '../components/ui/JuryPresentation';
 import { OSAuthGate } from '../components/auth/OSAuthGate';
 
-type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence';
+type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence' | 'global-radar';
 
 const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   dashboard: { label: 'Executive Dashboard', subtitle: 'Global Metrics' },
@@ -64,6 +65,7 @@ const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   playground: { label: 'Project Playground', subtitle: 'Immersion State' },
   'swarm-intelligence': { label: 'Swarm Intelligence', subtitle: 'Neural Telemetry' },
   geopolitics: { label: 'Geopolitics Hub', subtitle: 'Sovereign AI Mesh' },
+  'global-radar': { label: 'Global Radar', subtitle: 'Tactical Command' },
   settings: { label: 'Global Config', subtitle: 'System Parameters' },
 };
 
@@ -181,6 +183,7 @@ export function OSPortal() {
               <SidebarButton icon={<Wand2 size={16} className="text-accent" />} label="Script Wizard" active={activeModule === 'script-wizard'} onClick={() => setActiveModule('script-wizard')} />
               <SidebarButton icon={<Maximize2 size={16} className="text-accent" />} label="Playground" active={activeModule === 'playground'} onClick={() => setActiveModule('playground')} />
               <SidebarButton icon={<Globe className="text-accent" size={16} />} label="Geopolitics Hub" active={activeModule === 'geopolitics'} onClick={() => setActiveModule('geopolitics')} />
+              <SidebarButton icon={<Radar className="text-magenta animate-pulse" size={16} />} label="Global Radar" active={activeModule === 'global-radar'} onClick={() => setActiveModule('global-radar')} />
               
               <div className="w-full h-px bg-white/5 my-3 hidden md:block" />
               
@@ -362,6 +365,7 @@ export function OSPortal() {
                 {activeModule === 'playground' && <ProjectPlayground />}
                 {activeModule === 'swarm-intelligence' && <SwarmIntelligence />}
                 {activeModule === 'geopolitics' && <GeopoliticsHub />}
+                {activeModule === 'global-radar' && <GlobalRadarConsole />}
               </motion.div>
             )}
           </AnimatePresence>

@@ -1,61 +1,89 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { ShieldCheck, FileCheck, Lock, Eye } from 'lucide-react';
+import complianceSenate from '../assets/g5_compliance_senate_en_v2_1772174738278.png';
 
 const pillars = [
   {
     badge: "EU AI Act · Art. 50",
-    icon: "🇪🇺",
+    icon: <FileCheck className="text-emerald" />,
     title: "Machine-Readable Transparency",
     desc: "Every AI-generated asset is auto-labeled with C2PA-ready meta-tags and a human-readable disclaimer. Perfect Twin provides the full audit trail for any authority.",
-    items: ["<meta name='ai-generated' content='true'>", "Model version logged per sentence", "Perfect Twin Glass Box Mode", "Audit export on demand"]
+    items: ["AI-generated Content Labels", "Model version verification", "Glass Box Mode protocol", "Audit export on demand"]
   },
   {
     badge: "GDPR · Privacy by Design",
-    icon: "🔒",
+    icon: <Lock className="text-accent" />,
     title: "Zero-Cookie Default",
-    desc: "Generated pages load zero trackers before consent. Local font bundling. Auto-generated Imprint and Privacy Policy per page. TCF v2.2 Consent Banner.",
-    items: ["No external fonts (zero leakage)", "Auto-Imprint generation", "Auto-Privacy Policy", "TCF v2.2 Cookie Banner"]
+    desc: "Generated pages load zero trackers before consent. Local font bundling. Auto-generated Imprint and Privacy Policy per page.",
+    items: ["No external fonts", "Auto-Imprint generation", "Privacy-First Architecture", "TCF v2.2 Compliant"]
   },
   {
-    badge: "EAA 2025 · WCAG 2.1 AA",
-    icon: "♿",
-    title: "Accessibility Enforced by Senate",
-    desc: "Lighthouse CI runs on every draft. Score below 95/100 triggers an automatic Senate Veto. Gemini Vision generates alt-text for every image. Semantic HTML enforced.",
-    items: ["Lighthouse Score ≥ 95/100", "Gemini Vision auto-alt-text", "Semantic <nav><main><article>", "ARIA labels enforced by Code Agent"]
+    badge: "Brand Safety",
+    icon: <Eye className="text-magenta" />,
+    title: "Adversarial Quality Gates",
+    desc: "Our Senate reviews every output against brand guidelines and Dark Pattern detection before it hits production.",
+    items: ["Lighthouse Score ≥ 95/100", "Dark Pattern Detection", "Automated Senate Veto", "Style-Guide Alignment"]
   }
 ];
 
 export const ComplianceSection: React.FC = () => (
-  <section id="compliance-demo" className="py-32 px-6 bg-midnight-900">
-    <div className="max-w-6xl mx-auto">
-      <div className="text-center mb-16">
-        <span className="text-xs uppercase tracking-widest text-emerald-400 font-mono">EU-First · Maximum Excellence</span>
-        <h2 className="text-5xl font-black text-white mt-4">COMPLIANCE ENGINE.</h2>
-        <p className="text-slate-400 mt-4 font-mono text-sm max-w-2xl mx-auto">
-          The Americans build fast. We build legally unassailable.
-          EU AI Act, GDPR and EAA 2025 are not checkboxes — they are
-          algorithmic quality gates enforced by our Senate before every publish.
+  <section id="compliance-demo" className="py-40 px-6 bg-midnight/30 border-t border-white/5 relative overflow-hidden">
+    <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald/5 blur-[120px] rounded-full pointer-events-none" />
+
+    <div className="max-w-[1200px] mx-auto relative z-10">
+      <div className="text-center mb-24">
+        <motion.div initial={{ opacity: 0, y: -10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="badge badge-warning mb-6 mx-auto w-fit">
+          <ShieldCheck size={10} /> Compliance by Design · RA-01 Senate
+        </motion.div>
+        <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="font-display font-bold uppercase tracking-tight leading-[0.9] text-white brightness-125 mb-6"
+          style={{ fontSize: 'clamp(40px, 6vw, 96px)' }}>
+          Der Algorithmus<br />
+          <span className="text-emerald">Als Wächter.</span>
+        </motion.h2>
+        <p className="font-mono text-white/40 text-lg max-w-2xl mx-auto leading-relaxed">
+          The Americans build fast. We build legally unassailable. 
+          EU AI Act, GDPR, and EAA 2025 are not checkboxes — they are 
+          algorithmic quality gates.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {pillars.map(p => (
-          <div key={p.badge} className="bg-[#0a0118] border border-indigo-900/40 rounded-2xl p-6 hover:border-emerald-500/40 transition-colors">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-2xl">{p.icon}</span>
-              <span className="text-[10px] bg-emerald-900/30 text-emerald-400 border border-emerald-900/40 px-2 py-1 rounded font-mono uppercase">
+      {/* Compliance Senate Visual */}
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+        className="relative rounded-3xl overflow-hidden border border-white/10 shadow-3xl bg-black/60 mb-24 aspect-video">
+        <img src={complianceSenate} alt="RA-01 Senate Compliance Engine" className="w-full h-full object-cover opacity-90" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
+      </motion.div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {pillars.map((p, i) => (
+          <motion.div 
+            key={p.badge} 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="glass-card p-8 group hover:border-emerald-500/40 transition-colors"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                {p.icon}
+              </div>
+              <span className="text-[9px] bg-emerald-900/10 text-emerald border border-emerald/20 px-3 py-1 rounded font-black tracking-widest uppercase">
                 {p.badge}
               </span>
             </div>
-            <h3 className="text-white font-bold text-lg mb-3">{p.title}</h3>
-            <p className="text-slate-400 text-sm mb-4 leading-relaxed">{p.desc}</p>
-            <ul className="space-y-1">
+            <h3 className="text-white font-black uppercase text-sm mb-4">{p.title}</h3>
+            <p className="text-white/40 text-xs font-mono mb-6 leading-relaxed italic">"{p.desc}"</p>
+            <ul className="space-y-2">
               {p.items.map(item => (
-                <li key={item} className="text-xs font-mono text-cyan-400/70 flex items-center gap-2">
-                  <span className="text-emerald-500">✓</span> {item}
+                <li key={item} className="text-[10px] font-mono text-white/60 flex items-center gap-2">
+                  <div className="w-1 h-1 rounded-full bg-emerald" /> {item}
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Cpu, ShieldCheck, PenTool, Image as ImageIcon, Network } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import neuralSwarm from '../assets/g5_neural_swarm.png';
 
 const AGENTS = [
   {
@@ -30,7 +31,7 @@ const AGENTS = [
   {
     id: "cc06",
     role: "Cognitive Core",
-    description: "The hyper-creative copywriter. Drafts semantic SEO articles, brand scripts, and conversion copy following the 'Ogilvy Commandments'.",
+    description: "The creative architect. Orchestrates semantic SEO frameworks and conversion-optimized copy using high-dimensional reasoning and the 'Ogilvy Codex'.",
     color: "#10b981",
     icon: PenTool,
     stats: { latency: "85ms", success: "96.2%" }
@@ -73,13 +74,16 @@ export const AgentShowcase = () => {
   const navigate = useNavigate();
   return (
     <div className="w-full max-w-7xl mx-auto">
-      <div className="text-center mb-20 px-6">
-        <h2 className="text-5xl md:text-7xl font-display font-black mb-6 uppercase italic tracking-tighter">
-          Meet The Swarm.
+      <div className="text-center mb-20 px-6 relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-20 pointer-events-none blur-sm">
+          <img src={neuralSwarm} alt="Neural Swarm Orbit" className="w-full h-full object-contain animate-pulse-slow" />
+        </div>
+        <h2 className="text-5xl md:text-7xl font-display font-black mb-6 uppercase italic tracking-tighter relative z-10">
+          The Neural Swarm.
         </h2>
-        <p className="text-white/40 max-w-2xl mx-auto text-xl font-light italic leading-relaxed">
-          Eight purpose-built AI agents, each an absolute specialist. <br className="hidden md:block"/> 
-          Together, they form an unstoppable creative matrix.
+        <p className="text-white/40 max-w-2xl mx-auto text-xl font-light italic leading-relaxed relative z-10">
+          Eight interconnected specialists. One collective intelligence. <br className="hidden md:block"/> 
+          Orchestrating the evolution of enterprise advertising.
         </p>
       </div>
 

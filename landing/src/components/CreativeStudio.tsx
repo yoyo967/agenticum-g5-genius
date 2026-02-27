@@ -118,7 +118,7 @@ export function CreativeStudio() {
 
   const handleSynthesizeVideo = async (topic: string) => {
     setIsProcessing(true);
-    setGenerationResult('Initiating Veo-X Cinematic Production...');
+    setGenerationResult('Initiating Cinematic Forge Production...');
     try {
       // Step 1: Forge Storyboard
       const forgeRes = await fetch(`${API_BASE_URL}/blog/cinematic/forge`, {
@@ -246,7 +246,7 @@ export function CreativeStudio() {
               <Type size={14} className="text-emerald" /> Generate Copy (cc06)
             </button>
             <button onClick={() => setGeneratingType('video')} className="btn btn-ghost gap-2 border-magenta/20 col-span-2">
-              <Film size={14} className="text-magenta" /> Create Cinematic Storyboard (Veo-X)
+              <Film size={14} className="text-magenta" /> Create Orchestrated Video (Cinematic Forge)
             </button>
           </div>
 
@@ -328,7 +328,7 @@ export function CreativeStudio() {
                   <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
                     <h3 className="font-display text-sm uppercase flex items-center gap-2">
                       {generatingType === 'image' ? <ImageIcon size={14} className="text-purple-400" /> : generatingType === 'video' ? <Film size={14} className="text-magenta" /> : <Type size={14} className="text-emerald" />}
-                      {generatingType === 'image' ? 'Imagen 3 Generator' : generatingType === 'video' ? 'Veo-X Cinematic Production' : 'cc06 Copywriter'}
+                      {generatingType === 'image' ? 'Imagen 3 Generator' : generatingType === 'video' ? 'Cinematic Forge Production' : 'cc06 Copywriter'}
                     </h3>
                     <button onClick={() => { setGeneratingType(null); setGenerationResult(null); }} className="text-white/30 hover:text-white">
                       <X size={16} />
@@ -348,7 +348,7 @@ export function CreativeStudio() {
                     </div>
                     <button onClick={() => generatingType === 'video' ? handleSynthesizeVideo(mediaPrompt) : handleGenerate()} disabled={isProcessing || !mediaPrompt.trim()}
                       className="btn btn-primary w-full" style={{ background: generatingType === 'image' ? 'var(--color-magenta)' : generatingType === 'video' ? 'var(--color-accent)' : 'var(--color-emerald)' }}>
-                      <Cpu size={14} /> {isProcessing ? 'Agent Active...' : `Generate with ${generatingType === 'image' ? 'da03' : generatingType === 'video' ? 'Veo-X' : 'cc06'}`}
+                      <Cpu size={14} /> {isProcessing ? 'Agent Active...' : `Generate with ${generatingType === 'image' ? 'da03' : generatingType === 'video' ? 'Cinematic Forge' : 'cc06'}`}
                     </button>
                     {generationResult && (
                       <div className="p-3 rounded-lg bg-black/30 border border-white/5 font-mono text-xs text-accent">

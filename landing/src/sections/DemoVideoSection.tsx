@@ -1,46 +1,62 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { Film, Play, Sparkles, Cpu, Mic2 } from 'lucide-react';
+import cinematicForge from '../assets/g5_cinematic_forge.png';
 
 export const DemoVideoSection: React.FC = () => (
-  <section id="demo" className="py-32 px-6 bg-[#030009]">
-    <div className="max-w-5xl mx-auto">
-      <div className="text-center mb-12">
-        <span className="text-xs uppercase tracking-widest text-cyan-400 font-mono">
-          Hackathon Submission · Demo Video
-        </span>
-        <h2 className="text-5xl font-black text-white mt-4">SEE IT LIVE.</h2>
-        <p className="text-slate-400 mt-4 font-mono text-sm max-w-xl mx-auto">
-          Under 4 minutes. Real software. No mockups. 
-          Voice directive in — EU-compliant advertorial out.
+  <section id="demo" className="py-40 px-6 bg-black/40 border-t border-white/5 relative overflow-hidden">
+    <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-magenta/5 blur-[120px] rounded-full pointer-events-none" />
+
+    <div className="max-w-[1200px] mx-auto">
+      <div className="text-center mb-24">
+        <motion.div initial={{ opacity: 0, y: -10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="badge badge-processing mb-6 mx-auto w-fit">
+          <Film size={10} /> Multimodal Creativity · The Video Factory
+        </motion.div>
+        <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="font-display font-bold uppercase tracking-tight leading-[0.9] text-white brightness-125 mb-6"
+          style={{ fontSize: 'clamp(40px, 6vw, 96px)' }}>
+          Cinematic<br />
+          <span className="text-magenta">Forge.</span>
+        </motion.h2>
+        <p className="font-mono text-white/40 text-lg max-w-2xl mx-auto leading-relaxed">
+          VE-01 Orchestrierung von Storyboards & Szenen-Planung. Photorealistische 5-Shot Sequenzen via Imagen 3.
+          Emotionale Sprachausgabe via Google Cloud TTS.
         </p>
       </div>
 
-        {/* Video Placeholder - Ultra Professional */}
-        <div className="relative rounded-2xl overflow-hidden border border-indigo-900/40 shadow-2xl shadow-purple-900/20 bg-black aspect-video flex items-center justify-center group cursor-pointer">
-          <div className="absolute inset-0 bg-linear-to-br from-indigo-900/20 to-transparent pointer-events-none" />
-          <div className="flex flex-col items-center gap-4">
-             <div className="w-20 h-20 rounded-full border border-accent/20 flex items-center justify-center group-hover:bg-accent/5 transition-colors">
-                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-                   <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-accent border-b-8 border-b-transparent ml-1" />
-                </div>
+      {/* Cinematic Forge Visual */}
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+        className="relative rounded-3xl overflow-hidden border border-white/10 shadow-3xl bg-black/60 mb-24 aspect-video">
+        <img src={cinematicForge} alt="Cinematic Forge Workflow" className="w-full h-full object-cover opacity-90" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent flex items-bottom justify-center p-12">
+           <div className="w-full flex justify-between items-end">
+             <div className="flex gap-4">
+               <div className="glass px-4 py-2 rounded border border-white/10 text-[10px] uppercase font-black tracking-widest text-white/60">Timeline Assembly</div>
+               <div className="glass px-4 py-2 rounded border border-white/10 text-[10px] uppercase font-black tracking-widest text-emerald">Data Optimized</div>
              </div>
-             <div className="text-center">
-                <div className="text-white font-display font-black text-2xl tracking-tighter uppercase italic">Agenticum G5 Official Trailer</div>
-                <div className="text-slate-500 text-xs font-mono uppercase tracking-widest mt-1">Awaiting Transmission Sync // Available Globally Q1 2026</div>
-             </div>
-          </div>
+             <motion.button 
+               whileHover={{ scale: 1.05 }}
+               className="w-16 h-16 rounded-full bg-magenta/20 border border-magenta/40 flex items-center justify-center text-magenta shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+               <Play size={24} fill="currentColor" />
+             </motion.button>
+           </div>
         </div>
+      </motion.div>
 
-      {/* Proof of GCP Deployment */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Technical Highlights */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
-          { icon: "☁️", label: "Cloud Run", val: "GenIUS-backend · europe-west1" },
-          { icon: "🗄️", label: "Firestore", val: "perfect_twin_logs · columna_intelligence" },
-          { icon: "🚀", label: "Firebase Hosting", val: "online-marketing-manager.web.app" },
+          { icon: <Cpu className="text-accent" />, label: "VE-01 Motion", desc: "Storyboard to Scene pipeline orchestration." },
+          { icon: <Sparkles className="text-magenta" />, label: "Imagen 3", desc: "Hyper-realistic pixel synthesis for every frame." },
+          { icon: <Mic2 className="text-amber-400" />, label: "Neural Audio", desc: "Emotional-synthetic TTS for cinematic narration." },
         ].map(item => (
-          <div key={item.label} className="bg-[#0a0118] border border-green-900/30 rounded-xl p-4 text-center">
-            <div className="text-2xl mb-2">{item.icon}</div>
-            <div className="text-green-400 font-bold text-sm">{item.label}</div>
-            <div className="text-slate-500 text-xs font-mono mt-1">{item.val}</div>
+          <div key={item.label} className="glass-card p-8 flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+              {item.icon}
+            </div>
+            <h3 className="text-white font-black uppercase text-sm mb-2">{item.label}</h3>
+            <p className="text-white/40 text-xs font-mono leading-relaxed">{item.desc}</p>
           </div>
         ))}
       </div>

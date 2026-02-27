@@ -1,24 +1,10 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  Brain, Globe, Shield, Cpu, Database, Cloud,
-  Code2, Layers, Zap, ArrowRight, Quote, User, Building2, Target
+  Brain, Zap, ArrowRight, Quote, User, Building2, Target
 } from 'lucide-react';
+import cloudStack from '../assets/g5_cloud_native_stack.png';
 
-const TECH_STACK = [
-  { name: 'Gemini 2.0 Flash', category: 'AI Core', color: '#00E5FF', icon: <Brain size={14} /> },
-  { name: 'Gemini Live API', category: 'Voice Interface', color: '#00E5FF', icon: <Zap size={14} /> },
-  { name: '@google/genai SDK', category: 'Required · v1.42.0', color: '#00E5FF', icon: <Code2 size={14} /> },
-  { name: 'Vertex AI', category: 'ML Platform', color: '#7B2FBE', icon: <Brain size={14} /> },
-  { name: 'Imagen 3', category: 'Visual Generation', color: '#FFD700', icon: <Layers size={14} /> },
-  { name: 'Cloud Run', category: 'europe-west1', color: '#4285F4', icon: <Cloud size={14} /> },
-  { name: 'Firestore', category: 'Audit Ledger', color: '#FF7043', icon: <Database size={14} /> },
-  { name: 'Google Search Grounding', category: 'Anti-Hallucination', color: '#34A853', icon: <Globe size={14} /> },
-  { name: 'EU AI Act Art. 50', category: 'Compliance Layer', color: '#00FF88', icon: <Shield size={14} /> },
-  { name: 'React 19 + Vite', category: 'Frontend', color: '#61DAFB', icon: <Code2 size={14} /> },
-  { name: 'Node.js + Express', category: 'Backend', color: '#68A063', icon: <Cpu size={14} /> },
-  { name: 'Python FastAPI', category: 'Engine Layer', color: '#3776AB', icon: <Code2 size={14} /> },
-];
 
 const PROBLEM_POINTS = [
   {
@@ -199,42 +185,44 @@ export function OriginSection() {
           </div>
         </motion.div>
 
-        {/* Tech Stack Grid */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          className="mb-16">
-          <div className="text-center mb-12">
-            <span className="label-active block mb-4">Built With</span>
+        {/* Tech Stack Visual & Codex */}
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="mb-24">
+          <div className="text-center mb-16">
+            <span className="label-active block mb-4">The Infrastructure Codex</span>
             <h2 className="font-display font-bold uppercase tracking-tight"
-              style={{ fontSize: 'clamp(28px, 4vw, 56px)' }}>
-              100% Google Cloud. <span className="text-accent">Zero Shortcuts.</span>
+              style={{ fontSize: 'clamp(32px, 4.5vw, 72px)' }}>
+              100% Google Cloud. <br /><span className="text-accent">Zero Wrappers.</span>
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {TECH_STACK.map((tech, i) => (
-              <motion.div
-                key={tech.name}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                whileHover={{ scale: 1.02 }}
-                className="glass-card p-4 flex items-start gap-3 cursor-default group"
-              >
-                <div className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mt-0.5"
-                  style={{ background: `${tech.color}15`, color: tech.color }}>
-                  {tech.icon}
+          <div className="flex flex-col lg:flex-row gap-16 items-center">
+            <div className="lg:w-1/2">
+              <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-3xl bg-obsidian">
+                <img src={cloudStack} alt="Pure Google Cloud Native Stack" className="w-full h-auto opacity-90" />
+                <div className="absolute inset-0 bg-linear-to-t from-midnight/60 to-transparent" />
+              </div>
+            </div>
+            
+            <div className="lg:w-1/2 space-y-8">
+              <div className="glass-card p-8 border-emerald/20 card-glow-emerald">
+                <h3 className="font-display text-2xl font-black uppercase mb-4 text-emerald">The Hackathon Purity</h3>
+                <p className="font-mono text-sm text-white/50 leading-relaxed mb-6">
+                  Agenticum G5 is a testament to technical sovereignty. No high-level wrappers like LangChain or Flowise. 
+                  Every agentic loop, every parallel swarm trigger, and every WebSocket event is 100% original TypeScript/Python code.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="text-accent font-black text-xs mb-1">INTELLIGENCE</div>
+                    <div className="text-[10px] text-white/30 uppercase">Gemini 2.0 & Imagen 3</div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="text-magenta font-black text-xs mb-1">CODE BASE</div>
+                    <div className="text-[10px] text-white/30 uppercase">100% Original Node.js</div>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-mono text-[10px] font-black uppercase tracking-tight text-white/80">
-                    {tech.name}
-                  </p>
-                  <p className="font-mono text-[8px] text-white/25 uppercase tracking-widest mt-0.5">
-                    {tech.category}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+              </div>
+            </div>
           </div>
         </motion.div>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Zap, BrainCircuit, Layers, Image as ImageIcon, CheckCircle2, ArrowRight, Play, RotateCcw, Search } from 'lucide-react';
+import { Mic, Zap, BrainCircuit, Layers, Image as ImageIcon, CheckCircle2, ArrowRight, Play, RotateCcw, Search, AudioLines } from 'lucide-react';
+import geminiLiveFlow from '../assets/g5_gemini_live_flow.png';
 
 interface FlowStep {
   id: number;
@@ -21,7 +22,7 @@ const STEPS: FlowStep[] = [
     sublabel: 'Gemini Live API',
     description: '"GenIUS, research the enterprise market and forge a cinematic campaign."',
     color: '#FFD700',
-    tech: 'WebRTC · PCM 16kHz · Base64 Stream',
+    tech: 'Bidi Protocol · PCM 16kHz · Real-Time',
     duration: 1800,
   },
   {
@@ -29,9 +30,9 @@ const STEPS: FlowStep[] = [
     icon: <Zap size={22} />,
     label: 'INTENT DETECTION',
     sublabel: 'Function Calling',
-    description: 'GenIUS (SO-00) recognizes the command → Triggers the recursive SwarmProtocol.',
+    description: 'GenIUS recognizes the command → Triggers the recursive SwarmProtocol.',
     color: '#00E5FF',
-    tech: 'Gemini 2.0 Flash · BidiProtocol · IntentPulse',
+    tech: 'Gemini 2.0 Flash · Multimodal IntentPulse',
     duration: 1400,
   },
   {
@@ -41,15 +42,15 @@ const STEPS: FlowStep[] = [
     sublabel: 'Nexus Parallelism',
     description: 'Master Agent decomposes the vision into parallel sub-tasks for all specialized agents.',
     color: '#00E5FF',
-    tech: 'Recursive Swarm Refinement · Boydian OODA-Loop',
+    tech: 'Recursive Swarm Refinement · OODA-Loop',
     duration: 2000,
   },
   {
     id: 3,
     icon: <Search size={22} />,
     label: 'DEEP RESEARCH',
-    sublabel: 'Prometheus prom07',
-    description: 'Prometheus scavenges the global information field for zero-day intelligence and trends.',
+    sublabel: 'Prometheus Engine',
+    description: 'Prometheus scavenges the global information field for zero-day intelligence.',
     color: '#8b5cf6',
     tech: 'Vertex AI Grounding · 5-Layer Brain',
     duration: 2200,
@@ -58,8 +59,8 @@ const STEPS: FlowStep[] = [
     id: 4,
     icon: <Layers size={22} />,
     label: 'SWARM EXECUTION',
-    sublabel: 'SP01 · CC06 · DA03 · VE01',
-    description: 'SP01 designs the strategy. CC06 writes copy. DA03 generates images. VE01 synthesizes motion — simultaneously.',
+    sublabel: 'Creative Swarm',
+    description: 'SP01 designs strategy. CC06 writes copy. DA03 generates images. VE01 synthesizes motion.',
     color: '#FF007A',
     tech: 'Imagen 3 · Cinematic Forge · SwarmBus',
     duration: 2600,
@@ -69,7 +70,7 @@ const STEPS: FlowStep[] = [
     icon: <CheckCircle2 size={22} />,
     label: 'SENATE TRIBUNAL',
     sublabel: 'RA01 Security',
-    description: 'The Adversarial Auditor ensures 100% GDPR, EU AI Act, and Brand Safety compliance.',
+    description: 'The Adversarial Auditor ensures 100% GDPR and EU AI Act compliance.',
     color: '#00FF88',
     tech: 'Algorithmic Veto · Perfect Twin Ledger',
     duration: 1600,
@@ -124,28 +125,34 @@ export function VoiceFlowSection() {
   const activeStepData = activeStep >= 0 ? STEPS[activeStep] : null;
 
   return (
-    <section className="py-40 px-6 border-t border-white/5 overflow-hidden">
+    <section className="py-40 px-6 border-t border-white/5 overflow-hidden bg-black/20">
       <div className="max-w-[1200px] mx-auto">
 
         {/* Header */}
         <div className="text-center mb-24">
           <motion.div initial={{ opacity: 0, y: -10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="badge badge-processing mb-6 mx-auto w-fit">
-            <Zap size={10} /> Break the Text-Box — Live Demo
+            <AudioLines size={10} /> Voice-First Experience · Gemini Live API
           </motion.div>
           <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="font-display font-bold uppercase tracking-tight leading-[0.9] mb-6"
             style={{ fontSize: 'clamp(40px, 6vw, 96px)' }}>
-            Zero Textbox.<br />
-            <span className="text-accent">One Voice.</span><br />
-            One Swarm.
+            Break the<br />
+            <span className="text-accent">Text-Box.</span>
           </motion.h2>
           <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
             className="font-mono text-white/40 text-lg max-w-2xl mx-auto leading-relaxed">
-            Give a voice command. Gemini 2.0 identifies your intent and triggers 8 specialized
-            agents in milliseconds — thinking, writing, visualizing, and auditing in parallel.
+            Glitch-freie Audioverarbeitung auf Background Threads via AudioWorklet. 
+            Bidi Protocol ermöglicht Streaming Audio In/Out ohne Turn-taking Latency.
           </motion.p>
         </div>
+
+        {/* Voice API Visual */}
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+          className="relative rounded-3xl overflow-hidden border border-white/10 shadow-3xl bg-black/60 mb-24 aspect-21/9">
+          <img src={geminiLiveFlow} alt="Gemini Live API Voice Flow Visual" className="w-full h-full object-cover opacity-90" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
+        </motion.div>
 
         {/* Flow Diagram */}
         <div className="relative">
@@ -162,7 +169,7 @@ export function VoiceFlowSection() {
           <div className="grid grid-cols-2 lg:grid-cols-7 gap-4 lg:gap-3 mb-16">
             {STEPS.map((step, i) => {
               const isActive = activeStep === i;
-              const isDone = completedSteps.has(i);
+              const isDone = completedSteps.size > i;
 
               return (
                 <motion.div
@@ -256,10 +263,10 @@ export function VoiceFlowSection() {
                 key="idle"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="glass-card p-8 mb-12 text-center border-dashed"
+                className="glass-card p-12 mb-12 text-center border-dashed"
               >
-                <p className="font-mono text-white/20 text-sm uppercase tracking-widest">
-                  Press "Run Demo" to simulate the complete Voice→Swarm→Output Flow
+                <p className="font-mono text-white/20 text-sm uppercase tracking-widest italic">
+                  Run Demo to activate the Pulse of Intelligence simulation
                 </p>
               </motion.div>
             )}
@@ -273,10 +280,10 @@ export function VoiceFlowSection() {
               >
                 <CheckCircle2 size={32} className="text-emerald mx-auto mb-3" />
                 <p className="font-display text-2xl font-bold uppercase tracking-tight text-emerald mb-2">
-                  Swarm Complete
+                  System Synchronized
                 </p>
                 <p className="font-mono text-white/40 text-sm">
-                  From voice to finished marketing assets in under 60 seconds. End-to-end.
+                  Full Nexus orchestration complete. 100% Google Cloud Native.
                 </p>
               </motion.div>
             )}
@@ -284,14 +291,14 @@ export function VoiceFlowSection() {
 
           {/* Control Buttons */}
           <div className="flex items-center justify-center gap-6">
-            {!isRunning && completedSteps.size === 0 ? (
+            {!isRunning && (completedSteps.size === 0 || completedSteps.size === STEPS.length) ? (
               <motion.button
                 onClick={runDemo}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="btn-primary flex items-center gap-3 text-sm px-8 py-4"
               >
-                <Play size={16} /> Run Demo — Voice Flow Simulation
+                <Play size={16} /> {completedSteps.size === 0 ? 'Run Demo' : 'Restart Simulation'}
               </motion.button>
             ) : (
               <motion.button
@@ -305,7 +312,7 @@ export function VoiceFlowSection() {
             )}
             <div className="flex items-center gap-2 text-white/20 font-mono text-[10px] uppercase tracking-widest">
               <ArrowRight size={12} />
-              Or: Enter OS Portal and speak live with SN00
+              Open Voice Console in OS for Live Interaction
             </div>
           </div>
         </div>

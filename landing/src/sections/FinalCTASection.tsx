@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mic2, Terminal, ArrowRight, Sparkles } from 'lucide-react';
+import { Mic2, Terminal, ArrowRight, Sparkles, Orbit } from 'lucide-react';
+import infinityEvolution from '../assets/g5_infinity_evolution_cta_en_v2_1772174716260.png';
 
 export const FinalCTASection: React.FC = () => {
   const navigate = useNavigate();
@@ -56,6 +57,19 @@ export const FinalCTASection: React.FC = () => {
           >
             <Terminal size={20} className="group-hover:text-accent transition-colors" /> Enter OS Portal
           </button>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="relative max-w-4xl mx-auto rounded-3xl overflow-hidden border border-white/10 shadow-3xl bg-black/60 mt-32 aspect-21/9 group">
+          <img src={infinityEvolution} alt="Infinity Evolution Visual" className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
+          <div className="absolute inset-0 bg-linear-to-t from-black via-black/20 to-transparent" />
+          <div className="absolute bottom-12 left-0 w-full flex flex-col items-center">
+             <div className="flex items-center gap-3 mb-4">
+                <Orbit className="text-accent animate-spin-slow" size={24} />
+                <span className="font-mono text-xs uppercase font-black tracking-[0.4em] text-white/60">Recursive Intelligence Engine</span>
+             </div>
+             <p className="font-mono text-[10px] text-white/20 uppercase tracking-[0.2em]">online-marketing-manager.web.app</p>
+          </div>
         </motion.div>
 
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.8 }}

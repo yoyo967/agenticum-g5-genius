@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Radar, Target, Search, Activity } from 'lucide-react';
+import prometheusEngine from '../assets/g5_tactical_radar_strike_en_v2_1772174690101.png';
 
 const MOCK_INTEL = [
   { competitor: "AnalyticaInvestor", url: "analyticainvestor.com/robo-billions", status: "DECOMPILED", threat: 74, h2: ["What are humanoid robots?", "Top 5 Robotics Stocks 2026", "How to invest?"] },
@@ -10,93 +13,131 @@ export const ColumnaRadarSection: React.FC = () => {
   const [active, setActive] = useState(0);
 
   return (
-    <section id="columna-demo" className="py-32 px-6 bg-midnight-900">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <span className="text-xs uppercase tracking-widest text-amber-400 font-mono">Columna · Zero-Day Intelligence</span>
-          <h2 className="text-5xl font-black text-white mt-4">THE RADAR.</h2>
-          <p className="text-slate-400 mt-4 font-mono text-sm max-w-2xl mx-auto">
-            SP-01 monitors competitor sitemaps 24/7. The moment they publish,
-            our Counter-Strike deploys a superior cluster. We don't react to the market.
-            We make competitors react to us.
+    <section id="columna-demo" className="py-40 px-6 bg-midnight/50 border-t border-white/5 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="max-w-[1200px] mx-auto relative z-10">
+        <div className="text-center mb-24">
+          <motion.div initial={{ opacity: 0, y: -10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="badge badge-processing mb-6 mx-auto w-fit">
+            <Search size={10} /> Project Prometheus · Omniscience Engine
+          </motion.div>
+          <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="font-display font-bold uppercase tracking-tight leading-[0.9] text-white brightness-125 mb-6"
+            style={{ fontSize: 'clamp(40px, 6vw, 96px)' }}>
+            Sentient Systems Don't Hallucinate.<br />
+            <span className="text-accent">They Research.</span>
+          </motion.h2>
+          <p className="font-mono text-white/40 text-lg max-w-2xl mx-auto leading-relaxed">
+            BA-07 scans competitor sitemaps & tech stacks in real-time. 
+            Google Search Grounding injects facts into the Nexus to identify disruptive 'White Space'.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Technical Workflow Visual */}
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+          className="relative rounded-3xl overflow-hidden border border-white/10 shadow-3xl bg-black/60 mb-24 aspect-video md:aspect-21/9">
+          <img src={prometheusEngine} alt="Prometheus Omniscience Engine Workflow" className="w-full h-full object-cover opacity-90" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
+          
+          {/* Overlay Labels for Mobile/Desktop differentiation if needed, but the image is descriptive */}
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left: Intel Feed */}
-          <div className="bg-[#0a0118] border border-amber-900/30 rounded-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-amber-900/20 flex items-center gap-3">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-              <span className="text-xs font-mono text-amber-400 uppercase tracking-widest">Live Intel Feed</span>
+          <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+            className="glass-card overflow-hidden border-orange-500/20">
+            <div className="px-6 py-4 border-b border-white/5 bg-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Radar size={18} className="text-orange-500 animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Live Intelligence Feed</span>
+              </div>
+              <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">BA-07 Scanning...</span>
             </div>
             <div className="p-4 space-y-3">
               {MOCK_INTEL.map((intel, i) => (
                 <div
                   key={i}
                   onClick={() => setActive(i)}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                  className={`p-5 rounded-xl border transition-all duration-300 cursor-pointer ${
                     active === i
-                      ? 'border-amber-500/60 bg-amber-900/10'
-                      : 'border-slate-800/50 bg-black/20 hover:border-slate-700'
+                      ? 'border-orange-500/40 bg-orange-500/10'
+                      : 'border-white/5 bg-black/40 hover:bg-black/60 hover:border-white/10'
                   }`}
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-white font-bold text-sm">{intel.competitor}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded font-mono border ${
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-white font-bold text-sm tracking-tight">{intel.competitor}</span>
+                    <span className={`text-[9px] px-2 py-0.5 rounded font-black tracking-widest border uppercase ${
                       intel.status === 'NEW'
-                        ? 'text-rose-300 border-rose-900/50 bg-rose-900/20'
-                        : 'text-emerald-300 border-emerald-900/50 bg-emerald-900/20'
+                        ? 'text-rose-400 border-rose-500/30 bg-rose-500/5'
+                        : 'text-emerald border-emerald/30 bg-emerald/5'
                     }`}>
                       {intel.status}
                     </span>
                   </div>
-                  <div className="text-xs text-slate-400 font-mono truncate">{intel.url}</div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-[10px] text-slate-500">ThreatScore:</span>
-                    <div className="flex-1 bg-slate-800 rounded-full h-1.5">
-                      <div
-                        className={`h-1.5 rounded-full ${intel.threat > 75 ? 'bg-rose-500' : 'bg-amber-500'}`}
-                        style={{ width: `${intel.threat}%` }}
+                  <div className="text-[10px] text-white/30 font-mono truncate mb-4">{intel.url}</div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[9px] uppercase font-black tracking-widest text-white/20">Threat:</span>
+                    <div className="flex-1 bg-white/5 rounded-full h-1 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${intel.threat}%` }}
+                        className={`h-full rounded-full ${intel.threat > 75 ? 'bg-rose-500' : 'bg-orange-500'}`}
                       />
                     </div>
-                    <span className={`text-[10px] font-mono ${intel.threat > 75 ? 'text-rose-400' : 'text-amber-400'}`}>
+                    <span className={`font-mono text-[10px] ${intel.threat > 75 ? 'text-rose-400' : 'text-orange-400'}`}>
                       {intel.threat}/100
                     </span>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-          {/* Right: Skeleton Viewer */}
-          <div className="bg-[#0a0118] border border-indigo-900/30 rounded-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-indigo-900/20">
-              <span className="text-xs font-mono text-indigo-400 uppercase tracking-widest">
-                Decompiled H2 Skeleton — {MOCK_INTEL[active].competitor}
+          {/* Right: Decompiler Viewer */}
+          <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+            className="glass-card overflow-hidden border-accent/20">
+            <div className="px-6 py-4 border-b border-white/5 bg-white/5">
+              <span className="text-[10px] font-black uppercase tracking-widest text-accent">
+                Nexus Synthesis · {MOCK_INTEL[active].competitor}
               </span>
             </div>
-            <div className="p-5">
+            <div className="p-6">
               {MOCK_INTEL[active].h2.length > 0 ? (
-                <>
-                  <div className="space-y-2 mb-6 text-white/70">
-                    {MOCK_INTEL[active].h2.map((h, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 bg-black/30 rounded-lg border border-slate-800/50">
-                        <span className="text-slate-600 font-mono text-xs">H2</span>
-                        <span className="text-slate-300 text-sm">{h}</span>
-                      </div>
-                    ))}
+                <div className="space-y-4">
+                  <div className="mb-6">
+                    <p className="text-[10px] text-white/30 uppercase font-black tracking-widest mb-4">Decompiled Structure</p>
+                    <div className="space-y-3">
+                      {MOCK_INTEL[active].h2.map((h, i) => (
+                        <motion.div 
+                          key={i}
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="flex items-center gap-4 p-4 bg-black/40 rounded-xl border border-white/5 group hover:border-accent/30 transition-all"
+                        >
+                          <span className="text-white/20 font-mono text-[10px] border border-white/10 px-2 py-0.5 rounded">H2</span>
+                          <span className="text-white/60 text-sm italic">"{h}"</span>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
-                  <button className="w-full bg-cyan-600 hover:bg-cyan-500 text-black font-bold py-3 px-4 rounded-xl text-sm transition-all">
-                    COUNTER-STRIKE: Generate Superior Cluster →
+                  <button className="w-full py-4 rounded-xl bg-accent text-black font-black uppercase tracking-widest text-xs hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 mt-8 shadow-[0_10px_30px_rgba(0,229,255,0.3)]">
+                    <Target size={16} /> Identify White Space & Strategize
                   </button>
-                </>
+                </div>
               ) : (
-                <div className="text-amber-400 text-sm font-mono animate-pulse p-4 text-center">
-                  ⚡ NEW THREAT DETECTED — Decompiler running...
+                <div className="p-12 text-center">
+                  <Activity size={32} className="text-orange-500 animate-pulse mx-auto mb-4" />
+                  <p className="text-orange-400 text-[10px] font-black uppercase tracking-widest animate-pulse">
+                    ⚡ Neural Scanning in Progress...
+                  </p>
+                  <p className="text-white/20 text-xs font-mono mt-2">Prometheus Engine is decompiling sitemaps & identifying strategic campaign DNA.</p>
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

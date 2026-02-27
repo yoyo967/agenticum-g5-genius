@@ -64,7 +64,27 @@ export class SettingsService {
       logger.error('Failed to read local settings', err as Error);
     }
 
-    return {};
+    // 3. Last fallback: environment variables
+    if (!this.currentSettings.projectId || !this.currentSettings.geminiKey) {
+      this.currentSettings = {
+        ...this.currentSettings,
+        projectId: this.currentSettings.projectId || process.env.GOOGLE_CLOUD_PROJECT,
+        geminiKey: this.currentSettings.geminiKey || process.env.GEMINI_API_KEY,
+        gcsBucket: this.currentSettings.gcsBucket || process.env.GCS_BUCKET || `gs://${process.env.GOOGLE_CLOUD_PROJECT}-assets`,
+        agentModel: this.currentSettings.agentModel || 'gemini-1.5-pro',
+        temperature: this.currentSettings.temperature || 0.7,
+        topK: this.currentSettings.topK || 40,
+        tokenLimit: this.currentSettings.tokenLimit || 2048,
+        safetyThreshold: this.currentSettings.safetyThreshold || 'BLOCK_ONLY_HIGH',
+      };
+      
+      // If we got a project ID from env, re-init firestore
+      if (this.currentSettings.projectId) {
+        reinitializeFirestore(this.currentSettings.projectId);
+      }
+    }
+
+    return this.currentSettings;
   }
 
   async saveSettings(settings: Partial<SystemSettings>): Promise<void> {
