@@ -43,5 +43,3 @@ jobs:
             --project online-marketing-manager \
             "node tests/test.rules.js"
         working-directory: backend
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
