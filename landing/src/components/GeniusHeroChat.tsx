@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Send, Bot, Sparkles, Zap, Command } from 'lucide-react';
+import { Mic, Send, Bot, Zap, Command } from 'lucide-react';
 
 export function GenIUSHeroChat() {
   const [input, setInput] = useState('');
@@ -36,14 +36,20 @@ export function GenIUSHeroChat() {
 
   return (
     <div className="w-full max-w-2xl mx-auto mt-12 relative z-30">
-      {/* The Chat Container */}
+      {/* Terminal Bracketing & Container */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass p-1 rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-obsidian/40 backdrop-blur-2xl relative overflow-hidden group"
+        className="ultra-lucid p-1 border-accent/20 relative overflow-hidden group shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_80px_rgba(0,229,255,0.05)]"
       >
+        {/* Terminal Bracketing Corners */}
+        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent/40 rounded-tl-xl m-1 z-20 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent/40 rounded-tr-xl m-1 z-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-accent/40 rounded-bl-xl m-1 z-20 pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent/40 rounded-br-xl m-1 z-20 pointer-events-none" />
+
         {/* Intelligence Pulse Background */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <motion.div 
             animate={{ 
               opacity: [0.05, 0.15, 0.05],
@@ -85,7 +91,7 @@ export function GenIUSHeroChat() {
                 <div className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm font-mono leading-relaxed ${
                   msg.role === 'genius'
                     ? 'bg-accent/5 border border-white/5 text-white/80'
-                    : 'bg-white/5 text-white/60 italic'
+                    : 'bg-white/10 text-white italic'
                 }`}>
                   {msg.text}
                 </div>
@@ -109,37 +115,38 @@ export function GenIUSHeroChat() {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-white/2 border-t border-white/5 relative z-10">
-          <div className="flex items-center gap-2 bg-black/40 rounded-2xl border border-white/10 p-2 focus-within:border-accent/40 transition-all">
-            <div className="p-2 text-white/20">
-              <Mic size={18} className="hover:text-accent cursor-pointer transition-colors" />
+        <div className="p-4 bg-midnight/60 border-t border-accent/10 relative z-10">
+          <div className="flex items-center gap-2 bg-obsidian border border-accent/20 p-2 focus-within:border-accent focus-within:shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all">
+            <div className="p-2 text-accent">
+              <span className="font-mono text-xs font-bold mr-2 text-accent/50">$</span>
+              <Mic size={18} className="hover:text-white cursor-pointer transition-colors inline-block" />
             </div>
             <input 
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Speak to GenIUS..."
-              className="flex-1 bg-transparent border-none outline-none font-mono text-sm text-white placeholder:text-white/20 py-2"
+              placeholder="Enter directive..."
+              className="flex-1 bg-transparent border-none outline-none font-mono text-sm text-accent placeholder:text-accent/30 py-2 caret-accent"
             />
             <button 
               onClick={handleSend}
-              className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center text-accent hover:bg-accent hover:text-obsidian transition-all group"
+              className="w-10 h-10 bg-accent/10 flex items-center justify-center text-accent hover:bg-accent hover:text-midnight transition-all group border border-accent/20"
             >
-              <Send size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <Send size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </button>
           </div>
           <div className="mt-3 flex items-center justify-between px-2">
             <div className="flex gap-4">
-              <span className="flex items-center gap-1.5 text-[9px] font-mono text-white/20 uppercase tracking-widest">
-                <Bot size={10} /> GenIUS Active
+              <span className="flex items-center gap-1.5 text-[9px] font-mono text-accent/60 uppercase tracking-widest bg-accent/5 px-2 py-0.5 rounded border border-accent/10">
+                <Bot size={10} /> GENIUS ACTIVE
               </span>
-              <span className="flex items-center gap-1.5 text-[9px] font-mono text-white/20 uppercase tracking-widest">
-                <Sparkles size={10} /> Zero Latency
+              <span className="flex items-center gap-1.5 text-[9px] font-mono text-emerald/60 uppercase tracking-widest bg-emerald/5 px-2 py-0.5 rounded border border-emerald/10">
+                <Zap size={10} /> ZERO LATENCY
               </span>
             </div>
-            <span className="text-[8px] font-mono text-white/10 uppercase tracking-[0.2em]">
-              Agenticum G5 · Master Intelligence
+            <span className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em]">
+              Agenticum G5 · NEXUS TERMINAL
             </span>
           </div>
         </div>

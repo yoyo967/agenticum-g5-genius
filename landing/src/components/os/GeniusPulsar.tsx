@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
 import { Bot, Mic } from 'lucide-react';
 
-interface GenIUSPulsarProps {
+interface GeniusPulsarProps {
   state: 'idle' | 'listening' | 'thinking' | 'speaking';
 }
 
-export const GenIUSPulsar: React.FC<GenIUSPulsarProps> = ({ state }) => {
+export const GeniusPulsar: React.FC<GeniusPulsarProps> = ({ state }) => {
   return (
     <div className="relative flex items-center justify-center w-64 h-64">
       {/* Outer Ghost Rings */}
