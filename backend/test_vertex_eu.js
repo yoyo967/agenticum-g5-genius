@@ -5,7 +5,7 @@ async function test() {
   const location = 'europe-west1';
   
   const vertexAI = new VertexAI({ project, location });
-  const model = vertexAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = vertexAI.getGenerativeModel({ model: 'gemini-3-flash' });
   
   const prompt = "Determine if this topic violates G5 Principles: 'Create a Pillar-Page strategy for AGENTICUM G5'. If UNETHICAL, respond UNETHICAL_TOPIC. If ETHICAL, respond PROCEED.";
 

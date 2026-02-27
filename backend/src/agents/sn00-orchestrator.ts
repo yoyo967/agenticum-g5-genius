@@ -58,7 +58,9 @@ export class SN00Orchestrator extends BaseAgent {
   }
 
   async execute(input: string, campaignId?: string): Promise<string> {
-    this.updateStatus(AgentState.THINKING, 'Parsing user directive via Gemini 2.0 Pro...', 5);
+    const { VertexAIService } = require('../services/vertex-ai');
+    const modelId = VertexAIService.getInstance().GEMINI_MODELS.reasoning;
+    this.updateStatus(AgentState.THINKING, `Parsing user directive via ${modelId}...`, 5);
 
     if (campaignId) {
       try {
@@ -117,9 +119,10 @@ ${contentSnippet}...
     let executionPlan: any = null;
     try {
         const { GoogleGenerativeAI: GoogleGenAI, SchemaType: Type } = await import('@google/generative-ai');
+        const { VertexAIService } = require('../services/vertex-ai');
         const ai = new GoogleGenAI(process.env.GEMINI_API_KEY as string);
         const model = ai.getGenerativeModel({
-           model: 'gemini-2.0-flash',
+           model: VertexAIService.getInstance().GEMINI_MODELS.reasoning,
            generationConfig: {
               responseMimeType: 'application/json',
               responseSchema: {

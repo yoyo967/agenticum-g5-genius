@@ -18,17 +18,32 @@ export class VertexAIService {
     const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
     
     this.vertexAI = new VertexAI({ project, location });
+    
+    // Gemini 3.1 Pro Migration (Phase 26)
+    // Engine Core mapped to fallback (2.0-flash) until 3.x is GA/Provisioned
     this.model = this.vertexAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.0-flash', // Default model
     });
   }
 
+  // Phase 26: Global Model Definition Block
+  // Note: 3.1 Pro / 3 Flash returned 404s during initial verification. 
+  // Sticking to 2.0-flash for stability until Preview is fully provisioned.
+  public readonly GEMINI_MODELS = {
+    // Standard: schnell + günstig (Target: gemini-3-flash)
+    default: 'gemini-2.0-flash',
+    // Reasoning: SN-00 Nexus Prime, SP-01 Strategic Cortex (Target: gemini-3-1-pro)
+    reasoning: 'gemini-2.0-flash',
+    // Voice: NICHT ÄNDERN — 2.0 Bidi bleibt bis 3 Live GA
+    voice: 'gemini-2.0-flash-live-001',
+  };
+
   /**
-   * Standardizes on Gemini 2.0 Flash as the primary engine for high-speed
+   * Standardizes on the default engine for high-speed
    * multimodality and reasoning efficiency.
    */
-  private getStandardModel(): string {
-    return 'gemini-2.0-flash';
+  public getStandardModel(): string {
+    return this.GEMINI_MODELS.default;
   }
 
   public static getInstance(): VertexAIService {
@@ -91,7 +106,7 @@ export class VertexAIService {
       const text = response.candidates?.[0].content.parts[0].text || '';
       
       const { budgetGuardrail } = require('./budget-guardrail');
-      budgetGuardrail.trackUsage('gemini-2.0-flash-vertex', text.length / 4);
+      budgetGuardrail.trackUsage('gemini-unified-vertex', text.length / 4);
       
       return text;
 
@@ -150,7 +165,7 @@ export class VertexAIService {
         const text = response.candidates?.[0].content.parts[0].text || '';
 
         const { budgetGuardrail } = require('./budget-guardrail');
-        budgetGuardrail.trackUsage('gemini-2.0-flash-grounding-vertex', text.length / 4);
+        budgetGuardrail.trackUsage('gemini-unified-grounding-vertex', text.length / 4);
 
         return text;
       // }
@@ -270,7 +285,7 @@ export class VertexAIService {
     try {
       const ai = new GoogleGenAI(apiKey);
       const model = ai.getGenerativeModel({ 
-        model: 'gemini-2.0-flash',
+        model: this.GEMINI_MODELS.default,
         generationConfig: {
           responseMimeType: 'application/json'
         }
