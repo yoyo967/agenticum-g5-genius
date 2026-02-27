@@ -33,6 +33,9 @@ jobs:
         run: npm ci
         working-directory: backend
 
+      - name: Copy rules into backend for emulator
+        run: cp firestore.rules backend/firestore.rules
+
       - name: Start Firebase Emulator & Run Tests
         run: |
           npx firebase emulators:exec \
