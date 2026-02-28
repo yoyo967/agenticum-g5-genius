@@ -17,7 +17,7 @@ export const SwarmIntelligence: React.FC = () => {
     { id: '2', label: 'Market Sentiment', agentId: 'SP-01', status: 'active', x: 60, y: 20 },
     { id: '3', label: 'Narrative Synthesis', agentId: 'CC-06', status: 'pending', x: 50, y: 70 },
     { id: '4', label: 'Visual Archetype', agentId: 'DA-03', status: 'active', x: 80, y: 50 },
-    { id: '5', label: 'Compliance Audit', agentId: 'RA-01', status: 'synced', x: 20, y: 80 },
+    { id: '5', label: 'Senate & Intel Core', agentId: 'RA-01', status: 'synced', x: 20, y: 80 },
   ]);
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export const SwarmIntelligence: React.FC = () => {
                <Log agent="SP-01" msg="Analyzing market saturation for Cyber-Samurai niche." />
                <Log agent="CC-06" msg="Synthesizing emotional dialogue for Scene 04." />
                <Log agent="DA-03" msg="Drafting visual prompts for environment elements." />
-               <Log agent="RA-01" msg="Auditing storyboard for brand compliance." />
+               <Log agent="RA-01" msg="Auditing assets and scanning market intelligence..." />
                <Log agent="SYSTEM" msg="Neural substrate synchronized. Ghost active." />
             </>
           ) : (

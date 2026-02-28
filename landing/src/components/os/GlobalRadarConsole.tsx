@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow, Polyline } from '@react-google-maps/api';
 import { motion } from 'framer-motion';
 import { Radar, Shield, Activity, Globe, Terminal, Layers, RefreshCw } from 'lucide-react';
-
+import { useCounterStrike } from '../../hooks/useCounterStrike';
 const MAP_CONTAINER_STYLE = {
   width: '100%',
   height: '100%',
@@ -47,11 +47,10 @@ interface TacticalEntity {
   threatLevel?: number;
 }
 
-const MOCK_ENTITIES: TacticalEntity[] = [
+const BASE_ENTITIES: TacticalEntity[] = [
   { id: 'SN00', type: 'agent', name: 'NEXUS PRIME', role: 'Orchestrator', status: 'ONLINE', lat: 48.137, lng: 11.575 },
   { id: 'RA01', type: 'agent', name: 'SECURITY SENATE', role: 'Auditor', status: 'VERIFYING', lat: 48.140, lng: 11.585 },
   { id: 'BA07', type: 'agent', name: 'BROWSER', role: 'Researcher', status: 'SCANNING', lat: 48.132, lng: 11.590 },
-  { id: 'COMP_A', type: 'competitor', name: 'Analytica Global', status: 'INFILTRATED', lat: 48.145, lng: 11.565, threatLevel: 74 },
   { id: 'GCP_01', type: 'infrastructure', name: 'GCP-EUROPE-WEST1', status: 'HEALTHY', lat: 48.125, lng: 11.560 },
 ];
 
@@ -65,6 +64,41 @@ export function GlobalRadarConsole() {
   const [selectedEntity, setSelectedEntity] = useState<TacticalEntity | null>(null);
   const [activeStrikes, setActiveStrikes] = useState<string[]>([]);
   const [logs, setLogs] = useState<string[]>([]);
+
+  const { data, loading, analyzeTopic } = useCounterStrike();
+  const [topic, setTopic] = useState("");
+
+  const addLog = useCallback((msg: string) => {
+    setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 10));
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if(topic.trim()) {
+      addLog(`[SYSTEM] SCANNING NEURAL FABRIC FOR TOPIC: ${topic.toUpperCase()}...`);
+      analyzeTopic(topic);
+    }
+  };
+
+  useEffect(() => {
+    if (data?.overlap?.length) {
+      addLog(`[SYSTEM] DETECTED ${data.overlap.length} COMPETITOR OVERLAPS IN SECTOR.`);
+    }
+  }, [data, addLog]);
+
+  const mapEntities = useMemo(() => {
+    const dynamicCompetitors = data?.overlap?.map((comp, idx) => ({
+      id: `COMP_${idx}`,
+      type: 'competitor' as const,
+      name: comp.competitor,
+      role: 'Infiltrated Topic',
+      status: 'DETECTED',
+      lat: CENTER.lat + (Math.sin(idx * 2) * 0.02),
+      lng: CENTER.lng + (Math.cos(idx * 2) * 0.02),
+      threatLevel: 80 + ((idx * 7) % 15)
+    })) || [];
+    return [...BASE_ENTITIES, ...dynamicCompetitors];
+  }, [data]);
 
   const onLoad = useCallback((map: google.maps.Map) => {
     setMap(map);
@@ -84,13 +118,9 @@ export function GlobalRadarConsole() {
     }, 4000);
   };
 
-  const addLog = (msg: string) => {
-    setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 10));
-  };
-
   useEffect(() => {
     addLog("Tactical Command Center Initialized.");
-  }, []);
+  }, [addLog]);
 
   return (
     <div className="h-full flex flex-col gap-4 overflow-hidden p-2">
@@ -105,6 +135,26 @@ export function GlobalRadarConsole() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+           <form onSubmit={handleSearch} className="flex gap-2 mr-4">
+             <div className="relative">
+               <input 
+                 type="text" 
+                 value={topic}
+                 onChange={e => setTopic(e.target.value)}
+                 placeholder="Analyze competitor topic..."
+                 className="w-64 bg-white/5 border border-white/10 rounded px-3 py-1 text-xs font-mono text-white placeholder:text-white/30 focus:outline-none focus:border-accent transition-all"
+                 disabled={loading}
+               />
+               {loading && <RefreshCw size={12} className="absolute right-2 top-1.5 text-accent animate-spin" />}
+             </div>
+             <button 
+               type="submit" 
+               className="bg-accent/20 border border-accent/40 text-accent px-3 py-1 rounded text-[10px] font-black uppercase hover:bg-accent hover:text-black transition-colors"
+               disabled={loading}
+             >
+               Scan
+             </button>
+           </form>
            <div className="flex gap-1">
              <span className="badge badge-online">Grid Active</span>
              <span className="badge badge-processing">8 Agents Linked</span>
@@ -124,7 +174,7 @@ export function GlobalRadarConsole() {
               onUnmount={onUnmount}
               options={MAP_OPTIONS}
             >
-              {MOCK_ENTITIES.map(entity => (
+              {mapEntities.map(entity => (
                 <Marker
                   key={entity.id}
                   position={{ lat: entity.lat, lng: entity.lng }}
@@ -144,7 +194,7 @@ export function GlobalRadarConsole() {
 
               {/* Dynamic Strike Paths */}
               {activeStrikes.map(strikeId => {
-                const target = MOCK_ENTITIES.find(e => e.id === strikeId);
+                const target = mapEntities.find(e => e.id === strikeId);
                 if (!target) return null;
                 return (
                   <Polyline

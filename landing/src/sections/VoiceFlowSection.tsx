@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Zap, BrainCircuit, Layers, Image as ImageIcon, CheckCircle2, ArrowRight, Play, RotateCcw, Search, AudioLines } from 'lucide-react';
+import { Mic, Zap, BrainCircuit, Layers, Image as ImageIcon, CheckCircle2, ArrowRight, Play, RotateCcw, Search, AudioLines, Sparkles, Loader2 } from 'lucide-react';
 import geminiLiveFlow from '../assets/g5_gemini_live_flow.png';
 
 interface FlowStep {
@@ -91,17 +91,22 @@ export function VoiceFlowSection() {
   const [activeStep, setActiveStep] = useState<number>(-1);
   const [isRunning, setIsRunning] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [voiceState, setVoiceState] = useState<'IDLE' | 'LISTENING' | 'PROCESSING' | 'RESPONDING'>('IDLE');
+  const [micPermission, setMicPermission] = useState<boolean | null>(null);
+  const [textInput, setTextInput] = useState("");
 
   const runDemo = () => {
     setActiveStep(-1);
     setCompletedSteps(new Set());
     setIsRunning(true);
+    setVoiceState('LISTENING');
   };
 
   const reset = () => {
     setActiveStep(-1);
     setCompletedSteps(new Set());
     setIsRunning(false);
+    setVoiceState('IDLE');
   };
 
   useEffect(() => {
@@ -112,15 +117,55 @@ export function VoiceFlowSection() {
     STEPS.forEach((step, i) => {
       setTimeout(() => {
         setActiveStep(i);
+        if (i === 1) setVoiceState('PROCESSING');
+        if (i === 6) setVoiceState('RESPONDING');
       }, totalDelay);
       totalDelay += step.duration;
 
       setTimeout(() => {
         setCompletedSteps(prev => new Set([...prev, i]));
-        if (i === STEPS.length - 1) setIsRunning(false);
+        if (i === STEPS.length - 1) {
+          setIsRunning(false);
+          setVoiceState('IDLE');
+        }
       }, totalDelay - 200);
     });
   }, [isRunning]);
+
+  // Waveform Animation Logic
+  useEffect(() => {
+    if (voiceState === 'IDLE') return;
+    const canvas = document.getElementById('voice-waveform') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationId: number;
+    const bars = 40;
+    const barWidth = 3;
+    const barGap = 2;
+    
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00E5FF';
+      
+      for (let i = 0; i < bars; i++) {
+        const height = voiceState === 'LISTENING' 
+          ? Math.random() * canvas.height * 0.8 
+          : voiceState === 'RESPONDING' 
+            ? (Math.sin(Date.now() / 100 + i) + 1) * canvas.height * 0.4
+            : 2; // Flat for processing or idle
+        
+        const x = i * (barWidth + barGap);
+        const y = (canvas.height - height) / 2;
+        ctx.fillRect(x, y, barWidth, height);
+      }
+      animationId = requestAnimationFrame(draw);
+    };
+
+    draw();
+    return () => cancelAnimationFrame(animationId);
+  }, [voiceState]);
 
   const activeStepData = activeStep >= 0 ? STEPS[activeStep] : null;
 
@@ -147,11 +192,70 @@ export function VoiceFlowSection() {
           </motion.p>
         </div>
 
-        {/* Voice API Visual */}
+        {/* Voice API Visual / Interactive Simulator */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
-          className="relative rounded-3xl overflow-hidden border border-white/10 shadow-3xl bg-black/60 mb-24 aspect-21/9">
-          <img src={geminiLiveFlow} alt="Gemini Live API Voice Flow Visual" className="w-full h-full object-cover opacity-90" />
-          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
+          className="relative rounded-[40px] overflow-hidden border border-white/10 shadow-3xl bg-midnight/60 mb-24 min-h-[400px] flex flex-col items-center justify-center p-12 group">
+          
+          <div className="absolute inset-0 bg-linear-to-b from-accent/5 to-transparent pointer-events-none" />
+          
+          {/* Status Display */}
+          <div className="relative z-10 text-center mb-10">
+            <AnimatePresence mode="wait">
+              <motion.div key={voiceState} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
+                className="flex flex-col items-center">
+                <div className="flex items-center gap-3 mb-4">
+                  {voiceState === 'LISTENING' && <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />}
+                  {voiceState === 'PROCESSING' && <Loader2 className="text-accent animate-spin" size={16} />}
+                  {voiceState === 'RESPONDING' && <Sparkles className="text-accent animate-pulse" size={16} />}
+                  <span className="font-mono text-xs font-black uppercase tracking-[0.3em] text-white/80">
+                    {voiceState === 'IDLE' && 'NEURAL LINK READY · SPEAK YOUR COMMAND'}
+                    {voiceState === 'LISTENING' && 'LISTENING...'}
+                    {voiceState === 'PROCESSING' && 'PROCESSING INTENT...'}
+                    {voiceState === 'RESPONDING' && 'AGENT RESPONDING...'}
+                  </span>
+                </div>
+                
+                {/* Waveform Canvas */}
+                <canvas id="voice-waveform" width="200" height="40" className="opacity-80" />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <div className="relative z-10 w-full max-w-md">
+            {micPermission === false ? (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
+                <p className="font-mono text-[10px] text-white/40 uppercase mb-3 text-center">Voice unavailable. Type your command:</p>
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    placeholder="E.g. Identify market gaps for luxury fashion..."
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 font-mono text-xs text-white focus:outline-none focus:border-accent/40 placeholder:text-white/10"
+                    onKeyDown={(e) => e.key === 'Enter' && runDemo()}
+                  />
+                  <button onClick={runDemo} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-accent hover:bg-accent/10 rounded-xl transition-colors">
+                    <ArrowRight size={18} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <motion.button 
+                whileHover={{ scale: 1.02 }} 
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setMicPermission(false)} // Mock permission fail to show fallback
+                className="w-full py-8 rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-xl flex flex-col items-center gap-4 hover:border-accent/30 transition-all group"
+              >
+                <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center group-hover:bg-accent/30 transition-colors">
+                  <Mic size={24} className="text-accent" />
+                </div>
+                <span className="font-mono text-[10px] text-white/40 uppercase tracking-widest group-hover:text-white/60">Initialize Voice Interface</span>
+              </motion.button>
+            )}
+          </div>
+
+          {/* Background Decorative Flow Image */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none -z-10 bg-cover bg-center" style={{ backgroundImage: `url(${geminiLiveFlow})` }} />
         </motion.div>
 
         {/* Flow Diagram */}

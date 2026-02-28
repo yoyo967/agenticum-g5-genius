@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Brain, Cpu, Globe, Mic } from 'lucide-react';
 import voiceWave from '../assets/g5_voice_autonomy.png';
 import nexusSentience from '../assets/g5_nexus_sovereignty.png';
+import neuralSwarm from '../assets/g5_neural_swarm.png';
 
 export function ApexContentSection() {
   const content = [
@@ -20,6 +21,14 @@ export function ApexContentSection() {
       image: nexusSentience,
       tag: "SENTIENCE EVOLUTION",
       icon: <Brain className="text-neural-gold" />
+    },
+    {
+      title: "FROM HOMO FABER TO ARCHITEKTUS.",
+      subtitle: "Eliminating Biological Glue and Cognitive Debt.",
+      text: "The '2026 Shift' is fundamental. G5 transitions the operator from Homo Faber (tool user) to Homo Architektus (system architect). We pulverize 'cognitive debt' by replacing manual retrieval with a Sentient Mesh that understands intent before you even finish your sentence. No more acting as biological glue between disconnected silos.",
+      image: neuralSwarm,
+      tag: "SYSTEMIC ARCHITECTURE",
+      icon: <Globe className="text-accent" />
     }
   ];
 
@@ -115,7 +124,7 @@ export function ApexContentSection() {
                     { id: 'DA-03', role: 'Visual AI' },
                     { id: 'BA-07', role: 'Researcher' },
                     { id: 'VE-01', role: 'Motion' },
-                    { id: 'RA-01', role: 'Auditor' }
+                    { id: 'RA-01', role: 'Senate & Intel' }
                   ].map(agent => (
                     <div key={agent.id} className="text-left">
                       <div className="text-[10px] font-black font-display text-accent mb-0.5">{agent.id}</div>

@@ -8,24 +8,26 @@ import {
 import { db } from '../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { MeshBackground } from '../components/NeuralSubstrate';
-import { NexusFeed } from '../components/NexusFeed';
-import { AgentShowcase } from '../components/AgentShowcase';
-import { ImagenGallery } from '../components/ImagenGallery';
-import { SenateTerminalSection } from '../sections/SenateTerminalSection';
-import { ComplianceSection } from '../sections/ComplianceSection';
-import { PerfectTwinSection } from '../sections/PerfectTwinSection';
-import { ColumnaRadarSection } from '../sections/ColumnaRadarSection';
-import { DemoVideoSection } from '../sections/DemoVideoSection';
-import { PrizesSection } from '../sections/PrizesSection';
-import { FinalCTASection } from '../sections/FinalCTASection';
-import { VoiceFlowSection } from '../sections/VoiceFlowSection';
-import { MissionStatusSection } from '../sections/MissionStatusSection';
-import { OriginSection } from '../sections/OriginSection';
 import { GenIUSHeroChat } from '../components/GenIUSHeroChat';
-import { PrometheusBrowser } from '../components/PrometheusBrowser';
-import { ApexContentSection } from '../sections/ApexContentSection';
-import { VideoSection } from '../components/VideoSection';
+
+const NexusFeed = lazy(() => import('../components/NexusFeed').then(m => ({ default: m.NexusFeed })));
+const AgentShowcase = lazy(() => import('../components/AgentShowcase').then(m => ({ default: m.AgentShowcase })));
+const ImagenGallery = lazy(() => import('../components/ImagenGallery').then(m => ({ default: m.ImagenGallery })));
+const SenateTerminalSection = lazy(() => import('../sections/SenateTerminalSection').then(m => ({ default: m.SenateTerminalSection })));
+const ComplianceSection = lazy(() => import('../sections/ComplianceSection').then(m => ({ default: m.ComplianceSection })));
+const PerfectTwinSection = lazy(() => import('../sections/PerfectTwinSection').then(m => ({ default: m.PerfectTwinSection })));
+const ColumnaRadarSection = lazy(() => import('../sections/ColumnaRadarSection').then(m => ({ default: m.ColumnaRadarSection })));
+const VoiceFlowSection = lazy(() => import('../sections/VoiceFlowSection').then(m => ({ default: m.VoiceFlowSection })));
+const MissionStatusSection = lazy(() => import('../sections/MissionStatusSection').then(m => ({ default: m.MissionStatusSection })));
+const OriginSection = lazy(() => import('../sections/OriginSection').then(m => ({ default: m.OriginSection })));
+const PrometheusBrowser = lazy(() => import('../components/PrometheusBrowser').then(m => ({ default: m.PrometheusBrowser })));
+const ApexContentSection = lazy(() => import('../sections/ApexContentSection').then(m => ({ default: m.ApexContentSection })));
+const VideoSection = lazy(() => import('../components/VideoSection').then(m => ({ default: m.VideoSection })));
+const DemoVideoSection = lazy(() => import('../sections/DemoVideoSection').then(m => ({ default: m.DemoVideoSection })));
+const PrizesSection = lazy(() => import('../sections/PrizesSection').then(m => ({ default: m.PrizesSection })));
+const FinalCTASection = lazy(() => import('../sections/FinalCTASection').then(m => ({ default: m.FinalCTASection })));
 import heroBg from '../assets/g5_hero_dashboard.png';
 function useMetrics() {
   const [stats, setStats] = useState({ workflows: 0, outputs: 0, readiness: '100%', error: false });
@@ -240,6 +242,7 @@ export function LandingPage() {
     { label: 'Origin', id: 'origin' },
     { label: 'Intel', id: 'codex' },
     { label: 'Feed', id: 'feed' },
+    { label: 'Demo', id: 'demo' },
   ];
 
   return (
@@ -269,8 +272,13 @@ export function LandingPage() {
             {/* Desktop Links */}
             <div className="hidden md:flex items-center gap-8">
               {navLinks.map(link => (
-                <button key={link.id} onClick={() => scrollTo(link.id)}
-                  className="font-mono text-xs text-white/40 hover:text-accent transition-colors uppercase tracking-wider relative group">
+                <button key={link.id} 
+                  onClick={() => link.id === 'demo' ? navigate('/demo') : scrollTo(link.id)}
+                  className={`font-mono text-xs hover:text-accent transition-all uppercase tracking-wider relative group ${
+                    link.id === 'demo' 
+                    ? 'text-accent font-black drop-shadow-[0_0_8px_rgba(0,229,255,0.6)] animate-pulse' 
+                    : 'text-white/40'
+                  }`}>
                   {link.label}
                   <span className="absolute -bottom-1 left-0 w-0 h-px bg-accent group-hover:w-full transition-all duration-300" />
                 </button>
@@ -380,9 +388,11 @@ export function LandingPage() {
 
             {/* Subtitle */}
             <motion.p initial={{ opacity: 0 }} animate={heroVisible ? { opacity: 1 } : {}} transition={{ delay: 0.6 }}
-              className="text-lg md:text-xl text-white/40 max-w-2xl font-mono leading-relaxed mb-2">
-              Beyond Reactive Chatbots. G5 is a 'Sentient Engine' 
-              orchestrating autonomous marketing ecosystems via the Gemini 2.0 Live Fabric.
+              className="text-lg md:text-xl text-white font-mono leading-relaxed mb-4 max-w-3xl">
+              <span className="text-accent brightness-125 font-black uppercase tracking-tighter mr-2">Stop being the biological glue</span>
+              <span className="text-white/40">between disconnected tools. GenIUS is a Sentient Engine erasing </span>
+              <span className="text-neural-gold font-bold italic">Cognitive Debt</span>
+              <span className="text-white/40"> via the Gemini 2.0 Live Fabric.</span>
             </motion.p>
             <motion.p initial={{ opacity: 0 }} animate={heroVisible ? { opacity: 1 } : {}} transition={{ delay: 0.7 }}
               className="text-sm text-accent/60 font-mono uppercase tracking-widest">
@@ -398,7 +408,7 @@ export function LandingPage() {
                 { icon: <Bot size={16} />, label: '8 Agents · Parallel', color: '#FF007A' },
                 { icon: <Cpu size={16} />, label: 'Gemini 2.0 Flash', color: '#00FF88' },
                 { icon: <Globe size={16} />, label: 'Google Search Grounding', color: '#7B2FBE' },
-                { icon: <Shield size={16} />, label: 'EU AI Act · ra01', color: '#FF6B35' },
+                { icon: <Shield size={16} />, label: 'Senate & Intel · ra01', color: '#FF6B35' },
               ].map(item => (
                 <div key={item.label} className="flex items-center gap-2 group">
                   <span style={{ color: item.color }} className="opacity-80 group-hover:opacity-100 transition-opacity">{item.icon}</span>
@@ -447,7 +457,8 @@ export function LandingPage() {
         {/* ============================================================
            SEE IT LIVE — Demo Video Section
            ============================================================ */}
-        <VideoSection videoId={import.meta.env.VITE_DEMO_VIDEO_ID} />
+        <Suspense fallback={<div className="py-20 flex justify-center"><span className="text-accent/50 animate-pulse font-mono text-[10px] uppercase tracking-[0.3em]">Initializing Neural Links...</span></div>}>
+          <VideoSection videoId={import.meta.env.VITE_DEMO_VIDEO_ID} />
 
         {/* ============================================================
            ACCESS THE SWARM — Gateway Terminal
@@ -911,6 +922,7 @@ export function LandingPage() {
             </div>
           </div>
         </footer>
+        </Suspense>
 
       </div>
     </div>

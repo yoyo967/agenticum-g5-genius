@@ -4,6 +4,7 @@ import { OSPortal } from './pages/OSPortal';
 import { ArticleView } from './pages/ArticleView';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { ArchivesPage } from './pages/ArchivesPage';
+import { DemoPage } from './pages/DemoPage';
 import { AuthProvider } from './components/auth/AuthProvider';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/article/:slug" element={<ArticleView />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/archives" element={<ArchivesPage />} />
+          <Route path="/demo" element={<DemoPage />} />
 
           {/* OS Dashboard & Modules */}
           <Route path="/os" element={<OSPortal />} />

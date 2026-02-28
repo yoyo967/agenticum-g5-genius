@@ -2,6 +2,8 @@
 
 > **The Ultimate Multi-Agent Orchestration Layer for the Autonomous Enterprise.**
 
+**Live Demo**: [https://agenticum-frontend-697051612685.europe-west1.run.app/demo](https://agenticum-frontend-697051612685.europe-west1.run.app/demo)
+
 GenIUS is a hypermodern Enterprise Operating System designed to orchestrate complex swarms of autonomous agents. Powered by **Gemini 2.0 Flash** and the **Gemini Live API**, GenIUS bridges the gap between static automation and sentient workflow choreography, providing a zero-click marketing command center for the next industrial revolution.
 
 ---
@@ -58,7 +60,70 @@ graph TD
   - **Imagen 3**: High-fidelity visual asset generation within the SwarmProtocol.
 - **Frontend**: React 19, TypeScript, Framer Motion (Spatial Physics Engine), Tailwind CSS.
 - **Backend**: Node.js, Express, WebSockets, Vertex AI SDK, Cloud Run.
-- **Infrastructure**: Google Cloud Platform (Firestore, Cloud Storage, Vertex AI).
+- **Infrastructure**: Google Cloud Platform (Firestore, Cloud Storage, Vertex AI, Cloud Run).
+
+---
+
+## 🏗️ Cloud Run Architecture
+
+```mermaid
+graph TD
+    Client[Web Client / Browser] -->|HTTPS| FE[Frontend Cloud Run: React 19]
+    Client -.->|Bidi WebSocket| Core[Core Backend Cloud Run: Node.js]
+
+    subgraph "Google Cloud Platform (europe-west1)"
+        FE -->|REST API| Core
+        FE -->|AI Services| Engine[G5 Engine Cloud Run: Python FastAPI]
+
+        Core -->|Stream Orchestration| GLive[Gemini 2.0 Live API]
+        Core -->|State| FS[(Firestore)]
+
+        Engine -->|Gen AI| Vertex[Vertex AI / Imagen 3]
+        Engine -->|Grounding| GSearch[Google Search API]
+        Engine -->|RAG| Vector[(Columna Vector Index)]
+    end
+```
+
+---
+
+## 🚀 Quick Start Guide
+
+**Prerequisites:**
+
+- Node.js 20+ and Python 3.11+
+- Google Cloud Project with Gemini Live, Vertex AI, and Firestore enabled
+
+### 1. Frontend Setup
+
+```bash
+cd landing
+npm install
+npm run dev
+```
+
+_Runs on `http://localhost:5173`_
+
+### 2. Core API (Node.js)
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+_Runs on `http://localhost:8080`_
+
+### 3. G5 Engine (Python)
+
+```bash
+cd engine
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+_Runs on `http://localhost:8000`_
+
+_(Requires `.env` files with valid GCP credentials and Gemini API keys in each directory)_
 
 ---
 
@@ -72,5 +137,5 @@ GenIUS is not just a tool; it's a paradigm shift. By moving away from chat-based
 
 ---
 
-**Built for the Google AI Hackathon 2026.**
+**Built for the Google Gemini Live Agent Challenge 2026.**  
 _GenIUS Status: 100% OPERATIONAL // MISSION READY_

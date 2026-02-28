@@ -1,11 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Bot, Shield, Cpu, Zap, Palette, Film, 
-  Activity, CheckCircle2, 
+import {
+  Bot, Shield, Cpu, Zap, Palette, Film,
+  Activity, CheckCircle2,
   Sparkles, Scale, DollarSign, Leaf,
-  Mic, MicOff, Volume2, Link2Off, AlertCircle, FileText
+  Mic, MicOff, Volume2, Link2Off, AlertCircle, FileText,
+  Terminal, Share2
 } from 'lucide-react';
+import { ThinkingTrace } from './ThinkingTrace';
+import { BrandHub } from './BrandHub';
+import { Distribution } from './Distribution';
 import { useNavigate } from 'react-router-dom';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadTextFile } from '../utils/export';
@@ -33,8 +37,8 @@ export function GenIUSConsole() {
   const QUEUE_TIMEOUT_MS = 10000;
   const [isRecording, setIsRecording] = useState(false);
   const [settings, setSettings] = useState<{ projectId?: string; geminiKey?: string }>({});
-  const [micStatus, setMicStatus] = useState<'pending' | 'granted' | 'denied'>('pending');
-  
+  const [activeTab, setActiveTab] = useState<'orchestration' | 'trace' | 'brand' | 'distribution'>('orchestration');
+
   const navigate = useNavigate();
   const ws = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -101,7 +105,7 @@ export function GenIUSConsole() {
       for (let i = 0; i < int16.length; i++) {
           float32[i] = int16[i] / 32768;
       }
-      
+
       const buffer = audioContextRef.current.createBuffer(1, float32.length, 16000);
       buffer.getChannelData(0).set(float32);
       const source = audioContextRef.current.createBufferSource();
@@ -121,7 +125,7 @@ export function GenIUSConsole() {
       addLog('system', 'Neural Uplink already active.');
       return;
     }
-    
+
     setConnectionState('connecting');
     addLog('system', 'Initializing Neural Uplink... 🔌');
     console.log('🔌 Attempting Neural Uplink to:', WS_BASE_URL);
@@ -137,7 +141,7 @@ export function GenIUSConsole() {
         }
       }
     }, QUEUE_TIMEOUT_MS);
-    
+
     try {
       const socket = new WebSocket(WS_BASE_URL);
       ws.current = socket;
@@ -147,7 +151,7 @@ export function GenIUSConsole() {
         console.log('✅ Neural Uplink Established');
         setConnectionState('connected');
         addLog('success', 'Neural Uplink Stable. Matrix Synchronized.');
-        
+
         setMessageQueue(prev => {
           if (prev.length > 0) {
             addLog('system', `Flushing ${prev.length} queued directives...`);
@@ -163,7 +167,7 @@ export function GenIUSConsole() {
       socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          
+
           if (data.type === 'status') {
             setSwarm(data.agent);
             window.dispatchEvent(new CustomEvent('swarm-status', { detail: data.agent }));
@@ -246,7 +250,7 @@ export function GenIUSConsole() {
             const { task } = data;
             const statusEmoji = task.state === 'running' ? '⚡' : task.state === 'completed' ? '✅' : '❌';
             addLog('agent', `${statusEmoji} [${task.agentId.toUpperCase()}] ${task.description} (${task.state.toUpperCase()})`);
-            
+
             if (task.state === 'completed' && task.result) {
                addLog('system', `Intel Acquired: ${String(task.result).substring(0, 50)}...`);
             }
@@ -257,9 +261,20 @@ export function GenIUSConsole() {
             addLog('error', `EXECUTIVE ACTION REQUIRED: Task [${data.data.taskId}] is stalled.`);
           }
 
-          if (data.type === 'swarm-calibration') {
+          if (data.type === 'calibration') {
             window.dispatchEvent(new CustomEvent('swarm-calibration', { detail: data.data }));
             addLog('success', `[SENTIENT LOOP] ${data.data.agentId.toUpperCase()} calibration: ${data.data.status}`);
+          }
+
+          // Global Dispatch for Thinking Trace
+          if (['task-update', 'agent-thought', 'status', 'protocol-activated', 'senate', 'swarm-payload'].includes(data.type)) {
+            window.dispatchEvent(new CustomEvent('swarm-dispatch', {
+              detail: {
+                agentId: data.agentId || data.agent?.id || 'SN-00',
+                action: data.type.toUpperCase(),
+                detail: data.thought || data.lastStatus || data.payloadType || data.type
+              }
+            }));
           }
         } catch (err) {
           console.error('Failed to parse socket message', err);
@@ -289,8 +304,8 @@ export function GenIUSConsole() {
       const detail = (e as CustomEvent).detail;
       if (ws.current?.readyState === WebSocket.OPEN) {
         setOutput(null);
-        ws.current?.send(JSON.stringify({ 
-          type: 'start', 
+        ws.current?.send(JSON.stringify({
+          type: 'start',
           input: detail.directive || detail.input || 'Initial brief',
           campaignId: detail.campaignId
         }));
@@ -681,262 +696,276 @@ export function GenIUSConsole() {
             ) : null}
           </AnimatePresence>
 
-          <div className="flex-1 p-8 overflow-y-auto font-mono scrollbar-none" ref={scrollRef}>
-             <AnimatePresence>
-               {isRecording && (
-                  <motion.div 
-                    key="voice-overlay"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="absolute inset-x-8 top-8 z-30 p-12 rounded-3xl bg-black/80 backdrop-blur-3xl border border-neural-blue/30 shadow-[0_0_100px_rgba(0,184,212,0.15)] flex flex-col items-center justify-center text-center"
-                  >
-                    <div className="absolute inset-0 bg-linear-to-br from-neural-blue/5 to-neural-gold/5 opacity-50 pointer-events-none" />
-                    
-                    <div className="relative mb-8">
-                      {/* Genius Pulse Core */}
-                      <motion.div 
-                        animate={{ 
-                          scale: [1, 1.2, 1],
-                          opacity: [0.5, 0.8, 0.5],
-                          boxShadow: [
-                            '0 0 40px rgba(0, 229, 255, 0.2)',
-                            '0 0 80px rgba(0, 229, 255, 0.4)',
-                            '0 0 40px rgba(0, 229, 255, 0.2)'
-                          ]
-                        }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute inset-0 bg-neural-blue/20 rounded-full blur-3xl" 
-                      />
-                      
-                      <div className="w-32 h-32 rounded-full border-2 border-neural-blue/50 flex items-center justify-center relative z-10 bg-black/40 shadow-[inset_0_0_40px_rgba(0,229,255,0.2)]">
-                        <div className="absolute inset-0 rounded-full border-4 border-neural-gold/20 animate-[spin_10s_linear_infinite]" />
-                        <motion.div 
-                          animate={{ 
-                            scale: [1, 1.1, 1],
-                            rotate: [0, 5, -5, 0]
-                          }}
-                          transition={{ duration: 4, repeat: Infinity }}
-                        >
-                          <Mic size={48} className="text-neural-blue drop-shadow-[0_0_15px_rgba(0,229,255,1)]" />
-                        </motion.div>
-                      </div>
+          {/* Tabs Navigation */}
+          <div className="flex border-b border-white/5 bg-black/20 px-4">
+             {[
+               { id: 'orchestration', label: 'Orchestration', icon: <Cpu size={14} /> },
+               { id: 'trace', label: 'Thinking Trace', icon: <Terminal size={14} /> },
+               { id: 'brand', label: 'Brand Hub', icon: <Palette size={14} /> },
+               { id: 'distribution', label: 'Distribution', icon: <Share2 size={14} /> },
+             ].map((tab) => (
+               <button
+                 key={tab.id}
+                 onClick={() => setActiveTab(tab.id as 'orchestration' | 'trace' | 'brand' | 'distribution')}
+                 className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative ${
+                   activeTab === tab.id ? 'text-accent' : 'text-white/30 hover:text-white/60'
+                 }`}
+               >
+                 {tab.icon} {tab.label}
+                 {activeTab === tab.id && (
+                   <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent shadow-[0_0_10px_rgba(0,229,255,1)]" />
+                 )}
+               </button>
+             ))}
+          </div>
 
-                      {/* Orbitals */}
-                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-[-20px] rounded-full border border-dashed border-neural-blue/30" />
-                      <motion.div animate={{ rotate: -360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute inset-[-40px] rounded-full border border-solid border-neural-gold/10" />
-                    </div>
-
-                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-[0.2em] mb-2 drop-shadow-sm">GENIUS Active</h3>
-                    <p className="text-[10px] text-neural-blue/80 uppercase tracking-[0.5em] font-mono font-bold">Multimodal Neural Uplink Synchronized</p>
-                    
-                    <div className="flex items-center gap-2 mt-10 h-16 w-full max-w-lg justify-center">
-                      {[1.0, 0.4, 1.2, 0.3, 0.8, 0.6, 1.1, 0.5, 0.9, 0.4, 0.7, 0.5, 0.3, 1.0, 0.6, 1.3, 0.4, 0.8, 0.5, 0.3, 1.1, 0.6, 0.9, 0.4].map((val, i) => (
-                        <motion.div
-                           key={i}
-                           className={`w-1.5 rounded-full ${i % 3 === 0 ? 'bg-neural-gold' : 'bg-accent'}`}
-                           animate={{ height: ['15%', `${val * 80}%`, '15%'] }}
-                           transition={{ repeat: Infinity, duration: 0.3 + (i % 6) * 0.1, ease: "easeInOut" }}
-                        />
-                      ))}
-                    </div>
-                    
-                    <motion.p 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: [0.4, 1, 0.4] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="mt-8 text-[9px] uppercase font-black tracking-widest text-white/40"
-                    >
-                      Listening for directive...
-                    </motion.p>
-                  </motion.div>
-               )}
-             </AnimatePresence>
-
+          <div className="flex-1 p-8 overflow-y-auto font-mono scrollbar-none relative" ref={scrollRef}>
              <AnimatePresence mode="wait">
-               {output ? (
-                 <motion.div 
-                   key="output"
-                   initial={{ opacity: 0, y: 10 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   className="prose prose-invert max-w-none prose-sm"
-                 >
-                    <div className="flex items-center gap-3 mb-8 pb-4 border-b border-white/5">
-                      <Sparkles size={18} className="text-neural-blue" />
-                      <h2 className="text-xl font-display font-black uppercase italic tracking-tighter m-0">Campaign Forge Complete</h2>
-                    </div>
-                    <div className="px-2 pb-12">
-                      {renderMarkdown(output)}
-                    </div>
+               {activeTab === 'trace' && (
+                 <motion.div key="trace" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="h-full">
+                   <ThinkingTrace />
                  </motion.div>
-               ) : (
-                  <motion.div key="logs" className="flex flex-col gap-2 relative">
-                    {/* Nexus Resonance Glow */}
-                    <AnimatePresence>
-                      {nexusState && (
+               )}
+               {activeTab === 'brand' && (
+                 <motion.div key="brand" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="h-full">
+                   <BrandHub />
+                 </motion.div>
+               )}
+               {activeTab === 'distribution' && (
+                 <motion.div key="dist" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="h-full">
+                   <Distribution />
+                 </motion.div>
+               )}
+               
+               {activeTab === 'orchestration' && (
+                 <motion.div key="orchestration" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col">
+                   <AnimatePresence>
+                     {isRecording && (
                         <motion.div 
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 0.15 }}
-                          exit={{ opacity: 0 }}
-                          className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl"
+                          key="voice-overlay"
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          className="absolute inset-x-8 top-8 z-30 p-12 rounded-3xl bg-black/80 backdrop-blur-3xl border border-neural-blue/30 shadow-[0_0_100px_rgba(0,184,212,0.15)] flex flex-col items-center justify-center text-center"
                         >
-                           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,#fb7185,transparent_50%)]" />
-                           <div className="absolute bottom-0 right-0 w-96 h-96 bg-[radial-gradient(circle_at_center,#06b6d4,transparent_70%)] opacity-30 mix-blend-screen animate-pulse" />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                     {connectionState === 'disconnected' ? (
-                       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center border border-red-500/20 rounded-xl p-8 shadow-2xl" style={{ zIndex: 'var(--z-overlay)' }}>
-                         <Link2Off size={48} className="text-red-500/50 mb-6" />
-                         <h3 className="text-2xl font-display font-black text-red-500 uppercase tracking-tighter mb-2">Neural Fabric Offline</h3>
-                         <p className="text-white/40 text-xs mb-8 max-w-sm text-center">System awaiting explicit connection directive.</p>
-                         
-                          <div className="flex flex-col gap-3 w-full max-w-sm mb-8">
-                            <div className="flex items-center justify-between p-3 rounded glass border-white/5">
-                              <span className="text-xs uppercase font-black text-white/60">GCP Project</span>
-                              <span className={`flex items-center gap-1 text-[10px] uppercase font-bold ${settings.projectId ? 'text-green-500' : 'text-red-500'}`}>
-                                {settings.projectId ? <CheckCircle2 size={12}/> : <AlertCircle size={12}/>}
-                                {settings.projectId || 'Not Configured'}
-                              </span>
-                            </div>
-                            <div className={`flex items-center justify-between p-3 rounded glass border-white/5 ${!settings.geminiKey ? 'border-red-500/20 bg-red-500/5' : ''}`}>
-                              <span className="text-xs uppercase font-black text-white/60">Gemini API Key</span>
-                              {settings.geminiKey ? (
-                                <span className="flex items-center gap-1 text-[10px] text-green-500 uppercase font-bold"><CheckCircle2 size={12}/> Configured</span>
-                              ) : (
-                                <button onClick={() => navigate('/os?module=settings')} className="flex items-center gap-1 text-[10px] text-red-500 uppercase font-bold hover:text-red-400 transition-colors">
-                                  <AlertCircle size={12}/> Not Configured →
-                                </button>
-                              )}
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded glass border-neural-gold/20 bg-neural-gold/5">
-                              <span className="text-xs uppercase font-black text-white/60">Microphone</span>
-                              <button 
-                                onClick={() => {
-                                  navigator.mediaDevices.getUserMedia({ audio: true })
-                                    .then(() => {
-                                      setMicStatus('granted');
-                                      addLog('success', 'Microphone Access Granted.');
-                                    })
-                                    .catch(() => {
-                                      setMicStatus('denied');
-                                      addLog('error', 'Microphone Access Denied.');
-                                    });
-                                }} 
-                                className={`flex items-center gap-1 text-[10px] uppercase font-bold transition-colors ${micStatus === 'granted' ? 'text-green-500' : 'text-neural-gold hover:text-neural-gold/80'}`}
+                          <div className="absolute inset-0 bg-linear-to-br from-neural-blue/5 to-neural-gold/5 opacity-50 pointer-events-none" />
+                          
+                          <div className="relative mb-8">
+                            <motion.div 
+                              animate={{ 
+                                scale: [1, 1.2, 1],
+                                opacity: [0.5, 0.8, 0.5],
+                                boxShadow: [
+                                  '0 0 40px rgba(0, 229, 255, 0.2)',
+                                  '0 0 80px rgba(0, 229, 255, 0.4)',
+                                  '0 0 40px rgba(0, 229, 255, 0.2)'
+                                ]
+                              }}
+                              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                              className="absolute inset-0 bg-neural-blue/20 rounded-full blur-3xl" 
+                            />
+                            
+                            <div className="w-32 h-32 rounded-full border-2 border-neural-blue/50 flex items-center justify-center relative z-10 bg-black/40 shadow-[inset_0_0_40px_rgba(0,229,255,0.2)]">
+                              <div className="absolute inset-0 rounded-full border-4 border-neural-gold/20 animate-[spin_10s_linear_infinite]" />
+                              <motion.div 
+                                animate={{ 
+                                  scale: [1, 1.1, 1],
+                                  rotate: [0, 5, -5, 0]
+                                }}
+                                transition={{ duration: 4, repeat: Infinity }}
                               >
-                                {micStatus === 'granted' ? (
-                                  <><CheckCircle2 size={12}/> Access Granted</>
-                                ) : micStatus === 'denied' ? (
-                                  <><AlertCircle size={12}/> Access Denied</>
-                                ) : (
-                                  <>⚠ Check Permission →</>
-                                )}
-                              </button>
+                                <Mic size={48} className="text-neural-blue drop-shadow-[0_0_15px_rgba(0,229,255,1)]" />
+                              </motion.div>
                             </div>
+
+                            <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-[-20px] rounded-full border border-dashed border-neural-blue/30" />
+                            <motion.div animate={{ rotate: -360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute inset-[-40px] rounded-full border border-solid border-neural-gold/10" />
                           </div>
 
-                         <div className="flex gap-4">
-                           <button onClick={() => connect()} className="px-6 py-2 rounded bg-neural-blue text-obsidian hover:bg-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(0,229,255,0.3)]">
-                             <Zap size={14} /> Connect
-                           </button>
-                         </div>
-                       </div>
-                     ) : connectionState === 'error' ? (
-                       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center border border-red-500/20 rounded-xl p-8 shadow-2xl" style={{ zIndex: 'var(--z-overlay)' }}>
-                         <Link2Off size={48} className="text-red-500/50 mb-6" />
-                         <h3 className="text-2xl font-display font-black text-red-500 uppercase tracking-tighter mb-2">Connection Failed</h3>
-                         <div className="flex gap-4 mt-4">
-                           <button onClick={() => connect()} className="px-6 py-2 rounded bg-neural-blue text-obsidian hover:bg-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(0,229,255,0.3)]">
-                             <Zap size={14} /> Retry
-                           </button>
-                         </div>
-                       </div>
-                      ) : (
-                        <div className="flex flex-col h-full w-full justify-end">
-                          <div className="flex flex-col gap-4 overflow-y-auto mb-6 scrollbar-none pb-4">
-                            {logs.map((log, i) => (
-                              <motion.div 
-                                key={i}
-                                initial={{ opacity: 0, x: -5 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="flex gap-4 items-start"
-                              >
-                                <span className="text-[9px] opacity-20 font-black tabular-nums">[{log.timestamp}]</span>
-                                <span className={`text-[10px] font-black uppercase tracking-tighter w-16 shrink-0 ${
-                                  log.type === 'system' ? 'text-white/30' :
-                                  log.type === 'error' ? 'text-red-500' :
-                                  log.type === 'action' ? 'text-neural-gold' :
-                                  log.type === 'agent' ? (log.message?.includes('PROMETHEUS') ? 'text-neural-blue brightness-150 drop-shadow-[0_0_10px_rgba(0,229,255,0.4)]' : 'text-neural-blue') :
-                                  log.type === 'success' ? 'text-neural-gold drop-shadow-[0_0_8px_rgba(251,188,4,0.4)]' : 'text-neural-blue'
-                                }`}>{log.type === 'success' ? 'SOVEREIGN' : log.message?.includes('PROMETHEUS') ? 'PROMETHEUS' : log.type}</span>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[11px] opacity-80 leading-normal">{log.message}</p>
-                                  {log.imageUrl && (
-                                    <motion.img
-                                      src={log.imageUrl}
-                                      alt="DA-03 generated asset"
-                                      initial={{ opacity: 0, scale: 0.95 }}
-                                      animate={{ opacity: 1, scale: 1 }}
-                                      transition={{ duration: 0.4 }}
-                                      className="mt-3 rounded-xl w-full max-h-72 object-cover border border-neural-gold/30 shadow-[0_0_30px_rgba(251,188,4,0.15)]"
-                                    />
-                                  )}
-                                </div>
-                              </motion.div>
+                          <h3 className="text-2xl font-display font-black text-white uppercase tracking-[0.2em] mb-2 drop-shadow-sm">GENIUS Active</h3>
+                          <p className="text-[10px] text-neural-blue/80 uppercase tracking-[0.5em] font-mono font-bold">Multimodal Neural Uplink Synchronized</p>
+                          
+                          <div className="flex items-center gap-2 mt-10 h-16 w-full max-w-lg justify-center">
+                            {[1.0, 0.4, 1.2, 0.3, 0.8, 0.6, 1.1, 0.5, 0.9, 0.4, 0.7, 0.5, 0.3, 1.0, 0.6, 1.3, 0.4, 0.8, 0.5, 0.3, 1.1, 0.6, 0.9, 0.4].map((val, i) => (
+                              <motion.div
+                                 key={i}
+                                 className={`w-1.5 rounded-full ${i % 3 === 0 ? 'bg-neural-gold' : 'bg-accent'}`}
+                                 animate={{ height: ['15%', `${val * 80}%`, '15%'] }}
+                                 transition={{ repeat: Infinity, duration: 0.3 + (i % 6) * 0.1, ease: "easeInOut" }}
+                              />
                             ))}
-                            {(swarm && swarm.state !== 'idle' && swarm.state !== 'done') && (
-                              <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="flex gap-4 items-center mt-4">
-                                 <span className="text-[9px] opacity-20 font-black tabular-nums">[{new Date().toLocaleTimeString()}]</span>
-                                 <span className="text-neural-blue font-black uppercase text-[10px] tracking-tighter">PROCESSING</span>
-                                 <div className="flex gap-1 mt-1">
-                                   {[0, 1, 2].map(id => <div key={id} className="w-1.5 h-1.5 bg-neural-blue/40 rounded-full" />)}
-                                 </div>
-                              </motion.div>
-                            )}
                           </div>
                           
-                          {/* THE NEURAL PROMPT */}
-                          <div className="shrink-0 mt-auto bg-black border border-white/10 rounded-full p-1.5 flex items-center gap-3 relative shadow-[0_0_30px_rgba(0,229,255,0.05)] focus-within:shadow-[0_0_40px_rgba(0,229,255,0.15)] focus-within:border-accent/40 transition-all" style={{ zIndex: 'var(--z-console-input)' }}>
-                             <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0 ml-1">
-                               <Bot size={14} className="text-accent" />
-                             </div>
-                             <input 
-                               type="text" 
-                               placeholder={messageQueue.length >= MAX_QUEUE_SIZE ? "QUEUE FULL" : "Assign directive to swarm..."}
-                               disabled={connectionState === 'connecting' || messageQueue.length >= MAX_QUEUE_SIZE}
-                               className="flex-1 bg-transparent border-none text-white text-xs focus:outline-none placeholder:text-white/20 font-mono disabled:opacity-50 disabled:cursor-not-allowed"
-                               autoComplete="off"
-                               onKeyDown={(e) => {
-                                 if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                                   const val = e.currentTarget.value.trim();
-                                   e.currentTarget.value = '';
-                                   if (connectionState === 'connected' || connectionState === 'active') {
-                                     setOutput(null);
-                                     ws.current?.send(JSON.stringify({ type: 'start', input: val }));
-                                     addLog('action', `Manual Directive: ${val} (sent)`);
-                                   } else {
-                                     if (messageQueue.length >= MAX_QUEUE_SIZE) {
-                                       addLog('error', 'Message Queue Full. Directive rejected.');
-                                       return;
-                                     }
-                                     
-                                     setMessageQueue(prev => [...prev, val]);
-                                     addLog('system', `Directive queued (${messageQueue.length + 1}/${MAX_QUEUE_SIZE}). Connecting...`);
-                                     
-                                     if (connectionState === 'disconnected' || connectionState === 'error') {
-                                       connect();
-                                     }
-                                   }
-                                 }
-                               }}
-                             />
-                             <span className="text-[8px] uppercase font-black text-white/20 tracking-widest px-4 mr-2">ENTER</span>
+                          <motion.p 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: [0.4, 1, 0.4] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="mt-8 text-[9px] uppercase font-black tracking-widest text-white/40"
+                          >
+                            Listening for directive...
+                          </motion.p>
+                        </motion.div>
+                     )}
+                   </AnimatePresence>
+
+                   <AnimatePresence mode="wait">
+                     {output ? (
+                       <motion.div 
+                         key="output"
+                         initial={{ opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         className="prose prose-invert max-w-none prose-sm"
+                       >
+                          <div className="flex items-center gap-3 mb-8 pb-4 border-b border-white/5">
+                            <Sparkles size={18} className="text-neural-blue" />
+                            <h2 className="text-xl font-display font-black uppercase italic tracking-tighter m-0">Campaign Forge Complete</h2>
                           </div>
-                        </div>
+                          <div className="px-2 pb-12">
+                            {renderMarkdown(output)}
+                          </div>
+                       </motion.div>
+                     ) : (
+                        <motion.div key="logs" className="flex flex-col gap-2 relative">
+                          <AnimatePresence>
+                            {nexusState && (
+                              <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl bg-accent/5 backdrop-blur-sm"
+                              />
+                            )}
+                          </AnimatePresence>
+
+                           {connectionState === 'disconnected' ? (
+                             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center border border-red-500/20 rounded-xl p-8 shadow-2xl" style={{ zIndex: 100 }}>
+                               <Link2Off size={48} className="text-red-500/50 mb-6" />
+                               <h3 className="text-2xl font-display font-black text-red-500 uppercase tracking-tighter mb-2">Neural Fabric Offline</h3>
+                               <p className="text-white/40 text-xs mb-8 max-w-sm text-center">System awaiting explicit connection directive.</p>
+                               
+                                <div className="flex flex-col gap-3 w-full max-w-sm mb-8">
+                                  <div className="flex items-center justify-between p-3 rounded glass border-white/5">
+                                    <span className="text-xs uppercase font-black text-white/60">GCP Project</span>
+                                    <span className={`flex items-center gap-1 text-[10px] uppercase font-bold ${settings.projectId ? 'text-green-500' : 'text-red-500'}`}>
+                                      {settings.projectId ? <CheckCircle2 size={12}/> : <AlertCircle size={12}/>}
+                                      {settings.projectId || 'Not Configured'}
+                                    </span>
+                                  </div>
+                                  <div className={`flex items-center justify-between p-3 rounded glass border-white/5 ${!settings.geminiKey ? 'border-red-500/20 bg-red-500/5' : ''}`}>
+                                    <span className="text-xs uppercase font-black text-white/60">Gemini API Key</span>
+                                    {settings.geminiKey ? (
+                                      <span className="flex items-center gap-1 text-[10px] text-green-500 uppercase font-bold"><CheckCircle2 size={12}/> Configured</span>
+                                    ) : (
+                                      <button onClick={() => navigate('/os?module=settings')} className="flex items-center gap-1 text-[10px] text-red-500 uppercase font-bold hover:text-red-400 transition-colors">
+                                        <AlertCircle size={12}/> Not Configured →
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                               <div className="flex gap-4">
+                                 <button onClick={() => connect()} className="px-6 py-2 rounded bg-neural-blue text-obsidian hover:bg-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(0,229,255,0.3)]">
+                                   <Zap size={14} /> Connect
+                                 </button>
+                               </div>
+                             </div>
+                           ) : connectionState === 'error' ? (
+                             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center border border-red-500/20 rounded-xl p-8 shadow-2xl" style={{ zIndex: 100 }}>
+                               <Link2Off size={48} className="text-red-500/50 mb-6" />
+                               <h3 className="text-2xl font-display font-black text-red-500 uppercase tracking-tighter mb-2">Connection Failed</h3>
+                               <div className="flex gap-4 mt-4">
+                                 <button onClick={() => connect()} className="px-6 py-2 rounded bg-neural-blue text-obsidian hover:bg-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(0,229,255,0.3)]">
+                                   <Zap size={14} /> Retry
+                                 </button>
+                               </div>
+                             </div>
+                            ) : (
+                              <div className="flex flex-col h-full w-full justify-end">
+                                <div className="flex flex-col gap-4 overflow-y-auto mb-6 scrollbar-none pb-4">
+                                  {logs.map((log, i) => (
+                                    <motion.div 
+                                      key={i}
+                                      initial={{ opacity: 0, x: -5 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      className="flex gap-4 items-start"
+                                    >
+                                      <span className="text-[9px] opacity-20 font-black tabular-nums">[{log.timestamp}]</span>
+                                      <span className={`text-[10px] font-black uppercase tracking-tighter w-16 shrink-0 ${
+                                        log.type === 'system' ? 'text-white/30' :
+                                        log.type === 'error' ? 'text-red-500' :
+                                        log.type === 'action' ? 'text-neural-gold' :
+                                        log.type === 'agent' ? (log.message?.includes('PROMETHEUS') ? 'text-neural-blue brightness-150 drop-shadow-[0_0_10px_rgba(0,229,255,0.4)]' : 'text-neural-blue') :
+                                        log.type === 'success' ? 'text-neural-gold drop-shadow-[0_0_8px_rgba(251,188,4,0.4)]' : 'text-neural-blue'
+                                      }`}>{log.type === 'success' ? 'SOVEREIGN' : log.message?.includes('PROMETHEUS') ? 'PROMETHEUS' : log.type}</span>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-[11px] opacity-80 leading-normal">{log.message}</p>
+                                        {log.imageUrl && (
+                                          <motion.img
+                                            src={log.imageUrl}
+                                            alt="DA-03 generated asset"
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ duration: 0.4 }}
+                                            className="mt-3 rounded-xl w-full max-h-72 object-cover border border-neural-gold/30 shadow-[0_0_30px_rgba(251,188,4,0.15)]"
+                                          />
+                                        )}
+                                      </div>
+                                    </motion.div>
+                                  ))}
+                                  {(swarm && swarm.state !== 'idle' && swarm.state !== 'done') && (
+                                    <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="flex gap-4 items-center mt-4">
+                                       <span className="text-[9px] opacity-20 font-black tabular-nums">[{new Date().toLocaleTimeString()}]</span>
+                                       <span className="text-neural-blue font-black uppercase text-[10px] tracking-tighter">PROCESSING</span>
+                                       <div className="flex gap-1 mt-1">
+                                         {[0, 1, 2].map(id => <div key={id} className="w-1.5 h-1.5 bg-neural-blue/40 rounded-full" />)}
+                                       </div>
+                                    </motion.div>
+                                  )}
+                                </div>
+                                
+                                {/* THE NEURAL PROMPT */}
+                                <div className="shrink-0 mt-auto bg-black border border-white/10 rounded-full p-1.5 flex items-center gap-3 relative shadow-[0_0_30px_rgba(0,229,255,0.05)] focus-within:shadow-[0_0_40px_rgba(0,229,255,0.15)] focus-within:border-accent/40 transition-all" style={{ zIndex: 10 }}>
+                                   <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0 ml-1">
+                                     <Bot size={14} className="text-accent" />
+                                   </div>
+                                   <input 
+                                     type="text" 
+                                     placeholder={messageQueue.length >= MAX_QUEUE_SIZE ? "QUEUE FULL" : "Assign directive to swarm..."}
+                                     disabled={connectionState === 'connecting' || messageQueue.length >= MAX_QUEUE_SIZE}
+                                     className="flex-1 bg-transparent border-none text-white text-xs focus:outline-none placeholder:text-white/20 font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+                                     autoComplete="off"
+                                     onKeyDown={(e) => {
+                                       if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                                         const val = e.currentTarget.value.trim();
+                                         e.currentTarget.value = '';
+                                         if (connectionState === 'connected' || connectionState === 'active') {
+                                           setOutput(null);
+                                           ws.current?.send(JSON.stringify({ type: 'start', input: val }));
+                                           addLog('action', `Manual Directive: ${val} (sent)`);
+                                         } else {
+                                           if (messageQueue.length >= MAX_QUEUE_SIZE) {
+                                             addLog('error', 'Message Queue Full. Directive rejected.');
+                                             return;
+                                           }
+                                           
+                                           setMessageQueue(prev => [...prev, val]);
+                                           addLog('system', `Directive queued (${messageQueue.length + 1}/${MAX_QUEUE_SIZE}). Connecting...`);
+                                           
+                                           if (String(connectionState) === 'disconnected' || String(connectionState) === 'error') {
+                                             connect();
+                                           }
+                                         }
+                                       }
+                                     }}
+                                   />
+                                   <span className="text-[8px] uppercase font-black text-white/20 tracking-widest px-4 mr-2">ENTER</span>
+                                </div>
+                              </div>
+                            )}
+                         </motion.div>
                       )}
-                  </motion.div>
+                   </AnimatePresence>
+                 </motion.div>
                )}
              </AnimatePresence>
           </div>

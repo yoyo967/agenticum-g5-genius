@@ -10,4 +10,4 @@ const getOrigin = () => {
 
 export const API_BASE_URL = getOrigin() + '/api/v1';
 export const WS_BASE_URL = getOrigin().replace('http', 'ws') + '/api/v1/genius/ws';
-export const ENGINE_URL = getOrigin();
+export const ENGINE_URL = import.meta.env.VITE_ENGINE_URL || 'https://agenticum-g5-backend-697051612685.europe-west1.run.app';

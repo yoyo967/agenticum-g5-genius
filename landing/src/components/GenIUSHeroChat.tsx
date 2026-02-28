@@ -8,6 +8,7 @@ export function GenIUSHeroChat() {
     { role: 'genius', text: "Welcome to the Nexus. I am GenIUS. How shall we orchestrate your marketing ecosystem today?" }
   ]);
   const [isThinking, setIsThinking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -16,10 +17,10 @@ export function GenIUSHeroChat() {
     }
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  const handleSend = async (forcedInput?: string) => {
+    const userMsg = forcedInput || input;
+    if (!userMsg.trim()) return;
     
-    const userMsg = input;
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsThinking(true);
@@ -32,6 +33,25 @@ export function GenIUSHeroChat() {
       }]);
       setIsThinking(false);
     }, 1500);
+  };
+
+  const handleMicClick = () => {
+    if (isListening || isThinking) return;
+    setIsListening(true);
+    setInput('');
+    
+    // Simulate real-time dictation
+    const phrases = ["SN-00...", "SN-00, orchestrate...", "SN-00, orchestrate a global launch...", "SN-00, orchestrate a global launch campaign for enterprise SaaS."];
+    
+    setTimeout(() => setInput(phrases[0]), 800);
+    setTimeout(() => setInput(phrases[1]), 1600);
+    setTimeout(() => setInput(phrases[2]), 2400);
+    setTimeout(() => setInput(phrases[3]), 3200);
+
+    setTimeout(() => {
+      setIsListening(false);
+      handleSend(phrases[3]); 
+    }, 4000);
   };
 
   return (
@@ -116,25 +136,47 @@ export function GenIUSHeroChat() {
 
         {/* Input Area */}
         <div className="p-4 bg-midnight/60 border-t border-accent/10 relative z-10">
-          <div className="flex items-center gap-2 bg-obsidian border border-accent/20 p-2 focus-within:border-accent focus-within:shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all">
-            <div className="p-2 text-accent">
-              <span className="font-mono text-xs font-bold mr-2 text-accent/50">$</span>
-              <Mic size={18} className="hover:text-white cursor-pointer transition-colors inline-block" />
-            </div>
-            <input 
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Enter directive..."
-              className="flex-1 bg-transparent border-none outline-none font-mono text-sm text-accent placeholder:text-accent/30 py-2 caret-accent"
-            />
+          <div className={`flex items-center gap-3 bg-obsidian border p-2 transition-all ${isListening ? 'border-magenta shadow-[0_0_20px_rgba(255,0,122,0.2)]' : 'border-accent/20 focus-within:border-accent focus-within:shadow-[0_0_15px_rgba(0,229,255,0.2)]'}`}>
             <button 
-              onClick={handleSend}
-              className="w-10 h-10 bg-accent/10 flex items-center justify-center text-accent hover:bg-accent hover:text-midnight transition-all group border border-accent/20"
+              onClick={handleMicClick}
+              className={`p-2 rounded-full transition-all ${isListening ? 'text-white bg-magenta animate-pulse' : 'text-accent hover:text-white hover:bg-white/5'}`}
             >
-              <Send size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <Mic size={18} />
             </button>
+            
+            {isListening ? (
+              <div className="flex-1 flex items-center gap-4 py-2">
+                <span className="text-magenta font-mono text-xs uppercase tracking-widest animate-pulse font-black">Listening...</span>
+                <div className="flex items-center gap-1 h-4 flex-1">
+                  {[...Array(20)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      animate={{ height: ['20%', '100%', '20%'] }}
+                      transition={{ duration: 0.5 + ((i * 7) % 5) * 0.1, repeat: Infinity, delay: ((i * 3) % 4) * 0.125 }}
+                      className="w-1 bg-magenta/60 rounded-full"
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <input 
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Terminal active. Awaiting voice or text directive..."
+                className="flex-1 bg-transparent border-none outline-none font-mono text-sm text-accent placeholder:text-accent/30 py-2 caret-accent"
+              />
+            )}
+            
+            {!isListening && (
+              <button 
+                onClick={() => handleSend()}
+                className="w-10 h-10 bg-accent/10 flex items-center justify-center text-accent hover:bg-accent hover:text-midnight transition-all group border border-accent/20"
+              >
+                <Send size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </button>
+            )}
           </div>
           <div className="mt-3 flex items-center justify-between px-2">
             <div className="flex gap-4">
