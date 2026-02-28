@@ -109,6 +109,19 @@ app.get('/api/v1/health', (_req: express.Request, res: express.Response) => {
   });
 });
 
+app.get('/', (_req: express.Request, res: express.Response) => {
+  res.json({
+    success: true,
+    message: 'AGENTICUM G5 Core API Online',
+    service: 'agenticum-backend'
+  });
+});
+
+app.get('/robots.txt', (_req: express.Request, res: express.Response) => {
+  res.type('text/plain');
+  res.send('User-agent: *\nDisallow: /');
+});
+
 wss.on('connection', (ws: WebSocket) => {
   ws.on('message', (data: string) => {
     try {

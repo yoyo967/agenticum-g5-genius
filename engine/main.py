@@ -57,6 +57,20 @@ async def health():
         "region": "europe-west1"
     }
 
+@app.get("/")
+async def root():
+    return {
+        "status": "online",
+        "message": "AGENTICUM G5 Pillar Graph Engine API",
+        "service": "agenticum-g5-backend"
+    }
+
+from fastapi.responses import PlainTextResponse
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def robots():
+    return "User-agent: *\nDisallow: /"
+
 @app.get("/engine/counter-strike")
 async def run_counter_strike(topic: str):
     overlap = get_counter_strike()
