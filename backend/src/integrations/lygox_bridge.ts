@@ -50,11 +50,11 @@ export class LygoxBridge {
     try {
       // Future Implementation: JWT / Service Account auth logic here
       if (this.authEnabled) {
-        this.logger.debug('Auth contract verification simulated: SUCCESS');
+        this.logger.info('Auth contract verification simulated: SUCCESS');
       }
 
       // Skeleton Payload Transfer
-      this.logger.debug('Payload packaged:', JSON.stringify(payload).substring(0, 50) + '...');
+      this.logger.info('Payload packaged:', JSON.stringify(payload).substring(0, 50) + '...');
       
       return {
         status: 'accepted',
@@ -79,7 +79,7 @@ export class LygoxBridge {
     this.logger.info(`Syncing telemetry [${agentStatus}] @ ${timestamp} to LYGOX Mesh`);
     // Simulated sync delay
     await new Promise(resolve => setTimeout(resolve, 100));
-    this.logger.debug('Telemetry sync acknowledged by LYGOX.');
+    this.logger.info('Telemetry sync acknowledged by LYGOX.');
   }
 }
 
