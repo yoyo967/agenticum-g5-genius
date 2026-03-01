@@ -28,7 +28,7 @@ export function CTASection() {
         {/* Description */}
         <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
           className="font-mono text-white/40 text-sm md:text-base max-w-xl mx-auto leading-relaxed mb-12">
-          Step into the future of creative production. Five specialized AI agents. One voice command. 
+          Step into the future of creative production. 8 specialized AI agents. One voice command. 
           Parallel synergy that scales infinitely on Google Cloud.
         </motion.p>
 

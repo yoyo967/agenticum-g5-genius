@@ -15,7 +15,7 @@ export const ProjectPlayground: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'board' | 'wizard' | 'elements'>('board');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [logs, setLogs] = useState<string[]>([
-    '[08:42:01] Parsing storyboard: Gemini 2.0 active...',
+    '[08:42:01] Parsing storyboard: Gemini 3.1 Pro active...',
     '[08:42:03] Tagging entity: Chronos Watch (Imagen 3.0)',
     '[08:42:05] Orchestrating lighting: Google Cloud Neural Rendering'
   ]);
@@ -214,7 +214,7 @@ export const ProjectPlayground: React.FC = () => {
                          </div>
                           <div>
                             <h4 className="text-white text-sm font-bold">A.I. Director Suggestions</h4>
-                            <p className="text-[10px] text-white/40 uppercase tracking-widest mt-0.5">Engine: Gemini 2.0 Flash // Cinematic Uplift</p>
+                            <p className="text-[10px] text-white/40 uppercase tracking-widest mt-0.5">Engine: Gemini 3.1 Pro // Cinematic Uplift</p>
                          </div>
                       </div>
                       <button className="px-6 py-2 rounded-xl bg-accent text-void font-bold text-[10px] uppercase tracking-widest shadow-[0_0_15px_rgba(0,229,255,0.4)] hover:scale-105 transition-transform">

@@ -32,7 +32,7 @@ const STEPS: FlowStep[] = [
     sublabel: 'Function Calling',
     description: 'GenIUS recognizes the command → Triggers the recursive SwarmProtocol.',
     color: '#00E5FF',
-    tech: 'Gemini 2.0 Flash · Multimodal IntentPulse',
+    tech: 'Gemini 3.1 Pro · Multimodal IntentPulse',
     duration: 1400,
   },
   {

@@ -56,7 +56,10 @@ const AGENTS: AgentMetric[] = [
   { id: 'SP-01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: 'var(--color-agent-sp01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
   { id: 'CC-06', name: 'COGNITIVE CORE', role: 'Copywriter', color: 'var(--color-agent-cc06)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
   { id: 'DA-03', name: 'DESIGN ARCHITECT', role: 'Visual Artist', color: 'var(--color-agent-da03)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
-  { id: 'RA-01', name: 'SECURITY CORTEX', role: 'Auditor', color: 'var(--color-agent-ra01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+  { id: 'BA-07', name: 'DEEP INTEL', role: 'Browser AI', color: 'var(--color-agent-ba07)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+  { id: 'VE-01', name: 'MOTION DIRECTOR', role: 'Video Engine', color: 'var(--color-agent-ve01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+  { id: 'RA-01', name: 'SECURITY SENATE', role: 'Auditor', color: 'var(--color-agent-ra01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+  { id: 'GA-01', name: 'GROUNDING TECH', role: 'Researcher', color: 'var(--color-accent)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
 ];
 
 export function SwarmAnalytics() {

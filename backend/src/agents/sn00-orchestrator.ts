@@ -3,6 +3,7 @@ import { SP01Strategist } from './sp01-strategist';
 import { RA01Auditor } from './ra01-auditor';
 import { DA03Architect } from './da03-architect';
 import { CC06Director } from './cc06-director';
+import { CC02Distributor } from './cc02-distributor';
 import { PM07Manager } from './pm07-manager';
 import { VE01Director } from './ve01-director';
 import { BA07BrowserArchitect } from './ba07-browser-architect';
@@ -25,6 +26,11 @@ export class SN00Orchestrator extends BaseAgent {
     7. Storage: Ergebnis in Firestore speichern
     8. Event Emission: Pub/Sub Event für nachgelagerte Systeme
     9. Notification: User/Agent über Ergebnis informieren
+    
+    DISTRIBUTION_PROTOCOL:
+    Wenn Content erstellt wurde (CC06, DA03), MUSS ein Distribution-Task an 'cc02' angehängt werden.
+    Kanäle: CC-02 (LinkedIn), CC-03 (Email), CC-04 (Blog), CC-05 (Echo).
+    
     KNOWLEDGE BASE:
     - Systems Thinking: Senge's 5th Discipline
     - OODA Loop: Observe, Orient, Decide, Act (Boyd)
@@ -36,6 +42,7 @@ export class SN00Orchestrator extends BaseAgent {
   private auditor: RA01Auditor;
   private architect: DA03Architect;
   private director: CC06Director;
+  private distributor: CC02Distributor;
   private motionDirector: VE01Director;
   private browserArchitect: BA07BrowserArchitect;
   private manager: PM07Manager;
@@ -51,6 +58,7 @@ export class SN00Orchestrator extends BaseAgent {
     this.auditor = new RA01Auditor();
     this.architect = new DA03Architect();
     this.director = new CC06Director();
+    this.distributor = new CC02Distributor();
     this.motionDirector = new VE01Director();
     this.browserArchitect = new BA07BrowserArchitect();
     this.manager = new PM07Manager();
@@ -265,6 +273,7 @@ ${protocol.tasks.map((t: any) => `### [${String(t.agentId).toUpperCase()}] ${t.d
         director: this.director.getStatus(),
         architect: this.architect.getStatus(),
         motionDirector: this.motionDirector.getStatus(),
+        distributor: this.distributor.getStatus(),
         auditor: this.auditor.getStatus(),
         manager: this.manager.getStatus()
       }

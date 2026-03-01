@@ -14,7 +14,7 @@ const NEXUS_ITEMS = [
   {
     title: "Strategic Omniscience",
     icon: Cpu,
-    content: "Five specialized agents (SN-00 to DA-03) working in parallel via the Google ADK. They see your vision, hear your brief, and build your future simultaneously.",
+    content: "8 specialized agents (SN-00 to RA-01) working in parallel via the Google ADK. They see your vision, hear your brief, and build your future simultaneously.",
     category: "Intelligence",
     color: "#ffd700",
     route: "/os?module=swarm-analytics"
@@ -22,7 +22,7 @@ const NEXUS_ITEMS = [
   {
     title: "Hyper-Iterative Deployment",
     icon: ShieldCheck,
-    content: "Built 100% on Google Cloud Native infrastructure. Gemini 2.0 Flash, Imagen 3, and Vertex AI. No compromises. No 3rd party black-boxes.",
+    content: "Built 100% on Google Cloud Native infrastructure. Gemini 3.1 Pro, Imagen 3, and Vertex AI. No compromises. No 3rd party black-boxes.",
     category: "Engineering",
     color: "#00ff88",
     route: "/os?module=workflows"

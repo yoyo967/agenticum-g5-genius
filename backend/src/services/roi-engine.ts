@@ -64,6 +64,28 @@ export class ROIEngine {
 
     return { current: performance, suggestions, optimizedSpend };
   }
+
+  /**
+   * Records a distribution event to simulate revenue impact
+   */
+  public recordDistributionEvent(channel: string) {
+    this.logger.info(`Recording distribution event for ROI tracking: ${channel}`);
+    
+    // Simulate a revenue bump based on channel
+    const revenueBump = channel === 'linkedin' ? 500 : 
+                        channel === 'email' ? 1200 : 
+                        channel === 'wordpress' ? 800 : 300;
+    
+    this.logger.info(`Simulated revenue impact: +$${revenueBump}`);
+    
+    // In a real system, we would update Firestore metrics here
+    eventFabric.broadcast({
+      type: 'roi-impact',
+      channel,
+      revenueBump,
+      timestamp: new Date().toISOString()
+    });
+  }
 }
 
 export const roiEngine = ROIEngine.getInstance();

@@ -120,7 +120,7 @@ export const AgentShowcase = () => {
             </div>
 
             <div className="flex items-center gap-2 mb-6 border-b border-white/5 pb-6">
-              <span className="text-[9px] uppercase font-black tracking-widest text-white/40 border border-white/10 px-2 py-1 rounded bg-white/5">Gemini 2.0 Flash</span>
+              <span className="text-[9px] uppercase font-black tracking-widest text-white/40 border border-white/10 px-2 py-1 rounded bg-white/5">Gemini 3.1 Pro</span>
               <span className="text-[9px] uppercase font-black tracking-widest text-green-500 flex items-center gap-1.5 border border-green-500/20 px-2 py-1 rounded bg-green-500/5">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"/> ONLINE
               </span>

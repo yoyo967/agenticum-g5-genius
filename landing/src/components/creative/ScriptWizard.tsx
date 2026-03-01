@@ -140,7 +140,7 @@ export const ScriptWizard: React.FC = () => {
                 
                 <div className="absolute bottom-4 right-4 flex items-center gap-4">
                   <span className="text-[10px] text-white/10 uppercase tracking-widest">
-                    AI: Gemini 2.0 // Neural Engine active
+                    AI: Gemini 3.1 Pro // Neural Engine active
                   </span>
                   <button 
                     disabled={!idea || isGenerating}

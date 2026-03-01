@@ -28,14 +28,14 @@ const PROBLEM_POINTS = [
 ];
 
 const ARCHITECTURE_AGENTS = [
-  { id: 'SN-00', name: 'Nexus Prime', role: 'Neural Orchestrator', color: '#00E5FF', description: 'Coordinates all sub-agents via SwarmProtocol. Identifies intent via Function Calling.' },
-  { id: 'SO-00', name: 'Sovereign', role: 'Higher Intelligence', color: '#FFD700', description: 'The consciousness of the Nexus; fuses user vision with technical execution.' },
-  { id: 'SP-01', name: 'Strategic Cortex', role: 'Strategist', color: '#7B2FBE', description: "Market analysis, competitive intelligence, McKinsey 7S + Porter's Five Forces." },
-  { id: 'CC-06', name: 'Cognitive Core', role: 'Copywriter', color: '#FF007A', description: "Enterprise content following Ogilvy's 8 Commandments. SEO-optimized, grounded." },
-  { id: 'DA-03', name: 'Design Architect', role: 'Visual AI', color: '#FFD700', description: 'Imagen 3 Visual Generation. Bauhaus principles. Live broadcast via EventFabric.' },
-  { id: 'BA-07', name: 'Browser Architect', role: 'Deep Research', color: '#f59e0b', description: 'Deep-intel specialist for autonomous web-intelligence and data extraction via Playwright.' },
-  { id: 'VE-01', name: 'Motion Director', role: 'Cinematic Lead', color: '#ef4444', description: 'Orchestrates the Cinematic Forge pipeline for storyboards and motion-assets.' },
-  { id: 'RA-01', name: 'Security Senate', role: 'Compliance AI', color: '#00FF88', description: 'EU AI Act, FTC, Dark Pattern Detection. No output without Senate approval.' },
+  { id: 'SN-00', name: 'Nexus Orchestrator', role: 'Core Brain', color: '#00E5FF', description: 'Multi-modal synchronization & directive routing' },
+  { id: 'SP-01', name: 'Strategic Cortex', role: 'Strategist', color: '#7B2FBE', description: 'Market intelligence & McKinsey 7S analysis' },
+  { id: 'CC-06', name: 'Cognitive Core', role: 'Copywriter', color: '#FF007A', description: 'Semantic SEO clusters & high-conversion copy' },
+  { id: 'DA-03', name: 'Design Architect', role: 'Visuals', color: '#FFD700', description: 'Imagen 3 generation & UI/UX storyboard' },
+  { id: 'BA-07', name: 'Business Intelligence', role: 'Data Intel', color: '#00FF88', description: 'Deep market analysis & trend prediction' },
+  { id: 'VE-01', name: 'Video Engine', role: 'Production', color: '#FF4500', description: 'Synthetic video & motion storyboard' },
+  { id: 'RA-01', name: 'Security Senate', role: 'Auditor', color: '#00FF88', description: 'EU AI Act compliance & Brand Safety gate' },
+  { id: 'GA-01', name: 'Grounding Agent', role: 'Fact Checker', color: '#4169E1', description: 'Real-time search verification & citations' },
 ];
 
 export function OriginSection() {
@@ -214,7 +214,7 @@ export function OriginSection() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-xl bg-white/5 border border-white/10">
                     <div className="text-accent font-black text-xs mb-1">INTELLIGENCE</div>
-                    <div className="text-[10px] text-white/30 uppercase">Gemini 2.0 & Imagen 3</div>
+                    <div className="text-[10px] text-white/30 uppercase">Gemini 3.1 Pro & Imagen 3</div>
                   </div>
                   <div className="p-4 rounded-xl bg-white/5 border border-white/10">
                     <div className="text-magenta font-black text-xs mb-1">CODE BASE</div>

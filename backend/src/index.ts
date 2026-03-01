@@ -16,6 +16,7 @@ import deploymentRoutes from './routes/deployment';
 import clientsRouter from './routes/clients';
 import bridgeRoutes from './routes/bridge';
 import columnaRoutes from './routes/columna';
+import distributionRoutes from './routes/distribution';
 import { sovereignService } from './services/sovereign-service';
 import { autopilotService } from './services/cron';
 import { clientManager } from './services/client-manager';
@@ -45,7 +46,19 @@ process.on('unhandledRejection', (reason, promise) => {
   logger.error('CRITICAL: Unhandled Rejection at', reason as Error);
 });
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://online-marketing-manager.web.app',
+    'https://online-marketing-manager.firebaseapp.com',
+    'https://agenticum-frontend-697051612685.europe-west1.run.app',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:8080',
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+}));
 app.use(express.json());
 
 // API v1 Routes
@@ -60,6 +73,7 @@ app.use('/api/v1/deploy', deploymentRoutes);
 app.use('/api/v1/clients', clientsRouter);
 app.use('/api/v1/bridge', bridgeRoutes);
 app.use('/api/v1/columna', columnaRoutes);
+app.use('/api/v1/distribution', distributionRoutes);
 
 // --- SOVEREIGN AI / GEOPOLITICS ROUTES ---
 

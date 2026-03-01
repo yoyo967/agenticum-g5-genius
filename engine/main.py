@@ -21,6 +21,29 @@ def get_counter_strike():
 
 app = FastAPI(title="AGENTICUM G5 Pillar Graph Engine")
 
+# ── CORS ──────────────────────────────────────────────────────────────────────
+# Allow the Firebase-hosted frontend and any Cloud Run frontend revision to call
+# the Python engine endpoints (grounding, audit, columna, browser-action, etc.)
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://online-marketing-manager.web.app",
+        "https://online-marketing-manager.firebaseapp.com",
+        "https://agenticum-frontend-697051612685.europe-west1.run.app",
+        # Allow localhost for local development
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://localhost:8080",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
 app.include_router(columna_router, tags=["Columna Intelligence"])
 
 from engine.senate_compliance_gate import router as senate_router
@@ -52,7 +75,7 @@ async def run_audit(req: AuditRequest):
 async def health():
     return {
         "status": "healthy",
-        "swarm_nodes": ["sn_00", "sp_01", "cc_06", "da_03", "ra_01", "ba_07"],
+        "swarm_nodes": ["sn_00", "so_00", "sp_01", "cc_06", "da_03", "ba_07", "ve_01", "ra_01"],
         "ba07_status": "operational",
         "region": "europe-west1"
     }

@@ -173,7 +173,7 @@ export const SwarmIntelligence: React.FC = () => {
                  Model Distribution
               </h3>
               <div className="space-y-6">
-                 <Progress label="Gemini 2.0 Flash" value={78} color="bg-accent" />
+                 <Progress label="Gemini 3.1 Pro" value={78} color="bg-accent" />
                  <Progress label="Imagen 3.0" value={42} color="bg-gold" />
                  <Progress label="Google TTS v3" value={15} color="bg-magenta" />
               </div>

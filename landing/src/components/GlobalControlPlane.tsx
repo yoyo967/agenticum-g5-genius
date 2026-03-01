@@ -12,7 +12,7 @@ export function GlobalControlPlane() {
     gcsBucket: '',
     localFallback: './data/vault/',
     localOverride: false,
-    agentModel: 'gemini-2.0-pro',
+    agentModel: 'gemini-3.1-pro',
     temperature: 70,
     topK: 40,
     tokenLimit: 8192,
@@ -134,8 +134,8 @@ export function GlobalControlPlane() {
             <div>
               <label className="label">Agent Model</label>
               <select value={settings.agentModel} onChange={e => update('agentModel', e.target.value)} className="select">
-                <option value="gemini-2.0-pro">Gemini 2.0 Pro</option>
-                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                <option value="gemini-3.1-pro">Gemini 3.1 Pro</option>
+                <option value="gemini-3.1-flash">Gemini 3.1 Flash</option>
                 <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
               </select>
             </div>

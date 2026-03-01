@@ -38,7 +38,7 @@ export const FinalCTASection: React.FC = () => {
 
         <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
           className="text-white/40 mb-14 text-lg md:text-xl font-mono max-w-2xl mx-auto leading-relaxed">
-          Five specialized agents. One voice command. Autonomous synergy.
+          8 specialized agents. One voice command. Autonomous synergy.
           EU-Compliance-by-Design. Perfect Twin Audit Ledger.<br />
           <span className="text-white/60">This is not a tool. This is Agenticum G5.</span>
         </motion.p>
@@ -74,7 +74,7 @@ export const FinalCTASection: React.FC = () => {
 
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.8 }}
           className="mt-20 flex flex-wrap justify-center gap-8 opacity-20 transition-opacity hover:opacity-40">
-          {['G5-REVISION-00009', 'WEBSOCKET-FABRIC-LIVE', 'VAULT-PERSISTENCE-ON', 'SENATE-ACTIVE'].map(s => (
+          {['G5-REVISION-00036', 'WEBSOCKET-FABRIC-LIVE', 'VAULT-PERSISTENCE-ON', 'SENATE-ACTIVE'].map(s => (
             <span key={s} className="font-mono text-[9px] font-black tracking-widest uppercase">{s}</span>
           ))}
         </motion.div>

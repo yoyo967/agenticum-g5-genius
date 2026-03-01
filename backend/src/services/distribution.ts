@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 export interface DistributionResult {
-  channel: 'wordpress' | 'linkedin' | 'hosting';
+  channel: 'wordpress' | 'linkedin' | 'email' | 'social_echo' | 'hosting';
   status: 'success' | 'failed';
   url?: string;
   timestamp: string;
@@ -76,6 +76,52 @@ export class DistributionService {
 
     const result: DistributionResult = {
       channel: 'linkedin',
+      status: 'success',
+      url: `/vault/${filename}`,
+      timestamp: new Date().toISOString()
+    };
+
+    eventFabric.broadcast({ type: 'distribution-update', ...result });
+    return result;
+  }
+
+  /**
+   * Publishes via Email (simulated)
+   */
+  public async publishToEmail(content: { subject: string; body: string; recipients: string[] }): Promise<DistributionResult> {
+    this.logger.info(`Sending Email Campaign: ${content.subject} to ${content.recipients.length} recipients`);
+    
+    const vaultPath = path.join(process.cwd(), 'data', 'vault');
+    const filename = `EMAIL_CAMP_${Date.now()}.json`;
+    const filePath = path.join(vaultPath, filename);
+    
+    fs.writeFileSync(filePath, JSON.stringify(content, null, 2));
+
+    const result: DistributionResult = {
+      channel: 'email',
+      status: 'success',
+      url: `/vault/${filename}`,
+      timestamp: new Date().toISOString()
+    };
+
+    eventFabric.broadcast({ type: 'distribution-update', ...result });
+    return result;
+  }
+
+  /**
+   * Publishes to Social Echo (simulated)
+   */
+  public async publishToSocialEcho(message: string): Promise<DistributionResult> {
+    this.logger.info(`Broadcasting Social Echo: ${message.substring(0, 50)}...`);
+    
+    const vaultPath = path.join(process.cwd(), 'data', 'vault');
+    const filename = `SOCIAL_ECHO_${Date.now()}.txt`;
+    const filePath = path.join(vaultPath, filename);
+    
+    fs.writeFileSync(filePath, message);
+
+    const result: DistributionResult = {
+      channel: 'social_echo',
       status: 'success',
       url: `/vault/${filename}`,
       timestamp: new Date().toISOString()
