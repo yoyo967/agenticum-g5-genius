@@ -1,31 +1,50 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Copy, Check, Loader2, FileText } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 import { SenateGate } from './SenateGate';
 import { ActivityFeed } from './ActivityFeed';
 import { makeEntry } from './activityUtils';
 import type { ActivityEntry } from './ActivityFeed';
 
+// ── Content Type Registry (13 types — Phase 36) ──────────────────────────
 const CONTENT_TYPES = [
   'LinkedIn Post',
-  'Blog Intro',
+  'LinkedIn Article',
+  'Blog Post',
+  'Twitter Thread',
+  'Instagram Caption',
+  'Email Newsletter',
   'Email Subject',
   'Ad Copy',
-  'Tweet Thread',
+  'Meta Ad',
+  'Landing Page',
+  'Press Release',
+  'Product Desc',
 ] as const;
 
-type ContentType = (typeof CONTENT_TYPES)[number];
+type ContentType = typeof CONTENT_TYPES[number];
+type Tone = 'Professional' | 'Casual' | 'Bold' | 'Empathic';
+type ReadingLevel = 'C-Suite' | 'Manager' | 'General Public';
 type PanelState = 'idle' | 'loading' | 'done' | 'error';
 
 const MAX_LOG = 10;
-
-function addEntry(prev: ActivityEntry[], entry: ActivityEntry): ActivityEntry[] {
-  return [entry, ...prev].slice(0, MAX_LOG);
+function addEntry(prev: ActivityEntry[], e: ActivityEntry): ActivityEntry[] {
+  return [e, ...prev].slice(0, MAX_LOG);
 }
+
+const TYPE_ICONS: Record<string, string> = {
+  'LinkedIn Post': 'in', 'LinkedIn Article': 'in+', 'Blog Post': '📄',
+  'Twitter Thread': '𝕏', 'Instagram Caption': '📸', 'Email Newsletter': '✉️',
+  'Email Subject': 'A/B', 'Ad Copy': '🎯', 'Meta Ad': 'fb',
+  'Landing Page': '🏠', 'Press Release': '📰', 'Product Desc': '🛍️',
+};
 
 export function ContentPanel() {
   const [brief, setBrief] = useState('');
-  const [contentType, setContentType] = useState<ContentType>('LinkedIn Post');
+  const [type, setType] = useState<ContentType>('LinkedIn Post');
+  const [tone, setTone] = useState<Tone>('Professional');
+  const [readingLevel, setReadingLevel] = useState<ReadingLevel>('Manager');
   const [state, setState] = useState<PanelState>('idle');
   const [output, setOutput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -39,61 +58,54 @@ export function ContentPanel() {
   }, []);
 
   const handleGenerate = async () => {
-    if (!brief.trim() || brief.trim().length < 5) return;
+    if (!brief.trim() || state === 'loading') return;
 
     setState('loading');
     setOutput('');
     setErrorMsg('');
     setTwinId(null);
-    setCopied(false);
 
     logEntry('SN-00', 'Task dispatched to CC-06', 'dispatch');
-    logEntry('CC-06', `Generating ${contentType} — brief received`, 'action');
+    logEntry('CC-06', `Content generation activated · Type: ${type} · Tone: ${tone}`, 'action');
 
     try {
       const res = await fetch(`${API_BASE_URL}/content/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brief: brief.trim(), type: contentType }),
+        body: JSON.stringify({ brief, type, tone, readingLevel }),
       });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error ?? `HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`CC-06 responded with HTTP ${res.status}`);
 
       const data = await res.json();
-      const generatedContent: string = data.content ?? '';
+      const text: string = data.content ?? '';
 
-      setOutput(generatedContent);
+      setOutput(text);
       setState('done');
 
-      logEntry('CC-06', `${contentType} generated — ${generatedContent.split(' ').length} words`, 'output');
-      logEntry('RA-01', 'Senate compliance review initiated', 'senate');
-
+      logEntry('CC-06', `${type} generated · ${text.split(' ').length} words`, 'output');
+      logEntry('RA-01', 'Senate review initiated', 'senate');
       setSenateTrigger(k => k + 1);
 
-      // F5 — Perfect Twin Log
+      // Perfect Twin Log
       try {
         const twinRes = await fetch(`${API_BASE_URL}/vault/twin-log`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            action: 'content-generate',
+            action: `content-generate-${type.toLowerCase().replace(/\s/g, '-')}`,
             input: brief,
-            output: generatedContent,
+            output: text,
             agent: 'CC-06',
             timestamp: new Date().toISOString(),
             senateApproved: true,
           }),
         }).catch(() => null);
         if (twinRes?.ok) {
-          const twinData = await twinRes.json().catch(() => ({}));
-          setTwinId(twinData?.id ?? twinData?.docId ?? 'logged');
+          const td = await twinRes.json().catch(() => ({}));
+          setTwinId(td?.id ?? td?.docId ?? 'logged');
         }
-      } catch {
-        // Twin log non-critical
-      }
+      } catch { /* Twin log is non-critical */ }
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
@@ -103,72 +115,115 @@ export function ContentPanel() {
     }
   };
 
-  const handleCopy = async () => {
-    if (!output) return;
-    try {
-      await navigator.clipboard.writeText(output);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(output).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      logEntry('CC-06', 'Content copied to clipboard', 'output');
-    } catch {
-      // Clipboard fallback
-    }
+    });
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-mono text-xs text-blue-400 uppercase tracking-widest">CC-06</span>
+          <span className="font-mono text-xs text-emerald-400 uppercase tracking-widest">CC-06</span>
           <span className="font-mono text-xs text-zinc-600">·</span>
           <span className="font-mono text-xs text-zinc-500 uppercase tracking-widest">Cognitive Core</span>
         </div>
         <h2 className="text-xl font-bold text-white">Content Generation</h2>
         <p className="text-zinc-500 text-sm mt-1">
-          AI-powered content synthesis. EU AI Act Art.50 compliant.
+          12 content formats · Tone control · EU AI Act Art.50 compliant.
         </p>
       </div>
 
-      {/* Content Type Selector */}
-      <div className="flex flex-wrap gap-2">
-        {CONTENT_TYPES.map(type => (
-          <button
-            key={type}
-            onClick={() => setContentType(type)}
-            className={`px-3 py-1.5 font-mono text-xs uppercase tracking-widest rounded border transition-colors ${
-              contentType === type
-                ? 'bg-blue-600 border-blue-500 text-white'
-                : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
-            }`}
-          >
-            {type}
-          </button>
-        ))}
+      {/* Brief Input */}
+      <textarea
+        value={brief}
+        onChange={e => setBrief(e.target.value)}
+        placeholder="Enter your content brief... e.g. 'Write about AGENTICUM G5 — an AI OS for enterprise marketing that uses 9 specialized agents to automate campaigns 10x faster than humans.'"
+        rows={3}
+        className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 rounded text-sm font-mono placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
+        disabled={state === 'loading'}
+      />
+
+      {/* Content Type Grid */}
+      <div>
+        <p className="font-mono text-xs text-zinc-500 uppercase tracking-widest mb-2">Format</p>
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+          {CONTENT_TYPES.map(t => (
+            <button
+              key={t}
+              onClick={() => setType(t)}
+              className={`flex items-center gap-1.5 px-2.5 py-2 rounded font-mono text-xs transition-all text-left ${
+                type === t
+                  ? 'bg-emerald-700 text-white border border-emerald-500'
+                  : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-emerald-700 hover:text-white'
+              }`}
+            >
+              <span className="shrink-0 text-zinc-500 w-5 text-center">{TYPE_ICONS[t] ?? <FileText size={10} />}</span>
+              <span className="truncate">{t}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Brief Input */}
-      <div className="space-y-3">
-        <textarea
-          value={brief}
-          onChange={e => setBrief(e.target.value)}
-          placeholder={`Enter your content brief...\ne.g. "Write a ${contentType} about AI marketing automation trends in 2026"`}
-          rows={4}
-          className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 rounded text-sm font-mono placeholder:text-zinc-600 focus:outline-none focus:border-blue-500 transition-colors resize-none"
-          disabled={state === 'loading'}
-        />
-        <button
-          onClick={handleGenerate}
-          disabled={state === 'loading' || brief.trim().length < 5}
-          className={`px-6 py-2.5 font-mono text-xs uppercase tracking-widest rounded transition-all ${
-            state === 'loading'
-              ? 'bg-blue-900 text-blue-300 animate-pulse cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-500 text-white'
-          } disabled:opacity-50`}
-        >
-          {state === 'loading' ? 'CC-06 GENERATING...' : `GENERATE WITH CC-06`}
-        </button>
+      {/* Tone + Reading Level */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="font-mono text-xs text-zinc-500 uppercase tracking-widest mb-2">Tone</p>
+          <div className="flex flex-wrap gap-1.5">
+            {(['Professional', 'Casual', 'Bold', 'Empathic'] as Tone[]).map(t => (
+              <button
+                key={t}
+                onClick={() => setTone(t)}
+                className={`px-2.5 py-1 rounded font-mono text-xs transition-all ${
+                  tone === t
+                    ? 'bg-zinc-100 text-zinc-900'
+                    : 'bg-zinc-900 border border-zinc-700 text-zinc-400 hover:text-white'
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="font-mono text-xs text-zinc-500 uppercase tracking-widest mb-2">Audience</p>
+          <div className="flex flex-col gap-1.5">
+            {(['C-Suite', 'Manager', 'General Public'] as ReadingLevel[]).map(l => (
+              <button
+                key={l}
+                onClick={() => setReadingLevel(l)}
+                className={`px-2.5 py-1 rounded font-mono text-xs transition-all text-left ${
+                  readingLevel === l
+                    ? 'bg-zinc-100 text-zinc-900'
+                    : 'bg-zinc-900 border border-zinc-700 text-zinc-400 hover:text-white'
+                }`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* Generate Button */}
+      <button
+        onClick={handleGenerate}
+        disabled={state === 'loading' || !brief.trim()}
+        className={`w-full py-3 font-mono text-sm uppercase tracking-widest rounded transition-all flex items-center justify-center gap-2 ${
+          state === 'loading'
+            ? 'bg-emerald-900 text-emerald-300 animate-pulse cursor-not-allowed'
+            : 'bg-emerald-700 hover:bg-emerald-600 text-white'
+        } disabled:opacity-50`}
+      >
+        {state === 'loading' ? (
+          <><Loader2 size={16} className="animate-spin" /> CC-06 GENERATING...</>
+        ) : (
+          <>✦ GENERATE WITH CC-06</>
+        )}
+      </button>
 
       {/* Error */}
       {state === 'error' && (
@@ -185,47 +240,38 @@ export function ContentPanel() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-3"
           >
-            {/* Output Header */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-green-500" />
-                <span className="font-mono text-xs text-green-400 uppercase tracking-widest">
-                  CC-06 OUTPUT — {contentType}
-                </span>
-              </div>
+              <span className="font-mono text-xs text-zinc-500 uppercase tracking-widest">
+                Output · {type}
+              </span>
               <button
                 onClick={handleCopy}
-                className={`font-mono text-xs px-3 py-1.5 rounded border transition-all ${
-                  copied
-                    ? 'bg-green-900 border-green-700 text-green-400'
-                    : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
-                }`}
+                className="flex items-center gap-1.5 text-xs font-mono transition-colors px-2.5 py-1 rounded border border-zinc-700 hover:border-zinc-500 text-zinc-400 hover:text-white"
               >
-                {copied ? '✓ COPIED' : 'COPY TO CLIPBOARD'}
+                {copied ? <><Check size={12} className="text-green-400" /> Copied</> : <><Copy size={12} /> Copy</>}
               </button>
             </div>
-
-            {/* Content Box */}
-            <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-5">
-              <pre className="whitespace-pre-wrap text-sm text-zinc-200 leading-relaxed font-sans">
-                {output}
-              </pre>
+            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 font-mono text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-auto">
+              {output}
             </div>
 
-            {/* Metadata Badges */}
-            <div className="flex flex-wrap gap-2">
-              <span className="font-mono text-xs px-3 py-1 bg-green-950 border border-green-800 text-green-400 rounded">
-                RA-01 APPROVED
-              </span>
-              <span className="font-mono text-xs px-3 py-1 bg-zinc-900 border border-zinc-700 text-zinc-500 rounded">
+            {/* Meta badges */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-mono text-xs text-zinc-600 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded">
                 gemini-2.0-flash
               </span>
-              <span className="font-mono text-xs px-3 py-1 bg-zinc-900 border border-zinc-700 text-zinc-500 rounded">
-                EU AI ACT ART.50 ✓
+              <span className="font-mono text-xs text-zinc-600 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded">
+                {tone} · {readingLevel}
               </span>
-              {output && (
-                <span className="font-mono text-xs px-3 py-1 bg-zinc-900 border border-zinc-700 text-zinc-500 rounded">
-                  {output.split(/\s+/).filter(Boolean).length} words
+              <span className="font-mono text-xs text-green-600 bg-green-950/30 border border-green-800 px-2 py-1 rounded">
+                RA-01 APPROVED · EU AI ACT ART.50
+              </span>
+              {twinId && (
+                <span
+                  title={`Firestore: ${twinId}`}
+                  className="font-mono text-xs text-zinc-500 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded cursor-default"
+                >
+                  🔒 TWIN SEALED
                 </span>
               )}
             </div>
@@ -235,19 +281,6 @@ export function ContentPanel() {
 
       {/* F3 — Senate Gate */}
       <SenateGate triggerKey={senateTrigger} onComplete={() => {}} />
-
-      {/* F5 — Perfect Twin Badge */}
-      {twinId && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="flex items-center gap-2 group relative cursor-default w-fit">
-          <span className="font-mono text-xs text-zinc-500 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded">
-            🔒 TWIN SEALED
-          </span>
-          <span className="absolute -top-7 left-0 hidden group-hover:block bg-zinc-800 px-2 py-1 rounded font-mono text-xs text-zinc-400 whitespace-nowrap">
-            Firestore: {twinId}
-          </span>
-        </motion.div>
-      )}
 
       {/* F4 — Activity Feed */}
       <ActivityFeed entries={log} />
