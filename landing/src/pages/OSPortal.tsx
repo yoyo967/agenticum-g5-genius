@@ -4,7 +4,7 @@ import {
   Terminal, Palette, 
   Settings, Shield, Eye, Film, Globe, Search, 
   ChevronLeft, Command, Database, Users, GitMerge, Activity, 
-  FolderHeart, Network, Target, LayoutGrid, FileText, Radar, Mic, Wand2, Maximize2, Zap
+  FolderHeart, Network, Target, LayoutGrid, FileText, Radar, Mic, Wand2, Maximize2, Zap, Edit3
 } from 'lucide-react';
 import { StatusBadge } from '../components/ui';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -40,9 +40,10 @@ import { GeniusPulsar } from '../components/os/GeniusPulsar';
 import { ConsciousnessStream } from '../components/os/ConsciousnessStream';
 import { ExecutiveIntervention } from '../components/os/ExecutiveIntervention';
 import { JuryPresentation } from '../components/ui/JuryPresentation';
+import { ContentEditor } from '../components/os/ContentEditor';
 // OSAuthGate removed — Phase 36: public demo access for judges
 
-type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence' | 'global-radar' | 'swarm-command';
+type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence' | 'global-radar' | 'swarm-command' | 'editor';
 
 const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   dashboard: { label: 'Executive Dashboard', subtitle: 'Global Metrics' },
@@ -69,6 +70,7 @@ const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   'global-radar': { label: 'Global Radar', subtitle: 'Tactical Command' },
   'swarm-command': { label: 'Swarm Command', subtitle: 'Live Agent Actions' },
   settings: { label: 'Global Config', subtitle: 'System Parameters' },
+  editor: { label: 'Content Editor', subtitle: 'CC-06 Write & Preview' },
 };
 
 type OSMode = 'genius' | 'command';
@@ -189,6 +191,7 @@ export function OSPortal() {
               
               <div className="w-full h-px bg-white/5 my-3 hidden md:block" />
               
+              <SidebarButton icon={<Edit3 size={16} className="text-cyan-400" />} label="Content Editor" active={activeModule === 'editor'} onClick={() => setActiveModule('editor')} />
               <SidebarButton icon={<Settings size={16} />} label="Configuration" active={activeModule === 'settings'} onClick={() => setActiveModule('settings')} />
 
               <div className="mt-auto px-3 hidden md:block">
@@ -369,6 +372,7 @@ export function OSPortal() {
                 {activeModule === 'geopolitics' && <GeopoliticsHub />}
                 {activeModule === 'global-radar' && <GlobalRadarConsole />}
                 {activeModule === 'swarm-command' && <SwarmCommandCenter />}
+                {activeModule === 'editor' && <ContentEditor />}
               </motion.div>
             )}
           </AnimatePresence>

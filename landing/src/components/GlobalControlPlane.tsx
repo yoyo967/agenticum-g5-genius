@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Key, Server, Cpu, Eye, EyeOff, Save, RefreshCw } from 'lucide-react';
+import { Settings, Key, Server, Cpu, Eye, EyeOff, Save, RefreshCw, Palette, Bell, AlertTriangle, Trash2 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
 export function GlobalControlPlane() {
@@ -32,6 +32,30 @@ export function GlobalControlPlane() {
   }, []);
 
   const [saveError, setSaveError] = useState('');
+
+  // Brand Identity
+  const [brand, setBrand] = useState({
+    name: 'AGENTICUM G5',
+    tagline: 'The AI Marketing OS',
+    primaryColor: '#00E5FF',
+    font: 'Roboto Mono',
+    logoUrl: '',
+  });
+
+  // Notification Preferences
+  const [notifs, setNotifs] = useState({
+    weeklyReport: true,
+    anomalyAlerts: true,
+    senateFailures: true,
+    deployConfirms: false,
+    reportCadence: 'weekly',
+  });
+
+  const toggleNotif = (key: keyof typeof notifs) =>
+    setNotifs(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
+
+  const [dangerAction, setDangerAction] = useState<string | null>(null);
+
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -212,6 +236,133 @@ export function GlobalControlPlane() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* ── Brand Identity ────────────────────────────────────────── */}
+      <div className="card">
+        <h3 className="font-display text-sm uppercase tracking-wide flex items-center gap-2 mb-5">
+          <Palette size={14} className="text-magenta" /> Brand Identity
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="label">Brand Name</label>
+            <input value={brand.name} onChange={e => setBrand(p => ({ ...p, name: e.target.value }))} className="input" placeholder="AGENTICUM G5" />
+          </div>
+          <div>
+            <label className="label">Tagline</label>
+            <input value={brand.tagline} onChange={e => setBrand(p => ({ ...p, tagline: e.target.value }))} className="input" placeholder="The AI Marketing OS" />
+          </div>
+          <div>
+            <label className="label">Logo URL</label>
+            <input value={brand.logoUrl} onChange={e => setBrand(p => ({ ...p, logoUrl: e.target.value }))} className="input" placeholder="https://..." />
+          </div>
+          <div>
+            <label className="label">Primary Accent Color</label>
+            <div className="flex items-center gap-2">
+              <input type="color" value={brand.primaryColor} onChange={e => setBrand(p => ({ ...p, primaryColor: e.target.value }))}
+                className="w-10 h-9 rounded border border-white/10 bg-transparent cursor-pointer" />
+              <input value={brand.primaryColor} onChange={e => setBrand(p => ({ ...p, primaryColor: e.target.value }))}
+                className="input flex-1" placeholder="#00E5FF" />
+            </div>
+          </div>
+          <div>
+            <label className="label">UI Font</label>
+            <select value={brand.font} onChange={e => setBrand(p => ({ ...p, font: e.target.value }))} className="select">
+              <option>Roboto Mono</option>
+              <option>Inter</option>
+              <option>Space Grotesk</option>
+              <option>DM Mono</option>
+              <option>JetBrains Mono</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <div className="p-4 rounded-lg border border-white/10 bg-white/2 w-full">
+              <p className="font-mono text-[10px] text-white/30 mb-1">Preview</p>
+              <p className="font-bold uppercase tracking-widest text-sm" style={{ color: brand.primaryColor }}>{brand.name}</p>
+              <p className="font-mono text-[10px] text-white/40">{brand.tagline}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Notification Preferences ──────────────────────────────── */}
+      <div className="card">
+        <h3 className="font-display text-sm uppercase tracking-wide flex items-center gap-2 mb-5">
+          <Bell size={14} className="text-gold" /> Notification Preferences
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-3">
+            {([
+              { key: 'weeklyReport',   label: 'Weekly KPI Report',         desc: 'CSV + summary every Monday' },
+              { key: 'anomalyAlerts',  label: 'Anomaly Alerts',            desc: 'Spike/drop detection push' },
+              { key: 'senateFailures', label: 'Senate Gate Failures',      desc: 'Immediate alert on compliance block' },
+              { key: 'deployConfirms', label: 'Deploy Confirmations',      desc: 'Firebase + Cloud Run success' },
+            ] as { key: keyof typeof notifs; label: string; desc: string }[]).map(n => (
+              <div key={n.key} className="flex items-center justify-between p-3 rounded-lg bg-white/2 border border-white/5 hover:border-white/10 transition-colors">
+                <div>
+                  <p className="font-display text-xs uppercase">{n.label}</p>
+                  <p className="font-mono text-[9px] text-white/30 mt-0.5">{n.desc}</p>
+                </div>
+                <button onClick={() => toggleNotif(n.key)}
+                  className={`w-9 h-5 rounded-full transition-colors ${notifs[n.key] ? 'bg-gold' : 'bg-white/10'}`}>
+                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${notifs[n.key] ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-3">
+            <div>
+              <label className="label">Report Cadence</label>
+              <select value={notifs.reportCadence} onChange={e => setNotifs(p => ({ ...p, reportCadence: e.target.value }))} className="select">
+                <option value="daily">Daily (08:00 CET)</option>
+                <option value="weekly">Weekly (Monday 08:00)</option>
+                <option value="biweekly">Bi-Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+            <div className="p-4 rounded-lg bg-gold/5 border border-gold/20">
+              <p className="font-mono text-[10px] text-gold mb-2 uppercase tracking-widest">Next Report</p>
+              <p className="font-mono text-xs text-white/70">Monday, Mar 09, 2026 · 08:00 CET</p>
+              <p className="font-mono text-[10px] text-white/30 mt-1">KPI Hub CSV · Agent Matrix · Anomaly Log</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Danger Zone ─────────────────────────────────────────────── */}
+      <div className="card" style={{ borderColor: 'rgba(255,0,0,0.15)' }}>
+        <h3 className="font-display text-sm uppercase tracking-wide flex items-center gap-2 mb-4 text-red-400">
+          <AlertTriangle size={14} /> Danger Zone
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {[
+            { id: 'reset-config',     label: 'Reset Configuration',  desc: 'Restore all settings to defaults',         confirm: 'Are you sure? This resets all saved config.' },
+            { id: 'purge-cache',      label: 'Purge Agent Cache',     desc: 'Clear all cached outputs and responses',  confirm: 'This will delete all cached agent outputs.' },
+            { id: 'halt-swarm',       label: 'Emergency Swarm Halt',  desc: 'Stop all active agent tasks immediately', confirm: 'HALT ALL AGENTS? This stops all running tasks.' },
+          ].map(action => (
+            <div key={action.id} className="p-4 rounded-lg border border-red-900/30 bg-red-950/10">
+              <p className="font-display text-xs uppercase text-red-300 mb-1">{action.label}</p>
+              <p className="font-mono text-[10px] text-white/30 mb-3">{action.desc}</p>
+              {dangerAction === action.id ? (
+                <div className="flex gap-2">
+                  <button onClick={() => setDangerAction(null)}
+                    className="flex-1 py-1.5 border border-white/10 text-white/40 font-mono text-[10px] rounded hover:border-white/30 transition-colors">
+                    Cancel
+                  </button>
+                  <button onClick={() => setDangerAction(null)}
+                    className="flex-1 py-1.5 bg-red-700 hover:bg-red-600 text-white font-mono text-[10px] rounded transition-colors">
+                    Confirm
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setDangerAction(action.id)}
+                  className="w-full py-1.5 border border-red-800 text-red-400 font-mono text-[10px] uppercase rounded hover:bg-red-900/20 transition-colors flex items-center justify-center gap-1.5">
+                  <Trash2 size={10} /> {action.id === 'halt-swarm' ? 'HALT' : 'Execute'}
+                </button>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>
