@@ -75,7 +75,8 @@ async def run_audit(req: AuditRequest):
 async def health():
     return {
         "status": "healthy",
-        "swarm_nodes": ["sn_00", "so_00", "sp_01", "cc_06", "da_03", "ba_07", "ve_01", "ra_01"],
+        "swarm_nodes": ["sn_00", "so_00", "sp_01", "cc_06", "da_03", "ba_07", "ve_01", "ra_01", "pm_07"],
+        "node_count": 9,
         "ba07_status": "operational",
         "region": "europe-west1"
     }

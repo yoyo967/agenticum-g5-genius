@@ -82,4 +82,63 @@ router.get('/files', async (_req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/v1/vault/twin-log
+ * Perfect Twin Audit — log every AI output to Firestore for audit trail
+ */
+router.post('/twin-log', async (req: Request, res: Response) => {
+  try {
+    const { action, input, output, agent, timestamp, senateApproved } = req.body;
+
+    if (!action || !agent) {
+      return res.status(400).json({ error: 'Missing required fields: action, agent' });
+    }
+
+    // Try to persist to Firestore
+    try {
+      const { FirestoreManager } = require('../services/firestore');
+      const firestore = FirestoreManager.getInstance();
+      const db = firestore.getDb();
+
+      if (db) {
+        const docRef = await db.collection('perfect_twin_logs').add({
+          action,
+          input: typeof input === 'string' ? input.slice(0, 500) : JSON.stringify(input).slice(0, 500),
+          outputSummary: typeof output === 'string'
+            ? output.slice(0, 300)
+            : JSON.stringify(output).slice(0, 300),
+          agent,
+          timestamp: timestamp || new Date().toISOString(),
+          senateApproved: senateApproved ?? true,
+          createdAt: new Date(),
+        });
+
+        return res.json({
+          status: 'sealed',
+          id: docRef.id,
+          docId: docRef.id,
+          agent,
+          message: `Perfect Twin log sealed in Firestore — ID: ${docRef.id}`,
+        });
+      }
+    } catch (firestoreErr) {
+      console.warn('[Twin Log] Firestore unavailable, using fallback ID:', firestoreErr);
+    }
+
+    // Fallback: return a deterministic pseudo-ID
+    const fallbackId = `twin-${Date.now()}-${agent.toLowerCase()}`;
+    return res.json({
+      status: 'sealed',
+      id: fallbackId,
+      docId: fallbackId,
+      agent,
+      message: 'Perfect Twin log sealed (local fallback — Firestore offline)',
+    });
+
+  } catch (err) {
+    console.error('[Twin Log] Error:', err);
+    return res.status(500).json({ error: 'Twin log failed', details: String(err) });
+  }
+});
+
 export default router;

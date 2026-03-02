@@ -19,22 +19,23 @@ export class VertexAIService {
     
     this.vertexAI = new VertexAI({ project, location });
     
-    // Gemini 3.1 Pro Migration (Phase 26)
-    // Engine Core mapped to fallback (2.0-flash) until 3.x is GA/Provisioned
+    // PRODUCTION MODEL: gemini-2.0-flash (verified production-stable, europe-west1)
+    // gemini-2.0-flash provides multimodal reasoning, function calling, and grounding.
+    // gemini-3.x models returned 404s during Vertex AI provisioning checks — not yet GA.
     this.model = this.vertexAI.getGenerativeModel({
-      model: 'gemini-2.0-flash', // Default model
+      model: 'gemini-2.0-flash',
     });
   }
 
-  // Phase 26: Global Model Definition Block
-  // Note: 3.1 Pro / 3 Flash returned 404s during initial verification. 
-  // Sticking to 2.0-flash for stability until Preview is fully provisioned.
+  // ── PRODUCTION MODEL REGISTRY (02.03.2026) ─────────────────────────────────
+  // All models verified as production-available in GCP project online-marketing-manager
+  // region europe-west1. Only models with confirmed quota are listed here.
   public readonly GEMINI_MODELS = {
-    // Standard: schnell + günstig (Target: gemini-3-flash)
+    // Standard + Reasoning: gemini-2.0-flash — fast, multimodal, function calling
     default: 'gemini-2.0-flash',
-    // Reasoning: SN-00 Nexus Prime, SP-01 Strategic Cortex (Target: gemini-3-1-pro)
+    // Reasoning tier — same model, differentiated by prompt structure
     reasoning: 'gemini-2.0-flash',
-    // Voice: NICHT ÄNDERN — 2.0 Bidi bleibt bis 3 Live GA
+    // Voice: Bidirectional Live API — DO NOT CHANGE (3.x Live not yet GA)
     voice: 'gemini-2.0-flash-live-001',
   };
 

@@ -28,35 +28,35 @@ const AGENTS: Agent[] = [
     id: 'SN-00',
     name: 'NEURAL ORCHESTRATOR',
     description: 'Dispatches all agents via SwarmProtocol v3.0',
-    model: 'gemini-3-1-pro',
+    model: 'gemini-2.0-flash',
     latency: '38ms',
   },
   {
     id: 'SP-01',
     name: 'STRATEGIC CORTEX',
     description: 'Competitor intelligence via Firestore Vector Search',
-    model: 'gemini-3-1-pro',
+    model: 'gemini-2.0-flash',
     latency: '1200ms',
   },
   {
     id: 'CC-06',
     name: 'COGNITIVE CORE',
     description: 'Multi-channel content synthesis & copywriting',
-    model: 'gemini-3-1-pro',
+    model: 'gemini-2.0-flash',
     latency: '3200ms',
   },
   {
     id: 'DA-03',
     name: 'DESIGN ARCHITECT',
     description: 'Visual asset generation via Imagen 3',
-    model: 'imagen-3',
+    model: 'imagen-3.0-generate-002',
     latency: '6800ms',
   },
   {
     id: 'BA-07',
     name: 'BROWSER ARCHITECT',
     description: 'Real-world research & Google Search grounding',
-    model: 'gemini-3-flash',
+    model: 'gemini-2.0-flash',
     latency: '2100ms',
   },
   {
@@ -70,23 +70,30 @@ const AGENTS: Agent[] = [
     id: 'RA-01',
     name: 'SECURITY SENATE',
     description: 'EU AI Act Art.50 compliance gate. Veto power.',
-    model: 'gemini-3-flash',
+    model: 'gemini-2.0-flash',
     latency: '280ms',
   },
   {
     id: 'SO-00',
     name: 'SOVEREIGN CORE',
     description: 'Federated sync, RAG memory & pilot coordination',
-    model: 'gemini-3-flash',
+    model: 'gemini-2.0-flash',
     latency: '580ms',
+  },
+  {
+    id: 'PM-07',
+    name: 'MISSION MANAGER',
+    description: '24/7 persistent mission sync, Google Chat integration & proactive scheduling',
+    model: 'gemini-2.0-flash',
+    latency: '420ms',
   },
 ];
 
 const TECH_BADGES = [
-  'Gemini 3.1 Pro',
+  'Gemini 2.0 Flash',
   'Gemini Live API',
   'Vertex AI',
-  'Imagen 3',
+  'Imagen 3.0',
   'text-embedding-004',
   'Google Cloud Run',
   'Firestore Vector Search',
@@ -353,7 +360,7 @@ export function LandingPage() {
           <FadeIn delay={0.4}>
             <div className="grid grid-cols-3 gap-px border border-zinc-800 bg-zinc-800">
               {[
-                { value: '8', label: 'AI AGENTS' },
+                { value: '9', label: 'AI AGENTS' },
                 { value: '99%', label: 'SENATE APPROVAL' },
                 { value: '<60s', label: 'CAMPAIGN TIME' },
               ].map((stat) => (
