@@ -4,7 +4,7 @@ import {
   Terminal, Palette, 
   Settings, Shield, Eye, Film, Globe, Search, 
   ChevronLeft, Command, Database, Users, GitMerge, Activity, 
-  FolderHeart, Network, Target, LayoutGrid, FileText, Radar, Mic, Wand2, Maximize2
+  FolderHeart, Network, Target, LayoutGrid, FileText, Radar, Mic, Wand2, Maximize2, Zap
 } from 'lucide-react';
 import { StatusBadge } from '../components/ui';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -34,6 +34,7 @@ import { ScriptWizard } from '../components/creative/ScriptWizard';
 import { ProjectPlayground } from '../components/playground/ProjectPlayground';
 import { SwarmIntelligence } from '../components/telemetry/SwarmIntelligence';
 import { GlobalRadarConsole } from '../components/os/GlobalRadarConsole';
+import { SwarmCommandCenter } from '../components/os/SwarmCommandCenter';
 
 import { GeniusPulsar } from '../components/os/GeniusPulsar';
 import { ConsciousnessStream } from '../components/os/ConsciousnessStream';
@@ -41,7 +42,7 @@ import { ExecutiveIntervention } from '../components/os/ExecutiveIntervention';
 import { JuryPresentation } from '../components/ui/JuryPresentation';
 import { OSAuthGate } from '../components/auth/OSAuthGate';
 
-type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence' | 'global-radar';
+type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence' | 'global-radar' | 'swarm-command';
 
 const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   dashboard: { label: 'Executive Dashboard', subtitle: 'Global Metrics' },
@@ -66,6 +67,7 @@ const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   'swarm-intelligence': { label: 'Swarm Intelligence', subtitle: 'Neural Telemetry' },
   geopolitics: { label: 'Geopolitics Hub', subtitle: 'Sovereign AI Mesh' },
   'global-radar': { label: 'Global Radar', subtitle: 'Tactical Command' },
+  'swarm-command': { label: 'Swarm Command', subtitle: 'Live Agent Actions' },
   settings: { label: 'Global Config', subtitle: 'System Parameters' },
 };
 
@@ -162,6 +164,7 @@ export function OSPortal() {
               <SidebarButton icon={<Activity size={16} />} label="Dashboard" active={activeModule === 'dashboard'} onClick={() => setActiveModule('dashboard')} />
               <SidebarButton icon={<Target size={16} />} label="Campaign Hub" active={activeModule === 'campaign'} onClick={() => setActiveModule('campaign')} />
               <SidebarButton icon={<Terminal size={16} />} label="GenIUS Console" active={activeModule === 'console'} onClick={() => setActiveModule('console')} accent />
+              <SidebarButton icon={<Zap size={16} className="text-blue-400" />} label="Swarm Command" active={activeModule === 'swarm-command'} onClick={() => setActiveModule('swarm-command')} accent />
               <SidebarButton icon={<LayoutGrid size={16} />} label="Nexus Engine" active={activeModule === 'nexus-engine'} onClick={() => setActiveModule('nexus-engine')} />
               <SidebarButton icon={<FileText size={16} />} label="Blog Engine" active={activeModule === 'pillar-blog'} onClick={() => setActiveModule('pillar-blog')} />
               <SidebarButton icon={<Palette size={16} />} label="Creative Studio" active={activeModule === 'studio'} onClick={() => setActiveModule('studio')} />
@@ -366,6 +369,7 @@ export function OSPortal() {
                 {activeModule === 'swarm-intelligence' && <SwarmIntelligence />}
                 {activeModule === 'geopolitics' && <GeopoliticsHub />}
                 {activeModule === 'global-radar' && <GlobalRadarConsole />}
+                {activeModule === 'swarm-command' && <SwarmCommandCenter />}
               </motion.div>
             )}
           </AnimatePresence>
