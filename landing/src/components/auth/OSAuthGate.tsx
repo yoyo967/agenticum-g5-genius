@@ -14,7 +14,17 @@ export function OSAuthGate({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ── JURY / DEMO ACCESS ────────────────────────────────────────────────────
+  // Phase 36: Open access for hackathon judges. Authenticated users get their
+  // full session; unauthenticated users enter as Guest (full OS visible).
+  // The login form is preserved for returning users via the /os?auth=1 param.
   if (isAuthenticated && user) {
+    return <>{children}</>;
+  }
+
+  // Guest passthrough — render OS Portal without login wall
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('auth')) {
     return <>{children}</>;
   }
 

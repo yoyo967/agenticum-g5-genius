@@ -163,7 +163,7 @@ const IconX = () => (
 const HOW_STEPS: Step[] = [
   { number: '01', title: 'VOICE INPUT', description: 'Speak your campaign brief', icon: <IconMic /> },
   { number: '02', title: 'ORCHESTRATION', description: 'SN-00 dispatches to all agents', icon: <IconNetwork /> },
-  { number: '03', title: 'PARALLEL SWARM', description: '8 agents execute simultaneously', icon: <IconZap /> },
+  { number: '03', title: 'PARALLEL SWARM', description: '9 agents execute simultaneously', icon: <IconZap /> },
   { number: '04', title: 'SENATE GATE', description: 'RA-01 audits every output', icon: <IconShield /> },
   { number: '05', title: 'DELIVERY', description: 'Campaign ready in under 60 seconds', icon: <IconCheck /> },
 ];
@@ -593,7 +593,7 @@ export function LandingPage() {
           </h2>
 
           <p className="text-zinc-400 mb-12 font-mono text-sm">
-            Phase 1 of 5 — 8 of 52 nodes active.
+            Phase 1 of 5 — 9 of 52 nodes active.
           </p>
 
           <button
