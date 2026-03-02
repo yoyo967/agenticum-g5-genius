@@ -40,7 +40,7 @@ import { GeniusPulsar } from '../components/os/GeniusPulsar';
 import { ConsciousnessStream } from '../components/os/ConsciousnessStream';
 import { ExecutiveIntervention } from '../components/os/ExecutiveIntervention';
 import { JuryPresentation } from '../components/ui/JuryPresentation';
-import { OSAuthGate } from '../components/auth/OSAuthGate';
+// OSAuthGate removed — Phase 36: public demo access for judges
 
 type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence' | 'global-radar' | 'swarm-command';
 
@@ -119,8 +119,7 @@ export function OSPortal() {
   }, [osMode]);
 
   return (
-    <OSAuthGate>
-      <div className={`min-h-screen text-white flex overflow-hidden relative selection:bg-accent/30 ${osMode === 'command' ? 'bg-midnight' : 'bg-obsidian/95'}`}>
+    <div className={`min-h-screen text-white flex overflow-hidden relative selection:bg-accent/30 ${osMode === 'command' ? 'bg-midnight' : 'bg-obsidian/95'}`}>
         {/* Animated Mesh Gradient Background */}
         <MeshBackground />
       
@@ -394,8 +393,7 @@ export function OSPortal() {
           />
         )}
       </AnimatePresence>
-    </div>
-    </OSAuthGate>
+  </div>
   );
 }
 

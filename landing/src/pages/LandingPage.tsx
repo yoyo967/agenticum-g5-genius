@@ -409,7 +409,7 @@ export function LandingPage() {
               <span className="font-mono text-xs text-green-500 uppercase tracking-widest">The G5 Way</span>
             </div>
             <h3 className="text-2xl font-semibold text-white mb-4 leading-snug">
-              One voice command.<br />8 agents activate.
+              One voice command.<br />9 agents activate.
             </h3>
             <p className="text-zinc-400 leading-relaxed">
               Research. Write. Design. Audit. Simultaneously.
@@ -421,7 +421,7 @@ export function LandingPage() {
       </section>
 
       {/* ================================================================
-          SECTION 3 — 8 AGENTS
+          SECTION 3 — 9 AGENTS
           ================================================================ */}
       <section id="agents" className="py-32 px-6 border-t border-zinc-900">
         <div className="max-w-6xl mx-auto">
