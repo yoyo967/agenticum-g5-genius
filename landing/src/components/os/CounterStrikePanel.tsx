@@ -7,12 +7,16 @@ import { makeEntry } from './activityUtils';
 import type { ActivityEntry } from './ActivityFeed';
 
 interface Competitor {
+  // Engine actual fields
+  competitor?: string;
+  their_h2_structure?: string[];
+  // Normalized / alternate names
   name?: string;
+  title?: string;
   url?: string;
   h2_structure?: string[];
   overlap_score?: number;
   keywords?: string[];
-  title?: string;
 }
 
 type PanelState = 'idle' | 'loading' | 'done' | 'error';
@@ -77,7 +81,7 @@ export function CounterStrikePanel() {
 
       // F5 — Perfect Twin Log
       try {
-        const twinRes = await fetch(`${API_BASE_URL}/api/v1/vault/twin-log`, {
+        const twinRes = await fetch(`${API_BASE_URL}/vault/twin-log`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -177,7 +181,7 @@ export function CounterStrikePanel() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="font-bold text-white text-sm">
-                        {c.name ?? c.title ?? `Competitor ${i + 1}`}
+                        {c.competitor ?? c.name ?? c.title ?? `Competitor ${i + 1}`}
                       </p>
                       {c.url && (
                         <a
@@ -201,20 +205,23 @@ export function CounterStrikePanel() {
                   </div>
 
                   {/* H2 Structure */}
-                  {c.h2_structure && c.h2_structure.length > 0 && (
-                    <div>
-                      <p className="font-mono text-xs text-zinc-600 uppercase tracking-widest mb-1.5">
-                        H2 Structure
-                      </p>
-                      <ul className="space-y-1">
-                        {c.h2_structure.slice(0, 4).map((h, j) => (
-                          <li key={j} className="text-xs text-zinc-400 flex gap-2">
-                            <span className="text-zinc-700">—</span> {h}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {(() => {
+                    const h2s = c.their_h2_structure ?? c.h2_structure ?? [];
+                    return h2s.length > 0 ? (
+                      <div>
+                        <p className="font-mono text-xs text-zinc-600 uppercase tracking-widest mb-1.5">
+                          H2 Structure
+                        </p>
+                        <ul className="space-y-1">
+                          {h2s.slice(0, 4).map((h, j) => (
+                            <li key={j} className="text-xs text-zinc-400 flex gap-2">
+                              <span className="text-zinc-700">—</span> {h}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null;
+                  })()}
 
                   {/* Keywords */}
                   {c.keywords && c.keywords.length > 0 && (
