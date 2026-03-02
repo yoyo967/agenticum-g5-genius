@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Terminal, Briefcase, Zap, Send, FileText, Image as ImageIcon, Cpu, Activity, CircleDashed, DollarSign, Crosshair, BarChart2, Plus, ChevronRight, Clock, Download as DownloadIcon, Search, Film, Shield, Eye } from 'lucide-react';
+import { Target, Terminal, Briefcase, Zap, Send, FileText, Image as ImageIcon, Cpu, Activity, CircleDashed, DollarSign, Crosshair, BarChart2, Plus, ChevronRight, Clock, Download as DownloadIcon, Search, Film, Shield, Eye, Link2 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadCSV, downloadZIP, downloadPDF } from '../utils/export';
 import { PerfectTwinInspector } from './os/PerfectTwinInspector';
+import { UTMGenerator } from './os/UTMGenerator';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { useAppStore } from '../store/useAppStore';
@@ -29,9 +30,11 @@ type AgentDraft = {
 };
 
 type View = 'list' | 'create';
+type HubTab = 'campaigns' | 'utm';
 
 export function CampaignManager() {
   const [view, setView] = useState<View>('list');
+  const [hubTab, setHubTab] = useState<HubTab>('campaigns');
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
@@ -234,79 +237,101 @@ export function CampaignManager() {
           </div>
         </div>
 
-        {/* Campaign List */}
-        {loading ? (
-          <div className="grid gap-3">
-            {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-24 w-full" />)}
-          </div>
-        ) : campaigns.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <CircleDashed size={48} className="text-white/10 mb-4" />
-            <p className="font-display text-lg uppercase text-white/30">No Campaigns Yet</p>
-            <p className="font-mono text-xs text-white/20 mt-2 max-w-md">
-              Create your first campaign to dispatch the agent swarm. Each campaign will be saved to Firestore and tracked end-to-end.
-            </p>
-            <button onClick={() => setView('create')} className="btn btn-primary mt-6">
-              <Plus size={14} /> Create First Campaign
+        {/* ── Hub Tabs ────────────────────────────────────────────────── */}
+        <div className="flex gap-0 border-b border-white/5 mb-2">
+          {([{ id: 'campaigns', label: 'Campaigns', icon: <Target size={12} /> }, { id: 'utm', label: 'UTM Generator', icon: <Link2 size={12} /> }] as { id: HubTab; label: string; icon: React.ReactNode }[]).map(tab => (
+            <button key={tab.id} onClick={() => setHubTab(tab.id)}
+              className={`flex items-center gap-1.5 px-4 py-2.5 font-mono text-[10px] uppercase tracking-widest transition-colors relative ${
+                hubTab === tab.id ? 'text-white' : 'text-white/30 hover:text-white/60'
+              }`}>
+              {tab.icon} {tab.label}
+              {hubTab === tab.id && <motion.div layoutId="hub-tab-line" className="absolute bottom-0 left-0 right-0 h-px bg-accent" />}
             </button>
+          ))}
+        </div>
+
+        {/* UTM Generator Tab */}
+        {hubTab === 'utm' && (
+          <div className="overflow-y-auto pb-6">
+            <UTMGenerator />
           </div>
-        ) : (
-          <div className="grid gap-3">
-            {campaigns.map(campaign => (
-              <motion.div
-                key={campaign.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="card flex items-center gap-4 cursor-pointer group hover:border-accent/30"
-                onClick={() => { setSelectedCampaign(campaign); setView('create'); }}
-              >
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0,229,255,0.08)' }}>
-                  <Target size={18} className="text-accent" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-display text-sm uppercase truncate">{campaign.name}</p>
-                    {campaign.status === 'ENABLED' && (
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDownloadPackage(campaign); }}
-                        className="btn btn-ghost btn-xs text-accent px-1 h-5 min-h-[20px]"
-                      >
-                        <DownloadIcon size={10} /> ZIP Package
-                      </button>
-                    )}
+        )}
+
+        {/* Campaign List — only shown when campaigns tab active */}
+        {hubTab === 'campaigns' && (
+          loading ? (
+            <div className="grid gap-3">
+              {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-24 w-full" />)}
+            </div>
+          ) : campaigns.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <CircleDashed size={48} className="text-white/10 mb-4" />
+              <p className="font-display text-lg uppercase text-white/30">No Campaigns Yet</p>
+              <p className="font-mono text-xs text-white/20 mt-2 max-w-md">
+                Create your first campaign to dispatch the agent swarm. Each campaign will be saved to Firestore and tracked end-to-end.
+              </p>
+              <button onClick={() => setView('create')} className="btn btn-primary mt-6">
+                <Plus size={14} /> Create First Campaign
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {campaigns.map(campaign => (
+                <motion.div
+                  key={campaign.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="card flex items-center gap-4 cursor-pointer group hover:border-accent/30"
+                  onClick={() => { setSelectedCampaign(campaign); setView('create'); }}
+                >
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0,229,255,0.08)' }}>
+                    <Target size={18} className="text-accent" />
                   </div>
-                  <p className="font-mono text-[10px] text-white/30 mt-0.5">
-                    {campaign.objective} · ${campaign.budget?.dailyAmount}/day · {campaign.biddingStrategy?.type?.replace('MAXIMIZE_', 'Max ')}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`badge ${campaign.status === 'ENABLED' ? 'badge-online' : campaign.status === 'DRAFT' ? 'badge-processing' : 'badge-warning'}`}>
-                    {campaign.status}
-                  </span>
-                  {/* GenIUS Score — heuristic based on campaign completeness */}
-                  {(() => {
-                    let score = 40; // base
-                    if (campaign.status === 'ENABLED') score += 20;
-                    if (campaign.budget?.dailyAmount > 0) score += 15;
-                    if (campaign.assetGroups && campaign.assetGroups.length > 0) score += 15;
-                    if (campaign.biddingStrategy?.type) score += 10;
-                    score = Math.min(score, 100);
-                    const color = score >= 71 ? '#00FF88' : score >= 41 ? '#FFD700' : '#FF007A';
-                    return (
-                      <span className="font-mono text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${color}15`, color, border: `1px solid ${color}30` }}>
-                        G:{score}
-                      </span>
-                    );
-                  })()}
-                  <div className="flex items-center gap-1 text-white/20">
-                    <Clock size={10} />
-                    <span className="font-mono text-[9px]">{new Date(campaign.createdAt).toLocaleDateString('en-US')}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-display text-sm uppercase truncate">{campaign.name}</p>
+                      {campaign.status === 'ENABLED' && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDownloadPackage(campaign); }}
+                          className="btn btn-ghost btn-xs text-accent px-1 h-5 min-h-[20px]"
+                        >
+                          <DownloadIcon size={10} /> ZIP Package
+                        </button>
+                      )}
+                    </div>
+                    <p className="font-mono text-[10px] text-white/30 mt-0.5">
+                      {campaign.objective} · ${campaign.budget?.dailyAmount}/day · {campaign.biddingStrategy?.type?.replace('MAXIMIZE_', 'Max ')}
+                    </p>
                   </div>
-                  <ChevronRight size={14} className="text-white/20 group-hover:text-accent transition-colors" />
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`badge ${campaign.status === 'ENABLED' ? 'badge-online' : campaign.status === 'DRAFT' ? 'badge-processing' : 'badge-warning'}`}>
+                      {campaign.status}
+                    </span>
+                    {/* GenIUS Score — heuristic based on campaign completeness */}
+                    {(() => {
+                      let score = 40; // base
+                      if (campaign.status === 'ENABLED') score += 20;
+                      if (campaign.budget?.dailyAmount > 0) score += 15;
+                      if (campaign.assetGroups && campaign.assetGroups.length > 0) score += 15;
+                      if (campaign.biddingStrategy?.type) score += 10;
+                      score = Math.min(score, 100);
+                      const color = score >= 71 ? '#00FF88' : score >= 41 ? '#FFD700' : '#FF007A';
+                      return (
+                        <span className="font-mono text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${color}15`, color, border: `1px solid ${color}30` }}>
+                          G:{score}
+                        </span>
+                      );
+                    })()}
+                    <div className="flex items-center gap-1 text-white/20">
+                      <Clock size={10} />
+                      <span className="font-mono text-[9px]">{new Date(campaign.createdAt).toLocaleDateString('en-US')}</span>
+                    </div>
+                    <ChevronRight size={14} className="text-white/20 group-hover:text-accent transition-colors" />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )
         )}
       </div>
     );
