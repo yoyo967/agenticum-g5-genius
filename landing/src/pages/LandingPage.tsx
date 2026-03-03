@@ -401,7 +401,7 @@ export function LandingPage() {
                 Initialize Swarm <IconArrowRight />
               </button>
               <button
-                onClick={() => window.open('/demo-workflow', '_blank')}
+                onClick={() => scrollTo('demo-video')}
                 className="flex items-center justify-center gap-2 px-8 py-4 border border-zinc-700 hover:border-zinc-400 text-white font-mono text-sm uppercase tracking-widest transition-colors"
               >
                 Watch Demo <IconArrowRight />
@@ -430,6 +430,34 @@ export function LandingPage() {
                 </div>
               ))}
             </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ================================================================
+          NEW: DEMO VIDEO [LP-10]
+          ================================================================ */}
+      <section id="demo-video" className="py-24 px-6 border-t border-zinc-900 bg-zinc-950/40 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-linear-to-r from-transparent via-blue-500/50 to-transparent" />
+        <div className="max-w-5xl mx-auto">
+          <FadeIn className="text-center mb-16">
+            <span className="font-mono text-xs text-blue-500 uppercase tracking-widest block mb-4">Production Preview</span>
+            <h2 className="text-4xl font-semibold text-white mb-2">The Swarm in Action.</h2>
+            <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-widest">Vision · Voice · Execution</p>
+          </FadeIn>
+          
+          <FadeIn delay={0.1} className="relative aspect-video bg-zinc-950 rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl group cursor-wait">
+             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12 z-10">
+                <div className="w-20 h-20 rounded-full bg-blue-600/10 border border-blue-600/30 flex items-center justify-center mb-8 group-hover:bg-blue-600/20 group-hover:border-blue-600/50 transition-all duration-500">
+                  <div className="w-0 h-0 border-t-10 border-t-transparent border-l-18 border-l-blue-500 border-b-10 border-b-transparent ml-1" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-wide">Demo Processing...</h3>
+                <p className="text-zinc-500 font-mono text-xs uppercase tracking-[0.2em] leading-relaxed max-w-sm">
+                  High-fidelity recording of the Gemini Live API orchestration is being finalized. 
+                </p>
+             </div>
+             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.05)_0%,transparent_70%)] animate-pulse" />
+             <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent opacity-80" />
           </FadeIn>
         </div>
       </section>
