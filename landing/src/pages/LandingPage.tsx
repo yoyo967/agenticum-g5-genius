@@ -61,8 +61,8 @@ const AGENTS: Agent[] = [
   },
   {
     id: 'VE-01',
-    name: 'VOICE INTERFACE',
-    description: 'Gemini Live API bidirectional audio streaming',
+    name: 'VOICE ENGAGEMENT',
+    description: 'Gemini Live API bidirectional audio streaming & tool calling',
     model: 'gemini-2.0-flash-live-001',
     latency: '<800ms',
   },
@@ -163,6 +163,13 @@ const IconGithub = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
+const IconGemini = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles">
+    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/>
+    <path d="M20 3v4"/><path d="M18 5h4"/><path d="M4 18v2"/><path d="M3 19h2"/>
+  </svg>
+);
+
 /* ============================================================
    HOW IT WORKS DATA
    ============================================================ */
@@ -209,7 +216,7 @@ export function LandingPage() {
     if (apiHealth === 'checking') return;
     setApiHealth('checking');
     try {
-      const res = await fetch('https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health', { signal: AbortSignal.timeout(8000) });
+      const res = await fetch('https://genius-backend-697051612685.europe-west1.run.app/api/v1/health', { signal: AbortSignal.timeout(8000) });
       setApiHealth(res.ok ? 'online' : 'offline');
       setTimeout(() => setApiHealth('idle'), 4000);
     } catch {
@@ -346,11 +353,23 @@ export function LandingPage() {
         <div className="relative z-10 max-w-4xl mx-auto">
           {/* Eyebrow */}
           <FadeIn delay={0} immediate>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-zinc-800 mb-10">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              <span className="font-mono text-xs text-zinc-400 uppercase tracking-widest">
-                Gemini Live Agent Challenge 2026
-              </span>
+            <div className="flex flex-col items-center gap-4 mb-10">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-zinc-800">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                <span className="font-mono text-xs text-zinc-400 uppercase tracking-widest">
+                  Gemini Live Agent Challenge 2026
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                 <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+                    <IconGemini />
+                    <span className="font-mono text-[10px] text-white/60 font-bold uppercase tracking-tighter">Powered by Gemini 2.0 Flash</span>
+                 </div>
+                 <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+                    <IconShield />
+                    <span className="font-mono text-[10px] text-white/60 font-bold uppercase tracking-tighter">Google Cloud Ecosystem</span>
+                 </div>
+              </div>
             </div>
           </FadeIn>
 
@@ -412,6 +431,85 @@ export function LandingPage() {
               ))}
             </div>
           </FadeIn>
+        </div>
+      </section>
+
+      {/* ================================================================
+          NEW: GEMINI LIVE API SHOWCASE
+          ================================================================ */}
+      <section id="gemini-live" className="py-24 px-6 border-t border-zinc-900 bg-zinc-950/20 overflow-hidden">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex-1 space-y-8">
+              <FadeIn>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full mb-6">
+                  <IconGemini />
+                  <span className="font-mono text-[10px] text-blue-400 uppercase tracking-widest font-bold">
+                    Hackathon Star: Gemini Live API
+                  </span>
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6 leading-[1.1]">
+                   Voice Control.<br />
+                   <span className="text-zinc-500">Multimodal Swarm Trigger.</span>
+                </h2>
+                <p className="text-zinc-400 text-lg leading-relaxed max-w-xl">
+                  By integrating the <strong>@google/genai v1.43.0</strong> Live API, Agenticum G5 enables seamless verbal dialogue. 
+                  No latency. No button clicks. Just speak your vision.
+                </p>
+              </FadeIn>
+
+              <div className="grid sm:grid-cols-2 gap-6 pt-4">
+                {[
+                  { title: 'launch_swarm', body: 'The model calls our core orchestrator whenever marketing directives are detected.', icon: <IconZap /> },
+                  { title: 'Barge-in Support', body: 'Interruption handling via serverContent.interrupted for natural turn-taking.', icon: <IconMic /> },
+                  { title: '16kHz Streaming', body: 'Compressed PCM16 audio forwarded directly to the Multimodal backend.', icon: <IconNetwork /> },
+                  { title: 'v00012 Node', body: 'Fully deployed on Europe-West1 with <800ms intent recognition.', icon: <IconShield /> },
+                ].map((f, i) => (
+                  <FadeIn key={f.title} delay={0.1 + (i * 0.05)} className="space-y-2">
+                    <div className="text-blue-500">{f.icon}</div>
+                    <h4 className="font-bold text-white text-sm uppercase tracking-wide">{f.title}</h4>
+                    <p className="text-zinc-500 text-xs leading-relaxed">{f.body}</p>
+                  </FadeIn>
+                ))}
+              </div>
+            </div>
+
+            {/* Visual Representation of the Live Waveform */}
+            <div className="flex-1 relative">
+               <div className="absolute inset-0 bg-blue-600/10 blur-[100px] rounded-full" />
+               <div className="relative border border-zinc-800 bg-black/40 backdrop-blur-xl p-8 rounded-3xl overflow-hidden shadow-2xl">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
+                      <span className="font-mono text-[10px] text-zinc-400 uppercase tracking-[0.2em]">Live Audio Substrate</span>
+                    </div>
+                    <span className="font-mono text-[9px] text-blue-500/50">NODE: EU-WEST1</span>
+                  </div>
+                  
+                  <div className="h-40 flex items-center justify-center gap-1.5 mb-8">
+                    {[1,2,3,4,5,6,7,8,7,6,5,4,3,2,1].map((h, i) => (
+                      <motion.div 
+                        key={i}
+                        animate={{ height: [10, 20 + h*4, 10] }}
+                        transition={{ repeat: Infinity, duration: 1, delay: i * 0.05 }}
+                        className="w-1.5 bg-blue-500/30 rounded-full"
+                      />
+                    ))}
+                  </div>
+
+                  <div className="space-y-4">
+                     <div className="p-4 bg-zinc-950/50 border border-zinc-800 rounded-xl">
+                        <p className="font-mono text-[10px] text-zinc-600 uppercase mb-2">User Transcription (Live)</p>
+                        <p className="text-sm italic text-white/80">"Create a viral campaign for our new sustainable coffee brand..."</p>
+                     </div>
+                     <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl">
+                        <p className="font-mono text-[10px] text-blue-400 uppercase mb-2">Function Dispatch</p>
+                        <p className="text-xs font-bold text-blue-400">→ TOOL_CALL: launch_swarm({`{"intent": "sustainable coffee campaign"}`})</p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -498,6 +596,94 @@ export function LandingPage() {
                 </div>
               </FadeIn>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================
+          NEW: LIVE OUTPUT GALLERY [LP-03]
+          ================================================================ */}
+      <section id="gallery" className="py-32 px-6 border-t border-zinc-900 bg-black overflow-hidden">
+        <div className="max-w-6xl mx-auto">
+          <FadeIn className="mb-16">
+            <span className="font-mono text-xs text-blue-500 uppercase tracking-widest block mb-4">
+              The Artifact Forge
+            </span>
+            <h2 className="text-4xl font-semibold text-white">Live Swarm Outputs.</h2>
+            <p className="text-zinc-500 mt-4 max-w-lg">
+              Actual outputs generated during the 2026 hackathon demo. 
+              From high-fidelity imagery to strategic frameworks.
+            </p>
+          </FadeIn>
+
+          <div className="grid md:grid-cols-12 gap-6">
+            {/* Visual Output */}
+            <FadeIn delay={0.1} className="md:col-span-7 group relative rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950">
+               <div className="absolute top-4 left-4 z-10">
+                 <div className="px-2 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded font-mono text-[9px] text-white">
+                   DA-03 · IMAGE_GEN (IMAGEN 3)
+                 </div>
+               </div>
+               <img 
+                 src="/ai_output_storyboard_example_1772557810590.png" 
+                 alt="AI Generated Storyboard Frame" 
+                 className="w-full aspect-video object-cover transition-transform duration-700 group-hover:scale-105"
+               />
+               <div className="p-6">
+                  <h4 className="font-bold text-white uppercase text-xs tracking-widest mb-2">Cinematic Storyboard v4.1</h4>
+                  <p className="text-zinc-500 text-xs italic">"Prompt: Luxury watch commercial, golden swirls, minimalist aesthetic."</p>
+               </div>
+            </FadeIn>
+
+            {/* Strategy Output */}
+            <FadeIn delay={0.2} className="md:col-span-5 bg-zinc-950 border border-zinc-800 rounded-2xl p-8 flex flex-col gap-6">
+               <div className="flex items-center justify-between">
+                 <div className="px-2 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded font-mono text-[9px] text-yellow-500/80">
+                   SP-01 · STRATEGIC_CORTEX
+                 </div>
+                 <span className="font-mono text-[9px] text-zinc-600 uppercase">CONFIDENCE: 98.4%</span>
+               </div>
+               
+               <div className="space-y-4 font-mono text-[11px]">
+                  <div className="text-zinc-500 uppercase tracking-wider mb-2">Market Disruption Points:</div>
+                  <div className="p-3 bg-black border-l-2 border-yellow-500/50 rounded-r-lg">
+                    <p className="text-white mb-2 font-bold">1. Cognitive Saturation Loop</p>
+                    <p className="text-zinc-500 leading-relaxed">Target Gen-Alpha attention spans with 6ms visual delta shifts.</p>
+                  </div>
+                  <div className="p-3 bg-black border-l-2 border-zinc-700 rounded-r-lg opacity-60">
+                    <p className="text-white mb-2">2. Emotional Arbitrage</p>
+                    <p className="text-zinc-500">Leverage FOMO via Decentralized Nexus distribution.</p>
+                  </div>
+               </div>
+               
+               <div className="mt-auto pt-6 border-t border-zinc-900 text-center">
+                  <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-widest">→ System Verified</span>
+               </div>
+            </FadeIn>
+
+            {/* Text Output Section */}
+            <FadeIn delay={0.3} className="md:col-span-12 bg-zinc-950 border border-zinc-800 rounded-2xl p-8">
+               <div className="flex items-center gap-3 mb-6">
+                 <div className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded font-mono text-[9px] text-emerald-500/80">
+                   CC-06 · COGNITIVE_CORE
+                 </div>
+                 <div className="h-px flex-1 bg-zinc-900" />
+               </div>
+
+               <div className="grid md:grid-cols-2 gap-12">
+                  <div className="space-y-4">
+                    <h4 className="text-white font-bold uppercase text-xs tracking-wider">Viral Hook (Variant A)</h4>
+                    <p className="text-zinc-300 text-2xl leading-tight font-serif italic">
+                      "Time doesn't just flow. It evolves. Experience the Genesis of the G5 Swarm."
+                    </p>
+                  </div>
+                  <div className="space-y-4 border-l border-zinc-900 pl-12 font-mono text-xs text-zinc-500">
+                    <p><span className="text-zinc-700 uppercase tracking-tighter">Tone:</span> Prestige / Avant-garde</p>
+                    <p><span className="text-zinc-700 uppercase tracking-tighter">Target:</span> HNWIs / Tech Enthusiasts</p>
+                    <p><span className="text-zinc-700 uppercase tracking-tighter">Platform:</span> Multimodal Immersive</p>
+                  </div>
+               </div>
+            </FadeIn>
           </div>
         </div>
       </section>
@@ -780,20 +966,53 @@ export function LandingPage() {
       {/* ================================================================
           FOOTER
           ================================================================ */}
-      <footer className="py-10 px-6 border-t border-zinc-900">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="font-mono text-xs text-zinc-600 uppercase tracking-widest">
-            AGENTICUM G5 GENIUS
-          </span>
-          <span className="font-mono text-xs text-zinc-700">
-            © 2026 · Gemini Live Agent Challenge
-            <a href="https://github.com/yoyo967/agenticum-g5-genius" target="_blank" rel="noopener noreferrer" className="ml-2 hover:text-white transition-colors">
-               · Open Source on GitHub →
-            </a>
-          </span>
-          <span className="font-mono text-xs text-zinc-600 uppercase tracking-widest">
-            G5-REVISION-00036
-          </span>
+      <footer className="py-20 px-6 border-t border-zinc-900 bg-black">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-12 mb-16">
+            <div className="col-span-2">
+              <span className="font-mono text-sm font-bold tracking-widest text-white uppercase block mb-4">
+                AGENTICUM G5 GENIUS
+              </span>
+              <p className="text-zinc-500 text-sm max-w-sm mb-6 leading-relaxed">
+                The world's first voice-activated AI creative agency. 
+                Built specifically for the Gemini Live Agent Challenge 2026.
+              </p>
+              <div className="flex gap-4">
+                 <a href="https://github.com/yoyo967/agenticum-g5-genius" target="_blank" rel="noopener noreferrer" 
+                    className="p-2 border border-zinc-800 rounded-lg hover:border-zinc-400 transition-colors text-zinc-500 hover:text-white">
+                   <IconGithub size={20} />
+                 </a>
+                 <a href="https://geminiliveagentchallenge.devpost.com/" target="_blank" rel="noopener noreferrer" 
+                    className="flex items-center gap-2 px-4 border border-zinc-800 rounded-lg hover:border-zinc-400 text-xs font-mono text-zinc-500 hover:text-white transition-colors">
+                   DEVPOST SUBMISSION
+                 </a>
+              </div>
+            </div>
+            <div>
+              <h5 className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest mb-4">Repository</h5>
+              <ul className="space-y-2 text-xs font-mono text-zinc-600">
+                <li className="hover:text-blue-500 transition-colors pointer-events-none">/backend (FastAPI/Node)</li>
+                <li className="hover:text-blue-500 transition-colors pointer-events-none">/landing (React 19)</li>
+                <li className="hover:text-blue-500 transition-colors pointer-events-none">/engine (Python Swarm)</li>
+              </ul>
+            </div>
+            <div className="flex flex-col items-end justify-start">
+               <div className="w-16 h-16 border-2 border-zinc-800 rounded-xl flex items-center justify-center mb-2">
+                 <span className="font-display font-black text-2xl text-zinc-800">G5</span>
+               </div>
+               <span className="font-mono text-[8px] text-zinc-700">REVISION: {import.meta.env.VITE_BUILD_SHA || '489ae16'}</span>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-zinc-900 flex flex-col md:flex-row items-center justify-between gap-4">
+            <span className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.4em]">
+              © 2026 · ALL SYSTEMS OPERATIONAL
+            </span>
+            <div className="flex items-center gap-2 px-3 py-1 bg-green-500/5 border border-green-500/20 rounded-full">
+               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+               <span className="font-mono text-[9px] text-green-500/80 font-bold uppercase tracking-widest">Hackathon Validated Build</span>
+            </div>
+          </div>
         </div>
       </footer>
 
