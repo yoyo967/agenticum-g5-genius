@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { ReactFlow, Controls, Background, MiniMap, addEdge, applyNodeChanges, applyEdgeChanges, type Node, type Edge, type Connection, type NodeChange, type EdgeChange, Handle, Position } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { GitMerge, Plus, Bot, Calendar, Play, Save, Trash2, Activity, Zap } from 'lucide-react';
+import { GitMerge, Plus, Bot, Calendar, Play, Save, Trash2, Activity, Zap, Layers, Clock, ChevronRight, CheckCircle2, XCircle } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadJSON } from '../utils/export';
@@ -104,11 +104,86 @@ const initialEdges: Edge[] = [
   { id: 'e4-5', source: '4', target: '5', animated: true, style: { stroke: '#00B8D4', strokeWidth: 2 } },
 ];
 
+// ── PM-07 Workflow Templates ────────────────────────────────────────────────
+const WF_TEMPLATES = [
+  {
+    id: 'counter-strike',
+    name: 'Counter-Strike',
+    desc: 'Research → Strategy → Content → Compliance',
+    color: '#00E5FF',
+    nodes: [
+      { id: '1', type: 'triggerNode', position: { x: 250, y: 50 }, data: { title: 'Market Signal', config: 'Continuous competitor monitoring' } },
+      { id: '2', type: 'agentNode', position: { x: 100, y: 200 }, data: { title: 'Competitor Scan', config: 'SP-01 ground-intelligence sweep', agentId: 'sp01' } },
+      { id: '3', type: 'agentNode', position: { x: 400, y: 200 }, data: { title: 'Content Strike', config: 'CC-06 rapid content generation', agentId: 'cc06' } },
+      { id: '4', type: 'agentNode', position: { x: 250, y: 370 }, data: { title: 'Senate Review', config: 'RA-01 compliance audit', agentId: 'ra01' } },
+      { id: '5', type: 'actionNode', position: { x: 250, y: 520 }, data: { title: 'Auto-Publish', config: 'Distribute via PM-07 channels' } },
+    ],
+    edges: [
+      { id: 'e1', source: '1', target: '2', animated: true, style: { stroke: '#00E5FF', strokeWidth: 2 } },
+      { id: 'e2', source: '1', target: '3', animated: true, style: { stroke: '#FF007A', strokeWidth: 2 } },
+      { id: 'e3', source: '2', target: '4', animated: true, style: { stroke: '#7B2FBE', strokeWidth: 2 } },
+      { id: 'e4', source: '3', target: '4', animated: true, style: { stroke: '#FF007A', strokeWidth: 2 } },
+      { id: 'e5', source: '4', target: '5', animated: true, style: { stroke: '#00FF88', strokeWidth: 2 } },
+    ],
+  },
+  {
+    id: 'content-factory',
+    name: 'Content Factory',
+    desc: 'Brief → Multi-Format → Images → Publish',
+    color: '#FF007A',
+    nodes: [
+      { id: '1', type: 'triggerNode', position: { x: 250, y: 30 }, data: { title: 'Weekly Brief', config: 'Monday 08:00 CET auto-trigger' } },
+      { id: '2', type: 'agentNode', position: { x: 250, y: 180 }, data: { title: 'Strategy Brief', config: 'SP-01 audience + angle research', agentId: 'sp01' } },
+      { id: '3', type: 'agentNode', position: { x: 80,  y: 330 }, data: { title: 'Blog + LinkedIn', config: 'CC-06 12 content formats', agentId: 'cc06' } },
+      { id: '4', type: 'agentNode', position: { x: 420, y: 330 }, data: { title: 'Hero Images', config: 'DA-03 Imagen 3 generation', agentId: 'da03' } },
+      { id: '5', type: 'agentNode', position: { x: 250, y: 480 }, data: { title: 'Compliance', config: 'RA-01 EU AI Act gate', agentId: 'ra01' } },
+      { id: '6', type: 'actionNode', position: { x: 250, y: 610 }, data: { title: 'Multi-Channel Publish', config: 'LinkedIn / Email / Blog / Ads' } },
+    ],
+    edges: [
+      { id: 'e1', source: '1', target: '2', animated: true, style: { stroke: '#00E5FF', strokeWidth: 2 } },
+      { id: 'e2', source: '2', target: '3', animated: true, style: { stroke: '#FF007A', strokeWidth: 2 } },
+      { id: 'e3', source: '2', target: '4', animated: true, style: { stroke: '#FFD700', strokeWidth: 2 } },
+      { id: 'e4', source: '3', target: '5', animated: true, style: { stroke: '#FF007A', strokeWidth: 2 } },
+      { id: 'e5', source: '4', target: '5', animated: true, style: { stroke: '#FFD700', strokeWidth: 2 } },
+      { id: 'e6', source: '5', target: '6', animated: true, style: { stroke: '#00FF88', strokeWidth: 2 } },
+    ],
+  },
+  {
+    id: 'seo-autopilot',
+    name: 'SEO Autopilot',
+    desc: 'Keywords → Pillars → Blog → Grounding',
+    color: '#10B981',
+    nodes: [
+      { id: '1', type: 'triggerNode', position: { x: 250, y: 40 }, data: { title: 'Keyword Alert', config: 'GA-01 trend watchdog' } },
+      { id: '2', type: 'agentNode', position: { x: 250, y: 190 }, data: { title: 'Keyword Research', config: 'GA-01 Vertex AI Grounding', agentId: 'ba07' } },
+      { id: '3', type: 'agentNode', position: { x: 250, y: 340 }, data: { title: 'Pillar Blog Post', config: 'CC-06 3000-word SEO article', agentId: 'cc06' } },
+      { id: '4', type: 'agentNode', position: { x: 250, y: 490 }, data: { title: 'Senate Audit', config: 'RA-01 brand safety check', agentId: 'ra01' } },
+      { id: '5', type: 'actionNode', position: { x: 250, y: 620 }, data: { title: 'Publish to CMS', config: 'Push to WordPress / Webflow' } },
+    ],
+    edges: [
+      { id: 'e1', source: '1', target: '2', animated: true, style: { stroke: '#10B981', strokeWidth: 2 } },
+      { id: 'e2', source: '2', target: '3', animated: true, style: { stroke: '#10B981', strokeWidth: 2 } },
+      { id: 'e3', source: '3', target: '4', animated: true, style: { stroke: '#00FF88', strokeWidth: 2 } },
+      { id: 'e4', source: '4', target: '5', animated: true, style: { stroke: '#00FF88', strokeWidth: 2 } },
+    ],
+  },
+  {
+    id: 'launch-sequence',
+    name: 'Product Launch',
+    desc: 'Full 9-Agent launch swarm',
+    color: '#FFD700',
+    nodes: initialNodes,
+    edges: initialEdges,
+  },
+];
+
 export function WorkflowBuilder() {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [isSimulating, setIsSimulating] = useState(false);
   const [deployStatus, setDeployStatus] = useState<'idle' | 'deploying' | 'success' | 'error'>('idle');
+  const [runHistory, setRunHistory] = useState<{ id: string; name: string; ts: string; status: 'success' | 'error' | 'running'; nodes: number }[]>([]);
+  const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
 
   const nodeTypes = useMemo(() => ({
     triggerNode: TriggerNode,
@@ -149,9 +224,19 @@ export function WorkflowBuilder() {
     setNodes(prev => [...prev, newNode]);
   };
 
+  const loadTemplate = (tpl: typeof WF_TEMPLATES[0]) => {
+    setNodes(tpl.nodes as Node[]);
+    setEdges(tpl.edges as Edge[]);
+    setActiveTemplate(tpl.id);
+    setRunHistory([]);
+  };
+
   const [simulateResult, setSimulateResult] = useState<string | null>(null);
 
   const simulateWorkflow = async () => {
+    const runId = Date.now().toString();
+    const runEntry = { id: runId, name: activeTemplate || 'Custom Workflow', ts: new Date().toLocaleTimeString(), status: 'running' as const, nodes: nodes.length };
+    setRunHistory(prev => [runEntry, ...prev.slice(0, 9)]);
     setIsSimulating(true);
     setSimulateResult(null);
     try {
@@ -167,11 +252,14 @@ export function WorkflowBuilder() {
       if (res.ok) {
         const data = await res.json();
         setSimulateResult(data.message || 'Workflow dispatched successfully.');
+        setRunHistory(prev => prev.map(r => r.id === runId ? { ...r, status: 'success' as const } : r));
       } else {
         setSimulateResult('Dispatch failed — check agent connectivity.');
+        setRunHistory(prev => prev.map(r => r.id === runId ? { ...r, status: 'error' as const } : r));
       }
     } catch {
       setSimulateResult('Network error — backend offline.');
+      setRunHistory(prev => prev.map(r => r.id === runId ? { ...r, status: 'error' as const } : r));
     }
     setTimeout(() => { setIsSimulating(false); setSimulateResult(null); }, 5000);
   };
@@ -264,7 +352,63 @@ export function WorkflowBuilder() {
   };
 
   return (
-    <div className="h-full flex flex-col animate-in">
+    <div className="h-full flex overflow-hidden animate-in">
+
+      {/* ── PM-07 Left Sidebar: Templates + History ────────────────────── */}
+      <div className="w-56 shrink-0 flex flex-col border-r border-white/5 bg-surface-overlay/20 overflow-hidden">
+        {/* Templates */}
+        <div className="shrink-0 p-3 border-b border-white/5">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <Layers size={12} className="text-gold" />
+            <span className="font-mono text-[9px] text-white/40 uppercase tracking-widest">PM-07 Templates</span>
+          </div>
+          <div className="space-y-1.5">
+            {WF_TEMPLATES.map(tpl => (
+              <button key={tpl.id} onClick={() => loadTemplate(tpl)}
+                className={`w-full text-left p-2.5 rounded-lg border transition-all ${activeTemplate === tpl.id ? 'border-white/20 bg-white/5' : 'border-white/5 hover:border-white/15 bg-white/2'}`}>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: tpl.color }} />
+                  <span className="font-mono text-[10px] font-bold text-white">{tpl.name}</span>
+                  {activeTemplate === tpl.id && <ChevronRight size={9} className="ml-auto text-white/40" />}
+                </div>
+                <p className="font-mono text-[9px] text-white/30 leading-snug">{tpl.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Run History */}
+        <div className="flex-1 overflow-y-auto p-3">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <Clock size={12} className="text-accent" />
+            <span className="font-mono text-[9px] text-white/40 uppercase tracking-widest">Run History</span>
+          </div>
+          {runHistory.length === 0 ? (
+            <p className="font-mono text-[9px] text-white/20 text-center py-4">No runs yet</p>
+          ) : (
+            <div className="space-y-1.5">
+              {runHistory.map(r => (
+                <div key={r.id} className="p-2 rounded border border-white/5 bg-white/2">
+                  <div className="flex items-center gap-1.5">
+                    {r.status === 'success' ? <CheckCircle2 size={10} className="text-green-400" /> :
+                     r.status === 'error'   ? <XCircle size={10} className="text-red-400" /> :
+                     <div className="w-2.5 h-2.5 rounded-full border-2 border-yellow-400 border-t-transparent animate-spin" />}
+                    <span className="font-mono text-[9px] text-white/60 capitalize truncate">{r.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="font-mono text-[8px] text-white/25">{r.ts}</span>
+                    <span className="font-mono text-[8px] text-white/20">{r.nodes} nodes</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Main Area ─────────────────────────────────────────────────── */}
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+
       {/* Toolbar */}
       <div className="p-4 flex items-center justify-between border-b border-white/5 bg-surface-overlay/50">
         <div className="flex items-center gap-3">
@@ -353,7 +497,8 @@ export function WorkflowBuilder() {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </div>{/* end main area */}
     </div>
   );
 }

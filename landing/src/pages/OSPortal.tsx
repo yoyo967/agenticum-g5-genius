@@ -41,9 +41,10 @@ import { ConsciousnessStream } from '../components/os/ConsciousnessStream';
 import { ExecutiveIntervention } from '../components/os/ExecutiveIntervention';
 import { JuryPresentation } from '../components/ui/JuryPresentation';
 import { ContentEditor } from '../components/os/ContentEditor';
+import { VoiceCommandLayer } from '../components/os/VoiceCommandLayer';
 // OSAuthGate removed — Phase 36: public demo access for judges
 
-type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence' | 'global-radar' | 'swarm-command' | 'editor';
+type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence' | 'global-radar' | 'swarm-command' | 'editor' | 'voice';
 
 const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   dashboard: { label: 'Executive Dashboard', subtitle: 'Global Metrics' },
@@ -71,6 +72,7 @@ const MODULE_META: Record<ModuleKey, { label: string; subtitle: string }> = {
   'swarm-command': { label: 'Swarm Command', subtitle: 'Live Agent Actions' },
   settings: { label: 'Global Config', subtitle: 'System Parameters' },
   editor: { label: 'Content Editor', subtitle: 'CC-06 Write & Preview' },
+  voice: { label: 'Voice Command', subtitle: 'VE-01 Live Interface' },
 };
 
 type OSMode = 'genius' | 'command';
@@ -162,6 +164,7 @@ export function OSPortal() {
 
             {/* Navigation */}
             <nav className="flex-1 flex flex-col gap-1 px-3 overflow-y-auto scrollbar-none">
+              <SidebarButton icon={<Mic size={16} className="text-cyan-400" />} label="Voice Control" active={activeModule === 'voice'} onClick={() => setActiveModule('voice')} accent />
               <SidebarButton icon={<Activity size={16} />} label="Dashboard" active={activeModule === 'dashboard'} onClick={() => setActiveModule('dashboard')} />
               <SidebarButton icon={<Target size={16} />} label="Campaign Hub" active={activeModule === 'campaign'} onClick={() => setActiveModule('campaign')} />
               <SidebarButton icon={<Terminal size={16} />} label="GenIUS Console" active={activeModule === 'console'} onClick={() => setActiveModule('console')} accent />
@@ -373,6 +376,7 @@ export function OSPortal() {
                 {activeModule === 'global-radar' && <GlobalRadarConsole />}
                 {activeModule === 'swarm-command' && <SwarmCommandCenter />}
                 {activeModule === 'editor' && <ContentEditor />}
+                {activeModule === 'voice' && <VoiceCommandLayer />}
               </motion.div>
             )}
           </AnimatePresence>
