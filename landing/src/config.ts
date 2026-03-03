@@ -3,7 +3,7 @@ const getOrigin = () => {
   if (typeof window !== 'undefined') {
     if (window.location.hostname === 'localhost') return 'http://localhost:8080';
     // 🌐 AGENTICUM G5 — DECENTRALIZED BACKEND LINK (Standardized)
-    return 'https://agenticum-backend-697051612685.europe-west1.run.app';
+    return 'https://genius-backend-697051612685.europe-west1.run.app';
   }
   return 'http://localhost:8080';
 };

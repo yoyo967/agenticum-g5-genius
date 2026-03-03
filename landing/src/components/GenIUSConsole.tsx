@@ -31,7 +31,7 @@ export function GenIUSConsole() {
     } catch { return []; }
   });
   const [output, setOutput] = useState<string | null>(null);
-  const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'active' | 'error'>('disconnected');
+  const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'active' | 'error'>('connecting');
   const [messageQueue, setMessageQueue] = useState<string[]>([]);
   const MAX_QUEUE_SIZE = 5;
   const QUEUE_TIMEOUT_MS = 10000;
@@ -63,6 +63,7 @@ export function GenIUSConsole() {
       .then(data => setSettings(data))
       .catch(() => {});
   }, []);
+
 
   const [nexusState, setNexusState] = useState<WorldState | null>(null);
   const [resonance, setResonance] = useState(0);
@@ -299,6 +300,14 @@ export function GenIUSConsole() {
     }
   }, [addLog]);
 
+  // Auto-connect on mount
+  useEffect(() => {
+    connect();
+    return () => {
+      if (ws.current) ws.current.close();
+    };
+  }, [connect]);
+
   useEffect(() => {
     const handleTrigger = (e: Event) => {
       const detail = (e as CustomEvent).detail;
@@ -335,20 +344,17 @@ export function GenIUSConsole() {
 
     return () => {
       window.removeEventListener('trigger-orchestration', handleTrigger);
+      window.removeEventListener('send-intervention', handleSendIntervention);
       window.removeEventListener('nexus-world-state', handleNexusState);
     };
   }, [addLog]);
 
   useEffect(() => {
     const currentReconnect = reconnectTimeoutRef.current;
-    const currentWS = ws.current;
     
     return () => {
       if (currentReconnect) {
         clearTimeout(currentReconnect);
-      }
-      if (currentWS) {
-        currentWS.close();
       }
     };
   }, []);

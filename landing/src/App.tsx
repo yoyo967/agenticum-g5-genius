@@ -5,6 +5,7 @@ import { ArticleView } from './pages/ArticleView';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { ArchivesPage } from './pages/ArchivesPage';
 import { DemoPage } from './pages/DemoPage';
+import { DemoWorkflow } from './pages/DemoWorkflow';
 import { AuthProvider } from './components/auth/AuthProvider';
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
           <Route path="/os/playground" element={<OSPortal />} />
           <Route path="/os/integrations" element={<OSPortal />} />
           <Route path="/os/audit" element={<OSPortal />} />
+          <Route path="/demo-workflow" element={<DemoWorkflow />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

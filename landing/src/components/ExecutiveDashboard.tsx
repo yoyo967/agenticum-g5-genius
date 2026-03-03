@@ -4,7 +4,7 @@ import { Activity, Users, FileText, Clock, Play, CheckCircle, Settings, Network,
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadPDF, downloadCSV, downloadPNG } from '../utils/export';
-import type { SwarmState } from '../types';
+import type { SwarmState, AgentStatus } from '../types';
 
 import type { ActivityLog } from '../hooks/useSwarmAnalytics';
 import { useSwarmAnalytics } from '../hooks/useSwarmAnalytics';
@@ -32,9 +32,10 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
     setLoading(true);
     try {
       // Fetch actual outputs for the gallery
-      const [vaultRes, blogRes] = await Promise.all([
+      const [vaultRes, blogRes, agentsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/vault/list`),
-        fetch(`${API_BASE_URL}/blog/feed`)
+        fetch(`${API_BASE_URL}/blog/feed`),
+        fetch(`${API_BASE_URL}/analytics/agents`)
       ]);
 
       if (vaultRes.ok) {
@@ -45,6 +46,31 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
       if (blogRes.ok) {
         const bData = await blogRes.json();
         setPillars(bData.pillars.slice(0, 3));
+      }
+
+      if (agentsRes.ok) {
+        const agentsData = await agentsRes.json();
+        // Construct a SwarmState-like object for the telemetry grid
+        const initialState: SwarmState = {
+          id: 'SN-00',
+          name: 'NEXUS PRIME',
+          state: 'idle',
+          progress: 100,
+          color: 'var(--color-accent)',
+          lastStatus: 'System Ready',
+          subAgents: agentsData.reduce((acc: Record<string, AgentStatus>, agent: { id: string; name: string; state?: string; color: string }) => {
+            acc[agent.id.toLowerCase()] = {
+              id: agent.id,
+              name: agent.name,
+              state: agent.state || 'idle',
+              progress: 100,
+              color: agent.color,
+              lastStatus: 'System Ready'
+            };
+            return acc;
+          }, {})
+        };
+        setSwarmState(initialState);
       }
 
       // Fetch actual SEO rankings
@@ -203,7 +229,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
         <StatCard
           title="Swarm Readiness"
           value={loading ? '—' : (stats?.readiness ?? 'Offline')}
-          subtext="All 8 agents online"
+          subtext="All 9 agents online"
           icon={<Users size={20} />}
           accentColor="var(--color-gold)"
         />
@@ -394,7 +420,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
               </div>
             </motion.div>
           )) : (
-            [...Array(8)].map((_, i) => (
+            [...Array(9)].map((_, i) => (
               <div key={i} className="card flex flex-col gap-3">
                 <div className="flex justify-between items-center">
                   <div className="skeleton w-16 h-5" />

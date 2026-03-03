@@ -157,6 +157,12 @@ const IconX = () => (
   </svg>
 );
 
+const IconGithub = ({ size = 16 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.041-1.416-4.041-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.3 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+  </svg>
+);
+
 /* ============================================================
    HOW IT WORKS DATA
    ============================================================ */
@@ -171,15 +177,18 @@ const HOW_STEPS: Step[] = [
 /* ============================================================
    FADE-IN WRAPPER
    ============================================================ */
-const FadeIn: React.FC<{ children: React.ReactNode; delay?: number; className?: string }> = ({
+const FadeIn: React.FC<{ children: React.ReactNode; delay?: number; className?: string; immediate?: boolean }> = ({
   children,
   delay = 0,
   className = '',
+  immediate = false,
 }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
+    {...(immediate
+      ? { animate: { opacity: 1, y: 0 } }
+      : { whileInView: { opacity: 1, y: 0 }, viewport: { once: true } }
+    )}
     transition={{ duration: 0.5, delay }}
     className={className}
   >
@@ -194,6 +203,20 @@ export function LandingPage() {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [apiHealth, setApiHealth] = useState<'idle' | 'checking' | 'online' | 'offline'>('idle');
+
+  const checkApiHealth = async () => {
+    if (apiHealth === 'checking') return;
+    setApiHealth('checking');
+    try {
+      const res = await fetch('https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health', { signal: AbortSignal.timeout(8000) });
+      setApiHealth(res.ok ? 'online' : 'offline');
+      setTimeout(() => setApiHealth('idle'), 4000);
+    } catch {
+      setApiHealth('offline');
+      setTimeout(() => setApiHealth('idle'), 4000);
+    }
+  };
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 40);
@@ -245,21 +268,32 @@ export function LandingPage() {
           </nav>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-3">
-            <motion.button
-              animate={{ opacity: [1, 0.6, 1] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              onClick={() => navigate('/demo')}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs uppercase tracking-widest transition-colors"
+          <div className="hidden md:flex items-center gap-6">
+            <a 
+              href="https://github.com/yoyo967/agenticum-g5-genius"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest"
             >
-              DEMO
-            </motion.button>
-            <button
-              onClick={() => navigate('/os')}
-              className="px-4 py-2 border border-zinc-700 hover:border-zinc-400 text-white font-mono text-xs uppercase tracking-widest transition-colors"
-            >
-              Enter OS
-            </button>
+              <IconGithub size={14} />
+              Source
+            </a>
+            <div className="flex items-center gap-3">
+              <motion.button
+                animate={{ opacity: [1, 0.6, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                onClick={() => window.open('/demo-workflow', '_blank')}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs uppercase tracking-widest transition-colors"
+              >
+                DEMO
+              </motion.button>
+              <button
+                onClick={() => navigate('/os')}
+                className="px-4 py-2 border border-zinc-700 hover:border-zinc-400 text-white font-mono text-xs uppercase tracking-widest transition-colors"
+              >
+                Enter OS
+              </button>
+            </div>
           </div>
 
           {/* Mobile Toggle */}
@@ -311,7 +345,7 @@ export function LandingPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto">
           {/* Eyebrow */}
-          <FadeIn delay={0}>
+          <FadeIn delay={0} immediate>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-zinc-800 mb-10">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
               <span className="font-mono text-xs text-zinc-400 uppercase tracking-widest">
@@ -321,7 +355,7 @@ export function LandingPage() {
           </FadeIn>
 
           {/* H1 */}
-          <FadeIn delay={0.1}>
+          <FadeIn delay={0.1} immediate>
             <h1
               className="font-bold tracking-tight text-white mb-6 leading-tight"
               style={{ fontSize: 'clamp(42px, 7vw, 96px)' }}
@@ -331,15 +365,15 @@ export function LandingPage() {
           </FadeIn>
 
           {/* Subtitle */}
-          <FadeIn delay={0.2}>
+          <FadeIn delay={0.2} immediate>
             <p className="text-lg text-zinc-400 mb-10 max-w-xl mx-auto leading-relaxed">
-              8 AI agents. One voice command.<br />
+              9 AI agents. One voice command.<br />
               From brief to campaign in under 60 seconds.
             </p>
           </FadeIn>
 
           {/* Buttons */}
-          <FadeIn delay={0.3}>
+          <FadeIn delay={0.3} immediate>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20">
               <button
                 onClick={() => navigate('/os')}
@@ -348,7 +382,7 @@ export function LandingPage() {
                 Initialize Swarm <IconArrowRight />
               </button>
               <button
-                onClick={() => navigate('/demo')}
+                onClick={() => window.open('/demo-workflow', '_blank')}
                 className="flex items-center justify-center gap-2 px-8 py-4 border border-zinc-700 hover:border-zinc-400 text-white font-mono text-sm uppercase tracking-widest transition-colors"
               >
                 Watch Demo <IconArrowRight />
@@ -357,7 +391,7 @@ export function LandingPage() {
           </FadeIn>
 
           {/* Stats — STATIC, no counter, no animation */}
-          <FadeIn delay={0.4}>
+          <FadeIn delay={0.4} immediate>
             <div className="grid grid-cols-3 gap-px border border-zinc-800 bg-zinc-800">
               {[
                 { value: '9', label: 'AI AGENTS' },
@@ -430,7 +464,7 @@ export function LandingPage() {
               Swarm Architecture
             </span>
             <h2 className="text-4xl font-semibold text-white">
-              Eight purpose-built AI agents.
+              Nine purpose-built AI agents.
             </h2>
           </FadeIn>
 
@@ -480,8 +514,8 @@ export function LandingPage() {
             <h2 className="text-4xl font-semibold text-white">How It Works.</h2>
           </FadeIn>
 
-          {/* Steps — horizontal on desktop */}
-          <div className="grid sm:grid-cols-5 gap-px bg-zinc-800">
+          {/* Steps — responsive grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-px bg-zinc-800">
             {HOW_STEPS.map((step, i) => (
               <FadeIn key={step.number} delay={i * 0.1} className="bg-zinc-950 p-8 flex flex-col items-center text-center gap-4">
                 {/* Step Number */}
@@ -522,7 +556,7 @@ export function LandingPage() {
           </FadeIn>
 
           <FadeIn delay={0.1}>
-            <div className="flex flex-wrap gap-3 justify-center">
+            <div className="flex flex-wrap gap-3 justify-center mb-16">
               {TECH_BADGES.map((badge) => (
                 <span
                   key={badge}
@@ -531,6 +565,144 @@ export function LandingPage() {
                   {badge}
                 </span>
               ))}
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-px bg-zinc-800 border border-zinc-800">
+               <a href="https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health" target="_blank" rel="noopener noreferrer" className="bg-black p-6 hover:bg-zinc-950 transition-colors group">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-green-500 animate-pulse">●</span>
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">LIVE DEPLOYMENT</span>
+                  </div>
+                  <div className="text-sm font-bold text-white mb-1">Cloud Run europe-west1</div>
+                  <div className="font-mono text-[10px] text-zinc-600">agenticum-backend · Rev 00051</div>
+                  <div className="mt-4 text-[10px] text-blue-500 font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Verify API Health →</div>
+               </a>
+               <div className="bg-black p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-zinc-500">📦</span>
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">CONTAINER REGISTRY</span>
+                  </div>
+                  <div className="text-sm font-bold text-white mb-1">Artifact Registry</div>
+                  <div className="font-mono text-[10px] text-zinc-600">agenticum-containers</div>
+               </div>
+               <div className="bg-black p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-zinc-500">📊</span>
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">REAL-TIME DATABASE</span>
+                  </div>
+                  <div className="text-sm font-bold text-white mb-1">Firestore (Native Mode)</div>
+                  <div className="font-mono text-[10px] text-zinc-600">online-marketing-manager</div>
+               </div>
+            </div>
+            <div className="text-center mt-8">
+              <button
+                onClick={checkApiHealth}
+                className={`font-mono text-[10px] uppercase tracking-widest transition-colors ${
+                  apiHealth === 'online' ? 'text-green-500' :
+                  apiHealth === 'offline' ? 'text-red-500' :
+                  apiHealth === 'checking' ? 'text-blue-400 animate-pulse' :
+                  'text-zinc-600 hover:text-blue-500'
+                }`}
+              >
+                {apiHealth === 'online' ? '✓ agenticum-backend: ONLINE' :
+                 apiHealth === 'offline' ? '✗ Backend Unreachable' :
+                 apiHealth === 'checking' ? '⟳ Checking API Health...' :
+                 '→ Verify API Health (Live Check)'}
+              </button>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ================================================================
+          SECTION 5.5 — ARCHITECTURE DIAGRAM [LP-02]
+          ================================================================ */}
+      <section id="architecture" className="py-32 px-6 border-t border-zinc-900 bg-zinc-950/30">
+        <div className="max-w-4xl mx-auto">
+          <FadeIn className="text-center mb-16">
+            <span className="font-mono text-xs text-blue-500 uppercase tracking-widest block mb-4">
+              Structural Blueprint
+            </span>
+            <h2 className="text-4xl font-semibold text-white mb-4">System Architecture.</h2>
+            <p className="text-zinc-400">9 agents. 3 layers. One neural fabric.</p>
+          </FadeIn>
+
+          <FadeIn delay={0.1}>
+            <div className="space-y-4">
+              {/* Layer 1 */}
+              <div className="flex justify-center gap-4">
+                <div className="w-1/2 max-w-[200px] bg-zinc-900 border border-zinc-700/50 rounded-lg p-4 text-center">
+                  <p className="font-bold text-sm text-white mb-1">Voice (VE-01)</p>
+                  <p className="text-[10px] font-mono text-zinc-500">Gemini Live API</p>
+                </div>
+                <div className="w-1/2 max-w-[200px] bg-zinc-900 border border-zinc-700/50 rounded-lg p-4 text-center">
+                  <p className="font-bold text-sm text-white mb-1">OS Portal</p>
+                  <p className="text-[10px] font-mono text-zinc-500">React 19 / Vite</p>
+                </div>
+              </div>
+
+              {/* Arrow */}
+              <div className="flex justify-center">
+                <div className="w-px h-8 bg-linear-to-b from-blue-500/50 to-blue-500"></div>
+              </div>
+
+              {/* Layer 2 */}
+              <div className="flex justify-center">
+                <div className="w-full max-w-[420px] bg-zinc-900 border border-blue-500/30 rounded-lg p-6 text-center relative overflow-hidden">
+                   <div className="absolute top-0 left-0 w-full h-0.5 bg-blue-500"></div>
+                   <p className="font-bold text-sm text-white mb-2">SN-00 NEURAL ORCHESTRATOR</p>
+                   <p className="text-[10px] font-mono text-zinc-400">SwarmProtocol v3.0 // 9 Agents dispatched in parallel</p>
+                </div>
+              </div>
+
+              {/* Arrow */}
+              <div className="flex justify-center">
+                <div className="w-px h-8 bg-linear-to-b from-blue-500 to-blue-500/50"></div>
+              </div>
+
+              {/* Layer 3 — 9 Sub-Agents */}
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                {[
+                  { id: 'SP-01', label: 'STRATEGIC', color: 'border-yellow-500/40 text-yellow-400' },
+                  { id: 'CC-06', label: 'COGNITIVE', color: 'border-emerald-500/40 text-emerald-400' },
+                  { id: 'DA-03', label: 'DESIGN', color: 'border-purple-500/40 text-purple-400' },
+                  { id: 'BA-07', label: 'BROWSER', color: 'border-green-500/40 text-green-400' },
+                  { id: 'RA-01', label: 'SENATE', color: 'border-red-500/40 text-red-400' },
+                  { id: 'SO-00', label: 'SOVEREIGN', color: 'border-blue-500/40 text-blue-400' },
+                  { id: 'PM-07', label: 'MISSION', color: 'border-orange-500/40 text-orange-400' },
+                ].map(agent => (
+                  <div key={agent.id} className={`bg-zinc-900/50 border rounded-lg p-2 text-center ${agent.color.split(' ')[0]}`}>
+                    <p className={`text-[10px] font-mono font-bold mb-0.5 ${agent.color.split(' ')[1]}`}>{agent.id}</p>
+                    <p className="text-[8px] font-mono text-zinc-600 uppercase tracking-tighter">{agent.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Arrow */}
+              <div className="flex justify-center">
+                <div className="w-px h-8 bg-linear-to-b from-blue-500/50 to-zinc-700"></div>
+              </div>
+
+              {/* Layer 4 — GCP Infrastructure */}
+              <div className="grid grid-cols-3 gap-3">
+                 {[
+                   { t: 'Gemini 2.0 Flash', s: 'europe-west1' },
+                   { t: 'Firestore', s: 'Vector Search' },
+                   { t: 'Cloud Run', s: 'Auto-scaling' },
+                   { t: 'Imagen 3', s: 'Visual Gen' },
+                   { t: 'Vertex AI', s: 'Grounding' },
+                   { t: 'Secret Manager', s: 'Hardened' }
+                 ].map(x => (
+                   <div key={x.t} className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3 text-center">
+                      <p className="text-[11px] font-bold text-zinc-300 mb-0.5">{x.t}</p>
+                      <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-tighter">{x.s}</p>
+                   </div>
+                 ))}
+              </div>
+
+              <div className="pt-12 text-center text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
+                Deployed in europe-west1 (Belgium) · EU AI Act Art.50 compliant by design.
+              </div>
             </div>
           </FadeIn>
         </div>
@@ -587,13 +759,13 @@ export function LandingPage() {
             className="font-bold text-white tracking-tight mb-6 leading-tight"
             style={{ fontSize: 'clamp(32px, 5vw, 64px)' }}
           >
-            Eight specialized agents.<br />
+            Nine specialized agents.<br />
             One voice command.<br />
             Zero friction.
           </h2>
 
           <p className="text-zinc-400 mb-12 font-mono text-sm">
-            Phase 1 of 5 — 9 of 52 nodes active.
+            9 Agents · 3 Layers · Production Ready.
           </p>
 
           <button
@@ -615,6 +787,9 @@ export function LandingPage() {
           </span>
           <span className="font-mono text-xs text-zinc-700">
             © 2026 · Gemini Live Agent Challenge
+            <a href="https://github.com/yoyo967/agenticum-g5-genius" target="_blank" rel="noopener noreferrer" className="ml-2 hover:text-white transition-colors">
+               · Open Source on GitHub →
+            </a>
           </span>
           <span className="font-mono text-xs text-zinc-600 uppercase tracking-widest">
             G5-REVISION-00036

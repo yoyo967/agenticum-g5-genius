@@ -119,7 +119,7 @@ export function useSwarmAnalytics() {
         id: 'sys-boot',
         time: timeStr(now),
         agent: 'SYS.CORE',
-        text: `Firestore connected. ${totalOutputs} outputs indexed. 8 agents online.`,
+        text: `Firestore connected. ${totalOutputs} outputs indexed. 9 agents online.`,
         type: 'success',
       });
 

@@ -27,15 +27,19 @@ export function CinematicForge() {
   const [isForging, setIsForging] = useState(false);
   const [currentAsset, setCurrentAsset] = useState<CinematicAsset | null>(null);
   const [assets, setAssets] = useState<CinematicAsset[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [activeShot, setActiveShot] = useState(0);
   const [viewMode, setViewMode] = useState<'interactive' | 'print'>('interactive');
 
   const fetchAssets = async () => {
+    setIsLoadingHistory(true);
     try {
       const res = await fetch(`${API_BASE_URL}/blog/cinematic/default-client`);
       if (res.ok) setAssets(await res.json());
     } catch (e) {
       console.error('Failed to fetch cinematic assets', e);
+    } finally {
+      setIsLoadingHistory(false);
     }
   };
 
@@ -143,13 +147,27 @@ export function CinematicForge() {
           <div className="glass-card p-6">
             <h3 className="font-display text-sm font-bold uppercase text-white/40 mb-4">Production History</h3>
             <div className="space-y-3">
-              {assets.map(asset => (
+              {isLoadingHistory ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="p-3 bg-white/3 rounded-lg border border-white/5 animate-pulse">
+                      <div className="h-2 bg-white/10 rounded mb-2 w-1/2" />
+                      <div className="h-3 bg-white/10 rounded w-3/4" />
+                    </div>
+                  ))}
+                </div>
+              ) : assets.length > 0 ? assets.map(asset => (
                 <div key={asset.id} onClick={() => setCurrentAsset(asset)}
                   className="p-3 bg-white/5 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
                   <p className="text-[10px] font-mono text-white/30 uppercase mb-1">{new Date(asset.createdAt).toLocaleDateString()}</p>
                   <p className="text-xs font-bold truncate">{asset.topic}</p>
                 </div>
-              ))}
+              )) : (
+                <div className="py-8 text-center opacity-20">
+                  <Layers size={24} className="mx-auto mb-2" />
+                  <p className="font-mono text-[10px] uppercase">No History Found</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

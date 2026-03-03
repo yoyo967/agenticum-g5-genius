@@ -1,127 +1,269 @@
 import { WebSocket } from 'ws';
+import { GoogleGenAI, Modality, Type } from '@google/genai';
 import { SN00Orchestrator } from '../agents/sn00-orchestrator';
-import { SO00Sovereign } from '../agents/so00-sovereign';
 import { Logger } from '../utils/logger';
-import { SpeechClient } from '@google-cloud/speech';
+import { eventFabric } from '../services/event-fabric';
+
+// Tool declaration: voice command → swarm launch
+const LAUNCH_SWARM_TOOL = {
+  name: 'launch_swarm',
+  description:
+    'Launch the AGENTICUM G5 AI swarm to execute a marketing campaign directive. ' +
+    'Call this whenever the user gives an instruction related to marketing, content creation, ' +
+    'campaign strategy, competitor analysis, design, or any operational task.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      intent: {
+        type: Type.STRING,
+        description: 'The full user directive / campaign brief to pass to the orchestrator.',
+      },
+      campaignType: {
+        type: Type.STRING,
+        enum: ['marketing', 'content', 'design', 'research', 'strategy', 'general'],
+        description: 'Category of the campaign.',
+      },
+    },
+    required: ['intent'],
+  },
+};
+
+interface LiveSession {
+  session: any; // @google/genai Session
+  closing: boolean;
+}
 
 export class LiveApiManager {
   private orchestrator: SN00Orchestrator;
   private logger: Logger;
-  private activeSessions: Map<WebSocket, any> = new Map();
-  private speechClient: SpeechClient;
+  private ai: GoogleGenAI;
+  private activeSessions: Map<WebSocket, LiveSession> = new Map();
 
   constructor() {
     this.orchestrator = new SN00Orchestrator();
     this.logger = new Logger('LiveApi');
-    // Initializes the SpeechClient natively inheriting Cloud Run Service Account credentials
-    this.speechClient = new SpeechClient();
+
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    if (!apiKey) {
+      this.logger.error('GEMINI_API_KEY not set — Gemini Live API will fail');
+    }
+    this.ai = new GoogleGenAI({ apiKey: apiKey || '' });
   }
 
-  public handleConnection(clientWs: WebSocket) {
-    this.logger.info('New Neural client connected');
-    import('../services/nexus-manager').then(m => m.nexusManager.updateState({ activeModule: 'NexusConsole', lastCognitiveEvent: 'New Neural Uplink Established' }));
+  public async handleConnection(clientWs: WebSocket) {
+    this.logger.info('New Neural client connected — opening Gemini Live session');
+    import('../services/nexus-manager').then(m =>
+      m.nexusManager.updateState({
+        activeModule: 'NexusConsole',
+        lastCognitiveEvent: 'New Neural Uplink Established',
+      })
+    );
 
-    const sessionData: any = {
-      recognizeStream: null,
-      processing: false
-    };
-    
-    this.activeSessions.set(clientWs, sessionData);
+    let liveSession: any = null;
+    let closing = false;
 
-    const request = {
-      config: {
-        encoding: 'LINEAR16' as const,
-        sampleRateHertz: 16000,
-        languageCode: 'de-DE', // Prioritizing German as primary per user context, fallback English
-        alternativeLanguageCodes: ['en-US'],
-      },
-      interimResults: false, // We only want finalized sentences to trigger the orchestrator
-    };
-
-    const startSpeechStream = () => {
-      if (sessionData.recognizeStream) {
-        sessionData.recognizeStream.end();
-        sessionData.recognizeStream.removeAllListeners();
+    const sendToClient = (payload: object) => {
+      if (clientWs.readyState === WebSocket.OPEN) {
+        clientWs.send(JSON.stringify(payload));
       }
-      
-      sessionData.recognizeStream = this.speechClient.streamingRecognize(request)
-        .on('error', (err: any) => {
-           this.logger.error('Speech recognition error: ', err);
-           if (err.code === 11) { // 11 means OUT_OF_RANGE (API duration limit hit, restart)
-             startSpeechStream();
-           }
-        })
-        .on('data', async (data: any) => {
-          if (data.results[0] && data.results[0].alternatives[0]) {
-             const transcript = data.results[0].alternatives[0].transcript;
-             if (transcript && transcript.trim().length > 0) {
-                 this.logger.info(`Voice Transcript Decoded: "${transcript}"`);
-                 
-                 // Beam the recognized text back to the frontend console
-                 if (clientWs.readyState === WebSocket.OPEN) {
-                    clientWs.send(JSON.stringify({
-                       type: 'transcript',
-                       text: transcript,
-                       campaignType: 'auto'
-                    }));
-                 }
-                 
-                 // Trigger Orchestrator automatically based on the decoded voice command
-                 import('../services/nexus-manager').then(m => m.nexusManager.updateState({ 
-                    currentUserIntent: transcript,
-                    lastCognitiveEvent: `Voice Directive Received: ${transcript.substring(0, 30)}...`
-                 }));
-
-                 try {
-                     const result = await this.orchestrator.execute(transcript, 'Voice-Injection');
-                     if (clientWs.readyState === WebSocket.OPEN) {
-                        clientWs.send(JSON.stringify({ type: 'output', agentId: 'sn00', data: result }));
-                     }
-                 } catch (err) {
-                    this.logger.error('Failed to execute voice directive', err as Error);
-                    if (clientWs.readyState === WebSocket.OPEN) {
-                        clientWs.send(JSON.stringify({ type: 'error', message: 'Orchestrator failed to process voice directive.' }));
-                    }
-                 }
-             }
-          }
-        });
     };
 
-    // Initialize the stream listening exactly upon connection setup
-    startSpeechStream();
+    // ──────────────────────────────────────────────
+    // Execute the swarm and stream results back
+    // ──────────────────────────────────────────────
+    const runSwarm = async (intent: string, campaignId?: string) => {
+      import('../services/nexus-manager').then(m =>
+        m.nexusManager.updateState({
+          currentUserIntent: intent,
+          lastCognitiveEvent: `Voice Directive Received: ${intent.substring(0, 40)}...`,
+        })
+      );
 
-    clientWs.on('message', async (data: any) => {
+      sendToClient({ type: 'transcript', text: intent, campaignType: campaignId || 'voice' });
+
       try {
-        const message = JSON.parse(data.toString());
+        const result = await this.orchestrator.execute(intent, campaignId || 'Voice-Injection');
+        sendToClient({ type: 'output', agentId: 'sn00', data: result });
+      } catch (err) {
+        this.logger.error('Orchestrator error', err as Error);
+        sendToClient({ type: 'error', message: 'Orchestrator failed to process directive.' });
+      }
+    };
 
+    // ──────────────────────────────────────────────
+    // Open Gemini Live session
+    // ──────────────────────────────────────────────
+    try {
+      liveSession = await this.ai.live.connect({
+        model: 'gemini-2.0-flash-live-001',
+        callbacks: {
+          onopen: () => {
+            this.logger.info('Gemini Live session opened');
+            sendToClient({ type: 'live_ready', message: 'Gemini Live API connected' });
+          },
+
+          onmessage: async (msg: any) => {
+            // ── Barge-in: model was interrupted by user speaking ──
+            const serverContent = msg.serverContent;
+            if (serverContent?.interrupted) {
+              this.logger.info('Barge-in detected — model interrupted');
+              sendToClient({ type: 'barge_in' });
+            }
+
+            // ── Audio response from model → forward to frontend ──
+            const parts = serverContent?.modelTurn?.parts ?? [];
+            for (const part of parts) {
+              if (part.inlineData?.mimeType?.startsWith('audio/')) {
+                sendToClient({
+                  type: 'audio_output',
+                  data: part.inlineData.data,
+                  mimeType: part.inlineData.mimeType,
+                });
+              }
+              // Text response (e.g. before tool call)
+              if (part.text) {
+                sendToClient({ type: 'ai_text', text: part.text });
+              }
+            }
+
+            // ── Function call: launch_swarm triggered ──
+            const toolCall = msg.toolCall;
+            if (toolCall?.functionCalls?.length) {
+              for (const fn of toolCall.functionCalls) {
+                if (fn.name === 'launch_swarm') {
+                  const args = fn.args as { intent: string; campaignType?: string };
+                  this.logger.info(`launch_swarm called: "${args.intent}"`);
+
+                  // Respond to Gemini immediately so the session stays live
+                  if (liveSession) {
+                    liveSession.sendToolResponse({
+                      functionResponses: [
+                        {
+                          id: fn.id,
+                          name: fn.name,
+                          response: {
+                            output:
+                              'Swarm launched. Processing directive in background. Stay on the line.',
+                          },
+                        },
+                      ],
+                    });
+                  }
+
+                  // Execute swarm async (non-blocking)
+                  runSwarm(args.intent, args.campaignType).catch(e =>
+                    this.logger.error('runSwarm error', e)
+                  );
+                }
+              }
+            }
+
+            // ── Turn complete ──
+            if (serverContent?.turnComplete) {
+              sendToClient({ type: 'turn_complete' });
+            }
+          },
+
+          onerror: (err: any) => {
+            this.logger.error('Gemini Live error', err);
+            sendToClient({ type: 'error', message: 'Gemini Live API error. Reconnecting...' });
+          },
+
+          onclose: (ev: any) => {
+            this.logger.info(`Gemini Live session closed: code=${ev?.code}`);
+            if (!closing) {
+              sendToClient({ type: 'live_closed' });
+            }
+          },
+        },
+        config: {
+          responseModalities: [Modality.AUDIO, Modality.TEXT],
+          tools: [{ functionDeclarations: [LAUNCH_SWARM_TOOL] }],
+          systemInstruction: {
+            parts: [
+              {
+                text:
+                  'You are NEXUS, the voice of AGENTICUM G5 — an elite AI-powered marketing swarm. ' +
+                  'You speak confidently, precisely, and with purpose. ' +
+                  'When the user gives any marketing, campaign, content, design, or strategy directive, ' +
+                  'you MUST call the launch_swarm function to activate the swarm. ' +
+                  'Confirm the action briefly, then let the swarm handle execution.',
+              },
+            ],
+          },
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: 'Aoede' },
+            },
+          },
+        },
+      });
+    } catch (err) {
+      this.logger.error('Failed to open Gemini Live session', err as Error);
+      sendToClient({ type: 'error', message: 'Failed to connect to Gemini Live API.' });
+      return;
+    }
+
+    // Store session for cleanup
+    this.activeSessions.set(clientWs, { session: liveSession, closing: false });
+
+    // ──────────────────────────────────────────────
+    // Handle incoming WebSocket messages from frontend
+    // ──────────────────────────────────────────────
+    clientWs.on('message', async (rawData: any) => {
+      try {
+        const message = JSON.parse(rawData.toString());
+
+        // Text directive (non-voice fallback path)
         if (message.type === 'start') {
-          import('../services/nexus-manager').then(m => m.nexusManager.updateState({ 
-            currentUserIntent: message.input,
-            lastCognitiveEvent: `Directive Received: ${message.input.substring(0, 30)}...`
-          }));
-
-          const result = await this.orchestrator.execute(message.input || 'Initial brief', message.campaignId);
-          if (clientWs.readyState === WebSocket.OPEN) {
-            clientWs.send(JSON.stringify({ type: 'output', agentId: 'sn00', data: result }));
-          }
+          import('../services/nexus-manager').then(m =>
+            m.nexusManager.updateState({
+              currentUserIntent: message.input,
+              lastCognitiveEvent: `Directive Received: ${(message.input || '').substring(0, 30)}...`,
+            })
+          );
+          await runSwarm(message.input || 'Initial brief', message.campaignId);
+          return;
         }
 
-        // The frontend GenIUSConsole streams Web Audio Worklet PCM16 chunks continually while IsRecording = true
+        // PCM16 audio from browser microphone → forward to Gemini Live
         if (message.type === 'realtime_input' && message.data) {
-           if (sessionData.recognizeStream && !sessionData.recognizeStream.destroyed) {
-              sessionData.recognizeStream.write(Buffer.from(message.data, 'base64'));
-           }
+          if (liveSession) {
+            liveSession.sendRealtimeInput({
+              audio: {
+                data: message.data, // already base64 from frontend
+                mimeType: 'audio/pcm;rate=16000',
+              },
+            });
+          }
+          return;
+        }
+
+        // Client content (text turn sent to model)
+        if (message.type === 'client_content' && message.text) {
+          if (liveSession) {
+            liveSession.sendClientContent({
+              turns: [{ role: 'user', parts: [{ text: message.text }] }],
+              turnComplete: true,
+            });
+          }
+          return;
         }
       } catch (err: any) {
         this.logger.error('Error processing WebSocket frame', err);
       }
     });
 
+    // ──────────────────────────────────────────────
+    // Cleanup on disconnect
+    // ──────────────────────────────────────────────
     clientWs.on('close', () => {
-      this.logger.info('Client disconnected, closing Voice and Data session.');
-      if (sessionData.recognizeStream) {
-         sessionData.recognizeStream.end();
+      this.logger.info('Client disconnected — closing Gemini Live session');
+      closing = true;
+      if (liveSession) {
+        try {
+          liveSession.close();
+        } catch (_) {}
       }
       this.activeSessions.delete(clientWs);
     });

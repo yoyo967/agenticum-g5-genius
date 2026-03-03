@@ -16,8 +16,11 @@ router.post('/upload', upload.array('files'), async (req: Request, res: Response
     }
 
     const uploadPromises = files.map(async file => {
+      // Decode originalname from latin1 to utf8 to fix common encoding issues with Multer/browsers
+      const decodedName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+      
       // 1. Upload to storage (local fallback or GCS)
-      const url = await storageService.uploadFile(file.originalname, file.buffer, file.mimetype);
+      const url = await storageService.uploadFile(decodedName, file.buffer, file.mimetype);
       
       // 2. Parse text and send to Discovery Engine
       try {
@@ -38,10 +41,10 @@ router.post('/upload', upload.array('files'), async (req: Request, res: Response
         }
         
         if (text.trim()) {
-          await DiscoveryEngineService.getInstance().ingestDocument(file.originalname, text);
+          await DiscoveryEngineService.getInstance().ingestDocument(decodedName, text);
         }
       } catch (parseError) {
-        console.error(`Failed to parse document context ${file.originalname}:`, parseError);
+        console.error(`Failed to parse document context ${decodedName}:`, parseError);
         // Continue without failing the whole upload
       }
       

@@ -59,7 +59,8 @@ const AGENTS: AgentMetric[] = [
   { id: 'BA-07', name: 'DEEP INTEL', role: 'Browser AI', color: 'var(--color-agent-ba07)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
   { id: 'VE-01', name: 'MOTION DIRECTOR', role: 'Video Engine', color: 'var(--color-agent-ve01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
   { id: 'RA-01', name: 'SECURITY SENATE', role: 'Auditor', color: 'var(--color-agent-ra01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
-  { id: 'GA-01', name: 'GROUNDING TECH', role: 'Researcher', color: 'var(--color-accent)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+  { id: 'SO-00', name: 'SOVEREIGN CORE', role: 'Pilot', color: '#00E5FF', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
+  { id: 'PM-07', name: 'MISSION MANAGER', role: 'Coordination', color: '#FFD700', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
 ];
 
 export function SwarmAnalytics() {
