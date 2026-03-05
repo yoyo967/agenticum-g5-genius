@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Bot, Shield, Cpu, FileText, Plus, ExternalLink, Eye, Clock, Tag, RefreshCw } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { formatDate } from '../utils/formatDate';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadTextFile } from '../utils/export';
 import ReactMarkdown from 'react-markdown';
@@ -25,6 +26,20 @@ export function PillarBlogEngine() {
   // Editor state
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
+  const editorRef = useRef<HTMLTextAreaElement>(null);
+
+  const insertMarkdown = (before: string, after = '') => {
+    const el = editorRef.current;
+    if (!el) { setEditContent(p => p + before + after); return; }
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selected = editContent.slice(start, end);
+    setEditContent(editContent.slice(0, start) + before + selected + after + editContent.slice(end));
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(start + before.length, start + before.length + selected.length);
+    }, 0);
+  };
 
   // Distribution state
   const [isPublishing, setIsPublishing] = useState(false);
@@ -57,9 +72,11 @@ export function PillarBlogEngine() {
         const data = await res.json();
         setGenerateResult(data.message || 'Agent dispatched successfully.');
         setTopic('');
+        setTimeout(() => setGenerateResult(null), 5000);
       }
     } catch {
       setGenerateResult('Failed to dispatch agent. Is the backend running?');
+      setTimeout(() => setGenerateResult(null), 5000);
     } finally {
       setIsGenerating(false);
     }
@@ -128,7 +145,7 @@ export function PillarBlogEngine() {
                   {art.tag && <span className="font-mono text-[9px] flex items-center gap-1"><Tag size={8} />{art.tag}</span>}
                   {art.timestamp && (
                     <span className="font-mono text-[9px] flex items-center gap-1">
-                      <Clock size={8} />{new Date(art.timestamp).toLocaleDateString('en-US')}
+                      <Clock size={8} />{formatDate(art.timestamp)}
                     </span>
                   )}
                 </div>
@@ -211,10 +228,12 @@ export function PillarBlogEngine() {
                             });
                             if (res.ok) {
                               const result = await res.json();
-                              setPublishStatus(`Success: ${result.url}`);
+                              setPublishStatus(`✓ Published: ${result.url || 'WordPress'}`);
+                            } else {
+                              setPublishStatus('✗ WordPress publish failed — check server config.');
                             }
-                          } catch (e) {
-                            console.error('Publish failed:', e);
+                          } catch {
+                            setPublishStatus('✗ WordPress unreachable — backend offline?');
                           } finally {
                             setIsPublishing(false);
                           }
@@ -235,10 +254,12 @@ export function PillarBlogEngine() {
                             });
                             if (res.ok) {
                               const result = await res.json();
-                              setPublishStatus(`Success: ${result.url}`);
+                              setPublishStatus(`✓ Published to LinkedIn: ${result.url || 'Done'}`);
+                            } else {
+                              setPublishStatus('✗ LinkedIn publish failed — check server config.');
                             }
-                          } catch (e) {
-                            console.error('LinkedIn failed:', e);
+                          } catch {
+                            setPublishStatus('✗ LinkedIn unreachable — backend offline?');
                           } finally {
                             setIsPublishing(false);
                           }
@@ -260,20 +281,26 @@ export function PillarBlogEngine() {
                       <button
                         onClick={async () => {
                           if (!selectedArticle || !scheduleDate) return;
+                          if (new Date(scheduleDate) <= new Date()) {
+                            setPublishStatus('✗ Schedule date must be in the future.');
+                            return;
+                          }
                           try {
                             const res = await fetch(`${API_BASE_URL}/blog/schedule/wordpress/${selectedArticle.id}`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ 
+                              body: JSON.stringify({
                                 type: selectedArticle.type || 'pillar',
                                 scheduledAt: scheduleDate
                               }),
                             });
                             if (res.ok) {
-                              setPublishStatus(`Scheduled for ${new Date(scheduleDate).toLocaleString()}`);
+                              setPublishStatus(`✓ Scheduled for ${new Date(scheduleDate).toLocaleString()}`);
+                            } else {
+                              setPublishStatus('✗ Schedule failed — check server config.');
                             }
-                          } catch (e) {
-                            console.error('Schedule failed:', e);
+                          } catch {
+                            setPublishStatus('✗ Scheduler unreachable — backend offline?');
                           }
                         }}
                         disabled={!scheduleDate}
@@ -315,11 +342,22 @@ export function PillarBlogEngine() {
                         🛡️ Audit
                       </button>
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if (!isEditing) {
                             setEditContent(selectedArticle.content || '');
                             setIsEditing(true);
                           } else {
+                            // Save edits to backend before switching to read mode
+                            try {
+                              await fetch(`${API_BASE_URL}/blog/article/${selectedArticle.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ content: editContent }),
+                              });
+                            } catch (e) {
+                              console.warn('Save failed:', e);
+                            }
+                            setSelectedArticle({ ...selectedArticle, content: editContent });
                             setIsEditing(false);
                           }
                         }}
@@ -350,12 +388,13 @@ export function PillarBlogEngine() {
                         <div className="bg-white/5 px-4 py-2 text-[10px] font-mono uppercase text-white/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md flex items-center justify-between">
                           <span>Markdown Editor (Drafting)</span>
                           <div className="flex gap-2">
-                            <button onClick={() => setEditContent(p => p + ' **Bold**')} className="hover:text-white transition-colors">B</button>
-                            <button onClick={() => setEditContent(p => p + ' *Italic*')} className="hover:text-white transition-colors">I</button>
-                            <button onClick={() => setEditContent(p => p + ' [Link](url)')} className="hover:text-white transition-colors">Link</button>
+                            <button onClick={() => insertMarkdown('**', '**')} className="hover:text-white transition-colors font-bold">B</button>
+                            <button onClick={() => insertMarkdown('*', '*')} className="hover:text-white transition-colors italic">I</button>
+                            <button onClick={() => insertMarkdown('[', '](url)')} className="hover:text-white transition-colors">Link</button>
                           </div>
                         </div>
                         <textarea
+                          ref={editorRef}
                           value={editContent}
                           onChange={e => setEditContent(e.target.value)}
                           className="flex-1 w-full p-4 bg-transparent font-mono text-xs text-white/80 leading-relaxed resize-none focus:outline-none custom-scrollbar"

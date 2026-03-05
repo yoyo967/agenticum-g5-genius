@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Database, FolderHeart, FileText, Search, Target, RefreshCw, Clock, ChevronRight, Building2, Zap } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { formatDate } from '../utils/formatDate';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadCSV } from '../utils/export';
 
@@ -24,11 +25,15 @@ export function ProjectMemory() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [assets, setAssets] = useState<VaultFile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAllAssets, setShowAllAssets] = useState(false);
+  const [injectToast, setInjectToast] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
+    setFetchError('');
     try {
       const [campRes, vaultRes] = await Promise.all([
         fetch(`${API_BASE_URL}/pmax/campaigns`),
@@ -44,6 +49,7 @@ export function ProjectMemory() {
       }
     } catch (e) {
       console.warn('[Memory] Backend unavailable:', e);
+      setFetchError('Backend unavailable — showing cached data.');
     } finally {
       setLoading(false);
     }
@@ -79,6 +85,13 @@ export function ProjectMemory() {
         </div>
       </div>
 
+      {fetchError && (
+        <div className="shrink-0 flex items-center gap-3 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono">
+          <span>⚠</span><span>{fetchError}</span>
+          <button onClick={() => setFetchError('')} className="ml-auto text-amber-400/60 hover:text-amber-400 transition-colors">✕</button>
+        </div>
+      )}
+
       {/* Search */}
       <div className="relative shrink-0">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
@@ -107,7 +120,7 @@ export function ProjectMemory() {
                   <Target size={16} className="text-accent shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="font-display text-xs uppercase truncate">{camp.name}</p>
-                    <p className="font-mono text-[9px] text-white/25 mt-0.5">{camp.objective} · {camp.status}</p>
+                    <p className="font-mono text-[9px] text-white/25 mt-0.5">{camp.objective || '—'} · {camp.status}</p>
                   </div>
                   <ChevronRight size={12} className="text-white/15 group-hover:text-accent shrink-0" />
                 </div>
@@ -133,27 +146,31 @@ export function ProjectMemory() {
                     <h4 className="label mb-0">Campaign Details</h4>
                     <button 
                       onClick={() => {
-                        window.dispatchEvent(new CustomEvent('trigger-orchestration', { 
-                          detail: { 
+                        window.dispatchEvent(new CustomEvent('trigger-orchestration', {
+                          detail: {
                             input: `Analyze campaign ${selectedCampaign.name} (${selectedCampaign.objective}) and suggest a disruptive evolution strategy.`,
                             workflowId: 'Memory-Injection'
-                          } 
+                          }
                         }));
                         window.dispatchEvent(new CustomEvent('os-module-change', { detail: 'console' }));
+                        setInjectToast(true);
+                        setTimeout(() => setInjectToast(false), 3000);
                       }}
                       className="text-[9px] px-2 py-1 rounded bg-accent/20 text-accent hover:bg-accent hover:text-obsidian transition-all uppercase font-black tracking-widest flex items-center gap-1.5"
                     >
-                      <Zap size={10} /> Inject Context
+                      <Zap size={10} /> {injectToast ? 'Injected ✓' : 'Inject Context'}
                     </button>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <span className="font-mono text-[9px] text-white/25 block">Budget</span>
-                      <span className="font-mono text-sm text-white">${selectedCampaign.budget?.dailyAmount || 0}/day</span>
+                      <span className="font-mono text-sm text-white">
+                        {selectedCampaign.budget?.dailyAmount != null ? `$${selectedCampaign.budget.dailyAmount}/day` : '—'}
+                      </span>
                     </div>
                     <div>
                       <span className="font-mono text-[9px] text-white/25 block">Created</span>
-                      <span className="font-mono text-sm text-white">{new Date(selectedCampaign.createdAt).toLocaleDateString('en-US')}</span>
+                      <span className="font-mono text-sm text-white">{formatDate(selectedCampaign.createdAt)}</span>
                     </div>
                   </div>
                 </div>
@@ -177,20 +194,29 @@ export function ProjectMemory() {
               <p className="font-mono text-[9px] text-white/15">No assets in vault</p>
             </div>
           ) : (
-            assets.slice(0, 20).map(file => (
-              <motion.div key={file.name} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="card p-3! flex items-center gap-2 group hover:border-white/15">
-                <FileText size={12} className="text-white/30 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-mono text-[9px] text-white/60 truncate">{file.name}</p>
-                </div>
-                {file.timestamp && (
-                  <span className="font-mono text-[8px] text-white/15 shrink-0 flex items-center gap-1">
-                    <Clock size={8} />{new Date(file.timestamp).toLocaleDateString('en-US')}
-                  </span>
-                )}
-              </motion.div>
-            ))
+            <>
+              {(showAllAssets ? assets : assets.slice(0, 20)).map(file => (
+                <motion.div key={file.name} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  onClick={() => file.url && window.open(file.url, '_blank', 'noopener,noreferrer')}
+                  className={`card p-3! flex items-center gap-2 group hover:border-white/15 ${file.url ? 'cursor-pointer' : ''}`}>
+                  <FileText size={12} className="text-white/30 shrink-0 group-hover:text-accent transition-colors" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono text-[9px] text-white/60 truncate group-hover:text-white/80 transition-colors">{file.name}</p>
+                  </div>
+                  {file.timestamp && (
+                    <span className="font-mono text-[8px] text-white/15 shrink-0 flex items-center gap-1">
+                      <Clock size={8} />{formatDate(file.timestamp)}
+                    </span>
+                  )}
+                </motion.div>
+              ))}
+              {assets.length > 20 && (
+                <button onClick={() => setShowAllAssets(p => !p)}
+                  className="text-[9px] font-mono text-white/30 hover:text-white/60 py-1 text-center w-full transition-colors">
+                  {showAllAssets ? '↑ Show Less' : `↓ Show All (${assets.length})`}
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>

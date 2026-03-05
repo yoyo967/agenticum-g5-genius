@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Video, Film, Sparkles, Play, Music, RefreshCw, Layers, Download } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { formatDate } from '../utils/formatDate';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadTextFile, downloadPDF } from '../utils/export';
 
@@ -25,6 +26,8 @@ interface CinematicAsset {
 export function CinematicForge() {
   const [topic, setTopic] = useState('');
   const [isForging, setIsForging] = useState(false);
+  const [isGeneratingVisual, setIsGeneratingVisual] = useState(false);
+  const [forgeError, setForgeError] = useState('');
   const [currentAsset, setCurrentAsset] = useState<CinematicAsset | null>(null);
   const [assets, setAssets] = useState<CinematicAsset[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
@@ -48,6 +51,7 @@ export function CinematicForge() {
   const handleForge = async () => {
     if (!topic.trim()) return;
     setIsForging(true);
+    setForgeError('');
     setCurrentAsset(null);
     try {
       const res = await fetch(`${API_BASE_URL}/blog/cinematic/forge`, {
@@ -59,9 +63,12 @@ export function CinematicForge() {
         const data = await res.json();
         setCurrentAsset(data);
         fetchAssets();
+      } else {
+        setForgeError('Forge failed — backend returned an error. Please retry.');
       }
     } catch (e) {
       console.error('Forge failed', e);
+      setForgeError('Forge failed — could not reach the backend.');
     } finally {
       setIsForging(false);
     }
@@ -69,7 +76,8 @@ export function CinematicForge() {
 
   const handleGenerateVisual = async (shotNumber: number) => {
     if (!currentAsset) return;
-    setIsForging(true); // Reuse forging state for visual gen
+    setIsGeneratingVisual(true);
+    setForgeError('');
     try {
       const res = await fetch(`${API_BASE_URL}/blog/cinematic/generate-visual`, {
         method: 'POST',
@@ -78,7 +86,6 @@ export function CinematicForge() {
       });
       if (res.ok) {
         const { imageUrl } = await res.json();
-        // Update local state
         const updatedAsset = { ...currentAsset };
         const shotIndex = updatedAsset.storyboard.findIndex(s => s.shotNumber === shotNumber);
         if (shotIndex !== -1) {
@@ -86,11 +93,14 @@ export function CinematicForge() {
           setCurrentAsset(updatedAsset);
           setAssets(prev => prev.map(a => a.id === updatedAsset.id ? updatedAsset : a));
         }
+      } else {
+        setForgeError('Visual synthesis failed. Please retry.');
       }
     } catch (e) {
       console.error('Visual generation failed', e);
+      setForgeError('Visual synthesis failed — could not reach the backend.');
     } finally {
-      setIsForging(false);
+      setIsGeneratingVisual(false);
     }
   };
 
@@ -117,6 +127,14 @@ export function CinematicForge() {
           )}
         </div>
       </div>
+
+      {forgeError && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono">
+          <span className="shrink-0">✗</span>
+          <span>{forgeError}</span>
+          <button onClick={() => setForgeError('')} className="ml-auto text-rose-400/60 hover:text-rose-400 transition-colors">✕</button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Creation Workshop */}
@@ -159,7 +177,7 @@ export function CinematicForge() {
               ) : assets.length > 0 ? assets.map(asset => (
                 <div key={asset.id} onClick={() => setCurrentAsset(asset)}
                   className="p-3 bg-white/5 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
-                  <p className="text-[10px] font-mono text-white/30 uppercase mb-1">{new Date(asset.createdAt).toLocaleDateString()}</p>
+                  <p className="text-[10px] font-mono text-white/30 uppercase mb-1">{formatDate(asset.createdAt)}</p>
                   <p className="text-xs font-bold truncate">{asset.topic}</p>
                 </div>
               )) : (
@@ -252,20 +270,30 @@ export function CinematicForge() {
                             </div>
                          </div>
                          {!currentAsset.storyboard[activeShot].imageUrl && (
-                           <button 
+                           <button
                              onClick={() => handleGenerateVisual(currentAsset.storyboard[activeShot].shotNumber)}
-                             disabled={isForging}
-                             className="btn btn-primary w-full gap-2 shadow-lg shadow-magenta/20" 
+                             disabled={isGeneratingVisual}
+                             className="btn btn-primary w-full gap-2 shadow-lg shadow-magenta/20"
                              style={{ background: 'var(--color-magenta)', borderColor: 'var(--color-magenta)' }}
                            >
-                             <Sparkles size={14} className={isForging ? 'animate-pulse' : ''} />
-                             {isForging ? 'Synthesizing...' : 'Synthesize Visual Asset'}
+                             {isGeneratingVisual
+                               ? <RefreshCw size={14} className="animate-spin" />
+                               : <Sparkles size={14} />}
+                             {isGeneratingVisual ? 'Synthesizing...' : 'Synthesize Visual Asset'}
                            </button>
                          )}
                          <div className="flex gap-3 pt-4">
-                          <button className="btn btn-primary btn-sm flex-1 gap-2" style={{ background: 'var(--color-obsidian)', borderColor: 'var(--color-accent)' }}>
-                            <Play size={12} /> Preview Animatic
-                          </button>
+                           {currentAsset.storyboard[activeShot]?.imageUrl ? (
+                             <button
+                               onClick={() => window.open(currentAsset.storyboard[activeShot].imageUrl!, '_blank', 'noopener,noreferrer')}
+                               className="btn btn-primary btn-sm flex-1 gap-2"
+                               style={{ background: 'var(--color-obsidian)', borderColor: 'var(--color-accent)' }}
+                             >
+                               <Play size={12} /> View Asset
+                             </button>
+                           ) : (
+                             <p className="text-[10px] font-mono text-white/20 text-center w-full pt-1">Synthesize a visual to enable preview</p>
+                           )}
                          </div>
                       </div>
                     </motion.div>
@@ -280,7 +308,7 @@ export function CinematicForge() {
                     </div>
                     <div className="text-right">
                       <p className="font-mono text-[10px] text-white/30 uppercase">Confidential Storyboard</p>
-                      <p className="font-mono text-[10px] text-accent uppercase">{new Date(currentAsset.createdAt).toLocaleDateString()}</p>
+                      <p className="font-mono text-[10px] text-accent uppercase">{formatDate(currentAsset.createdAt)}</p>
                     </div>
                   </div>
 

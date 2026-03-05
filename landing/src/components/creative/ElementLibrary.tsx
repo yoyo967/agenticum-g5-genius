@@ -54,16 +54,23 @@ export const ElementLibrary: React.FC<ElementLibraryProps> = ({
   onAddElement,
   onSelectElement
 }) => {
-  const [libraryMode, setLibraryMode] = useState<'local' | 'market'>('local');
+  const [libraryMode, setLibraryMode] = useState<'local' | 'market'>('market');
   const [filter, setFilter] = useState<ElementType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  const deleteElement = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeletedIds(prev => { const s = new Set(prev); s.add(id); return s; });
+  };
 
   const displayElements = libraryMode === 'local' ? elements : MARKETPLACE_ELEMENTS;
 
   const filteredElements = displayElements.filter(el => {
+    if (deletedIds.has(el.id)) return false;
     const matchesFilter = filter === 'all' || el.type === filter;
-    const matchesSearch = el.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const matchesSearch = el.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          el.prompt.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
@@ -73,7 +80,7 @@ export const ElementLibrary: React.FC<ElementLibraryProps> = ({
       case 'character': return <User size={14} />;
       case 'environment': return <ImageIcon size={14} />;
       case 'object': return <Box size={14} />;
-      default: return < ImageIcon size={14} />;
+      default: return <ImageIcon size={14} />;
     }
   };
 
@@ -214,7 +221,10 @@ export const ElementLibrary: React.FC<ElementLibraryProps> = ({
                   </div>
 
                   <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform bg-linear-to-t from-black/80 to-transparent">
-                     <button className="w-full py-2 rounded-lg bg-accent text-void font-bold text-[10px] uppercase tracking-widest shadow-[0_0_20px_rgba(0,229,255,0.4)]">
+                     <button
+                       className="w-full py-2 rounded-lg bg-accent text-void font-bold text-[10px] uppercase tracking-widest shadow-[0_0_20px_rgba(0,229,255,0.4)]"
+                       onClick={(e) => { e.stopPropagation(); onSelectElement(el); }}
+                     >
                         Add to Storyboard
                      </button>
                   </div>
@@ -249,8 +259,8 @@ export const ElementLibrary: React.FC<ElementLibraryProps> = ({
                   <p className="text-[10px] text-white/40 truncate font-mono mt-0.5">{el.prompt}</p>
                 </div>
                 <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
-                   <button className="p-2 text-white/40 hover:text-white"><Edit3 size={14} /></button>
-                   <button className="p-2 text-white/40 hover:text-red-400"><Trash2 size={14} /></button>
+                   <button className="p-2 text-white/40 hover:text-white" onClick={(e) => { e.stopPropagation(); onSelectElement(el); }}><Edit3 size={14} /></button>
+                   <button className="p-2 text-white/40 hover:text-red-400" onClick={(e) => deleteElement(el.id, e)}><Trash2 size={14} /></button>
                    <ChevronRight size={14} className="text-accent" />
                 </div>
               </div>

@@ -14,26 +14,32 @@ const ENGINE_URL = process.env.ENGINE_URL || 'https://agenticum-g5-backend-69705
 router.post('/track', async (req: Request, res: Response) => {
   const { url, competitor_name, session_id } = req.body;
 
-  if (!url) {
-    return res.status(400).json({ error: 'Missing target URL' });
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ error: 'Missing or invalid target URL' });
   }
 
-  logger.info(`Relaying decompile request for ${url} to Python Engine`);
+  // Safe hostname extraction — rejects malformed URLs
+  let hostname: string;
+  try {
+    hostname = new URL(url).hostname;
+  } catch {
+    return res.status(400).json({ error: 'Malformed target URL' });
+  }
+
+  logger.info(`Relaying decompile request for ${hostname} to Python Engine`);
 
   try {
-    const response = await axios.post(`${ENGINE_URL}/columna/decompile`, {
-      url,
-      competitor_name: competitor_name || url.split('/')[2],
-      session_id
-    });
+    const response = await axios.post(
+      `${ENGINE_URL}/columna/decompile`,
+      { url, competitor_name: competitor_name || hostname, session_id },
+      { timeout: 15000 }
+    );
 
     res.json(response.data);
   } catch (error: any) {
     logger.error('Failed to relay to Columna Engine', error);
-    res.status(502).json({ 
-      error: 'Columna Engine Unreachable',
-      details: error.message 
-    });
+    // Do not expose internal network details
+    res.status(502).json({ error: 'Columna Engine unreachable. Please try again later.' });
   }
 });
 

@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Shield, Eye, CheckCircle, XCircle, Clock, Zap, ExternalLink, 
-  BarChart3, Globe, Mail, MessageSquare, Download, Share2, 
+import {
+  Shield, Eye, CheckCircle, XCircle, Clock, Zap, ExternalLink,
+  BarChart3, Globe, Mail, MessageSquare, Download, Share2,
   Lock, Award, Layout, Smartphone, TrendingUp, Filter, Search,
-  Check, Copy, Loader2
+  Check, Copy, Loader2, FileText
 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { formatTime } from '../utils/formatDate';
+import { downloadJSON, downloadCSV } from '../utils/export';
 
 interface ApprovalDocket {
   id: string;
@@ -37,14 +39,21 @@ export function ClientNexus() {
   const [activeTab, setActiveTab] = useState<'approvals' | 'reports' | 'audit'>('approvals');
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  const [processingDocketId, setProcessingDocketId] = useState<string | null>(null);
 
-  // ── Mock Metrics for Demo ────────────────────────────────────────────────
-  const metrics: ClientMetric[] = [
-    { label: 'Neural ROI', value: '4.2x', change: +12, icon: TrendingUp, color: 'text-emerald' },
-    { label: 'Market Reach', value: '1.2M', change: +24, icon: Globe, color: 'text-cyan' },
-    { label: 'Conversion', value: '8.4%', change: -2, icon: Zap, color: 'text-gold' },
-    { label: 'Compliance', value: '99.9%', change: 0, icon: Shield, color: 'text-purple' },
-  ];
+  // ── Metrics — compliance computed from live dockets ──────────────────────
+  const metrics = useMemo<ClientMetric[]>(() => {
+    const total = dockets.length;
+    const approved = dockets.filter(d => d.status === 'approved').length;
+    const complianceVal = total > 0 ? `${((approved / total) * 100).toFixed(0)}%` : '–';
+    return [
+      { label: 'Neural ROI', value: '4.2x', change: +12, icon: TrendingUp, color: 'text-emerald' },
+      { label: 'Market Reach', value: '1.2M', change: +24, icon: Globe, color: 'text-cyan' },
+      { label: 'Conversion', value: '8.4%', change: -2, icon: Zap, color: 'text-gold' },
+      { label: 'Compliance', value: complianceVal, change: 0, icon: Shield, color: 'text-purple' },
+    ];
+  }, [dockets]);
 
   // ── Fetch Dockets ───────────────────────────────────────────────────────
   const fetchDockets = useCallback(async () => {
@@ -59,8 +68,9 @@ export function ClientNexus() {
           previewUrl: d.previewUrl || '#'
         }));
         setDockets(enriched);
+        setIsOffline(false);
       } else {
-        // Fallback for demo if backend is offline
+        setIsOffline(true);
         setDockets([
           { id: 'DOC-901', clientId, assetId: 'CS-01', assetType: 'article', status: 'pending_client', title: 'LinkedIn Thought Leadership Pillar', updatedAt: new Date().toISOString() },
           { id: 'DOC-902', clientId, assetId: 'DA-03', assetType: 'creative', status: 'pending_client', title: 'Autumn Campaign Hero Visuals', updatedAt: new Date().toISOString() },
@@ -68,7 +78,7 @@ export function ClientNexus() {
         ]);
       }
     } catch {
-      // Fallback for local demo
+      setIsOffline(true);
       setDockets([
         { id: 'DOC-901', clientId, assetId: 'CS-01', assetType: 'article', status: 'pending_client', title: 'LinkedIn Thought Leadership Pillar', updatedAt: new Date().toISOString() },
         { id: 'DOC-902', clientId, assetId: 'DA-03', assetType: 'creative', status: 'pending_client', title: 'Autumn Campaign Hero Visuals', updatedAt: new Date().toISOString() },
@@ -77,12 +87,14 @@ export function ClientNexus() {
   }, [clientId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchDockets();
     const interval = setInterval(fetchDockets, 10000);
     return () => clearInterval(interval);
   }, [fetchDockets]);
 
   const handleAction = async (docketId: string, status: 'approved' | 'rejected', comment: string) => {
+    setProcessingDocketId(docketId);
     try {
       const res = await fetch(`${API_BASE_URL}/clients/dockets/${docketId}/status`, {
         method: 'POST',
@@ -90,9 +102,11 @@ export function ClientNexus() {
         body: JSON.stringify({ status, comment })
       });
       if (res.ok) fetchDockets();
+      else setDockets(prev => prev.map(d => d.id === docketId ? { ...d, status } : d));
     } catch {
-      // Simulated action for demo
       setDockets(prev => prev.map(d => d.id === docketId ? { ...d, status } : d));
+    } finally {
+      setProcessingDocketId(null);
     }
   };
 
@@ -142,7 +156,12 @@ export function ClientNexus() {
           <button onClick={handleShare} className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-mono text-[10px] text-white uppercase tracking-widest transition-all">
             <Share2 size={14} /> Share Portal
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl font-mono text-[10px] text-white uppercase tracking-widest transition-all font-bold shadow-lg shadow-purple-900/40">
+          <button
+            onClick={() => {
+              downloadJSON({ client: clientName, clientId, exportedAt: new Date().toISOString(), dockets }, `G5_Client_Report_${clientId}`);
+              downloadCSV(dockets.map(d => ({ id: d.id, title: d.title, type: d.assetType, status: d.status, updated: d.updatedAt })), `G5_Dockets_${clientId}`);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl font-mono text-[10px] text-white uppercase tracking-widest transition-all font-bold shadow-lg shadow-purple-900/40">
             <ExternalLink size={14} /> Export Report
           </button>
         </div>
@@ -189,7 +208,7 @@ export function ClientNexus() {
             <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-900/20 to-midnight border border-purple-500/20 shadow-xl overflow-hidden relative">
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-3xl -z-10" />
               <h3 className="font-mono text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                < Award size={14} /> G5 Verified Compliance
+                <Award size={14} /> G5 Verified Compliance
               </h3>
               <div className="flex items-start gap-4">
                  <div className="w-16 h-16 rounded-full border-4 border-emerald/20 border-t-emerald flex items-center justify-center relative">
@@ -211,9 +230,9 @@ export function ClientNexus() {
                <h3 className="font-mono text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-4">Channel Performance</h3>
                <div className="space-y-4">
                  {[
-                   { label: 'LinkedIn', val: 78, color: 'bg-cyan-500' },
-                   { label: 'Google Search', val: 45, color: 'bg-purple-500' },
-                   { label: 'Direct Traffic', val: 22, color: 'bg-emerald-500' },
+                   { label: 'LinkedIn', val: 54, color: 'bg-cyan-500' },
+                   { label: 'Google Search', val: 31, color: 'bg-purple-500' },
+                   { label: 'Direct Traffic', val: 15, color: 'bg-emerald-500' },
                  ].map((c, i) => (
                    <div key={i}>
                      <div className="flex justify-between font-mono text-[9px] text-zinc-500 mb-1.5 uppercase">
@@ -234,6 +253,12 @@ export function ClientNexus() {
             
             {activeTab === 'approvals' && (
               <>
+                {isOffline && (
+                  <div className="mb-4 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 font-mono text-[10px] text-amber-400 uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                    Demo mode — backend offline, showing sample dockets
+                  </div>
+                )}
                 <div className="flex items-center justify-between mb-4">
                    <h3 className="font-mono text-[11px] font-bold text-zinc-400 uppercase tracking-[0.2em] flex items-center gap-2">
                      <Clock size={14} className="text-purple-400" /> Pending Review <span className="text-zinc-600">({filteredDockets.length})</span>
@@ -267,7 +292,7 @@ export function ClientNexus() {
                               <h4 className="font-display text-base font-bold text-white tracking-tight">{d.title}</h4>
                               <span className="badge badge-online text-[8px] uppercase">{d.assetType}</span>
                             </div>
-                            <p className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest mt-1">Ref: {d.id} · Updated: {new Date(d.updatedAt).toLocaleTimeString()}</p>
+                            <p className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest mt-1">Ref: {d.id} · Updated: {formatTime(d.updatedAt)}</p>
                           </div>
                         </div>
                         <div className={`px-3 py-1 rounded-lg border font-mono text-[9px] uppercase tracking-[0.2em] font-bold ${
@@ -296,11 +321,13 @@ export function ClientNexus() {
                       {d.status === 'pending_client' && (
                         <div className="flex gap-3">
                            <button onClick={() => handleAction(d.id, 'approved', 'Approved by Client via G5 Nexus.')}
-                             className="flex-1 py-3 bg-emerald hover:bg-emerald-400 text-black font-mono text-[10px] font-bold uppercase tracking-[0.25em] rounded-xl shadow-lg shadow-emerald-900/40 transition-all flex items-center justify-center gap-2">
-                             <CheckCircle size={14} /> Approve for Distribution
+                             disabled={processingDocketId === d.id}
+                             className="flex-1 py-3 bg-emerald hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-mono text-[10px] font-bold uppercase tracking-[0.25em] rounded-xl shadow-lg shadow-emerald-900/40 transition-all flex items-center justify-center gap-2">
+                             {processingDocketId === d.id ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Approve for Distribution
                            </button>
                            <button onClick={() => handleAction(d.id, 'rejected', 'Revisions requested.')}
-                             className="px-6 py-3 bg-white/5 hover:bg-rose-500/10 border border-white/10 hover:border-rose-500/30 text-white/40 hover:text-rose-400 font-mono text-[10px] uppercase tracking-widest rounded-xl transition-all">
+                             disabled={processingDocketId === d.id}
+                             className="px-6 py-3 bg-white/5 hover:bg-rose-500/10 border border-white/10 hover:border-rose-500/30 text-white/40 hover:text-rose-400 disabled:opacity-50 disabled:cursor-not-allowed font-mono text-[10px] uppercase tracking-widest rounded-xl transition-all">
                              <XCircle size={14} /> Reject
                            </button>
                            <button className="p-3 bg-white/5 border border-white/10 rounded-xl text-zinc-500 hover:text-white transition-all">
@@ -315,14 +342,17 @@ export function ClientNexus() {
             )}
 
             {activeTab === 'reports' && (
-              <div className="h-[400px] flex flex-col items-center justify-center text-center p-12 bg-obsidian/40 border border-dashed border-white/5 rounded-3xl">
-                <BarChart3 size={48} className="text-zinc-800 mb-6" />
+              <div className="h-[400px] flex flex-col items-center justify-center text-center p-12 bg-obsidian/40 border border-dashed border-white/10 rounded-3xl">
+                <BarChart3 size={48} className="text-zinc-700 mb-6" />
                 <h3 className="font-mono text-sm font-bold text-white uppercase tracking-widest mb-2">Neural Report Engine</h3>
-                <p className="font-mono text-[11px] text-zinc-600 max-w-sm">Generating real-time intelligence feeds for {clientName}. This module connects to Google Analytics and LinkedIn Insight Tag.</p>
-                <div className="mt-8 flex gap-4">
-                  <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" />
-                  <div className="w-2 h-2 rounded-full bg-cyan-500 animate-bounce delay-75" />
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce delay-150" />
+                <p className="font-mono text-[11px] text-zinc-500 max-w-sm leading-relaxed">Connect Google Analytics and LinkedIn Insight Tag to unlock real-time intelligence feeds for {clientName}.</p>
+                <div className="mt-8 flex gap-3">
+                  <button className="px-4 py-2 rounded-xl bg-purple-600/20 border border-purple-500/30 text-purple-400 font-mono text-[10px] uppercase tracking-widest hover:bg-purple-600/30 transition-all">
+                    Connect Analytics
+                  </button>
+                  <button className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-zinc-500 font-mono text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all">
+                    Learn More
+                  </button>
                 </div>
               </div>
             )}

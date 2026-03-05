@@ -263,6 +263,7 @@ export function LandingPage() {
               { label: 'AGENTS', id: 'agents' },
               { label: 'STACK', id: 'stack' },
               { label: 'COMPLIANCE', id: 'compliance' },
+              { label: 'MISSION', id: 'roadmap' },
             ].map((link) => (
               <button
                 key={link.id}
@@ -289,7 +290,7 @@ export function LandingPage() {
               <motion.button
                 animate={{ opacity: [1, 0.6, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
-                onClick={() => window.open('/demo-workflow', '_blank')}
+                onClick={() => window.open('/os', '_blank')}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs uppercase tracking-widest transition-colors"
               >
                 DEMO
@@ -315,13 +316,13 @@ export function LandingPage() {
         {/* Mobile Menu */}
         {mobileOpen && (
           <div className="md:hidden bg-black border-t border-zinc-800 px-6 py-4 flex flex-col gap-4">
-            {['agents', 'stack', 'compliance'].map((id) => (
+            {['agents', 'stack', 'compliance', 'roadmap'].map((id) => (
               <button
                 key={id}
                 onClick={() => scrollTo(id)}
                 className="font-mono text-xs text-zinc-400 uppercase tracking-widest text-left"
               >
-                {id}
+                {id === 'roadmap' ? 'MISSION' : id}
               </button>
             ))}
             <button onClick={() => navigate('/demo')} className="font-mono text-xs text-blue-400 uppercase tracking-widest text-left">
@@ -446,18 +447,30 @@ export function LandingPage() {
             <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-widest">Vision · Voice · Execution</p>
           </FadeIn>
           
-          <FadeIn delay={0.1} className="relative aspect-video bg-zinc-950 rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl group cursor-wait">
-             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12 z-10">
-                <div className="w-20 h-20 rounded-full bg-blue-600/10 border border-blue-600/30 flex items-center justify-center mb-8 group-hover:bg-blue-600/20 group-hover:border-blue-600/50 transition-all duration-500">
-                  <div className="w-0 h-0 border-t-10 border-t-transparent border-l-18 border-l-blue-500 border-b-10 border-b-transparent ml-1" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-wide">Demo Processing...</h3>
-                <p className="text-zinc-500 font-mono text-xs uppercase tracking-[0.2em] leading-relaxed max-w-sm">
-                  High-fidelity recording of the Gemini Live API orchestration is being finalized. 
-                </p>
-             </div>
-             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.05)_0%,transparent_70%)] animate-pulse" />
-             <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent opacity-80" />
+          <FadeIn delay={0.1} className="relative aspect-video bg-zinc-950 rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl group">
+             {import.meta.env.VITE_DEMO_VIDEO_ID && import.meta.env.VITE_DEMO_VIDEO_ID !== 'YOUR_YOUTUBE_ID_HERE' ? (
+               <iframe
+                 className="w-full h-full border-0"
+                 src={`https://www.youtube.com/embed/${import.meta.env.VITE_DEMO_VIDEO_ID}?autoplay=0&rel=0&modestbranding=1`}
+                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                 allowFullScreen
+                 title="GenIUS OS Demo"
+               />
+             ) : (
+               <>
+                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12 z-10">
+                    <div className="w-20 h-20 rounded-full bg-blue-600/10 border border-blue-600/30 flex items-center justify-center mb-8 group-hover:bg-blue-600/20 group-hover:border-blue-600/50 transition-all duration-500">
+                      <div className="w-0 h-0 border-t-10 border-t-transparent border-l-18 border-l-blue-500 border-b-10 border-b-transparent ml-1" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-wide">Demo Processing...</h3>
+                    <p className="text-zinc-500 font-mono text-xs uppercase tracking-[0.2em] leading-relaxed max-w-sm">
+                      High-fidelity recording of the Gemini Live API orchestration is being finalized. 
+                    </p>
+                 </div>
+                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.05)_0%,transparent_70%)] animate-pulse" />
+                 <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent opacity-80" />
+               </>
+             )}
           </FadeIn>
         </div>
       </section>
@@ -653,7 +666,7 @@ export function LandingPage() {
                  </div>
                </div>
                <img 
-                 src="/ai_output_storyboard_example_1772557810590.png" 
+                 src="/ai_output_storyboard.png" 
                  alt="AI Generated Storyboard Frame" 
                  className="w-full aspect-video object-cover transition-transform duration-700 group-hover:scale-105"
                />
@@ -782,13 +795,13 @@ export function LandingPage() {
             </div>
 
             <div className="grid sm:grid-cols-3 gap-px bg-zinc-800 border border-zinc-800">
-               <a href="https://agenticum-backend-697051612685.europe-west1.run.app/api/v1/health" target="_blank" rel="noopener noreferrer" className="bg-black p-6 hover:bg-zinc-950 transition-colors group">
+               <a href="https://genius-backend-697051612685.europe-west1.run.app/api/v1/health" target="_blank" rel="noopener noreferrer" className="bg-black p-6 hover:bg-zinc-950 transition-colors group">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-green-500 animate-pulse">●</span>
                     <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">LIVE DEPLOYMENT</span>
                   </div>
                   <div className="text-sm font-bold text-white mb-1">Cloud Run europe-west1</div>
-                  <div className="font-mono text-[10px] text-zinc-600">agenticum-backend · Rev 00051</div>
+                  <div className="font-mono text-[10px] text-zinc-600">genius-backend · Rev 00051</div>
                   <div className="mt-4 text-[10px] text-blue-500 font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Verify API Health →</div>
                </a>
                <div className="bg-black p-6">
@@ -965,6 +978,89 @@ export function LandingPage() {
       </section>
 
       {/* ================================================================
+          SECTION 6.5 — MISSION & ROADMAP (THE STORY)
+          ================================================================ */}
+      <section id="roadmap" className="py-32 px-6 border-t border-zinc-900 bg-obsidian/20 relative">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-blue-600/5 blur-[120px] -z-10" />
+        <div className="max-w-4xl mx-auto">
+          <FadeIn className="text-center mb-20">
+            <span className="font-mono text-xs text-blue-500 uppercase tracking-widest block mb-4">
+              Evolutionary Path
+            </span>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">The Journey to 2030.</h2>
+            <p className="text-zinc-500 max-w-2xl mx-auto leading-relaxed">
+              Agenticum G5 is not just a tool—it's a vision of the future human-machine partnership. 
+              Our story is one of relentless iteration and a leap into the multimodal unknown.
+            </p>
+          </FadeIn>
+
+          <div className="space-y-12 relative before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-px before:bg-zinc-800">
+            {[
+              {
+                phase: 'PHASE 01: THE GENESIS',
+                title: 'Agenticum G5 v1.0',
+                date: 'Fall 2025',
+                body: 'The first vision: A modular neural orchestration OS. We set out to prove that marketing could be autonomous. Participation in the initial hackathon taught us the power of agentic workflows and the importance of brand integrity.',
+                icon: <IconNetwork />,
+                active: false
+              },
+              {
+                phase: 'PHASE 02: THE REVOLUTION',
+                title: 'GenIUS Edition',
+                date: 'MARCH 2026',
+                body: 'A technological pivot. Inspired by the Gemini Live API, we rebuilt G5 into GenIUS. This phase introduced real-time multimodal interaction, turning the swarm from a silent engine into a voice-activated advisor. This was my first time building a project of this scale, powered by Google Antigravity.',
+                icon: <IconMic />,
+                active: true
+              },
+              {
+                phase: 'PHASE 03: THE NEXUS',
+                title: 'Jarvis Protocol',
+                date: '2027 - 2028',
+                body: 'Moving towards total enterprise integration. Seamless cross-platform execution, where agents predict market shifts before they happen. Expansion of the RA-01 Senate gate into an automated global regulatory compliance network.',
+                icon: <IconZap />,
+                active: false
+              },
+              {
+                phase: 'PHASE 04: THE FABRIC',
+                title: 'Iron Man Paradigm',
+                date: 'MISSION 2030',
+                body: 'The ultimate goal: A ubiquitous, sentient marketing substrate. A Jarvis-like experience where the boundary between idea and execution vanishes. Agenticum G5 becomes the invisible backbone of the global digital economy.',
+                icon: <IconShield />,
+                active: false
+              }
+            ].map((item, i) => (
+              <FadeIn key={i} delay={i * 0.1} className="relative pl-12">
+                <div className={`absolute left-0 top-1 w-9 h-9 rounded-full flex items-center justify-center border ${
+                  item.active ? 'bg-blue-600 border-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)]' : 'bg-black border-zinc-800 text-zinc-600'
+                } z-10`}>
+                  <div className={item.active ? 'text-white' : 'scale-75'}>{item.icon}</div>
+                </div>
+                <div className={`p-8 rounded-2xl border transition-all ${
+                  item.active ? 'bg-zinc-950 border-blue-500/30 ring-1 ring-blue-500/10' : 'bg-transparent border-zinc-900 opacity-60'
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <span className={`font-mono text-[10px] uppercase tracking-widest ${item.active ? 'text-blue-400' : 'text-zinc-600'}`}>
+                      {item.phase}
+                    </span>
+                    <span className="font-mono text-[10px] text-zinc-700">{item.date}</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3 uppercase tracking-tight">{item.title}</h3>
+                  <p className="text-zinc-500 text-sm leading-relaxed">{item.body}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+
+          <div className="mt-20 p-10 bg-linear-to-br from-zinc-900 to-black border border-white/5 rounded-3xl text-center">
+             <h4 className="text-zinc-400 font-mono text-[11px] uppercase tracking-[0.2em] mb-4">The Creator's Note</h4>
+             <p className="text-zinc-500 italic text-sm leading-relaxed max-w-2xl mx-auto">
+               "This project is more than code; it's a testament to the learning power of hackathons. Building G5 GenIUS marks my first time architecting a system of this complexity. The journey from the first version to this multimodal revolution has been fueled by the Google Gemini challenge and the speed of Antigravity. We are building the future, one agent at a time."
+             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================
           SECTION 7 — FINAL CTA
           ================================================================ */}
       <section id="cta" className="py-40 px-6 border-t border-zinc-900">
@@ -1019,9 +1115,9 @@ export function LandingPage() {
             <div>
               <h5 className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest mb-4">Repository</h5>
               <ul className="space-y-2 text-xs font-mono text-zinc-600">
-                <li className="hover:text-blue-500 transition-colors pointer-events-none">/backend (FastAPI/Node)</li>
-                <li className="hover:text-blue-500 transition-colors pointer-events-none">/landing (React 19)</li>
-                <li className="hover:text-blue-500 transition-colors pointer-events-none">/engine (Python Swarm)</li>
+                <li className="hover:text-blue-500 transition-colors">/backend (Node/Express)</li>
+                <li className="hover:text-blue-500 transition-colors">/landing (React 19)</li>
+                <li className="hover:text-blue-500 transition-colors">/engine (Python Swarm)</li>
               </ul>
             </div>
             <div className="flex flex-col items-end justify-start">

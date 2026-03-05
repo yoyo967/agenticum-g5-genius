@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Cpu, Zap, Brain, Hexagon, Layers } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 
 interface CognitiveNode {
   id: string;
@@ -19,12 +20,32 @@ export const SwarmIntelligence: React.FC = () => {
     { id: '4', label: 'Visual Archetype', agentId: 'DA-03', status: 'active', x: 80, y: 50 },
     { id: '5', label: 'Senate & Intel Core', agentId: 'RA-01', status: 'synced', x: 20, y: 80 },
   ]);
+  const [swarmStats, setSwarmStats] = useState({ synapticLoad: '12.4ms', swarmScore: '89.4', sentience: '98.2%' });
+
+  const totalOperational = useMemo(
+    () => nodes.filter(n => n.status === 'active' || n.status === 'synced').length,
+    [nodes]
+  );
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/swarm/status`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        setSwarmStats({
+          synapticLoad: data.latencyMs != null ? `${data.latencyMs}ms` : swarmStats.synapticLoad,
+          swarmScore: data.swarmScore != null ? String(data.swarmScore) : swarmStats.swarmScore,
+          sentience: data.sentience != null ? `${data.sentience}%` : swarmStats.sentience,
+        });
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handleCalibration = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       setNodes(prev => prev.map(node => {
-        if (node.agentId.toLowerCase() === detail.agentId.toLowerCase().replace('-', '')) {
+        if (node.agentId.toLowerCase().replace('-', '') === detail.agentId.toLowerCase().replace('-', '')) {
           return { ...node, status: 'active' };
         }
         return node;
@@ -90,10 +111,10 @@ export const SwarmIntelligence: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-6">
-          <Stat icon={<Cpu size={14} />} label="Active Nodes" value="48" color="text-accent" />
-          <Stat icon={<Zap size={14} />} label="Synaptic Load" value="12.4ms" color="text-gold" />
-          <Stat icon={<Layers size={14} />} label="Swarm Score" value="89.4" color="text-neural-blue" />
-          <Stat icon={<Brain size={14} />} label="Sentience" value="98.2%" color="text-magenta" />
+          <Stat icon={<Cpu size={14} />} label="Active Nodes" value={String(totalOperational)} color="text-accent" />
+          <Stat icon={<Zap size={14} />} label="Synaptic Load" value={swarmStats.synapticLoad} color="text-gold" />
+          <Stat icon={<Layers size={14} />} label="Swarm Score" value={swarmStats.swarmScore} color="text-neural-blue" />
+          <Stat icon={<Brain size={14} />} label="Sentience" value={swarmStats.sentience} color="text-magenta" />
         </div>
       </div>
 
@@ -173,9 +194,9 @@ export const SwarmIntelligence: React.FC = () => {
                  Model Distribution
               </h3>
               <div className="space-y-6">
-                 <Progress label="Gemini 3.1 Pro" value={78} color="bg-accent" />
+                 <Progress label="Gemini 2.0 Flash" value={78} color="bg-accent" />
                  <Progress label="Imagen 3.0" value={42} color="bg-gold" />
-                 <Progress label="Google TTS v3" value={15} color="bg-magenta" />
+                 <Progress label="Google TTS v4" value={15} color="bg-magenta" />
               </div>
            </div>
 

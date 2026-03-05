@@ -6,10 +6,21 @@ import { Logger } from '../utils/logger';
 const router = Router();
 const logger = new Logger('DistributionRouter');
 
+const SUPPORTED_CHANNELS = ['linkedin', 'email', 'wordpress', 'blog', 'social_echo'];
+const DEFAULT_RECIPIENTS = (process.env.EMAIL_RECIPIENTS || 'team@agenticum.ai').split(',');
+
 router.post('/publish', async (req, res) => {
-  const { channel, content, payload } = req.body;
-  
+  const { channel, content, payload, recipients, subject, title } = req.body;
+
   logger.info(`Manual distribution request for channel: ${channel}`);
+
+  if (!SUPPORTED_CHANNELS.includes(channel)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Unsupported channel',
+      supported: SUPPORTED_CHANNELS
+    });
+  }
 
   try {
     let result;
@@ -17,25 +28,27 @@ router.post('/publish', async (req, res) => {
       case 'linkedin':
         result = await distributionService.publishToLinkedIn(payload || content);
         break;
-      case 'email':
+      case 'email': {
+        const emailRecipients: string[] = Array.isArray(recipients) && recipients.length > 0
+          ? recipients
+          : DEFAULT_RECIPIENTS;
         result = await distributionService.publishToEmail({
-          subject: 'G5 Swarm Dispatch',
+          subject: subject || 'G5 Swarm Dispatch',
           body: payload || content,
-          recipients: ['executive@agenticum.ai']
+          recipients: emailRecipients
         });
         break;
+      }
       case 'wordpress':
       case 'blog':
         result = await distributionService.publishToWordPress({
-          title: 'G5 Sentience Update',
+          title: title || 'G5 Sentience Update',
           body: payload || content
         });
         break;
       case 'social_echo':
         result = await distributionService.publishToSocialEcho(payload || content);
         break;
-      default:
-        return res.status(400).json({ success: false, error: 'Unsupported channel' });
     }
 
     // Record ROI impact
@@ -48,7 +61,8 @@ router.post('/publish', async (req, res) => {
     });
   } catch (error) {
     logger.error(`Distribution failed: ${channel}`, error as Error);
-    res.status(500).json({ success: false, error: (error as Error).message });
+    // Do not leak internal error details to client
+    res.status(500).json({ success: false, error: 'Distribution service unavailable. Please try again.' });
   }
 });
 

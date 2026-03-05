@@ -1,17 +1,15 @@
 import { Router, Request, Response } from 'express';
-import { SP01Strategist } from '../agents/sp01-strategist';
-import { CC06Director } from '../agents/cc06-director';
-import { DA03Architect } from '../agents/da03-architect';
-import { RA01Auditor } from '../agents/ra01-auditor';
-import { SN00Orchestrator } from '../agents/sn00-orchestrator';
+import axios from 'axios';
 import { ChainManager } from '../services/chain-manager';
+
+const ENGINE_URL = process.env.ENGINE_URL || 'https://agenticum-g5-backend-697051612685.europe-west1.run.app';
 
 const router = Router();
 
 router.post('/deploy', async (req: Request, res: Response) => {
   try {
     const { nodes, edges, workflowId, name } = req.body;
-    
+
     if (!nodes || !edges) {
       return res.status(400).json({ error: 'Missing nodes or edges payload.' });
     }
@@ -48,16 +46,32 @@ router.post('/deploy', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/status', async (req: Request, res: Response) => {
+router.get('/status', async (_req: Request, res: Response) => {
   try {
-    // Proxy health check to the Python Engine
+    const engineRes = await axios.get(`${ENGINE_URL}/health`, { timeout: 5000 });
     res.json({
       success: true,
-      data: { status: 'online', engine: 'G5 Python Engine', region: 'europe-west1' },
+      data: {
+        status: 'online',
+        engine: engineRes.data?.name ?? 'G5 Python Engine',
+        version: engineRes.data?.version ?? 'unknown',
+        region: process.env.GOOGLE_CLOUD_REGION ?? 'europe-west1',
+        engineStatus: engineRes.data?.status ?? 'ok',
+      },
       meta: { timestamp: new Date().toISOString() }
     });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Engine heartbeat failed.' });
+  } catch (err: any) {
+    // Engine unreachable — return degraded status rather than 500
+    res.json({
+      success: false,
+      data: {
+        status: 'degraded',
+        engine: 'G5 Python Engine',
+        region: process.env.GOOGLE_CLOUD_REGION ?? 'europe-west1',
+        error: err.code ?? 'ENGINE_UNREACHABLE',
+      },
+      meta: { timestamp: new Date().toISOString() }
+    });
   }
 });
 

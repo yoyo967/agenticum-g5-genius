@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, ShieldAlert, CheckCircle2, XCircle, AlertTriangle, Scale, Clock } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { formatDate } from '../utils/formatDate';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadCSV, downloadPDF } from '../utils/export';
 import { db } from '../firebase';
@@ -27,6 +28,8 @@ export function SecuritySenate() {
   const [filter, setFilter] = useState<'all' | 'PENDING' | 'APPROVED' | 'REJECTED'>('all');
   const [verdictReason, setVerdictReason] = useState('');
   const [castingVerdict, setCastingVerdict] = useState(false);
+  const [verdictError, setVerdictError] = useState('');
+  const [verdictToast, setVerdictToast] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -84,8 +87,12 @@ export function SecuritySenate() {
 
       setSelectedCase(null);
       setVerdictReason('');
+      setVerdictToast(`${verdict === 'APPROVED' ? '✓ Approved' : '✗ Rejected'} — verdict recorded in G5 Ledger.`);
+      setTimeout(() => setVerdictToast(''), 4000);
     } catch (e) {
       console.warn('[Senate] Verdict cast failed:', e);
+      setVerdictError('Senate update failed — please retry.');
+      setTimeout(() => setVerdictError(''), 4000);
     } finally {
       setCastingVerdict(false);
     }
@@ -97,6 +104,7 @@ export function SecuritySenate() {
   const rejected = cases.filter(c => c.verdict === 'REJECTED').length;
 
   return (
+    <>
     <div id="senate-export-container" className="h-full flex flex-col gap-5 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
@@ -224,7 +232,7 @@ export function SecuritySenate() {
                 </h4>
                 <div className="flex items-center gap-2 text-white/20">
                   <span className="font-mono text-[9px]">{c.risk} risk</span>
-                  {c.timestamp && <span className="font-mono text-[9px] flex items-center gap-1"><Clock size={8} />{new Date(c.timestamp).toLocaleDateString('en-US')}</span>}
+                  {c.timestamp && <span className="font-mono text-[9px] flex items-center gap-1"><Clock size={8} />{formatDate(c.timestamp)}</span>}
                 </div>
               </motion.div>
             ))
@@ -286,6 +294,11 @@ export function SecuritySenate() {
                 })()}
               </div>
 
+              {verdictError && (
+                <div className="mx-4 mt-3 p-2 rounded bg-red-900/30 border border-red-700/30 text-red-400 font-mono text-[10px]">
+                  ⚠ {verdictError}
+                </div>
+              )}
               {selectedCase.verdict === 'PENDING' && (
                 <div className="p-4 border-t border-white/5 flex flex-col gap-3 shrink-0">
                   <div>
@@ -316,5 +329,14 @@ export function SecuritySenate() {
         </div>
       </div>
     </div>
+    {verdictToast && (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-xl font-mono text-xs uppercase tracking-widest shadow-2xl flex items-center gap-3 border bg-emerald-950 border-emerald-700 text-emerald-300"
+      >
+        {verdictToast}
+      </motion.div>
+    )}
+    </>
   );
 }

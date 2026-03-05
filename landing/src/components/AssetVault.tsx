@@ -2,10 +2,10 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   UploadCloud, FileText, Image as ImageIcon, File, Video,
-  CheckCircle, Database, RefreshCw, Download, Eye,
-  FolderOpen, CheckSquare, Search, Grid, List, Share2,
-  Tag, X, Clock, Shield, Loader2, Copy, Check, Filter,
-  ChevronRight, Trash2, FolderPlus, MoreVertical, ExternalLink
+  CheckCircle, XCircle, Database, RefreshCw, Download,
+  FolderOpen, Search, Grid, List, Share2,
+  Tag, X, Shield, Loader2, Copy, Check,
+  ChevronRight, FolderPlus, ExternalLink
 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { downloadZIP } from '../utils/export';
@@ -84,6 +84,7 @@ export function AssetVault() {
   const [loading, setLoading]               = useState(true);
   const [uploadState, setUploadState]       = useState<UploadState>('idle');
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError]       = useState<string | null>(null);
   const [dragOver, setDragOver]             = useState(false);
   const [category, setCategory]             = useState<CategoryKey>('all');
   const [viewMode, setViewMode]             = useState<ViewMode>('list');
@@ -95,6 +96,7 @@ export function AssetVault() {
   const [copiedLink, setCopiedLink]         = useState(false);
   const [filterStatus, setFilterStatus]     = useState<string>('all');
   
+  const [storageUsed, setStorageUsed]         = useState<{ formatted: string; gb: number; fileCount: number } | null>(null);
   const [activeFolder, setActiveFolder]       = useState<string>('root');
   const [folders, setFolders]                 = useState<VaultFolder[]>([
     { id: 'root', name: 'Main Drive' },
@@ -136,6 +138,13 @@ export function AssetVault() {
 
   useEffect(() => { fetchFiles(); }, [fetchFiles]);
 
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/vault/usage`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.formatted) setStorageUsed({ formatted: data.formatted, gb: data.gb, fileCount: data.fileCount }); })
+      .catch(() => {});
+  }, []);
+
   // ── Upload ───────────────────────────────────────────────────────────────
   const uploadFiles = async (fileList: FileList | File[]) => {
     setUploadState('uploading');
@@ -154,14 +163,17 @@ export function AssetVault() {
       setUploadProgress(100);
       if (res.ok) {
         setUploadState('done');
+        setUploadError(null);
         setTimeout(() => { setUploadState('idle'); setUploadProgress(0); }, 1500);
         fetchFiles();
       } else {
         setUploadState('error');
+        setUploadError('Upload failed — server rejected the file.');
       }
     } catch {
       clearInterval(progressInterval);
       setUploadState('error');
+      setUploadError('Network error — could not reach the server.');
     }
   };
 
@@ -211,7 +223,7 @@ export function AssetVault() {
 
   const toggleSelect = (name: string) => setSelectedNames(prev => {
     const next = new Set(prev);
-    next.has(name) ? next.delete(name) : next.add(name);
+    if (next.has(name)) { next.delete(name); } else { next.add(name); }
     return next;
   });
 
@@ -314,9 +326,14 @@ export function AssetVault() {
             <span className="font-mono text-[9px] text-emerald uppercase tracking-widest font-bold">Cloud Synced</span>
           </div>
           <div className="w-full h-1 bg-white/5 rounded-full mb-1">
-            <div className="h-full bg-purple-500 w-1/3" />
+            <div
+              className="h-full bg-purple-500 transition-all duration-700"
+              style={{ width: storageUsed ? `${Math.min((storageUsed.gb / 100) * 100, 100)}%` : '0%' }}
+            />
           </div>
-          <p className="font-mono text-[8px] text-white/20 uppercase tracking-tighter">6.4 GB OF 100 GB USED</p>
+          <p className="font-mono text-[8px] text-white/20 uppercase tracking-tighter">
+            {storageUsed ? `${storageUsed.formatted} OF 100 GB USED` : '— GB USED'}
+          </p>
         </div>
       </div>
 
@@ -413,9 +430,29 @@ export function AssetVault() {
               <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                 <motion.div className="h-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]" initial={{ width: 0 }} animate={{ width: `${uploadProgress}%` }} />
               </div>
+              {uploadState === 'error' && uploadError && (
+                <p className="font-mono text-[10px] text-rose-400 mt-2">{uploadError}</p>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Batch Action Toolbar */}
+        {selectedNames.size > 0 && (
+          <div className="shrink-0 flex items-center gap-3 px-4 py-2.5 bg-purple-600/10 border border-purple-600/20 rounded-xl">
+            <span className="font-mono text-[10px] text-purple-400 uppercase tracking-widest font-bold">
+              {selectedNames.size} selected
+            </span>
+            <button onClick={handleBatchZIP}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-black font-mono text-[10px] font-bold rounded uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+              <Download size={12} /> Download ZIP
+            </button>
+            <button onClick={() => setSelectedNames(new Set())}
+              className="font-mono text-[10px] text-zinc-500 hover:text-white uppercase tracking-widest transition-colors ml-auto">
+              Clear
+            </button>
+          </div>
+        )}
 
         {/* File Drop Area */}
         <div className={`flex-1 overflow-y-auto min-h-0 relative border-2 border-dashed transition-all rounded-xl ${dragOver ? 'border-purple-500 bg-purple-500/5' : 'border-transparent'}`}>
@@ -526,7 +563,9 @@ export function AssetVault() {
                     <img src={selectedFile.url} alt={selectedFile.name} className="max-w-full max-h-full object-contain p-4" />
                   ) : getIcon(selectedFile.name, 64)}
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                    <button className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition-all text-white backdrop-blur-md" title="Open Full">
+                    <button
+                      onClick={() => window.open(selectedFile.url, '_blank', 'noopener,noreferrer')}
+                      className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition-all text-white backdrop-blur-md" title="Open Full">
                       <ExternalLink size={20} />
                     </button>
                   </div>
@@ -628,10 +667,3 @@ export function AssetVault() {
   );
 }
 
-function XCircle(props: any) {
-  return (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>
-    </svg>
-  );
-}

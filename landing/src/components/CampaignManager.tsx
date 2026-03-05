@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Terminal, Briefcase, Zap, Send, FileText, Image as ImageIcon, Cpu, Activity, CircleDashed, DollarSign, Crosshair, BarChart2, Plus, ChevronRight, Clock, Download as DownloadIcon, Search, Film, Shield, Eye, Link2 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { formatDate } from '../utils/formatDate';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadCSV, downloadZIP, downloadPDF } from '../utils/export';
 import { PerfectTwinInspector } from './os/PerfectTwinInspector';
@@ -47,11 +48,20 @@ export function CampaignManager() {
   const [budget, setBudget] = useState(100);
   const [biddingStrategy, setBiddingStrategy] = useState<'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE'>('MAXIMIZE_CONVERSIONS');
   const [targetValue, setTargetValue] = useState(0);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [isOrchestrating, setIsOrchestrating] = useState(false);
   const [launchStatus, setLaunchStatus] = useState<'idle' | 'launching' | 'success' | 'error'>('idle');
   const [launchReport, setLaunchReport] = useState<string | null>(null);
   const [showInspector, setShowInspector] = useState(false);
   const [currentRunId, setCurrentRunId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [showLaunchConfirm, setShowLaunchConfirm] = useState(false);
+
+  const showToast = (msg: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const [agentTasks, setAgentTasks] = useState<AgentDraft[]>([
     { agent: 'sn00', role: 'Orchestrator', status: 'pending' },
@@ -114,7 +124,10 @@ export function CampaignManager() {
   }, []);
 
   const handleDispatch = async () => {
-    if (!directive.trim() && (!clientName.trim() || !objective.trim())) return;
+    if (!directive.trim() && (!clientName.trim() || !objective.trim())) {
+      showToast('Enter a client + objective, or write a directive to dispatch.', 'error');
+      return;
+    }
     setIsOrchestrating(true);
     const runId = `pmax_${Date.now()}`;
     setCurrentRunId(runId);
@@ -130,13 +143,15 @@ export function CampaignManager() {
         status: 'PENDING_AGENTS',
         objective: objective || 'LEADS',
         budget: { dailyAmount: budget, currency: 'USD' },
-        biddingStrategy: { 
-          type: biddingStrategy, 
-          targetCpa: biddingStrategy === 'MAXIMIZE_CONVERSIONS' ? targetValue : null, 
-          targetRoas: biddingStrategy === 'MAXIMIZE_CONVERSION_VALUE' ? targetValue : null 
+        biddingStrategy: {
+          type: biddingStrategy,
+          targetCpa: biddingStrategy === 'MAXIMIZE_CONVERSIONS' ? targetValue : null,
+          targetRoas: biddingStrategy === 'MAXIMIZE_CONVERSION_VALUE' ? targetValue : null
         },
         settings: { finalUrlExpansion: true, locationTargeting: ['Global'], languageTargeting: ['en'] },
         assetGroups: [],
+        startDate: startDate || null,
+        endDate: endDate || null,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
@@ -196,6 +211,7 @@ export function CampaignManager() {
       setLaunchStatus('success');
     } catch {
       setLaunchStatus('error');
+      showToast('Launch failed — check API connection.', 'error');
     } finally {
       setIsOrchestrating(false);
     }
@@ -206,17 +222,58 @@ export function CampaignManager() {
     await downloadPDF('mission-report-container', `G5_Mission_Report_${selectedCampaign?.id || 'New'}`);
   };
 
+  const handleClone = async (campaign: Campaign, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await addDoc(collection(db, 'campaigns'), {
+        userId: user?.uid || 'anonymous_demo_user',
+        name: `${campaign.name} — Clone`,
+        status: 'DRAFT',
+        objective: campaign.objective,
+        budget: campaign.budget,
+        biddingStrategy: campaign.biddingStrategy,
+        settings: { finalUrlExpansion: true, locationTargeting: ['Global'], languageTargeting: ['en'] },
+        assetGroups: [],
+        startDate: null,
+        endDate: null,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      showToast(`"${campaign.name}" cloned successfully.`, 'success');
+    } catch (err) {
+      console.error('[CampaignHub] Clone failed:', err);
+      showToast('Clone failed — please retry.', 'error');
+    }
+  };
+
   const resetForm = () => {
     setClientName(''); setObjective(''); setDirective('');
-    setBudget(100); setTargetValue(0);
+    setBudget(100); setTargetValue(0); setStartDate(''); setEndDate('');
     setAgentTasks(prev => prev.map(t => ({ ...t, status: 'pending', output: undefined })));
     setLaunchStatus('idle'); setLaunchReport(null);
     setSelectedCampaign(null);
   };
 
   // ──────────────── Campaign List View ────────────────
+  const ToastOverlay = toast ? (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-xl font-mono text-xs uppercase tracking-widest shadow-2xl flex items-center gap-3 border ${
+          toast.type === 'error' ? 'bg-rose-950 border-rose-700 text-rose-300' :
+          toast.type === 'success' ? 'bg-emerald-950 border-emerald-700 text-emerald-300' :
+          'bg-obsidian border-white/10 text-white'
+        }`}
+      >
+        {toast.msg}
+        <button onClick={() => setToast(null)} className="ml-2 opacity-50 hover:opacity-100">×</button>
+      </motion.div>
+    </AnimatePresence>
+  ) : null;
+
   if (view === 'list') {
     return (
+      <>
       <div className="h-full flex flex-col gap-5 overflow-y-auto pb-6">
         {/* Header */}
         <div className="flex items-center justify-between shrink-0">
@@ -282,7 +339,12 @@ export function CampaignManager() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="card flex items-center gap-4 cursor-pointer group hover:border-accent/30"
-                  onClick={() => { setSelectedCampaign(campaign); setView('create'); }}
+                  onClick={() => {
+                    setSelectedCampaign(campaign);
+                    setAgentTasks(prev => prev.map(t => ({ ...t, status: 'pending', output: undefined })));
+                    setLaunchStatus('idle');
+                    setView('create');
+                  }}
                 >
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0,229,255,0.08)' }}>
                     <Target size={18} className="text-accent" />
@@ -304,6 +366,13 @@ export function CampaignManager() {
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
+                    <button
+                      onClick={(e) => handleClone(campaign, e)}
+                      className="btn btn-ghost btn-xs text-white/30 hover:text-white px-1 h-5 min-h-[20px]"
+                      title="Clone Campaign"
+                    >
+                      <DownloadIcon size={10} /> Clone
+                    </button>
                     <span className={`badge ${campaign.status === 'ENABLED' ? 'badge-online' : campaign.status === 'DRAFT' ? 'badge-processing' : 'badge-warning'}`}>
                       {campaign.status}
                     </span>
@@ -324,7 +393,7 @@ export function CampaignManager() {
                     })()}
                     <div className="flex items-center gap-1 text-white/20">
                       <Clock size={10} />
-                      <span className="font-mono text-[9px]">{new Date(campaign.createdAt).toLocaleDateString('en-US')}</span>
+                      <span className="font-mono text-[9px]">{formatDate(campaign.createdAt)}</span>
                     </div>
                     <ChevronRight size={14} className="text-white/20 group-hover:text-accent transition-colors" />
                   </div>
@@ -334,11 +403,14 @@ export function CampaignManager() {
           )
         )}
       </div>
+      {ToastOverlay}
+      </>
     );
   }
 
   // ──────────────── Create/Edit View ────────────────
   return (
+    <>
     <div className="h-full flex flex-col gap-5 overflow-hidden">
       {/* Header */}
       <div className="shrink-0 flex items-center justify-between">
@@ -403,6 +475,14 @@ export function CampaignManager() {
                 <input type="number" value={targetValue || ''} onChange={e => setTargetValue(parseInt(e.target.value) || 0)}
                   placeholder="Leave blank for ML optimization" className="input" />
               </div>
+              <div>
+                <label className="label"><Clock size={10} className="inline" /> Start Date</label>
+                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="input" />
+              </div>
+              <div>
+                <label className="label"><Clock size={10} className="inline" /> End Date</label>
+                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="input" />
+              </div>
             </div>
           </div>
 
@@ -429,7 +509,7 @@ export function CampaignManager() {
                 <Activity size={14} /> Launch Control
               </h3>
               <p className="font-mono text-[10px] text-white/30 mb-3">All agents completed. Ready for deployment.</p>
-              <button onClick={handleLaunch} disabled={isOrchestrating || launchStatus === 'success'}
+              <button onClick={() => setShowLaunchConfirm(true)} disabled={isOrchestrating || launchStatus === 'success'}
                 className="btn btn-primary w-full" style={{ background: 'var(--color-gold)', borderColor: 'var(--color-gold)' }}>
                 <Send size={14} /> {launchStatus === 'launching' ? 'Deploying...' : launchStatus === 'success' ? 'Deployed ✓' : 'Launch to Ecosystem'}
               </button>
@@ -541,5 +621,25 @@ export function CampaignManager() {
         </div>
       </div>
     </div>
+    {ToastOverlay}
+    {showLaunchConfirm && (
+      <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          className="w-full max-w-sm bg-obsidian border border-gold/30 rounded-2xl p-8 shadow-2xl">
+          <h3 className="font-display text-lg uppercase text-gold mb-2 flex items-center gap-2">
+            <Send size={16} /> Confirm Launch
+          </h3>
+          <p className="font-mono text-xs text-white/40 mb-6">This will deploy all generated assets to the Google Ads ecosystem. This action cannot be undone.</p>
+          <div className="flex gap-3">
+            <button onClick={() => { setShowLaunchConfirm(false); handleLaunch(); }}
+              className="flex-1 btn btn-primary" style={{ background: 'var(--color-gold)', borderColor: 'var(--color-gold)', color: 'var(--color-void)' }}>
+              <Send size={14} /> Confirm
+            </button>
+            <button onClick={() => setShowLaunchConfirm(false)} className="flex-1 btn btn-ghost">Cancel</button>
+          </div>
+        </motion.div>
+      </div>
+    )}
+    </>
   );
 }
