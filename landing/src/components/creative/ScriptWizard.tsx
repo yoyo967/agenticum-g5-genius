@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Wand2, Lightbulb, FileText, 
-  ChevronLeft, Sparkles, 
-  Send, RefreshCw, CheckCircle, 
-  Type, Layout, Image as ImageIcon
+import {
+  Wand2, Lightbulb, FileText,
+  ChevronLeft, Sparkles,
+  Send, RefreshCw, CheckCircle,
+  Type, Layout, Image as ImageIcon, Download
 } from 'lucide-react';
-
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { API_BASE_URL } from '../../config';
 
 type WizardStep = 'idea' | 'concept' | 'outline' | 'script';
+type Tone = 'professional' | 'creative' | 'technical' | 'casual';
 
 export const ScriptWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<WizardStep>('idea');
   const [idea, setIdea] = useState('');
+  const [tone, setTone] = useState<Tone>('professional');
   const [content, setContent] = useState<Record<WizardStep, string>>({
     idea: '',
     concept: '',
@@ -22,6 +25,20 @@ export const ScriptWizard: React.FC = () => {
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  const handleExport = () => {
+    const allContent = (Object.entries(content) as [WizardStep, string][])
+      .filter(([, v]) => v)
+      .map(([k, v]) => `## ${k.toUpperCase()}\n\n${v}`)
+      .join('\n\n---\n\n');
+    if (!allContent) return;
+    const blob = new Blob([`# Script Wizard Export\n\n**Tone:** ${tone}\n**Idea:** ${idea}\n\n---\n\n${allContent}`], { type: 'text/markdown' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `G5_Script_${Date.now()}.md`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
 
   const steps: { key: WizardStep; label: string; icon: React.ReactNode }[] = [
     { key: 'idea', label: 'Seed Idea', icon: <Lightbulb size={16} /> },
@@ -43,10 +60,11 @@ export const ScriptWizard: React.FC = () => {
       const response = await fetch(`${API_BASE_URL}/blog/script-wizard/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          idea, 
+        body: JSON.stringify({
+          idea,
+          tone,
           step: nextStep,
-          context: content[currentStep] 
+          context: content[currentStep]
         })
       });
 
@@ -130,8 +148,20 @@ export const ScriptWizard: React.FC = () => {
                 </p>
               </div>
 
+              <div className="mb-3 flex items-center gap-2">
+                <span className="font-mono text-[9px] text-white/30 uppercase tracking-widest">Tone:</span>
+                {(['professional', 'creative', 'technical', 'casual'] as Tone[]).map(t => (
+                  <button
+                    key={t}
+                    onClick={() => setTone(t)}
+                    className={`px-3 py-1 rounded-full font-mono text-[9px] uppercase tracking-widest border transition-all ${tone === t ? 'bg-accent/20 border-accent/40 text-accent' : 'border-white/10 text-white/30 hover:text-white/60'}`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
               <div className="flex-1 relative">
-                <textarea 
+                <textarea
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
                   placeholder="e.g. A cyberpunk neo-noir where an AI detective realizes they are a glitch in the simulation they are investigating..."
@@ -184,9 +214,11 @@ export const ScriptWizard: React.FC = () => {
                         </div>
                      </div>
 
-                     <div className="space-y-6 text-sm text-white/70 leading-relaxed font-mono whitespace-pre-wrap">
-                        {content[currentStep] || (
-                          <p className="border-l-2 border-accent/20 pl-4 py-1 italic text-accent/40">
+                     <div className="prose prose-invert prose-sm max-w-none text-white/70 leading-relaxed">
+                        {content[currentStep] ? (
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content[currentStep]}</ReactMarkdown>
+                        ) : (
+                          <p className="border-l-2 border-accent/20 pl-4 py-1 italic text-accent/40 font-mono text-sm">
                              Neural sequence engaged. Synthesizing cinematic fragments based on seed idea...
                           </p>
                         )}
@@ -218,8 +250,12 @@ export const ScriptWizard: React.FC = () => {
                  </button>
 
                  <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white transition-all text-[10px] uppercase font-bold tracking-widest">
-                       Export Draft
+                    <button
+                      onClick={handleExport}
+                      disabled={!Object.values(content).some(Boolean)}
+                      className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white transition-all text-[10px] uppercase font-bold tracking-widest disabled:opacity-30"
+                    >
+                      <Download size={12} /> Export Draft
                     </button>
                     <button 
                       onClick={handleGenerate}

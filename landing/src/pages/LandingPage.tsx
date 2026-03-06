@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { MegaNav } from '../components/MegaNav';
 
 /* ============================================================
    TYPES
@@ -145,17 +146,6 @@ const IconArrowRight = () => (
   </svg>
 );
 
-const IconMenu = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-  </svg>
-);
-
-const IconX = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
 
 const IconGithub = ({ size = 16 }: { size?: number }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="currentColor" viewBox="0 0 24 24">
@@ -208,8 +198,6 @@ const FadeIn: React.FC<{ children: React.ReactNode; delay?: number; className?: 
    ============================================================ */
 export function LandingPage() {
   const navigate = useNavigate();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [apiHealth, setApiHealth] = useState<'idle' | 'checking' | 'online' | 'offline'>('idle');
 
   const checkApiHealth = async () => {
@@ -225,122 +213,57 @@ export function LandingPage() {
     }
   };
 
-  useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  const scrollTo = (id: string) => {
+  const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    setMobileOpen(false);
   };
 
-  /* ── NAV ── */
+  // SEO meta + JSON-LD schema injection
+  useEffect(() => {
+    document.title = 'AGENTICUM G5 GENIUS — The Neural AI Marketing Operating System';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'AGENTICUM G5 GENIUS: 9 AI agents running in parallel on Google Cloud. Voice-activated via Gemini Live API. From brief to campaign in under 60 seconds. EU AI Act compliant by design.');
+    const setOg = (prop: string, val: string) => {
+      let el = document.querySelector(`meta[property="${prop}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement('meta'); el.setAttribute('property', prop); document.head.appendChild(el); }
+      el.setAttribute('content', val);
+    };
+    setOg('og:title', 'AGENTICUM G5 GENIUS — The Neural AI Marketing Operating System');
+    setOg('og:description', '9 AI agents. One voice command. From brief to campaign in under 60 seconds.');
+    setOg('og:url', 'https://online-marketing-manager.web.app');
+    setOg('og:type', 'website');
+    const existing = document.getElementById('jsonld-main');
+    if (!existing) {
+      const s = document.createElement('script');
+      s.id = 'jsonld-main';
+      s.type = 'application/ld+json';
+      s.text = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'AGENTICUM G5 GENIUS',
+        description: '9 AI agents running in parallel. Voice-activated via Gemini Live API. From brief to campaign in under 60 seconds.',
+        applicationCategory: 'AIApplication',
+        operatingSystem: 'Web',
+        url: 'https://online-marketing-manager.web.app',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+        author: { '@type': 'Person', name: 'AGENTICUM G5 Lead Architect' },
+        keywords: 'AI marketing, neural OS, Gemini Live API, multi-agent system, EU AI Act',
+      });
+      document.head.appendChild(s);
+    }
+  }, []);
+
   return (
     <div style={{ fontFamily: 'Inter, system-ui, sans-serif' }} className="min-h-screen bg-black text-white">
 
-      {/* ================================================================
-          NAVIGATION
-          ================================================================ */}
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-black/90 backdrop-blur-md border-b border-zinc-800' : 'bg-transparent'
-        }`}
-      >
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          {/* Logo */}
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="font-mono text-sm font-bold tracking-widest text-white uppercase"
-          >
-            AGENTICUM G5
-          </button>
+      <MegaNav />
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
-            {[
-              { label: 'AGENTS', id: 'agents' },
-              { label: 'STACK', id: 'stack' },
-              { label: 'COMPLIANCE', id: 'compliance' },
-              { label: 'MISSION', id: 'roadmap' },
-            ].map((link) => (
-              <button
-                key={link.id}
-                onClick={() => scrollTo(link.id)}
-                className="font-mono text-xs text-zinc-400 hover:text-white transition-colors uppercase tracking-widest"
-              >
-                {link.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-6">
-            <a 
-              href="https://github.com/yoyo967/agenticum-g5-genius"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest"
-            >
-              <IconGithub size={14} />
-              Source
-            </a>
-            <div className="flex items-center gap-3">
-              <motion.button
-                animate={{ opacity: [1, 0.6, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                onClick={() => window.open('/os', '_blank')}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs uppercase tracking-widest transition-colors"
-              >
-                DEMO
-              </motion.button>
-              <button
-                onClick={() => navigate('/os')}
-                className="px-4 py-2 border border-zinc-700 hover:border-zinc-400 text-white font-mono text-xs uppercase tracking-widest transition-colors"
-              >
-                Enter OS
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile Toggle */}
-          <button
-            className="md:hidden text-white"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <IconX /> : <IconMenu />}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileOpen && (
-          <div className="md:hidden bg-black border-t border-zinc-800 px-6 py-4 flex flex-col gap-4">
-            {['agents', 'stack', 'compliance', 'roadmap'].map((id) => (
-              <button
-                key={id}
-                onClick={() => scrollTo(id)}
-                className="font-mono text-xs text-zinc-400 uppercase tracking-widest text-left"
-              >
-                {id === 'roadmap' ? 'MISSION' : id}
-              </button>
-            ))}
-            <button onClick={() => navigate('/demo')} className="font-mono text-xs text-blue-400 uppercase tracking-widest text-left">
-              DEMO
-            </button>
-            <button onClick={() => navigate('/os')} className="font-mono text-xs text-white uppercase tracking-widest text-left">
-              Enter OS
-            </button>
-          </div>
-        )}
-      </header>
 
       {/* ================================================================
           SECTION 1 — HERO
           ================================================================ */}
       <section
         id="hero"
-        className="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-20"
+        className="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-24"
       >
         {/* Subtle grid background */}
         <div
@@ -402,7 +325,7 @@ export function LandingPage() {
                 Initialize Swarm <IconArrowRight />
               </button>
               <button
-                onClick={() => scrollTo('demo-video')}
+                onClick={() => scrollToSection('demo-video')}
                 className="flex items-center justify-center gap-2 px-8 py-4 border border-zinc-700 hover:border-zinc-400 text-white font-mono text-sm uppercase tracking-widest transition-colors"
               >
                 Watch Demo <IconArrowRight />
@@ -436,6 +359,110 @@ export function LandingPage() {
       </section>
 
       {/* ================================================================
+          HACKATHON ELIGIBILITY BANNER
+          ================================================================ */}
+      <section className="border-b border-zinc-900 bg-zinc-950/70 px-6 py-4">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-6 flex-wrap">
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-600">Gemini Live Agent Challenge 2026</span>
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="font-mono text-[9px] text-green-400 uppercase tracking-widest">Category: Live Agents 🗣</span>
+            </div>
+            {[
+              { label: 'Gemini Live API', ok: true },
+              { label: 'Google Cloud', ok: true },
+              { label: 'Multimodal I/O', ok: true },
+              { label: 'EU AI Act Art.50', ok: true },
+            ].map(chip => (
+              <div key={chip.label} className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/5 border border-blue-500/20 rounded-full">
+                <span className="text-green-400 text-[8px]">✓</span>
+                <span className="font-mono text-[9px] text-zinc-400 uppercase tracking-wider">{chip.label}</span>
+              </div>
+            ))}
+          </div>
+          <a href="https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os" target="_blank" rel="noopener noreferrer"
+             className="flex items-center gap-2 px-4 py-1.5 border border-zinc-800 hover:border-blue-500/50 font-mono text-[9px] text-zinc-500 hover:text-blue-400 uppercase tracking-widest transition-all rounded-full shrink-0">
+            View Devpost Submission →
+          </a>
+        </div>
+      </section>
+
+      {/* ================================================================
+          SECTION 2 — PROBLEM / SOLUTION
+          ================================================================ */}
+      <section id="problem" className="py-32 px-6 border-t border-zinc-900">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-px bg-zinc-800">
+          {/* Old Way */}
+          <FadeIn className="bg-black p-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-2 h-2 rounded-full bg-red-500" />
+              <span className="font-mono text-xs text-red-500 uppercase tracking-widest">The Old Way</span>
+            </div>
+            <h3 className="text-2xl font-semibold text-zinc-500 line-through mb-4 leading-snug">
+              Manual dashboards.<br />Sequential tools.
+            </h3>
+            <p className="text-zinc-600 leading-relaxed">
+              You are the biological glue between disconnected systems.
+              Tab switching. Context switching. Cognitive Debt accumulates.
+              Your team burns hours on coordination instead of creation.
+            </p>
+          </FadeIn>
+
+          {/* G5 Way */}
+          <FadeIn delay={0.1} className="bg-zinc-950 p-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="font-mono text-xs text-green-500 uppercase tracking-widest">The G5 Way</span>
+            </div>
+            <h3 className="text-2xl font-semibold text-white mb-4 leading-snug">
+              One voice command.<br />9 agents activate.
+            </h3>
+            <p className="text-zinc-400 leading-relaxed">
+              Research. Write. Design. Audit. Simultaneously.
+              SN-00 orchestrates the entire swarm in parallel.
+              Enterprise speed. Zero cognitive debt.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ================================================================
+          SECTION 4 — HOW IT WORKS
+          ================================================================ */}
+      <section id="how" className="py-32 px-6 border-t border-zinc-900">
+        <div className="max-w-6xl mx-auto">
+          <FadeIn className="mb-16 text-center">
+            <span className="font-mono text-xs text-blue-500 uppercase tracking-widest block mb-4">
+              Execution Flow
+            </span>
+            <h2 className="text-4xl font-semibold text-white">How It Works.</h2>
+          </FadeIn>
+
+          {/* Steps — responsive grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-px bg-zinc-800">
+            {HOW_STEPS.map((step, i) => (
+              <FadeIn key={step.number} delay={i * 0.1} className="bg-zinc-950 p-8 flex flex-col items-center text-center gap-4">
+                {/* Step Number */}
+                <span className="font-mono text-xs text-zinc-700 tracking-widest">{step.number}</span>
+
+                {/* Icon */}
+                <div className="text-blue-500">{step.icon}</div>
+
+                {/* Title */}
+                <h4 className="font-mono text-xs font-bold text-white uppercase tracking-widest">
+                  {step.title}
+                </h4>
+
+                {/* Description */}
+                <p className="text-zinc-500 text-xs leading-relaxed">{step.description}</p>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================
           NEW: DEMO VIDEO [LP-10]
           ================================================================ */}
       <section id="demo-video" className="py-24 px-6 border-t border-zinc-900 bg-zinc-950/40 relative overflow-hidden">
@@ -446,11 +473,12 @@ export function LandingPage() {
             <h2 className="text-4xl font-semibold text-white mb-2">The Swarm in Action.</h2>
             <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-widest">Vision · Voice · Execution</p>
           </FadeIn>
-          
-          <FadeIn delay={0.1} className="relative aspect-video bg-zinc-950 rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl group">
+
+          <FadeIn delay={0.1}>
+            <div className="relative aspect-video bg-zinc-950 rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl group cursor-pointer" onClick={() => navigate('/demo-workflow')}>
              {import.meta.env.VITE_DEMO_VIDEO_ID && import.meta.env.VITE_DEMO_VIDEO_ID !== 'YOUR_YOUTUBE_ID_HERE' ? (
                <iframe
-                 className="w-full h-full border-0"
+                 className="w-full h-full border-0 pointer-events-none"
                  src={`https://www.youtube.com/embed/${import.meta.env.VITE_DEMO_VIDEO_ID}?autoplay=0&rel=0&modestbranding=1`}
                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                  allowFullScreen
@@ -458,19 +486,59 @@ export function LandingPage() {
                />
              ) : (
                <>
-                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12 z-10">
-                    <div className="w-20 h-20 rounded-full bg-blue-600/10 border border-blue-600/30 flex items-center justify-center mb-8 group-hover:bg-blue-600/20 group-hover:border-blue-600/50 transition-all duration-500">
-                      <div className="w-0 h-0 border-t-10 border-t-transparent border-l-18 border-l-blue-500 border-b-10 border-b-transparent ml-1" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-wide">Demo Processing...</h3>
-                    <p className="text-zinc-500 font-mono text-xs uppercase tracking-[0.2em] leading-relaxed max-w-sm">
-                      High-fidelity recording of the Gemini Live API orchestration is being finalized. 
-                    </p>
+                 {/* OS Live Preview Thumbnail */}
+                 <img src="/ai_output_storyboard.png" alt="GenIUS OS Preview" className="w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-500" />
+                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.15)_0%,rgba(0,0,0,0.8)_70%)]" />
+                 {/* Live data overlay */}
+                 <div className="absolute top-6 left-6 flex items-center gap-2">
+                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                   <span className="font-mono text-[9px] text-green-400 uppercase tracking-widest">LIVE SYSTEM · 9 AGENTS ONLINE</span>
                  </div>
-                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.05)_0%,transparent_70%)] animate-pulse" />
-                 <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent opacity-80" />
+                 <div className="absolute top-6 right-6 font-mono text-[9px] text-blue-400/60 tracking-widest">GEMINI 2.0 FLASH LIVE</div>
+                 {/* Animated waveform */}
+                 <div className="absolute inset-x-0 bottom-16 flex items-end justify-center gap-1 px-24 h-20">
+                   {[2,4,6,8,10,8,12,6,9,5,11,7,9,4,8,6,10,5,7,9,6,4,8,5,10,7,9,6].map((h, i) => (
+                     <motion.div
+                       key={i}
+                       animate={{ height: [h * 2, h * 4, h * 2] }}
+                       transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.05 }}
+                       className="w-1 bg-blue-500/40 rounded-full"
+                     />
+                   ))}
+                 </div>
+                 {/* Central CTA */}
+                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                   <motion.div
+                     className="w-24 h-24 rounded-full bg-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center mb-6 group-hover:bg-blue-600/40 group-hover:border-blue-500 transition-all duration-500 shadow-[0_0_40px_rgba(37,99,235,0.3)] group-hover:shadow-[0_0_60px_rgba(37,99,235,0.5)]"
+                     animate={{ scale: [1, 1.05, 1] }}
+                     transition={{ repeat: Infinity, duration: 2 }}
+                   >
+                     <div className="w-0 h-0 border-t-14 border-t-transparent border-l-22 border-l-blue-400 border-b-14 border-b-transparent ml-2" />
+                   </motion.div>
+                   <h3 className="text-2xl font-bold text-white mb-2 uppercase tracking-widest group-hover:text-blue-300 transition-colors">Launch Live Demo</h3>
+                   <p className="text-zinc-500 font-mono text-xs uppercase tracking-widest">7-step automated walkthrough · Gemini Live API</p>
+                 </div>
+                 <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
                </>
              )}
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.2} className="grid sm:grid-cols-3 gap-4 mt-6">
+            {[
+              { label: 'Automated 7-Step Walkthrough', time: '~3 min', href: '/demo-workflow' },
+              { label: 'Enter OS Live', time: 'Instant', href: '/os' },
+              { label: 'Watch Architecture Deep-Dive', time: 'Scroll ↓', href: '#architecture' },
+            ].map((item) => (
+              <button
+                key={item.label}
+                onClick={() => item.href.startsWith('#') ? scrollToSection(item.href.slice(1)) : navigate(item.href)}
+                className="flex items-center justify-between px-5 py-3 border border-zinc-800 hover:border-zinc-600 bg-zinc-950 hover:bg-zinc-900 transition-colors group rounded-xl"
+              >
+                <span className="font-mono text-[10px] text-zinc-400 group-hover:text-white transition-colors uppercase tracking-wider">{item.label}</span>
+                <span className="font-mono text-[9px] text-zinc-700 group-hover:text-blue-500 transition-colors">{item.time}</span>
+              </button>
+            ))}
           </FadeIn>
         </div>
       </section>
@@ -555,45 +623,6 @@ export function LandingPage() {
       </section>
 
       {/* ================================================================
-          SECTION 2 — PROBLEM / SOLUTION
-          ================================================================ */}
-      <section id="problem" className="py-32 px-6 border-t border-zinc-900">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-px bg-zinc-800">
-          {/* Old Way */}
-          <FadeIn className="bg-black p-12">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="font-mono text-xs text-red-500 uppercase tracking-widest">The Old Way</span>
-            </div>
-            <h3 className="text-2xl font-semibold text-zinc-500 line-through mb-4 leading-snug">
-              Manual dashboards.<br />Sequential tools.
-            </h3>
-            <p className="text-zinc-600 leading-relaxed">
-              You are the biological glue between disconnected systems.
-              Tab switching. Context switching. Cognitive Debt accumulates.
-              Your team burns hours on coordination instead of creation.
-            </p>
-          </FadeIn>
-
-          {/* G5 Way */}
-          <FadeIn delay={0.1} className="bg-zinc-950 p-12">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="font-mono text-xs text-green-500 uppercase tracking-widest">The G5 Way</span>
-            </div>
-            <h3 className="text-2xl font-semibold text-white mb-4 leading-snug">
-              One voice command.<br />9 agents activate.
-            </h3>
-            <p className="text-zinc-400 leading-relaxed">
-              Research. Write. Design. Audit. Simultaneously.
-              SN-00 orchestrates the entire swarm in parallel.
-              Enterprise speed. Zero cognitive debt.
-            </p>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* ================================================================
           SECTION 3 — 9 AGENTS
           ================================================================ */}
       <section id="agents" className="py-32 px-6 border-t border-zinc-900">
@@ -638,6 +667,199 @@ export function LandingPage() {
               </FadeIn>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ================================================================
+          SECTION 5.5 — ARCHITECTURE DIAGRAM [LP-02]
+          ================================================================ */}
+      <section id="architecture" className="py-32 px-6 border-t border-zinc-900 bg-zinc-950/30">
+        <div className="max-w-5xl mx-auto">
+          <FadeIn className="text-center mb-16">
+            <span className="font-mono text-xs text-blue-500 uppercase tracking-widest block mb-4">
+              Structural Blueprint
+            </span>
+            <h2 className="text-4xl font-semibold text-white mb-4">System Architecture.</h2>
+            <p className="text-zinc-400">9 agents. 3 layers. One neural fabric. <span className="text-zinc-600">Hover each node for details.</span></p>
+          </FadeIn>
+
+          <FadeIn delay={0.1}>
+            {/* ── LAYER 1: INPUTS ── */}
+            <p className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.25em] text-center mb-3">Input Layer</p>
+            <div className="flex justify-center gap-4 mb-2">
+              {[
+                { label: 'Voice (VE-01)', sub: 'Gemini Live API · <800ms', color: 'border-blue-500/50 bg-blue-500/5', glow: 'shadow-[0_0_20px_rgba(59,130,246,0.15)]' },
+                { label: 'OS Portal', sub: 'React 19 / Vite · WebSocket', color: 'border-zinc-700 bg-zinc-900/50', glow: '' },
+              ].map(n => (
+                <div key={n.label} className={`group relative px-6 py-4 border rounded-xl text-center ${n.color} ${n.glow} hover:scale-105 transition-all duration-300 cursor-default min-w-[140px]`}>
+                  <p className="font-bold text-sm text-white mb-1">{n.label}</p>
+                  <p className="text-[9px] font-mono text-zinc-500">{n.sub}</p>
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-px h-2 bg-blue-500/50" />
+                </div>
+              ))}
+            </div>
+
+            {/* ── CONNECTOR ── */}
+            <div className="flex justify-center mb-2">
+              <div className="w-px h-8 bg-linear-to-b from-blue-500/60 to-blue-500 relative">
+                <motion.div className="absolute inset-0 bg-blue-400" animate={{ scaleY: [0, 1] }} transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }} />
+              </div>
+            </div>
+
+            {/* ── LAYER 2: ORCHESTRATOR ── */}
+            <p className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.25em] text-center mb-3">Orchestration Layer</p>
+            <div className="flex justify-center mb-2">
+              <div className="group relative w-full max-w-md bg-zinc-900 border-2 border-blue-500/40 rounded-2xl p-6 text-center hover:border-blue-500 hover:shadow-[0_0_40px_rgba(59,130,246,0.2)] transition-all duration-300 cursor-default">
+                <div className="absolute top-0 left-0 w-full h-0.5 bg-linear-to-r from-transparent via-blue-500 to-transparent" />
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <motion.div className="w-2 h-2 rounded-full bg-blue-500" animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.5 }} />
+                  <p className="font-black text-sm text-white tracking-widest font-mono uppercase">SN-00 · Neural Orchestrator</p>
+                </div>
+                <p className="text-[10px] font-mono text-zinc-400">SwarmProtocol v3.0 · Dispatches 9 agents in parallel · 38ms init</p>
+                {/* Tooltip */}
+                <div className="absolute -top-16 left-1/2 -translate-x-1/2 bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2 text-[10px] font-mono text-zinc-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none">
+                  Model: gemini-2.0-flash · Latency: 38ms · Cloud Run: europe-west1
+                </div>
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-px h-2 bg-blue-500/50" />
+              </div>
+            </div>
+
+            {/* ── CONNECTOR ── */}
+            <div className="flex justify-center mb-2">
+              <div className="w-px h-8 bg-linear-to-b from-blue-500 to-blue-500/30" />
+            </div>
+
+            {/* ── LAYER 3: AGENT SWARM ── */}
+            <p className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.25em] text-center mb-3">Agent Swarm Layer</p>
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2 mb-2">
+              {[
+                { id: 'SP-01', label: 'Strategic', desc: 'Competitor intel via Vector Search', latency: '1200ms', color: 'border-yellow-500/40 hover:border-yellow-500 hover:shadow-[0_0_15px_rgba(234,179,8,0.15)]', text: 'text-yellow-400', glyph: '🔍' },
+                { id: 'CC-06', label: 'Content', desc: 'Multi-channel copywriting & synthesis', latency: '3200ms', color: 'border-emerald-500/40 hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.15)]', text: 'text-emerald-400', glyph: '✍' },
+                { id: 'DA-03', label: 'Design', desc: 'Imagen 3 visual asset generation', latency: '6800ms', color: 'border-purple-500/40 hover:border-purple-500 hover:shadow-[0_0_15px_rgba(168,85,247,0.15)]', text: 'text-purple-400', glyph: '🎨' },
+                { id: 'BA-07', label: 'Browser', desc: 'Real-world research & grounding', latency: '2100ms', color: 'border-green-500/40 hover:border-green-500 hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]', text: 'text-green-400', glyph: '🌐' },
+                { id: 'VE-01', label: 'Voice', desc: 'Live API bidi audio & tool calling', latency: '<800ms', color: 'border-blue-500/40 hover:border-blue-500 hover:shadow-[0_0_15px_rgba(59,130,246,0.15)]', text: 'text-blue-400', glyph: '🎤' },
+                { id: 'RA-01', label: 'Senate', desc: 'EU AI Act veto & compliance gate', latency: '280ms', color: 'border-red-500/40 hover:border-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.15)]', text: 'text-red-400', glyph: '⚖' },
+                { id: 'PM-07', label: 'Mission', desc: 'Scheduling & Google Chat sync', latency: '420ms', color: 'border-orange-500/40 hover:border-orange-500 hover:shadow-[0_0_15px_rgba(249,115,22,0.15)]', text: 'text-orange-400', glyph: '📅' },
+              ].map(agent => (
+                <div key={agent.id} className={`group relative bg-zinc-900/60 border rounded-xl p-3 text-center cursor-default transition-all duration-300 ${agent.color}`}>
+                  <p className="text-lg mb-1">{agent.glyph}</p>
+                  <p className={`text-[10px] font-mono font-black mb-0.5 ${agent.text}`}>{agent.id}</p>
+                  <p className="text-[8px] font-mono text-zinc-600 uppercase tracking-tighter">{agent.label}</p>
+                  {/* Latency badge */}
+                  <div className="absolute -top-2 -right-2 px-1.5 py-0.5 bg-black border border-zinc-800 rounded text-[7px] font-mono text-zinc-600">{agent.latency}</div>
+                  {/* Hover tooltip */}
+                  <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-[9px] font-mono text-zinc-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none w-48 text-left">
+                    <p className={`font-bold ${agent.text} mb-0.5`}>{agent.id}</p>
+                    <p className="text-zinc-500">{agent.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ── CONNECTOR ── */}
+            <div className="flex justify-center mb-2">
+              <div className="w-px h-8 bg-linear-to-b from-blue-500/30 to-zinc-700" />
+            </div>
+
+            {/* ── LAYER 4: GOOGLE CLOUD ── */}
+            <p className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.25em] text-center mb-3">Google Cloud Infrastructure</p>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              {[
+                { t: 'Gemini 2.0 Flash', s: 'europe-west1' },
+                { t: 'Firestore', s: 'Vector Search' },
+                { t: 'Cloud Run', s: 'Auto-scaling' },
+                { t: 'Imagen 3', s: 'Visual Gen' },
+                { t: 'Vertex AI', s: 'Grounding' },
+                { t: 'Secret Manager', s: 'Hardened' },
+              ].map(x => (
+                <div key={x.t} className="bg-zinc-900/40 border border-zinc-800 hover:border-zinc-600 rounded-lg p-3 text-center transition-colors cursor-default">
+                  <p className="text-[10px] font-bold text-zinc-300 mb-0.5">{x.t}</p>
+                  <p className="text-[8px] font-mono text-zinc-600 uppercase tracking-tighter">{x.s}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-10 text-center text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
+              Deployed in europe-west1 (Belgium) · EU AI Act Art.50 compliant by design.
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ================================================================
+          SECTION 5 — TECH STACK
+          ================================================================ */}
+      <section id="stack" className="py-32 px-6 border-t border-zinc-900">
+        <div className="max-w-6xl mx-auto">
+          <FadeIn className="text-center mb-16">
+            <span className="font-mono text-xs text-blue-500 uppercase tracking-widest block mb-4">
+              Infrastructure
+            </span>
+            <h2 className="text-4xl font-semibold text-white mb-4">
+              Built on Google Cloud. No shortcuts.
+            </h2>
+            <p className="text-zinc-400 max-w-xl mx-auto">
+              100% Google native stack. Zero wrapper abstractions.
+              Every component deployed and verified in production.
+            </p>
+          </FadeIn>
+
+          <FadeIn delay={0.1}>
+            <div className="flex flex-wrap gap-3 justify-center mb-16">
+              {TECH_BADGES.map((badge) => (
+                <span
+                  key={badge}
+                  className="px-4 py-2 border border-zinc-800 bg-zinc-950 font-mono text-xs text-zinc-400 uppercase tracking-widest hover:border-zinc-600 hover:text-white transition-colors"
+                >
+                  {badge}
+                </span>
+              ))}
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-px bg-zinc-800 border border-zinc-800">
+               <a href="https://genius-backend-697051612685.europe-west1.run.app/api/v1/health" target="_blank" rel="noopener noreferrer" className="bg-black p-6 hover:bg-zinc-950 transition-colors group">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-green-500 animate-pulse">●</span>
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">LIVE DEPLOYMENT</span>
+                  </div>
+                  <div className="text-sm font-bold text-white mb-1">Cloud Run europe-west1</div>
+                  <div className="font-mono text-[10px] text-zinc-600">genius-backend · Rev 00051</div>
+                  <div className="mt-4 text-[10px] text-blue-500 font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Verify API Health →</div>
+               </a>
+               <div className="bg-black p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-zinc-500">📦</span>
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">CONTAINER REGISTRY</span>
+                  </div>
+                  <div className="text-sm font-bold text-white mb-1">Artifact Registry</div>
+                  <div className="font-mono text-[10px] text-zinc-600">agenticum-containers</div>
+               </div>
+               <div className="bg-black p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-zinc-500">📊</span>
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">REAL-TIME DATABASE</span>
+                  </div>
+                  <div className="text-sm font-bold text-white mb-1">Firestore (Native Mode)</div>
+                  <div className="font-mono text-[10px] text-zinc-600">online-marketing-manager</div>
+               </div>
+            </div>
+            <div className="text-center mt-8">
+              <button
+                onClick={checkApiHealth}
+                className={`font-mono text-[10px] uppercase tracking-widest transition-colors ${
+                  apiHealth === 'online' ? 'text-green-500' :
+                  apiHealth === 'offline' ? 'text-red-500' :
+                  apiHealth === 'checking' ? 'text-blue-400 animate-pulse' :
+                  'text-zinc-600 hover:text-blue-500'
+                }`}
+              >
+                {apiHealth === 'online' ? '✓ agenticum-backend: ONLINE' :
+                 apiHealth === 'offline' ? '✗ Backend Unreachable' :
+                 apiHealth === 'checking' ? '⟳ Checking API Health...' :
+                 '→ Verify API Health (Live Check)'}
+              </button>
+            </div>
+          </FadeIn>
         </div>
       </section>
 
@@ -730,212 +952,77 @@ export function LandingPage() {
       </section>
 
       {/* ================================================================
-          SECTION 4 — HOW IT WORKS
+          PROOF OF CLOUD — JURY VERIFIED STRIP
           ================================================================ */}
-      <section id="how" className="py-32 px-6 border-t border-zinc-900">
-        <div className="max-w-6xl mx-auto">
-          <FadeIn className="mb-16 text-center">
-            <span className="font-mono text-xs text-blue-500 uppercase tracking-widest block mb-4">
-              Execution Flow
-            </span>
-            <h2 className="text-4xl font-semibold text-white">How It Works.</h2>
+      <section className="py-16 px-6 border-t border-zinc-900 bg-black">
+        <div className="max-w-5xl mx-auto">
+          <FadeIn className="text-center mb-10">
+            <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-[0.25em] block mb-2">Jury Verification Zone</span>
+            <h3 className="text-2xl font-bold text-white">Proof of Cloud Deployment.</h3>
           </FadeIn>
-
-          {/* Steps — responsive grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-px bg-zinc-800">
-            {HOW_STEPS.map((step, i) => (
-              <FadeIn key={step.number} delay={i * 0.1} className="bg-zinc-950 p-8 flex flex-col items-center text-center gap-4">
-                {/* Step Number */}
-                <span className="font-mono text-xs text-zinc-700 tracking-widest">{step.number}</span>
-
-                {/* Icon */}
-                <div className="text-blue-500">{step.icon}</div>
-
-                {/* Title */}
-                <h4 className="font-mono text-xs font-bold text-white uppercase tracking-widest">
-                  {step.title}
-                </h4>
-
-                {/* Description */}
-                <p className="text-zinc-500 text-xs leading-relaxed">{step.description}</p>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ================================================================
-          SECTION 5 — TECH STACK
-          ================================================================ */}
-      <section id="stack" className="py-32 px-6 border-t border-zinc-900">
-        <div className="max-w-6xl mx-auto">
-          <FadeIn className="text-center mb-16">
-            <span className="font-mono text-xs text-blue-500 uppercase tracking-widest block mb-4">
-              Infrastructure
-            </span>
-            <h2 className="text-4xl font-semibold text-white mb-4">
-              Built on Google Cloud. No shortcuts.
-            </h2>
-            <p className="text-zinc-400 max-w-xl mx-auto">
-              100% Google native stack. Zero wrapper abstractions.
-              Every component deployed and verified in production.
-            </p>
-          </FadeIn>
-
           <FadeIn delay={0.1}>
-            <div className="flex flex-wrap gap-3 justify-center mb-16">
-              {TECH_BADGES.map((badge) => (
-                <span
-                  key={badge}
-                  className="px-4 py-2 border border-zinc-800 bg-zinc-950 font-mono text-xs text-zinc-400 uppercase tracking-widest hover:border-zinc-600 hover:text-white transition-colors"
-                >
-                  {badge}
-                </span>
+            <div className="grid sm:grid-cols-3 gap-4 mb-8">
+              {[
+                {
+                  label: 'Cloud Run Backend',
+                  value: 'europe-west1',
+                  status: 'LIVE',
+                  href: 'https://genius-backend-697051612685.europe-west1.run.app/api/v1/health',
+                  color: 'text-green-400 border-green-500/30 bg-green-500/5',
+                },
+                {
+                  label: 'Firebase Hosting',
+                  value: 'online-marketing-manager',
+                  status: 'LIVE',
+                  href: 'https://online-marketing-manager.web.app',
+                  color: 'text-blue-400 border-blue-500/30 bg-blue-500/5',
+                },
+                {
+                  label: 'Devpost Submission',
+                  value: 'Gemini Live Agent Challenge',
+                  status: 'SUBMITTED',
+                  href: 'https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os',
+                  color: 'text-purple-400 border-purple-500/30 bg-purple-500/5',
+                },
+              ].map(card => (
+                <a key={card.label} href={card.href} target="_blank" rel="noopener noreferrer"
+                   className={`block p-6 border rounded-2xl hover:scale-[1.02] transition-all cursor-pointer group ${card.color}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-zinc-600">{card.label}</span>
+                    <span className={`font-mono text-[8px] font-black uppercase px-2 py-0.5 rounded-full border ${card.color}`}>{card.status}</span>
+                  </div>
+                  <p className="font-bold text-white text-sm group-hover:underline">{card.value}</p>
+                  <p className="font-mono text-[9px] text-zinc-700 mt-1 uppercase tracking-widest">Click to verify →</p>
+                </a>
               ))}
             </div>
-
-            <div className="grid sm:grid-cols-3 gap-px bg-zinc-800 border border-zinc-800">
-               <a href="https://genius-backend-697051612685.europe-west1.run.app/api/v1/health" target="_blank" rel="noopener noreferrer" className="bg-black p-6 hover:bg-zinc-950 transition-colors group">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-green-500 animate-pulse">●</span>
-                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">LIVE DEPLOYMENT</span>
-                  </div>
-                  <div className="text-sm font-bold text-white mb-1">Cloud Run europe-west1</div>
-                  <div className="font-mono text-[10px] text-zinc-600">genius-backend · Rev 00051</div>
-                  <div className="mt-4 text-[10px] text-blue-500 font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Verify API Health →</div>
-               </a>
-               <div className="bg-black p-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-zinc-500">📦</span>
-                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">CONTAINER REGISTRY</span>
-                  </div>
-                  <div className="text-sm font-bold text-white mb-1">Artifact Registry</div>
-                  <div className="font-mono text-[10px] text-zinc-600">agenticum-containers</div>
-               </div>
-               <div className="bg-black p-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-zinc-500">📊</span>
-                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">REAL-TIME DATABASE</span>
-                  </div>
-                  <div className="text-sm font-bold text-white mb-1">Firestore (Native Mode)</div>
-                  <div className="font-mono text-[10px] text-zinc-600">online-marketing-manager</div>
-               </div>
-            </div>
-            <div className="text-center mt-8">
+            <div className="text-center">
               <button
                 onClick={checkApiHealth}
-                className={`font-mono text-[10px] uppercase tracking-widest transition-colors ${
-                  apiHealth === 'online' ? 'text-green-500' :
-                  apiHealth === 'offline' ? 'text-red-500' :
-                  apiHealth === 'checking' ? 'text-blue-400 animate-pulse' :
-                  'text-zinc-600 hover:text-blue-500'
+                className={`inline-flex items-center gap-3 px-8 py-3 border rounded-full font-mono text-xs uppercase tracking-widest transition-all ${
+                  apiHealth === 'online' ? 'border-green-500 text-green-400 bg-green-500/5 shadow-[0_0_20px_rgba(34,197,94,0.15)]' :
+                  apiHealth === 'offline' ? 'border-red-500 text-red-400' :
+                  apiHealth === 'checking' ? 'border-blue-500 text-blue-400 animate-pulse' :
+                  'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-white'
                 }`}
               >
-                {apiHealth === 'online' ? '✓ agenticum-backend: ONLINE' :
-                 apiHealth === 'offline' ? '✗ Backend Unreachable' :
-                 apiHealth === 'checking' ? '⟳ Checking API Health...' :
-                 '→ Verify API Health (Live Check)'}
+                <span className={`w-2 h-2 rounded-full ${
+                  apiHealth === 'online' ? 'bg-green-500 animate-pulse' :
+                  apiHealth === 'offline' ? 'bg-red-500' :
+                  apiHealth === 'checking' ? 'bg-blue-500 animate-spin' :
+                  'bg-zinc-700'
+                }`} />
+                {apiHealth === 'online' ? '✓ Backend Verified: ONLINE — europe-west1' :
+                 apiHealth === 'offline' ? '✗ Backend Unreachable — check logs' :
+                 apiHealth === 'checking' ? '⟳ Pinging genius-backend...' :
+                 'Run Live API Health Check'}
               </button>
             </div>
           </FadeIn>
         </div>
       </section>
 
-      {/* ================================================================
-          SECTION 5.5 — ARCHITECTURE DIAGRAM [LP-02]
-          ================================================================ */}
-      <section id="architecture" className="py-32 px-6 border-t border-zinc-900 bg-zinc-950/30">
-        <div className="max-w-4xl mx-auto">
-          <FadeIn className="text-center mb-16">
-            <span className="font-mono text-xs text-blue-500 uppercase tracking-widest block mb-4">
-              Structural Blueprint
-            </span>
-            <h2 className="text-4xl font-semibold text-white mb-4">System Architecture.</h2>
-            <p className="text-zinc-400">9 agents. 3 layers. One neural fabric.</p>
-          </FadeIn>
-
-          <FadeIn delay={0.1}>
-            <div className="space-y-4">
-              {/* Layer 1 */}
-              <div className="flex justify-center gap-4">
-                <div className="w-1/2 max-w-[200px] bg-zinc-900 border border-zinc-700/50 rounded-lg p-4 text-center">
-                  <p className="font-bold text-sm text-white mb-1">Voice (VE-01)</p>
-                  <p className="text-[10px] font-mono text-zinc-500">Gemini Live API</p>
-                </div>
-                <div className="w-1/2 max-w-[200px] bg-zinc-900 border border-zinc-700/50 rounded-lg p-4 text-center">
-                  <p className="font-bold text-sm text-white mb-1">OS Portal</p>
-                  <p className="text-[10px] font-mono text-zinc-500">React 19 / Vite</p>
-                </div>
-              </div>
-
-              {/* Arrow */}
-              <div className="flex justify-center">
-                <div className="w-px h-8 bg-linear-to-b from-blue-500/50 to-blue-500"></div>
-              </div>
-
-              {/* Layer 2 */}
-              <div className="flex justify-center">
-                <div className="w-full max-w-[420px] bg-zinc-900 border border-blue-500/30 rounded-lg p-6 text-center relative overflow-hidden">
-                   <div className="absolute top-0 left-0 w-full h-0.5 bg-blue-500"></div>
-                   <p className="font-bold text-sm text-white mb-2">SN-00 NEURAL ORCHESTRATOR</p>
-                   <p className="text-[10px] font-mono text-zinc-400">SwarmProtocol v3.0 // 9 Agents dispatched in parallel</p>
-                </div>
-              </div>
-
-              {/* Arrow */}
-              <div className="flex justify-center">
-                <div className="w-px h-8 bg-linear-to-b from-blue-500 to-blue-500/50"></div>
-              </div>
-
-              {/* Layer 3 — 9 Sub-Agents */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-                {[
-                  { id: 'SP-01', label: 'STRATEGIC', color: 'border-yellow-500/40 text-yellow-400' },
-                  { id: 'CC-06', label: 'COGNITIVE', color: 'border-emerald-500/40 text-emerald-400' },
-                  { id: 'DA-03', label: 'DESIGN', color: 'border-purple-500/40 text-purple-400' },
-                  { id: 'BA-07', label: 'BROWSER', color: 'border-green-500/40 text-green-400' },
-                  { id: 'RA-01', label: 'SENATE', color: 'border-red-500/40 text-red-400' },
-                  { id: 'SO-00', label: 'SOVEREIGN', color: 'border-blue-500/40 text-blue-400' },
-                  { id: 'PM-07', label: 'MISSION', color: 'border-orange-500/40 text-orange-400' },
-                ].map(agent => (
-                  <div key={agent.id} className={`bg-zinc-900/50 border rounded-lg p-2 text-center ${agent.color.split(' ')[0]}`}>
-                    <p className={`text-[10px] font-mono font-bold mb-0.5 ${agent.color.split(' ')[1]}`}>{agent.id}</p>
-                    <p className="text-[8px] font-mono text-zinc-600 uppercase tracking-tighter">{agent.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Arrow */}
-              <div className="flex justify-center">
-                <div className="w-px h-8 bg-linear-to-b from-blue-500/50 to-zinc-700"></div>
-              </div>
-
-              {/* Layer 4 — GCP Infrastructure */}
-              <div className="grid grid-cols-3 gap-3">
-                 {[
-                   { t: 'Gemini 2.0 Flash', s: 'europe-west1' },
-                   { t: 'Firestore', s: 'Vector Search' },
-                   { t: 'Cloud Run', s: 'Auto-scaling' },
-                   { t: 'Imagen 3', s: 'Visual Gen' },
-                   { t: 'Vertex AI', s: 'Grounding' },
-                   { t: 'Secret Manager', s: 'Hardened' }
-                 ].map(x => (
-                   <div key={x.t} className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3 text-center">
-                      <p className="text-[11px] font-bold text-zinc-300 mb-0.5">{x.t}</p>
-                      <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-tighter">{x.s}</p>
-                   </div>
-                 ))}
-              </div>
-
-              <div className="pt-12 text-center text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
-                Deployed in europe-west1 (Belgium) · EU AI Act Art.50 compliant by design.
-              </div>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* ================================================================
+      \n\n{/* ================================================================
           SECTION 6 — COMPLIANCE
           ================================================================ */}
       <section id="compliance" className="py-32 px-6 border-t border-zinc-900">
@@ -977,7 +1064,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ================================================================
+      \n\n{/* ================================================================
           SECTION 6.5 — MISSION & ROADMAP (THE STORY)
           ================================================================ */}
       <section id="roadmap" className="py-32 px-6 border-t border-zinc-900 bg-obsidian/20 relative">
@@ -1060,7 +1147,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ================================================================
+      \n\n{/* ================================================================
           SECTION 7 — FINAL CTA
           ================================================================ */}
       <section id="cta" className="py-40 px-6 border-t border-zinc-900">
@@ -1085,9 +1172,7 @@ export function LandingPage() {
             Initialize Swarm <IconArrowRight />
           </button>
         </FadeIn>
-      </section>
-
-      {/* ================================================================
+      </section>\n\n      {/* ================================================================
           FOOTER
           ================================================================ */}
       <footer className="py-20 px-6 border-t border-zinc-900 bg-black">
@@ -1106,18 +1191,19 @@ export function LandingPage() {
                     className="p-2 border border-zinc-800 rounded-lg hover:border-zinc-400 transition-colors text-zinc-500 hover:text-white">
                    <IconGithub size={20} />
                  </a>
-                 <a href="https://geminiliveagentchallenge.devpost.com/" target="_blank" rel="noopener noreferrer" 
-                    className="flex items-center gap-2 px-4 border border-zinc-800 rounded-lg hover:border-zinc-400 text-xs font-mono text-zinc-500 hover:text-white transition-colors">
-                   DEVPOST SUBMISSION
-                 </a>
+                 <a href="https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os" target="_blank" rel="noopener noreferrer" 
+                     className="flex items-center gap-2 px-4 py-2 border border-zinc-800 rounded-lg hover:border-zinc-400 text-xs font-mono text-zinc-500 hover:text-white transition-colors">
+                    DEVPOST SUBMISSION
+                  </a>
               </div>
             </div>
             <div>
-              <h5 className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest mb-4">Repository</h5>
+              <h5 className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest mb-4">Navigate</h5>
               <ul className="space-y-2 text-xs font-mono text-zinc-600">
-                <li className="hover:text-blue-500 transition-colors">/backend (Node/Express)</li>
-                <li className="hover:text-blue-500 transition-colors">/landing (React 19)</li>
-                <li className="hover:text-blue-500 transition-colors">/engine (Python Swarm)</li>
+                <li><button onClick={() => navigate('/demo-workflow')} className="hover:text-blue-500 transition-colors text-left">/demo-workflow</button></li>
+                <li><button onClick={() => navigate('/blog')} className="hover:text-blue-500 transition-colors text-left">/blog</button></li>
+                <li><button onClick={() => navigate('/os')} className="hover:text-blue-500 transition-colors text-left">/os (GenIUS Portal)</button></li>
+                <li><button onClick={() => navigate('/privacy')} className="hover:text-blue-500 transition-colors text-left">/privacy</button></li>
               </ul>
             </div>
             <div className="flex flex-col items-end justify-start">

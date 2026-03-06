@@ -79,8 +79,8 @@ export function NexusEngineV2() {
   const runWorkflow = async () => {
     if (isRunning) return;
     setIsRunning(true);
-    setToast(`${activeWorkflow.name} Compilation Initiated. Swarm Engaged.`);
-    
+    setToast(`${activeWorkflow.name} — Initializing Swarm...`);
+
     // Reset all agents to idle
     const initialState: Record<string, 'idle' | 'processing' | 'complete'> = {};
     activeWorkflow.agents.forEach(a => initialState[a] = 'idle');
@@ -111,22 +111,34 @@ export function NexusEngineV2() {
         })
       });
 
-      if (!response.ok) throw new Error('Deployment failed upstream.');
-      
-      setToast(`${activeWorkflow.name} — Dispatched to Swarm Cluster.`);
-      
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error((data as { error?: string })?.error || 'Deployment failed upstream.');
+
+      const successMsg = (data as { message?: string })?.message || `${activeWorkflow.name} — Dispatched to Swarm Cluster.`;
+      setToast(successMsg);
+
+      // Animate agents sequentially through the pipeline
+      for (const agent of activeWorkflow.agents) {
+        setAgentProgress(prev => ({ ...prev, [agent]: 'processing' }));
+        await new Promise<void>(resolve => setTimeout(resolve, 700));
+        setAgentProgress(prev => ({ ...prev, [agent]: 'complete' }));
+        await new Promise<void>(resolve => setTimeout(resolve, 150));
+      }
+
     } catch (err) {
       const error = err as Error;
       setToast(`Error: ${error.message}`);
+    } finally {
       setIsRunning(false);
+      setTimeout(() => setToast(null), 5000);
     }
 
     // Dispatch global event for GeniusConsole to pick up (for visual only)
-    window.dispatchEvent(new CustomEvent('trigger-orchestration', { 
-      detail: { 
+    window.dispatchEvent(new CustomEvent('trigger-orchestration', {
+      detail: {
         input: `Execute workflow: ${activeWorkflow.name}. Context: ${activeWorkflow.desc}`,
-        workflowId: activeWorkflow.id 
-      } 
+        workflowId: activeWorkflow.id
+      }
     }));
   };
 

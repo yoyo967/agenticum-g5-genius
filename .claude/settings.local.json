@@ -5,7 +5,9 @@
       "Bash(\"$GCLOUD\" version)",
       "Bash(\"$NPM\" run build)",
       "Read(//c/Users/HP/AppData/Local/Programs/**)",
-      "Read(//c/Users/HP/**)"
+      "Read(//c/Users/HP/**)",
+      "Bash(export PATH=\"/c/Users/HP/AppData/Roaming/npm:$PATH\")",
+      "Bash(firebase deploy --only hosting --project online-marketing-manager)"
     ]
   }
 }

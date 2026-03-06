@@ -7,7 +7,7 @@ import {
   FolderHeart, Network, Target, LayoutGrid, FileText, Radar, Mic, Wand2, Maximize2, Zap, Edit3
 } from 'lucide-react';
 import { StatusBadge } from '../components/ui';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { MeshBackground } from '../components/NeuralSubstrate';
 import { GenIUSConsole } from '../components/GenIUSConsole';
 import { AssetVault } from '../components/AssetVault';
@@ -80,7 +80,35 @@ type OSMode = 'genius' | 'command';
 export function OSPortal() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialModule = (searchParams.get('module') as ModuleKey) || 'dashboard';
+  const location = useLocation();
+  
+  const getInitialModule = (): ModuleKey => {
+    // 1. Check search params first (legacy/explicit override)
+    const queryMod = searchParams.get('module') as ModuleKey;
+    if (queryMod) return queryMod;
+    
+    // 2. Map route path to module
+    const path = location.pathname;
+    if (path.startsWith('/os/genius')) return 'console';
+    if (path.startsWith('/os/nexus')) return 'nexus-engine';
+    if (path.startsWith('/os/campaigns')) return 'campaign';
+    if (path.startsWith('/os/blog')) return 'pillar-blog';
+    if (path.startsWith('/os/creative')) return 'studio'; // Defaulting to studio, cinematic is also here
+    if (path.startsWith('/os/workflows')) return 'workflows';
+    if (path.startsWith('/os/vault')) return 'vault';
+    if (path.startsWith('/os/memory')) return 'memory';
+    if (path.startsWith('/os/analytics')) return 'analytics';
+    if (path.startsWith('/os/synergy')) return 'synergy';
+    if (path.startsWith('/os/senate')) return 'senate';
+    if (path.startsWith('/os/radar')) return 'columna-radar';
+    if (path.startsWith('/os/twin')) return 'perfect-twin';
+    if (path.startsWith('/os/config')) return 'settings';
+    
+    // Default fallback
+    return 'dashboard';
+  };
+
+  const initialModule = getInitialModule();
   const [activeModule, setActiveModule] = useState<ModuleKey>(initialModule);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [osMode, setOsMode] = useState<OSMode>('command');

@@ -65,8 +65,8 @@ steps:
     args: ["run", "build"]
     dir: "landing"
     env:
-      - "VITE_API_URL=https://agenticum-backend-697051612685.europe-west1.run.app"
-      - "VITE_WS_URL=wss://agenticum-backend-697051612685.europe-west1.run.app"
+      - "VITE_API_URL=https://genius-backend-697051612685.europe-west1.run.app"
+      - "VITE_WS_URL=wss://genius-backend-697051612685.europe-west1.run.app"
       - "VITE_GCP_PROJECT_ID=online-marketing-manager"
       - "VITE_FIREBASE_MESSAGING_SENDER_ID=697051612685"
       - "VITE_FIREBASE_APP_ID=1:697051612685:web:22a5ff3f18ff712f20f744"
@@ -107,7 +107,7 @@ steps:
       - "managed"
       - "--allow-unauthenticated"
       - "--set-secrets=GEMINI_API_KEY=GEMINI_API_KEY:latest"
-      - "--set-env-vars=BACKEND_URL=https://agenticum-backend-697051612685.europe-west1.run.app,ENGINE_URL=https://agenticum-g5-backend-697051612685.europe-west1.run.app"
+      - "--set-env-vars=BACKEND_URL=https://genius-backend-697051612685.europe-west1.run.app,ENGINE_URL=https://agenticum-g5-backend-697051612685.europe-west1.run.app"
 
   # Deploy Engine (G5)
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -127,7 +127,7 @@ steps:
       - "--cpu=2"
       - "--timeout=300"
       - "--set-secrets=GEMINI_API_KEY=GEMINI_API_KEY:latest,BROWSERBASE_API_KEY=BROWSERBASE_API_KEY:latest"
-      - "--set-env-vars=BACKEND_URL=https://agenticum-backend-697051612685.europe-west1.run.app,BA07_HEADLESS=true,BA07_SCREEN_WIDTH=1280,BA07_SCREEN_HEIGHT=936"
+      - "--set-env-vars=BACKEND_URL=https://genius-backend-697051612685.europe-west1.run.app,BA07_HEADLESS=true,BA07_SCREEN_WIDTH=1280,BA07_SCREEN_HEIGHT=936"
 
   # Deploy Frontend
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"

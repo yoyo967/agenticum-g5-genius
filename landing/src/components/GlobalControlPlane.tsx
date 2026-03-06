@@ -27,8 +27,16 @@ export function GlobalControlPlane() {
       .then(res => res.json())
       .then(data => {
         if (Object.keys(data).length > 0) setSettings(prev => ({ ...prev, ...data }));
+        if (data.brand) setBrand(data.brand);
+        if (data.notifs) setNotifs(data.notifs);
       })
-      .catch(() => {});
+      .catch(() => {
+        // Fallback to localStorage
+        const lb = localStorage.getItem('g5_brand');
+        const ln = localStorage.getItem('g5_notifs');
+        if (lb) { try { setBrand(JSON.parse(lb)); } catch { /* ignore */ } }
+        if (ln) { try { setNotifs(JSON.parse(ln)); } catch { /* ignore */ } }
+      });
   }, []);
 
   const [saveError, setSaveError] = useState('');
@@ -65,10 +73,12 @@ export function GlobalControlPlane() {
       const res = await fetch(`${API_BASE_URL}/settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
+        body: JSON.stringify({ ...settings, brand, notifs })
       });
       if (res.ok) {
         setSaveResult('success');
+        localStorage.setItem('g5_brand', JSON.stringify(brand));
+        localStorage.setItem('g5_notifs', JSON.stringify(notifs));
       } else {
         const errData = await res.json().catch(() => ({ error: `Server returned ${res.status}` }));
         setSaveResult('error');
@@ -85,6 +95,31 @@ export function GlobalControlPlane() {
   };
 
   const update = (key: string, value: unknown) => setSettings(prev => ({ ...prev, [key]: value }));
+
+  const DEFAULT_SETTINGS = {
+    projectId: '', geminiKey: '', gcsBucket: '', localFallback: './data/vault/', localOverride: false,
+    agentModel: 'gemini-3.1-pro', temperature: 70, topK: 40, tokenLimit: 8192,
+    safetyThreshold: 'BLOCK_MEDIUM_AND_ABOVE',
+    swarms: { sn00: true, so00: true, sp01: true, cc06: true, da03: true, ba07: true, ve01: true, ra01: true }
+  };
+
+  const handleDangerConfirm = async (actionId: string) => {
+    setDangerAction(null);
+    if (actionId === 'reset-config') {
+      setSettings(DEFAULT_SETTINGS);
+      await fetch(`${API_BASE_URL}/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(DEFAULT_SETTINGS)
+      }).catch(() => {});
+    } else if (actionId === 'purge-cache') {
+      await fetch(`${API_BASE_URL}/agent-cache/purge`, { method: 'POST' }).catch(() => {});
+    } else if (actionId === 'halt-swarm') {
+      const haltedSwarms = { sn00: false, so00: false, sp01: false, cc06: false, da03: false, ba07: false, ve01: false, ra01: false };
+      setSettings(prev => ({ ...prev, swarms: haltedSwarms }));
+      await fetch(`${API_BASE_URL}/swarm/halt`, { method: 'POST' }).catch(() => {});
+    }
+  };
 
   return (
     <div className="h-full flex flex-col gap-5 overflow-y-auto pb-6">
@@ -350,7 +385,7 @@ export function GlobalControlPlane() {
                     className="flex-1 py-1.5 border border-white/10 text-white/40 font-mono text-[10px] rounded hover:border-white/30 transition-colors">
                     Cancel
                   </button>
-                  <button onClick={() => setDangerAction(null)}
+                  <button onClick={() => handleDangerConfirm(action.id)}
                     className="flex-1 py-1.5 bg-red-700 hover:bg-red-600 text-white font-mono text-[10px] rounded transition-colors">
                     Confirm
                   </button>

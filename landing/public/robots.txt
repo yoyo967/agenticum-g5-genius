@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://online-marketing-manager.web.app/sitemap.xml
+
+# AGENTICUM G5 GENIUS — Neural Marketing OS
+# Live: https://online-marketing-manager.web.app
+# Devpost: https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os

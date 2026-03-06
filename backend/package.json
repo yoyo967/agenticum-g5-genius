@@ -1,6 +1,6 @@
 {
   "name": "agenticum-g5-genius-backend",
-  "version": "1.0.0",
+  "version": "5.0.0",
   "description": "Neural Live Fabric for AGENTICUM G5 GENIUS",
   "main": "dist/index.js",
   "scripts": {

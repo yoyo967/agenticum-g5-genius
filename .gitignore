@@ -23,4 +23,13 @@ dist-ssr
 *.sln
 *.sw?
 backend/.env
+landing/.env
 backend/firestore.rules
+backend/data/settings.json
+*.log
+.antigravityignore
+node_modules
+dist
+build
+.claude
+.github/workflows/old-*

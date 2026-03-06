@@ -65,7 +65,7 @@ export class StorageService {
 
   async listFiles(): Promise<{ name: string; url: string; timestamp: string }[]> {
     if (!existsSync(this.localVaultPath)) return [];
-    
+
     const files = readdirSync(this.localVaultPath);
     return files.map((filename: string) => {
       const stats = statSync(join(this.localVaultPath, filename));
@@ -76,6 +76,42 @@ export class StorageService {
         timestamp: stats.mtime.toISOString()
       };
     });
+  }
+
+  async getBucketUsage(): Promise<{ bytes: number; gb: number; formatted: string; fileCount: number }> {
+    // Local fallback: sum sizes of local vault files
+    const localFallback = () => {
+      if (!existsSync(this.localVaultPath)) return { bytes: 0, gb: 0, formatted: '0 MB', fileCount: 0 };
+      const files = readdirSync(this.localVaultPath);
+      const bytes = files.reduce((sum, f) => {
+        try { return sum + statSync(join(this.localVaultPath, f)).size; } catch { return sum; }
+      }, 0);
+      const gb = bytes / (1024 ** 3);
+      const formatted = bytes < 1024 * 1024
+        ? `${(bytes / 1024).toFixed(1)} KB`
+        : bytes < 1024 ** 3
+          ? `${(bytes / (1024 ** 2)).toFixed(1)} MB`
+          : `${gb.toFixed(2)} GB`;
+      return { bytes, gb, formatted, fileCount: files.length };
+    };
+
+    if (this.useLocalFallback || !this.storage) return localFallback();
+
+    try {
+      const bucket = this.storage.bucket(this.bucketName);
+      const [files] = await bucket.getFiles();
+      const bytes = files.reduce((sum, f) => sum + parseInt((f.metadata.size as string) || '0', 10), 0);
+      const gb = bytes / (1024 ** 3);
+      const formatted = bytes < 1024 * 1024
+        ? `${(bytes / 1024).toFixed(1)} KB`
+        : bytes < 1024 ** 3
+          ? `${(bytes / (1024 ** 2)).toFixed(1)} MB`
+          : `${gb.toFixed(2)} GB`;
+      return { bytes, gb, formatted, fileCount: files.length };
+    } catch (err) {
+      this.logger.warn('getBucketUsage: GCS query failed, using local fallback.', err);
+      return localFallback();
+    }
   }
 }
 

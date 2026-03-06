@@ -64,6 +64,16 @@ router.post('/upload', upload.array('files'), async (req: Request, res: Response
   }
 });
 
+router.get('/usage', async (_req: Request, res: Response) => {
+  try {
+    const usage = await storageService.getBucketUsage();
+    res.json({ status: 'ok', ...usage });
+  } catch (error) {
+    console.error('Failed to get bucket usage:', error);
+    res.status(500).json({ error: 'Failed to retrieve storage usage.' });
+  }
+});
+
 router.get('/list', async (_req: Request, res: Response) => {
   try {
     const files = await storageService.listFiles();

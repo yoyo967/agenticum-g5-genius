@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Users, FileText, Clock, Play, CheckCircle, Settings, Network, Shield, Zap, RefreshCw, Image as ImageIcon } from 'lucide-react';
 import { API_BASE_URL } from '../config';
@@ -139,6 +139,26 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
     };
   }, [stats?.agentActivity]);
 
+  // Computed resonance index — reflects real swarm health
+  const resonance = useMemo(() => {
+    if (!stats) return null;
+    const base = 0.60;
+    const workflowBonus = Math.min((stats.activeWorkflows ?? 0) * 0.05, 0.20);
+    const outputBonus   = Math.min((stats.totalOutputs ?? 0) * 0.002, 0.15);
+    const senatePenalty = Math.min((stats.senatePending ?? 0) * 0.025, 0.10);
+    const val = Math.min(base + workflowBonus + outputBonus - senatePenalty, 0.99);
+    return { value: val.toFixed(2), label: val >= 0.85 ? 'OPTIMAL' : val >= 0.70 ? 'STABLE' : 'DEGRADED', color: val >= 0.85 ? 'var(--color-accent)' : val >= 0.70 ? 'var(--color-gold)' : 'var(--color-magenta)' };
+  }, [stats]);
+
+  // Today's deliverables — computed from fetched data
+  const todayStr = new Date().toDateString();
+  const deliverables = useMemo(() => ({
+    articles: pillars.filter(p => new Date(p.timestamp).toDateString() === todayStr).length,
+    assets: vaultAssets.length,
+    campaigns: stats?.activeWorkflows ?? 0,
+    hoursSaved: Math.round((stats?.totalOutputs ?? 0) * 2.5 * 10) / 10,
+  }), [pillars, vaultAssets, stats, todayStr]);
+
   const isDataLoading = loading || analyticsLoading;
 
   if (isDataLoading && !stats) {
@@ -205,7 +225,10 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
         </div>
         <div className="flex items-center gap-2 relative z-10">
           <span className="font-mono text-[9px] text-white/40 uppercase">Resonance Index:</span>
-          <span className="font-mono text-[10px] text-accent font-bold">0.94 // OPTIMAL</span>
+          {resonance
+            ? <span className="font-mono text-[10px] font-bold" style={{ color: resonance.color }}>{resonance.value} // {resonance.label}</span>
+            : <span className="font-mono text-[10px] text-white/20">— COMPUTING</span>
+          }
         </div>
       </div>
 
@@ -241,6 +264,22 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
           accentColor="var(--color-gold)"
           onClick={() => onNavigate?.('senate')}
         />
+      </div>
+
+      {/* Today's Deliverables */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
+        {[
+          { label: "Articles Today",   value: deliverables.articles,    unit: 'published',    color: 'var(--color-emerald)' },
+          { label: "Assets Created",   value: deliverables.assets,      unit: 'in vault',     color: 'var(--color-accent)' },
+          { label: "Active Campaigns", value: deliverables.campaigns,   unit: 'running',      color: 'var(--color-magenta)' },
+          { label: "Hours Saved",      value: deliverables.hoursSaved,  unit: 'est. vs. manual', color: 'var(--color-gold)' },
+        ].map(d => (
+          <div key={d.label} className="card flex flex-col gap-1 border-white/5">
+            <p className="font-mono text-[9px] text-white/30 uppercase tracking-widest">{d.label}</p>
+            <p className="font-mono text-3xl font-bold" style={{ color: d.color }}>{d.value}</p>
+            <p className="font-mono text-[9px] text-white/20 uppercase">{d.unit}</p>
+          </div>
+        ))}
       </div>
 
       {/* Main Content — Activity Log + Chart */}
@@ -360,12 +399,16 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
                     </div>
                   </div>
                 )}
-                <div className="mt-2">
-                  <p className="label text-[8px] uppercase text-white/40 mb-1">Swarm Memory Utilization</p>
-                  <div className="p-2 rounded bg-accent/5 border border-accent/10">
-                    <p className="font-mono text-[9px] text-accent/80 italic leading-tight">
-                      "Utilizing 20+ past lifecycle logs for contextual optimization..."
-                    </p>
+                <div className="mt-2 space-y-1">
+                  <p className="label text-[8px] uppercase text-white/40">Vault Neural Objects</p>
+                  <div className="flex items-center gap-3 p-2 rounded bg-accent/5 border border-accent/10">
+                    <span className="font-mono text-xl font-bold text-accent">{vaultAssets.length}</span>
+                    <p className="font-mono text-[9px] text-accent/60 leading-tight">assets indexed<br/>in memory substrate</p>
+                  </div>
+                  <p className="label text-[8px] uppercase text-white/40 mt-2">Content Pipeline</p>
+                  <div className="flex items-center gap-3 p-2 rounded bg-emerald/5 border border-emerald/10">
+                    <span className="font-mono text-xl font-bold text-emerald">{pillars.length}</span>
+                    <p className="font-mono text-[9px] text-emerald/60 leading-tight">pillar articles<br/>grounded & indexed</p>
                   </div>
                 </div>
               </div>

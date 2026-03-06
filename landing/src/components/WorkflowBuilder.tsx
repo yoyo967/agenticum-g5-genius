@@ -228,7 +228,6 @@ export function WorkflowBuilder() {
     setNodes(tpl.nodes as Node[]);
     setEdges(tpl.edges as Edge[]);
     setActiveTemplate(tpl.id);
-    setRunHistory([]);
   };
 
   const [simulateResult, setSimulateResult] = useState<string | null>(null);
@@ -236,7 +235,11 @@ export function WorkflowBuilder() {
   const simulateWorkflow = async () => {
     const runId = Date.now().toString();
     const runEntry = { id: runId, name: activeTemplate || 'Custom Workflow', ts: new Date().toLocaleTimeString(), status: 'running' as const, nodes: nodes.length };
-    setRunHistory(prev => [runEntry, ...prev.slice(0, 9)]);
+    setRunHistory(prev => {
+      const updated = [runEntry, ...prev.slice(0, 9)];
+      localStorage.setItem('g5_runhistory', JSON.stringify(updated));
+      return updated;
+    });
     setIsSimulating(true);
     setSimulateResult(null);
     try {
@@ -252,16 +255,29 @@ export function WorkflowBuilder() {
       if (res.ok) {
         const data = await res.json();
         setSimulateResult(data.message || 'Workflow dispatched successfully.');
-        setRunHistory(prev => prev.map(r => r.id === runId ? { ...r, status: 'success' as const } : r));
+        setRunHistory(prev => {
+          const updated = prev.map(r => r.id === runId ? { ...r, status: 'success' as const } : r);
+          localStorage.setItem('g5_runhistory', JSON.stringify(updated));
+          return updated;
+        });
       } else {
         setSimulateResult('Dispatch failed — check agent connectivity.');
-        setRunHistory(prev => prev.map(r => r.id === runId ? { ...r, status: 'error' as const } : r));
+        setRunHistory(prev => {
+          const updated = prev.map(r => r.id === runId ? { ...r, status: 'error' as const } : r);
+          localStorage.setItem('g5_runhistory', JSON.stringify(updated));
+          return updated;
+        });
       }
     } catch {
       setSimulateResult('Network error — backend offline.');
-      setRunHistory(prev => prev.map(r => r.id === runId ? { ...r, status: 'error' as const } : r));
+      setRunHistory(prev => {
+        const updated = prev.map(r => r.id === runId ? { ...r, status: 'error' as const } : r);
+        localStorage.setItem('g5_runhistory', JSON.stringify(updated));
+        return updated;
+      });
+    } finally {
+      setIsSimulating(false);
     }
-    setTimeout(() => { setIsSimulating(false); setSimulateResult(null); }, 5000);
   };
 
   const { user } = useAppStore();
@@ -340,6 +356,12 @@ export function WorkflowBuilder() {
     };
     loadWorkflow();
   }, [user]);
+
+  // Load persisted run history from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('g5_runhistory');
+    if (saved) { try { setRunHistory(JSON.parse(saved)); } catch (e) { console.warn('runhistory parse failed', e); } }
+  }, []);
 
   const clearAll = () => {
     setNodes([]);
@@ -453,8 +475,9 @@ export function WorkflowBuilder() {
 
       {/* Simulate Result Banner */}
       {simulateResult && (
-        <div className="px-4 py-2 bg-accent/10 border-b border-accent/20 font-mono text-xs text-accent flex items-center gap-2">
-          <Play size={10} /> {simulateResult}
+        <div className="px-4 py-2 bg-accent/10 border-b border-accent/20 font-mono text-xs text-accent flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2"><Play size={10} /> {simulateResult}</div>
+          <button onClick={() => setSimulateResult(null)} className="text-accent/50 hover:text-accent leading-none text-base">×</button>
         </div>
       )}
 

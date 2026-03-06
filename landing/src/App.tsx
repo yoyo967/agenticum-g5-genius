@@ -6,19 +6,42 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { ArchivesPage } from './pages/ArchivesPage';
 import { DemoPage } from './pages/DemoPage';
 import { DemoWorkflow } from './pages/DemoWorkflow';
+import { BlogPage } from './pages/BlogPage';
+import { ModulesPage } from './pages/ModulesPage';
+import { ModuleDetailPage } from './pages/ModuleDetailPage';
+import { AgentsPage } from './pages/AgentsPage';
+import { AgentDetailPage } from './pages/AgentDetailPage';
+import { HowItWorksPage } from './pages/HowItWorksPage';
+import { TechPage } from './pages/TechPage';
+import { CompliancePage } from './pages/CompliancePage';
 import { AuthProvider } from './components/auth/AuthProvider';
+
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public Routes */}
+          {/* Public / Apex */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/article/:slug" element={<ArticleView />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/archives" element={<ArchivesPage />} />
           <Route path="/demo" element={<DemoPage />} />
+
+          {/* Pillar and Cluster Pages */}
+          <Route path="/agents" element={<AgentsPage />} />
+          <Route path="/agents/:agentSlug" element={<AgentDetailPage />} />
+          <Route path="/modules" element={<ModulesPage />} />
+          <Route path="/modules/:moduleSlug" element={<ModuleDetailPage />} />
+          <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route path="/tech" element={<TechPage />} />
+          <Route path="/compliance" element={<CompliancePage />} />
+
+          {/* Blog + Demo */}
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogPage />} />
+          <Route path="/demo-workflow" element={<DemoWorkflow />} />
 
           {/* OS Dashboard & Modules */}
           <Route path="/os" element={<OSPortal />} />
@@ -52,7 +75,6 @@ function App() {
           <Route path="/os/playground" element={<OSPortal />} />
           <Route path="/os/integrations" element={<OSPortal />} />
           <Route path="/os/audit" element={<OSPortal />} />
-          <Route path="/demo-workflow" element={<DemoWorkflow />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

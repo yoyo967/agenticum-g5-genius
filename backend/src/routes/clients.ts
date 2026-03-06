@@ -14,17 +14,7 @@ router.get('/list', async (_req: Request, res: Response) => {
   }
 });
 
-router.get('/:id', async (req: Request, res: Response) => {
-  try {
-    const client = await clientManager.getClientProfile(req.params.id);
-    if (!client) return res.status(404).json({ error: 'Client not found' });
-    res.json(client);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch client' });
-  }
-});
-
-// Approval Workflows
+// Approval Workflows — MUST be declared before /:id to avoid Express swallowing 'dockets' as an id param
 router.get('/dockets/:clientId', async (req: Request, res: Response) => {
   try {
     const dockets = await approvalWorkflow.getClientDockets(req.params.clientId);
@@ -41,6 +31,17 @@ router.post('/dockets/:id/status', async (req: Request, res: Response) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update docket status' });
+  }
+});
+
+// Generic client profile — declared LAST so specific routes above take priority
+router.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const client = await clientManager.getClientProfile(req.params.id);
+    if (!client) return res.status(404).json({ error: 'Client not found' });
+    res.json(client);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch client' });
   }
 });
 

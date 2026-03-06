@@ -21,7 +21,7 @@ const MARKETPLACE_ELEMENTS: StoryboardElement[] = [
     name: 'Cyberpunk Protagonist',
     type: 'character',
     prompt: 'Cinematic portrait of a street samurai in Neo-Tokyo, wearing a chrome-plated jacket, neon blue ocular implants, rain-slicked streets in background, 8k, hyper-realistic, volumetric lighting.',
-    images: ['https://storage.googleapis.com/online-marketing-manager-genius-assets/element-samurai.png']
+    images: ['/element-samurai.png']
   },
   {
     id: 'm2',
@@ -29,7 +29,7 @@ const MARKETPLACE_ELEMENTS: StoryboardElement[] = [
     name: 'Neural Void Laboratory',
     type: 'environment',
     prompt: 'Interior of a high-tech laboratory with pulsating neural networks, floating holographic data crystals, dark obsidian surfaces, teal and gold lighting, cinematic depth of field.',
-    images: ['https://storage.googleapis.com/online-marketing-manager-genius-assets/element-lab.png']
+    images: ['/element-lab.png']
   },
   {
     id: 'm3',
@@ -37,7 +37,7 @@ const MARKETPLACE_ELEMENTS: StoryboardElement[] = [
     name: 'Quantum Logic Sphere',
     type: 'object',
     prompt: 'A floating crystalline sphere housing a quantum processor, intricate mechanical fractals, emitting golden energy pulses, bokeh laboratory background, 8k resolution.',
-    images: ['https://storage.googleapis.com/online-marketing-manager-genius-assets/element-sphere.png']
+    images: ['/element-sphere.png']
   },
   {
     id: 'm4',
@@ -45,7 +45,7 @@ const MARKETPLACE_ELEMENTS: StoryboardElement[] = [
     name: 'Corporate CEO (G5 Edition)',
     type: 'character',
     prompt: 'A professional executive with an AGENTICUM G5 neural link, futuristic business attire, minimalist office overlooking a Martian colony, sharp lighting, 8k.',
-    images: ['https://storage.googleapis.com/online-marketing-manager-genius-assets/element-ceo.png']
+    images: ['/element-ceo.png']
   }
 ];
 

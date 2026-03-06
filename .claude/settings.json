@@ -4,7 +4,11 @@
       "Bash(node --version:*)",
       "Bash(npm --version:*)",
       "Bash(NPM=\"/c/Program Files/nodejs/npm.cmd\")",
-      "Bash(\"$NPM\" --version)"
+      "Bash(\"$NPM\" --version)",
+      "Bash(export CLOUDSDK_PYTHON=\"/c/Users/HP/AppData/Local/Programs/Python/Python312/python.exe\")",
+      "Bash(\"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud\" builds submit \"/c/Users/HP/Desktop/agenticum g5 landingpage/backend\" --tag=gcr.io/online-marketing-manager/genius-backend --project=online-marketing-manager)",
+      "Bash(\"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud\" run deploy genius-backend --image=gcr.io/online-marketing-manager/genius-backend --region=europe-west1 --project=online-marketing-manager --min-instances=1)",
+      "Bash(export PATH=\"/c/Program Files/nodejs:$PATH\")"
     ]
   }
 }
