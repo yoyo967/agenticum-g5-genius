@@ -13,9 +13,6 @@ COPY . .
 # Build the application (runs tsc)
 RUN npm run build
 
-# Remove development dependencies to keep image slim
-RUN npm prune --production
-
 # Expose port
 EXPOSE 8080
 
