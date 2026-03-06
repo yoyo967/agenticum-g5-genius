@@ -194,11 +194,12 @@ function ArticleCard({ article, index, onClick }: { article: Article; index: num
   // Determine if it's a pillar or cluster based on the ID or Title
   const isPillar = article.id.startsWith('pl-');
   
-  // Choose cover image dynamically based on keywords or index
+  // Choose cover image dynamically based on slug or fallback
   let cover = getCoverImage(index);
-  if (article.title.toLowerCase().includes('architecture') || article.title.toLowerCase().includes('core')) cover = '/assets/palmer_neural_core.png';
-  if (article.title.toLowerCase().includes('voice') || article.title.toLowerCase().includes('engagement')) cover = '/assets/palmer_node_cluster.png';
-  if (article.title.toLowerCase().includes('vision') || article.title.toLowerCase().includes('future')) cover = '/assets/palmer_vision_matrix.png';
+  if (article.slug === 'zero-cognitive-debt') cover = '/blog/diagram_orchestrator.png';
+  if (article.slug === 'the-senate-gate') cover = '/blog/diagram_compliance.png';
+  if (article.slug === 'multimodal-voice-io') cover = '/blog/diagram_voice.png';
+  if (article.slug === 'gemini-live-agent-challenge-2026') cover = '/blog/diagram_trophy.png';
 
   const score = article.audit_report?.score ?? article.metrics?.integrityScore;
 
@@ -268,9 +269,10 @@ function ArticleCard({ article, index, onClick }: { article: Article; index: num
    ============================================================ */
 function ArticleView({ article, index, onBack }: { article: Article; index: number; onBack: () => void }) {
   let cover = getCoverImage(index);
-  if (article.title.toLowerCase().includes('architecture') || article.title.toLowerCase().includes('core')) cover = '/assets/palmer_neural_core.png';
-  if (article.title.toLowerCase().includes('voice') || article.title.toLowerCase().includes('engagement')) cover = '/assets/palmer_node_cluster.png';
-  if (article.title.toLowerCase().includes('vision') || article.title.toLowerCase().includes('future')) cover = '/assets/palmer_vision_matrix.png';
+  if (article.slug === 'zero-cognitive-debt') cover = '/blog/diagram_orchestrator.png';
+  if (article.slug === 'the-senate-gate') cover = '/blog/diagram_compliance.png';
+  if (article.slug === 'multimodal-voice-io') cover = '/blog/diagram_voice.png';
+  if (article.slug === 'gemini-live-agent-challenge-2026') cover = '/blog/diagram_trophy.png';
 
   const isPillar = article.id.startsWith('pl-');
 

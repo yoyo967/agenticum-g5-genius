@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Network, Cpu, Zap, BarChart3, Database, RefreshCw, Activity, Clock } from 'lucide-react';
+import { Network, Cpu, Zap, BarChart3, Database, RefreshCw, Activity, Clock, Terminal, Globe } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend } from 'recharts';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
@@ -51,6 +51,16 @@ interface AssetVariant {
   reasoning?: string;
 }
 
+const RadarNode = ({ top, left, delay, color, id }: { top: string, left: string, delay: string, color: string, id: string }) => (
+  <div className="absolute flex flex-col items-center gap-1" style={{ top, left, zIndex: 20 }}>
+    <div className="relative w-2 h-2 rounded-full shadow-[0_0_10px_currentColor] animate-pulse" style={{ color }}>
+      <div className="absolute inset-0 rounded-full border border-current animate-ping" style={{ animationDelay: delay, animationDuration: '2s' }} />
+      <div className="absolute inset-0 bg-current rounded-full" />
+    </div>
+    <span className="font-mono text-[8px] text-white/50 tracking-widest uppercase bg-black/50 px-1 rounded backdrop-blur-sm">{id}</span>
+  </div>
+);
+
 const AGENTS: AgentMetric[] = [
   { id: 'SN-00', name: 'NEXUS PRIME', role: 'Orchestrator', color: 'var(--color-agent-sn00)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
   { id: 'SP-01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: 'var(--color-agent-sp01)', tokensUsed: 0, latencyMs: 0, successRate: 100, state: 'idle' },
@@ -82,6 +92,12 @@ export function SwarmAnalytics() {
   const [variantInput, setVariantInput] = useState('');
   const [variants, setVariants] = useState<AssetVariant[]>([]);
 
+  // Phase 2: Terminal Stream
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([
+    '[SYSTEM] Initializing Nexus Matrix...',
+    '[SN-00] Establishing core uplink...'
+  ]);
+
   // Fetch analytics data from API
   useEffect(() => {
     const fetchData = async () => {
@@ -103,7 +119,28 @@ export function SwarmAnalytics() {
 
     fetchData();
     const interval = setInterval(fetchData, 15000);
-    return () => clearInterval(interval);
+
+    // Terminal Stream Simulation
+    const termInterval = setInterval(() => {
+      const ops = [
+        '[System] Allocating vector compute...',
+        '[SP-01] Validating market logic...',
+        '[CC-06] Synthesizing output nodes...',
+        '[DA-03] Scaling diffusion weights...',
+        '[System] Syncing Nexus state...',
+        '[RA-01] Executing compliance gate...',
+        '[VE-01] Rendering proxy motion...'
+      ];
+      setTerminalLogs(prev => {
+        const payload = ops[Math.floor(Math.random() * ops.length)];
+        return [...prev.slice(-7), payload];
+      });
+    }, 1200);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(termInterval);
+    };
   }, []);
 
   // Update live agent metrics based on the real-time totalOutputs from the hook
@@ -264,6 +301,66 @@ export function SwarmAnalytics() {
                 <p className="font-mono text-2xl font-bold" style={{ color: m.color }}>{m.value}</p>
               </div>
             ))}
+          </div>
+
+          {/* Deep Neural Radar & Terminal (Phase 2 Upgrade) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2 glass-card p-6 border-accent/20 relative overflow-hidden group">
+               <h3 className="font-display text-lg font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+                 <Globe size={16} className="text-accent" /> Global Swarm Radar
+               </h3>
+               <div className="relative w-full aspect-21/9 bg-black rounded-lg border border-white/5 overflow-hidden flex items-center justify-center">
+                <div className="absolute inset-0 opacity-80" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(0,229,255,0.05) 0%, transparent 60%), linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)', backgroundSize: '100% 100%, 20px 20px, 20px 20px' }} />
+                
+                {/* Concentric Circles */}
+                <div className="absolute w-[80%] aspect-square rounded-full border border-white/5" />
+                <div className="absolute w-[50%] aspect-square rounded-full border border-white/5" />
+                <div className="absolute w-[20%] aspect-square rounded-full border border-accent/10" />
+                
+                {/* Radar Sweep */}
+                <div className="absolute w-[80%] aspect-square rounded-full flex items-center justify-center animate-[spin_4s_linear_infinite]">
+                  <div className="w-1/2 h-px bg-linear-to-r from-transparent to-accent origin-right transform -translate-x-1/2 shadow-[0_0_15px_var(--color-accent)]" />
+                  <div className="absolute w-1/2 h-full bg-linear-to-r from-transparent to-accent/10 opacity-70 origin-right transform -translate-x-1/2" style={{ clipPath: 'polygon(100% 50%, 0% 0%, 0% 100%)' }} />
+                </div>
+
+                {/* Center Node */}
+                <div className="absolute w-2 h-2 bg-accent rounded-full shadow-[0_0_15px_var(--color-accent)] z-10">
+                  <div className="absolute inset-0 bg-accent rounded-full animate-ping opacity-50" />
+                </div>
+
+                {/* Nodes */}
+                <RadarNode top="30%" left="65%" delay="0.2s" color="var(--color-gold)" id="US-EAST" />
+                <RadarNode top="60%" left="25%" delay="1.5s" color="var(--color-emerald)" id="AP-SOUTH" />
+                <RadarNode top="45%" left="75%" delay="0.8s" color="var(--color-magenta)" id="EU-CENTRAL" />
+                <RadarNode top="55%" left="40%" delay="2.1s" color="var(--color-accent)" id="US-WEST" />
+                <RadarNode top="25%" left="35%" delay="3.5s" color="#fff" id="SA-EAST" />
+
+                {/* HUD Overlay */}
+                <div className="absolute top-3 left-3 font-mono text-[9px] text-accent flex flex-col gap-1 drop-shadow-md">
+                  <span className="flex items-center gap-1.5 font-bold tracking-widest"><span className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" /> SWARM DISTRIBUTED ARCHITECTURE</span>
+                  <span className="text-white/40 mt-1 uppercase">Latency Optimized</span>
+                  <span className="text-white/40 uppercase">Cross-Region Nodes: 5</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="glass-card p-6 border-white/10 relative overflow-hidden flex flex-col">
+              <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-accent to-transparent opacity-50" />
+              <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+                <span className="font-display text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                   <Terminal size={14} className="text-accent" /> Live Intelligence Stream
+                </span>
+              </div>
+              <div className="flex-1 flex flex-col justify-end gap-1.5 overflow-hidden font-mono text-[10px]">
+                {terminalLogs.map((log, i) => (
+                  <div key={i} className={`${i === terminalLogs.length - 1 ? 'text-white' : 'text-white/40'} flex items-start gap-2`}>
+                    <span className="text-accent/50 shrink-0 select-none">{'>_'}</span>
+                    <span className="break-all leading-snug">{log}</span>
+                  </div>
+                ))}
+                <div className="animate-pulse text-accent mt-1 opacity-80 select-none">█</div>
+              </div>
+            </div>
           </div>
 
           {/* Charts Row */}

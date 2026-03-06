@@ -4,6 +4,19 @@ import { motion } from 'framer-motion';
 import { ArrowRight, ExternalLink } from 'lucide-react';
 import { MegaNav } from '../components/MegaNav';
 
+import g5VoiceAutonomy from '../assets/g5_voice_autonomy.png';
+import g5MissionControl from '../assets/g5_mission_control_health_en_v2_1772174704943.png';
+import g5NexusSovereignty from '../assets/g5_nexus_sovereignty.png';
+import g5PrometheusEngine from '../assets/g5_prometheus_engine.png';
+import g5CloudNativeStack from '../assets/g5_cloud_native_stack.png';
+import g5CinematicForge from '../assets/g5_cinematic_forge.png';
+import g5PerfectTwin from '../assets/g5_perfect_twin.png';
+import g5NeuralSwarm from '../assets/g5_neural_swarm.png';
+import g5ComplianceSenate from '../assets/g5_compliance_senate_en_v2_1772174738278.png';
+import g5TacticalRadar from '../assets/g5_tactical_radar_strike_en_v2_1772174690101.png';
+import g5HeroDashboard from '../assets/g5_hero_dashboard.png';
+import g5GeminiLiveFlow from '../assets/g5_gemini_live_flow.png';
+
 /* ============================================================
    FULL MODULE REGISTRY — All 15 modules with deep content
    ============================================================ */
@@ -491,10 +504,47 @@ export function ModuleDetailPage() {
     );
   }
 
-  const getBannerImage = (slug: string) => {
-    if (slug.includes('creative') || slug.includes('forge') || slug.includes('blog')) return '/assets/palmer_creative.png';
-    if (slug.includes('senate') || slug.includes('console') || slug.includes('dashboard') || slug.includes('manager')) return '/assets/palmer_system.png';
-    return '/assets/palmer_neural_core.png';
+  const MODULE_IMAGES: Record<string, string> = {
+    'genius-console': g5GeminiLiveFlow,
+    'executive-dashboard': g5MissionControl,
+    'nexus-engine': g5NexusSovereignty,
+    'campaign-manager': g5PrometheusEngine,
+    'pillar-blog-engine': g5CloudNativeStack,
+    'creative-studio': g5CinematicForge,
+    'cinematic-forge': g5CinematicForge,
+    'asset-vault': g5PerfectTwin,
+    'workflow-builder': g5CloudNativeStack,
+    'project-memory': g5NeuralSwarm,
+    'swarm-analytics': g5PrometheusEngine,
+    'synergy-map': g5NeuralSwarm,
+    'security-senate': g5ComplianceSenate,
+    'columna-radar': g5TacticalRadar,
+    'perfect-twin': g5PerfectTwin,
+  };
+
+  const getBannerImage = (slug: string): string => {
+    return MODULE_IMAGES[slug] ?? g5HeroDashboard;
+  };
+
+  const getFeatureImage = (slug: string): string => {
+    const secondary: Record<string, string> = {
+      'genius-console': g5VoiceAutonomy,
+      'executive-dashboard': g5HeroDashboard,
+      'nexus-engine': g5NeuralSwarm,
+      'campaign-manager': g5CloudNativeStack,
+      'pillar-blog-engine': g5NeuralSwarm,
+      'creative-studio': g5GeminiLiveFlow,
+      'cinematic-forge': g5PrometheusEngine,
+      'asset-vault': g5CloudNativeStack,
+      'workflow-builder': g5PrometheusEngine,
+      'project-memory': g5NexusSovereignty,
+      'swarm-analytics': g5MissionControl,
+      'synergy-map': g5NexusSovereignty,
+      'security-senate': g5PerfectTwin,
+      'columna-radar': g5NeuralSwarm,
+      'perfect-twin': g5ComplianceSenate,
+    };
+    return secondary[slug] ?? g5NeuralSwarm;
   };
 
   return (
@@ -560,9 +610,48 @@ export function ModuleDetailPage() {
                </div>
             </motion.section>
 
+            {/* Feature Image Showcase */}
+            <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
+               <div className="h-px bg-white/5 w-full mb-12" />
+               <p className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest mb-8">03 — Module In Action</p>
+               <div className="relative rounded-2xl overflow-hidden border border-white/5 aspect-video mb-6">
+                 <div className="absolute inset-0 bg-[#050505]/30 z-10" />
+                 <div className="absolute inset-0 bg-linear-to-t from-[#050505]/80 via-transparent to-transparent z-20" />
+                 <img
+                   src={getFeatureImage(mod.slug)}
+                   alt={`${mod.name} — AGENTICUM G5 OS`}
+                   className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-luminosity"
+                 />
+                 <div className="absolute bottom-0 left-0 z-30 p-6">
+                   <p className="font-mono text-[9px] text-zinc-500 uppercase tracking-widest mb-1">{mod.category} Layer · {mod.name}</p>
+                   <p className="text-white text-sm font-light">{mod.headline}</p>
+                 </div>
+               </div>
+               <div className={`border ${mod.borderColor} bg-[#070707] rounded-xl p-6`}>
+                 <p className="font-mono text-[9px] text-zinc-600 uppercase tracking-widest mb-3">Business Value</p>
+                 <p className="text-zinc-300 text-sm leading-relaxed font-light">
+                   {mod.slug === 'genius-console' && 'Eliminates the need to manage multiple disconnected SaaS tools. One voice command. One interface. Total swarm control — from brief to deliverable without switching context once.'}
+                   {mod.slug === 'executive-dashboard' && 'Gives marketing leadership real-time visibility into AI operations without requiring technical interaction. Every KPI, every veto, every output — visible in a single high-density command interface.'}
+                   {mod.slug === 'nexus-engine' && 'Engineering teams can codify complex approval chains and multi-step reporting pipelines as deterministic, reproducible DAGs — without writing a single line of backend code.'}
+                   {mod.slug === 'campaign-manager' && 'Compresses days of campaign packaging and UTM management into under 60 seconds of autonomous assembly. One agent output, instantly structured for Google PMax, Meta, and email deployment.'}
+                   {mod.slug === 'pillar-blog-engine' && 'Generates an entire SEO content strategy — from keyword research through published articles — on complete autopilot. SP-01 finds the gaps. CC-06 fills them. RA-01 certifies every word before it goes live.'}
+                   {mod.slug === 'creative-studio' && 'Eliminates the creative feedback loop between copywriters and designers. One workspace, one intent, one deliverable — copy and visuals evolving together in real time.'}
+                   {mod.slug === 'cinematic-forge' && 'Pitching a video concept to a client now costs zero budget and takes less than 5 minutes of executive time. Full storyboard, script, and keyframes — ready before the coffee is cold.'}
+                   {mod.slug === 'asset-vault' && 'Every AI-generated asset is automatically catalogued, tagged by Gemini Vision, and becomes immediately searchable by semantic description. Find any asset from any campaign in under 3 seconds.'}
+                   {mod.slug === 'workflow-builder' && 'Transforms the swarm from a responsive tool into a 24/7 autonomous marketing department. Define the trigger once — the system executes indefinitely with built-in resilience and PM-07 escalation.'}
+                   {mod.slug === 'project-memory' && 'The swarm builds genuine brand intelligence over time. After 10 campaigns, it understands your brand voice better than a new hire ever could — and never forgets what was rejected.'}
+                   {mod.slug === 'swarm-analytics' && 'Exposes exactly which agents consume the most resources, what prompts produce the best results, and where the swarm is underperforming — enabling targeted optimization that compounds over time.'}
+                   {mod.slug === 'synergy-map' && 'Makes the invisible neural process visible. Irreplaceable for stakeholder demonstrations, post-mortem failure analysis, and real-time debugging of complex multi-agent execution chains.'}
+                   {mod.slug === 'security-senate' && 'Enterprise-grade legal protection delivered automatically. Every published asset comes with a timestamped, cryptographically signed compliance certificate — ready for regulatory audit on demand.'}
+                   {mod.slug === 'columna-radar' && 'Being first to publish on a competitor\'s announcement is the difference between narrative leadership and narrative followership. Columna Radar closes that window to zero.'}
+                   {mod.slug === 'perfect-twin' && 'Verifiable, court-admissible proof of AI compliance. For regulated industries — finance, healthcare, legal services — Perfect Twin is the difference between deployment and liability.'}
+                 </p>
+               </div>
+            </motion.section>
+
             <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
                <div className="h-px bg-white/5 w-full mb-12" />
-               <p className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest mb-8">03 — Intelligence Matrix</p>
+               <p className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest mb-8">04 — Intelligence Matrix</p>
                <div className="space-y-12">
                   {mod.faq.map((f, i) => (
                     <div key={i} itemScope itemType="https://schema.org/Question">

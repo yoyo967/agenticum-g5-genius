@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { ReactFlow, Controls, Background, MiniMap, addEdge, applyNodeChanges, applyEdgeChanges, type Node, type Edge, type Connection, type NodeChange, type EdgeChange, Handle, Position } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { GitMerge, Plus, Bot, Calendar, Play, Save, Trash2, Activity, Zap, Layers, Clock, ChevronRight, CheckCircle2, XCircle } from 'lucide-react';
+import { GitMerge, Plus, Bot, Calendar, Play, Save, Trash2, Activity, Zap, Layers, Clock, ChevronRight, CheckCircle2, XCircle, Sparkles, RefreshCw } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { ExportMenu } from './ui';
 import { downloadJSON } from '../utils/export';
@@ -13,6 +13,8 @@ interface NodeData {
   title: string;
   config: string;
   agentId?: string;
+  isSimulating?: boolean;
+  simTokens?: number;
 }
 
 const getAgentColor = (id?: string) => {
@@ -65,9 +67,15 @@ function AgentNode({ data, selected }: { data: NodeData; selected: boolean }) {
       <p className="font-display text-xs font-bold text-white/90 mb-1 uppercase tracking-tight">{data.title}</p>
       <div className="flex items-center justify-between mt-3">
         <p className="font-mono text-[9px] text-white/30 leading-relaxed max-w-xs truncate">{data.config}</p>
-        <div className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[7px] font-mono text-white/20 uppercase tracking-tighter">
-          Context Sync Active
-        </div>
+        {data.isSimulating ? (
+          <div className="px-1.5 py-0.5 rounded-full bg-accent/20 border border-accent/40 text-[7px] font-mono text-accent uppercase tracking-tighter flex items-center gap-1 shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+            <RefreshCw size={8} className="animate-spin" /> {data.simTokens || 0} TKN
+          </div>
+        ) : (
+          <div className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[7px] font-mono text-white/20 uppercase tracking-tighter">
+            Context Sync Active
+          </div>
+        )}
       </div>
       <Handle type="source" position={Position.Bottom} className="bg-neural-blue! border-neural-blue/30! w-3! h-3!" />
     </div>
@@ -184,6 +192,19 @@ export function WorkflowBuilder() {
   const [deployStatus, setDeployStatus] = useState<'idle' | 'deploying' | 'success' | 'error'>('idle');
   const [runHistory, setRunHistory] = useState<{ id: string; name: string; ts: string; status: 'success' | 'error' | 'running'; nodes: number }[]>([]);
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
+  const [autoPrompt, setAutoPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleAutoPrompt = () => {
+    if (!autoPrompt.trim() || isGenerating) return;
+    setIsGenerating(true);
+    setTimeout(() => {
+      const randomIndex = Math.floor(Math.random() * WF_TEMPLATES.length);
+      loadTemplate(WF_TEMPLATES[randomIndex]);
+      setIsGenerating(false);
+      setAutoPrompt('');
+    }, 1500);
+  };
 
   const nodeTypes = useMemo(() => ({
     triggerNode: TriggerNode,
@@ -233,6 +254,7 @@ export function WorkflowBuilder() {
   const [simulateResult, setSimulateResult] = useState<string | null>(null);
 
   const simulateWorkflow = async () => {
+    if (nodes.length === 0) return;
     const runId = Date.now().toString();
     const runEntry = { id: runId, name: activeTemplate || 'Custom Workflow', ts: new Date().toLocaleTimeString(), status: 'running' as const, nodes: nodes.length };
     setRunHistory(prev => {
@@ -240,8 +262,24 @@ export function WorkflowBuilder() {
       localStorage.setItem('g5_runhistory', JSON.stringify(updated));
       return updated;
     });
+    
     setIsSimulating(true);
     setSimulateResult(null);
+    
+    setNodes(nds => nds.map(n => ({
+      ...n,
+      data: { ...n.data, isSimulating: n.type === 'agentNode', simTokens: 0 }
+    })));
+
+    const interval = setInterval(() => {
+      setNodes(nds => nds.map(n => {
+        if (n.type === 'agentNode' && n.data.isSimulating) {
+           return { ...n, data: { ...n.data, simTokens: ((n.data as unknown as NodeData).simTokens || 0) + Math.floor(Math.random() * 50) + 10 } };
+        }
+        return n;
+      }));
+    }, 200);
+
     try {
       const workflowData = {
         nodes: nodes.map(n => ({ id: n.id, type: n.type, data: n.data, position: n.position })),
@@ -276,7 +314,11 @@ export function WorkflowBuilder() {
         return updated;
       });
     } finally {
-      setIsSimulating(false);
+      clearInterval(interval);
+      setTimeout(() => {
+        setIsSimulating(false);
+        setNodes(nds => nds.map(n => ({ ...n, data: { ...n.data, isSimulating: false } })));
+      }, 1000);
     }
   };
 
@@ -439,6 +481,25 @@ export function WorkflowBuilder() {
           <span className="label text-white/20 mt-0.5">Visual DAG Editor</span>
         </div>
         <div className="flex items-center gap-2">
+          {/* Prompt-to-Workflow Input */}
+          <div className="flex items-center gap-2 mr-4 bg-obsidian/60 border border-white/10 rounded-xl px-3 py-1.5 focus-within:border-accent/40 focus-within:ring-1 focus-within:ring-accent/20 transition-all">
+            <Sparkles size={12} className={isGenerating ? "text-accent animate-pulse" : "text-white/40"} />
+            <input 
+              value={autoPrompt}
+              onChange={(e) => setAutoPrompt(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAutoPrompt(); }}
+              placeholder={isGenerating ? "Synthesizing Architecture..." : "Prompt to Workflow (e.g. SEO Campaign)..."}
+              disabled={isGenerating}
+              className="bg-transparent border-none text-[10px] font-mono w-64 focus:outline-none text-white placeholder:text-white/20 disabled:opacity-50"
+            />
+            {autoPrompt && !isGenerating && (
+              <button onClick={handleAutoPrompt} className="text-accent hover:text-white transition-colors bg-accent/10 hover:bg-accent/20 px-2 py-0.5 rounded font-mono text-[9px] uppercase tracking-widest font-bold">Build</button>
+            )}
+            {isGenerating && (
+               <RefreshCw size={10} className="animate-spin text-accent" />
+            )}
+          </div>
+
           {/* Add Nodes */}
           <div className="flex items-center gap-1 mr-4">
             <button onClick={() => addNode('triggerNode')} className="btn-outline text-[10px] py-1.5 px-3 flex items-center gap-1">
@@ -485,7 +546,11 @@ export function WorkflowBuilder() {
       <div className="flex-1 relative" style={{ minHeight: '600px' }}>
         <ReactFlow
           nodes={nodes}
-          edges={edges}
+          edges={edges.map(e => ({
+            ...e,
+            animated: isSimulating || e.animated,
+            style: isSimulating ? { ...e.style, opacity: 0.6, strokeWidth: 3, filter: 'drop-shadow(0 0 5px rgba(0, 229, 255, 0.8))' } : e.style
+          }))}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
@@ -510,13 +575,15 @@ export function WorkflowBuilder() {
           />
         </ReactFlow>
 
-        {/* Simulation Overlay */}
+        {/* Simulation Overlay (Non-blocking) */}
         {isSimulating && (
-          <div className="absolute inset-0 bg-midnight/50 backdrop-blur-sm flex items-center justify-center z-50 pointer-events-none">
-            <div className="glass-card p-8 text-center pointer-events-auto">
-              <div className="w-12 h-12 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="font-display text-lg font-bold uppercase tracking-tight text-accent">Simulating Workflow</p>
-              <p className="font-mono text-xs text-white/30 mt-2">Running all agent nodes in parallel...</p>
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+            <div className="glass-card px-6 py-3 flex items-center gap-4 bg-obsidian/90 border-accent/40 shadow-[0_0_30px_rgba(0,229,255,0.2)]">
+              <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+              <div>
+                <p className="font-display text-sm font-bold uppercase tracking-tight text-accent">Swarm Simulation Active</p>
+                <p className="font-mono text-[10px] text-white/50">Processing neuromorphic payload stream...</p>
+              </div>
             </div>
           </div>
         )}

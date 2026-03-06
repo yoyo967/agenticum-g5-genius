@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MegaNav } from '../components/MegaNav';
+import g5ComplianceSenateLP from '../assets/g5_compliance_senate_en_v2_1772174738278.png';
+import g5CinematicForgeLP from '../assets/g5_cinematic_forge.png';
+import g5TacticalRadarLP from '../assets/g5_tactical_radar_strike_en_v2_1772174690101.png';
+import g5NeuralSwarmLP from '../assets/g5_neural_swarm.png';
+import g5HeroDashboardLP from '../assets/g5_hero_dashboard.png';
+import g5VoiceAutonomyLP from '../assets/g5_voice_autonomy.png';
 
 /* ============================================================
    TYPES
@@ -781,6 +787,205 @@ export function LandingPage() {
 
             <div className="pt-10 text-center text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
               Deployed in europe-west1 (Belgium) · EU AI Act Art.50 compliant by design.
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ================================================================
+          SECTION 4.5 — APEX / PILLAR / CLUSTER + OS MODULES SHOWCASE
+          ================================================================ */}
+      <section id="os-architecture" className="py-32 px-6 border-t border-zinc-900 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-600/4 blur-[150px] -z-10 rounded-full pointer-events-none" />
+        <div className="max-w-6xl mx-auto">
+
+          {/* Header */}
+          <FadeIn className="mb-20">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16">
+              <div>
+                <span className="font-mono text-xs text-blue-500 uppercase tracking-widest block mb-4">OS Architecture</span>
+                <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight leading-none">
+                  Apex.<br />Pillar.<br />Cluster.
+                </h2>
+              </div>
+              <p className="text-zinc-400 max-w-md text-base leading-relaxed lg:text-right">
+                Three sovereign tiers. One operating system. From a single voice command to forty campaign deliverables — all in under 60 seconds.
+              </p>
+            </div>
+
+            {/* Three-tier grid */}
+            <div className="grid md:grid-cols-3 gap-px bg-zinc-800 border border-zinc-800 mb-20">
+              {[
+                {
+                  tier: 'APEX',
+                  icon: '◈',
+                  title: 'The Neural OS',
+                  color: 'text-white',
+                  bg: 'bg-black',
+                  body: 'The supreme command layer. When you speak to the GenIUS Console, you activate the Apex: 9 agents on standby, 15 modules live, 27 routes ready. All intelligence flows downward from this singular entity.',
+                  stat: '9 Agents · 15 Modules · 27 Routes',
+                },
+                {
+                  tier: 'PILLAR',
+                  icon: '⬡',
+                  title: 'The 15 Modules',
+                  color: 'text-blue-400',
+                  bg: 'bg-zinc-950',
+                  body: 'Each OS module is a Pillar — a complete, sovereign system with specialized agents and certification-grade output formats. The Security Senate is a Pillar of governance. The Pillar Blog Engine is a Pillar of content authority.',
+                  stat: 'Core · Content · Intelligence · Operations · Governance',
+                },
+                {
+                  tier: 'CLUSTER',
+                  icon: '◇',
+                  title: 'The Deliverables',
+                  color: 'text-zinc-400',
+                  bg: 'bg-zinc-950',
+                  body: 'Clusters are the atomic outputs. A 2,500-word SEO article. Twelve Imagen 3 visuals. A PMax campaign package. A compliance certificate. One command generates 40+ deliverables across multiple Pillars simultaneously.',
+                  stat: 'Blog · Visuals · PMax packages · Compliance certs',
+                },
+              ].map(t => (
+                <div key={t.tier} className={`${t.bg} p-8 flex flex-col gap-4`}>
+                  <div>
+                    <p className={`font-mono text-[10px] uppercase tracking-widest mb-1 ${t.color}`}>{t.icon} {t.tier}</p>
+                    <h4 className="font-bold text-white text-sm uppercase tracking-wide">{t.title}</h4>
+                  </div>
+                  <p className="text-zinc-500 text-sm leading-relaxed flex-1">{t.body}</p>
+                  <p className={`font-mono text-[9px] uppercase tracking-wider border-t border-zinc-800 pt-4 ${t.color}`}>{t.stat}</p>
+                </div>
+              ))}
+            </div>
+          </FadeIn>
+
+          {/* OS Module visual showcase */}
+          <FadeIn delay={0.15}>
+            <div className="flex items-center justify-between mb-10">
+              <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-widest">Featured Modules</span>
+              <button
+                onClick={() => navigate('/modules')}
+                className="flex items-center gap-2 font-mono text-[10px] text-blue-500 hover:text-blue-400 uppercase tracking-widest transition-colors"
+              >
+                Full Registry <IconArrowRight />
+              </button>
+            </div>
+
+            {/* 2×2 module image grid */}
+            <div className="grid md:grid-cols-2 gap-6 mb-10">
+              {[
+                {
+                  slug: 'security-senate',
+                  image: g5ComplianceSenateLP,
+                  alt: 'Security Senate — EU AI Act compliance enforcement',
+                  layer: 'Governance · RA-01',
+                  layerColor: 'text-red-400',
+                  name: 'Security Senate',
+                  body: 'EU AI Act Art.50 enforcement with cryptographically signed compliance certificates on every output. No bypass. No exceptions.',
+                },
+                {
+                  slug: 'creative-studio',
+                  image: g5CinematicForgeLP,
+                  alt: 'Creative Studio — synchronized Imagen 3 and copywriting workspace',
+                  layer: 'Content · CC-06 + DA-03',
+                  layerColor: 'text-purple-400',
+                  name: 'Creative Studio',
+                  body: 'Synchronized copywriting and Imagen 3 visual generation. Text and imagery evolve together — one workspace, one intent, one deliverable.',
+                },
+                {
+                  slug: 'columna-radar',
+                  image: g5TacticalRadarLP,
+                  alt: 'Columna Radar — real-time competitive intelligence',
+                  layer: 'Intelligence · SP-01 + BA-07',
+                  layerColor: 'text-amber-400',
+                  name: 'Columna Radar',
+                  body: 'Continuous competitor surveillance via semantic vector distance anomaly detection. Be first to market — every time a competitor moves.',
+                },
+                {
+                  slug: 'pillar-blog-engine',
+                  image: g5NeuralSwarmLP,
+                  alt: 'Pillar Blog Engine — autonomous SEO content generation',
+                  layer: 'Content · CC-06 + SP-01 + RA-01',
+                  layerColor: 'text-emerald-400',
+                  name: 'Pillar Blog Engine',
+                  body: 'Keyword strategy to Senate-approved published article — fully autonomous. 2,500+ words, Schema.org markup, internal links. Zero editing required.',
+                },
+              ].map(mod => (
+                <div
+                  key={mod.slug}
+                  className="relative rounded-2xl overflow-hidden border border-zinc-800 group cursor-pointer"
+                  onClick={() => navigate(`/modules/${mod.slug}`)}
+                >
+                  <img
+                    src={mod.image}
+                    alt={mod.alt}
+                    className="w-full aspect-video object-cover opacity-40 group-hover:opacity-55 transition-opacity duration-500 mix-blend-luminosity"
+                  />
+                  <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-transparent" />
+                  <div className="absolute bottom-0 left-0 p-6">
+                    <p className={`font-mono text-[9px] uppercase tracking-widest mb-2 ${mod.layerColor}`}>{mod.layer}</p>
+                    <h4 className="font-bold text-white text-xl mb-2 tracking-tight">{mod.name}</h4>
+                    <p className="text-zinc-400 text-sm leading-relaxed max-w-sm">{mod.body}</p>
+                  </div>
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="px-3 py-1.5 bg-black/70 border border-white/10 rounded-full font-mono text-[9px] text-white">
+                      View Module →
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Voice Autonomy cinematic break */}
+            <div className="relative rounded-3xl overflow-hidden border border-zinc-800 h-64 group cursor-pointer" onClick={() => navigate('/os/genius')}>
+              <img
+                src={g5VoiceAutonomyLP}
+                alt="GenIUS Console — Gemini Live API voice-activated OS interface"
+                className="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:opacity-50 transition-opacity duration-500 mix-blend-luminosity scale-105"
+              />
+              <div className="absolute inset-0 bg-linear-to-r from-black via-black/70 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent" />
+              <div className="absolute inset-0 flex flex-col justify-center px-10">
+                <p className="font-mono text-[10px] text-blue-400 uppercase tracking-widest mb-3">Core · VE-01 · Gemini Live API</p>
+                <h4 className="font-bold text-white text-3xl sm:text-4xl tracking-tight mb-3">GenIUS Console.</h4>
+                <p className="text-zinc-400 text-sm leading-relaxed max-w-lg">
+                  Speak your campaign brief. VE-01 processes bidirectional PCM16 audio in under 800ms. SN-00 dispatches all 9 agents in 38ms. The full swarm executes in parallel.
+                </p>
+              </div>
+              <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="px-3 py-1.5 bg-black/70 border border-white/10 rounded-full font-mono text-[9px] text-white">
+                  Boot Console →
+                </div>
+              </div>
+            </div>
+
+            {/* Hero Dashboard cinematic break */}
+            <div className="relative rounded-3xl overflow-hidden border border-zinc-800 h-64 group cursor-pointer mt-6" onClick={() => navigate('/os')}>
+              <img
+                src={g5HeroDashboardLP}
+                alt="Executive Dashboard — real-time KPIs and swarm telemetry"
+                className="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:opacity-50 transition-opacity duration-500 mix-blend-luminosity scale-105"
+              />
+              <div className="absolute inset-0 bg-linear-to-r from-black via-black/70 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent" />
+              <div className="absolute inset-0 flex flex-col justify-center px-10">
+                <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest mb-3">Core · SN-00 + PM-07 · Real-Time</p>
+                <h4 className="font-bold text-white text-3xl sm:text-4xl tracking-tight mb-3">Executive Dashboard.</h4>
+                <p className="text-zinc-400 text-sm leading-relaxed max-w-lg">
+                  Resonance Index. Swarm Readiness. Active campaigns. Live agent telemetry. Every KPI a CMO needs — aggregated from all 15 modules into one high-density command interface.
+                </p>
+              </div>
+              <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="px-3 py-1.5 bg-black/70 border border-white/10 rounded-full font-mono text-[9px] text-white">
+                  Open Dashboard →
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center mt-10">
+              <button
+                onClick={() => navigate('/modules')}
+                className="inline-flex items-center gap-2 px-8 py-4 border border-zinc-700 hover:border-zinc-400 text-zinc-300 hover:text-white font-mono text-[10px] uppercase tracking-widest rounded-xl transition-colors"
+              >
+                Explore All 15 OS Modules <IconArrowRight />
+              </button>
             </div>
           </FadeIn>
         </div>

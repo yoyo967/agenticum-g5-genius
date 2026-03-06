@@ -6,7 +6,7 @@ import { useFeedData } from '../hooks/useFeedData';
 export const NexusFeed = () => {
   const navigate = useNavigate();
   const { data: articles, isLoading: loading, error } = useFeedData(3);
-  const [cognitiveThreads, setCognitiveThreads] = useState<string[]>([]);
+  const [cognitiveThreads, setCognitiveThreads] = useState<{id: string, text: string, timeHex: string, iso: string}[]>([]);
 
   useEffect(() => {
     // Listen for real Nexus/Swarm events
@@ -14,8 +14,15 @@ export const NexusFeed = () => {
       const detail = (e as CustomEvent).detail;
       if (detail?.message || detail?.thought) {
         setCognitiveThreads(prev => {
-          const next = [...prev, detail.message || detail.thought];
-          return next.slice(-5);
+          const now = new Date();
+          const newItem = {
+            id: Math.random().toString(36).substring(2, 11),
+            text: detail.message || detail.thought,
+            timeHex: now.getTime().toString(16),
+            iso: now.toISOString()
+          };
+          const next = [newItem, ...prev];
+          return next.slice(0, 4);
         });
       }
     };
@@ -32,26 +39,52 @@ export const NexusFeed = () => {
   return (
     <div className="w-full max-w-7xl mx-auto py-20 px-6">
       {/* Sentient Consciousness Stream */}
-      <div className="mb-12 border-b border-white/5 pb-8 overflow-hidden">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent/60">Live Consciousness Stream // Sub-Cognitive fragments</span>
-        </div>
-        <div className="flex flex-col gap-2 font-mono text-[11px] h-[100px] mask-fade-y">
-          <AnimatePresence>
-            {cognitiveThreads.map((thread, i) => (
-              <motion.div
-                key={`${thread}-${i}`}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                className="text-white/40 italic"
-              >
-                <span className="text-accent/40 mr-2">[{new Date().toLocaleTimeString()}]</span>
-                <span className="text-white/60">»</span> {thread}
-              </motion.div>
-            ))}
-          </AnimatePresence>
+      <div className="mb-12 relative overflow-hidden rounded-2xl border border-white/5 bg-[#030303] p-6 lg:p-10 shadow-[0_0_50px_rgba(0,229,255,0.03)] group">
+        {/* Deep CRT/Scanline Overlay */}
+        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(0,0,0,0)_50%,rgba(0,0,0,0.2)_50%)] bg-size-[100%_4px] z-10 opacity-30 mix-blend-overlay" />
+        <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-1000 bg-linear-to-b from-transparent via-accent/5 to-transparent animate-[spin_6s_linear_infinite]" />
+        
+        <div className="relative z-20">
+          <div className="flex justify-between items-start mb-6 border-b border-white/5 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent)] animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">Nexus Neural Stream</span>
+            </div>
+            <div className="font-mono text-[9px] text-white/30 uppercase tracking-widest text-right">
+              Raw Payload Data<br/>G5 Protocol Active
+            </div>
+          </div>
+          
+          <div className="flex flex-col gap-4 font-mono text-[10px] h-[340px] overflow-hidden relative">
+            <div className="absolute bottom-0 left-0 w-full h-[100px] bg-linear-to-t from-[#030303] via-[#030303]/80 to-transparent z-10 pointer-events-none" />
+            <AnimatePresence>
+              {cognitiveThreads.map((thread, i) => {
+                const isLatest = i === 0;
+                return (
+                  <motion.div
+                    key={thread.id}
+                    initial={{ opacity: 0, y: -20, scale: 0.98 }}
+                    animate={{ opacity: isLatest ? 1 : 0.6 - (i * 0.15), y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    className={`p-4 rounded-lg border shrink-0 ${isLatest ? 'border-accent/30 bg-accent/5' : 'border-white/5 bg-white/2'} relative`}
+                  >
+                    {isLatest && <div className="absolute left-0 top-0 w-1 h-full bg-accent animate-[pulse_2s_infinite]" />}
+                    <div className="text-accent/60 mb-2 flex justify-between">
+                      <span>{'{'}</span>
+                      <span className="text-white/20">"{thread.timeHex}"</span>
+                    </div>
+                    <div className="pl-4 space-y-1">
+                      <div><span className="text-cyan-400">"event"</span>: <span className="text-emerald-400">"cognitive_pulse"</span>,</div>
+                      <div><span className="text-cyan-400">"timestamp"</span>: <span className="text-yellow-400">"{thread.iso}"</span>,</div>
+                      <div><span className="text-cyan-400">"payload"</span>: <span className="text-white/80">"{thread.text.replace(/"/g, '\\"')}"</span></div>
+                    </div>
+                    <div className="text-accent/60 mt-2">{'}'}</div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 

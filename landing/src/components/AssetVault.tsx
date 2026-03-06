@@ -5,7 +5,7 @@ import {
   CheckCircle, XCircle, Database, RefreshCw, Download,
   FolderOpen, Search, Grid, List, Share2,
   Tag, X, Shield, Loader2, Copy, Check,
-  ChevronRight, FolderPlus, ExternalLink
+  ChevronRight, FolderPlus, ExternalLink, Sparkles, MessageSquare, Scan
 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { downloadZIP } from '../utils/export';
@@ -95,6 +95,26 @@ export function AssetVault() {
   const [shareLoading, setShareLoading]     = useState(false);
   const [copiedLink, setCopiedLink]         = useState(false);
   const [filterStatus, setFilterStatus]     = useState<string>('all');
+  
+  const [isScanning, setIsScanning]         = useState(false);
+  const [activeAction, setActiveAction]     = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedFile) {
+       setIsScanning(true);
+       const timer = setTimeout(() => setIsScanning(false), 2000);
+       return () => clearTimeout(timer);
+    }
+  }, [selectedFile]);
+
+  const handleAIAction = (action: string) => {
+    setActiveAction(action);
+    setIsScanning(true);
+    setTimeout(() => {
+      setActiveAction(null);
+      setIsScanning(false);
+    }, 2500);
+  };
   
   const [storageUsed, setStorageUsed]         = useState<{ formatted: string; gb: number; fileCount: number } | null>(null);
   const [activeFolder, setActiveFolder]       = useState<string>('root');
@@ -560,8 +580,33 @@ export function AssetVault() {
                 {/* Preview */}
                 <div className="aspect-square bg-midnight rounded-2xl border border-white/5 flex items-center justify-center overflow-hidden shadow-inner group relative">
                   {isImage(selectedFile.name) ? (
-                    <img src={selectedFile.url} alt={selectedFile.name} className="max-w-full max-h-full object-contain p-4" />
+                    <img src={selectedFile.url} alt={selectedFile.name} className={`max-w-full max-h-full object-contain p-4 transition-all duration-700 ${isScanning ? 'contrast-125 brightness-110 hue-rotate-15' : ''}`} />
                   ) : getIcon(selectedFile.name, 64)}
+                  
+                  {/* Neural Scan Lens Effect */}
+                  <AnimatePresence>
+                    {isScanning && (
+                      <motion.div 
+                        initial={{ top: '-10%' }}
+                        animate={{ top: '110%' }}
+                        transition={{ duration: 1.5, ease: "linear", repeat: Infinity }}
+                        className="absolute left-0 w-full h-8 bg-linear-to-b from-transparent via-accent/30 to-accent/5 pointer-events-none"
+                      >
+                        <div className="absolute top-1/2 left-0 w-full h-px bg-accent shadow-[0_0_15px_var(--color-accent)]" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Top-left Indicator */}
+                  <AnimatePresence>
+                    {isScanning && (
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 bg-black/60 backdrop-blur-md rounded border border-accent/30 pointer-events-none">
+                        <Scan size={10} className="text-accent animate-pulse" />
+                        <span className="font-mono text-[8px] text-accent uppercase tracking-widest">{activeAction ? `RUNNING ${activeAction}` : 'EMBEDDING CLASSIFIER...'}</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                     <button
                       onClick={() => window.open(selectedFile.url, '_blank', 'noopener,noreferrer')}
@@ -609,8 +654,31 @@ export function AssetVault() {
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="mt-auto space-y-2 border-t border-white/5 pt-6 pb-4">
+                {/* Neural AI Actions */}
+                <div className="space-y-2 border-t border-white/5 pt-4">
+                  <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-wider flex items-center gap-2">
+                    <Sparkles size={10} className="text-accent" /> AI Operations
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button 
+                      onClick={() => handleAIAction('DA-03 Variation')}
+                      disabled={isScanning || !isImage(selectedFile.name)}
+                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-white/5 bg-obsidian/40 hover:bg-white/5 hover:border-accent/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group">
+                      <ImageIcon size={14} className="text-white/40 group-hover:text-accent mb-1 transition-colors" />
+                      <span className="font-mono text-[9px] text-white/60 uppercase tracking-wider group-hover:text-white">DA-03 Variations</span>
+                    </button>
+                    <button 
+                      onClick={() => handleAIAction('CC-06 Caption')}
+                      disabled={isScanning}
+                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-white/5 bg-obsidian/40 hover:bg-white/5 hover:border-gold/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group">
+                      <MessageSquare size={14} className="text-white/40 group-hover:text-gold mb-1 transition-colors" />
+                      <span className="font-mono text-[9px] text-white/60 uppercase tracking-wider group-hover:text-white">CC-06 Auto-Caption</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* File System Actions */}
+                <div className="mt-auto space-y-2 border-t border-white/5 pt-4 pb-4">
                   <button onClick={() => window.open(selectedFile.url, '_blank')} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black font-mono text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-zinc-200 transition-colors">
                     <Download size={14} /> Download
                   </button>
