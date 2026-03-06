@@ -14,7 +14,7 @@ const MODULES: Record<string, {
   architecture: { component: string; detail: string }[];
   primaryUseCases: string[];
   outputFormat: string;
-  relatedAgents: { id: string; name: string; latency: string }[];
+  relatedAgents: { id: string; name: string; latency: string; slug: string }[];
   faq: { q: string; a: string }[];
   externalLinks: { label: string; href: string }[];
 }> = {
@@ -37,9 +37,9 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Dispatches structured JSON payloads to the Cloud Run backend for swarm instantiation.',
     relatedAgents: [
-      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms' },
-      { id: 'VE-01', name: 'Voice Engagement', latency: '<800ms' },
-      { id: 'SO-00', name: 'Sovereign Core', latency: '580ms' },
+      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms', slug: 'sn00-orchestrator' },
+      { id: 'VE-01', name: 'Voice Engagement', latency: '<800ms', slug: 've01-voice-engagement' },
+      { id: 'SO-00', name: 'Sovereign Core', latency: '580ms', slug: 'so00-sovereign' },
     ],
     faq: [
       { q: 'Can I use the console without a microphone?', a: 'Yes. The GenIUS Console accepts standard typed input. However, the true power of the module is unlocked when using the Gemini Live API for low-latency, conversational briefing with barge-in support.' },
@@ -68,8 +68,8 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Visual data dashboards, exportable as PDF/CSV reports.',
     relatedAgents: [
-      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms' },
-      { id: 'PM-07', name: 'Mission Control', latency: '420ms' },
+      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms', slug: 'sn00-orchestrator' },
+      { id: 'PM-07', name: 'Mission Control', latency: '420ms', slug: 'pm07-mission-control' },
     ],
     faq: [
       { q: 'Are the metrics on the dashboard real-time?', a: 'Yes. The dashboard connects directly to Firestore using live snapshot listeners. When an agent generates an asset or RA-01 issues a veto, the dashboard updates instantly without refreshing.' },
@@ -96,8 +96,8 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Saved workflow templates (JSON definitions) that can be triggered via UI or webhook.',
     relatedAgents: [
-      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms' },
-      { id: 'SO-00', name: 'Sovereign Core', latency: '580ms' },
+      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms', slug: 'sn00-orchestrator' },
+      { id: 'SO-00', name: 'Sovereign Core', latency: '580ms', slug: 'so00-sovereign' },
     ],
     faq: [
       { q: 'Do I need to know how to code to use the Nexus Engine?', a: 'No. The Nexus Engine is a visual, drag-and-drop tool. You connect input nodes to agent nodes, set parameters via UI panels, and deploy the workflow instantly.' },
@@ -124,9 +124,9 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Deployable campaign packages configured for immediate ad network upload.',
     relatedAgents: [
-      { id: 'SP-01', name: 'Strategic Cortex', latency: '1.2s' },
-      { id: 'CC-06', name: 'Cognitive Core', latency: '3.2s' },
-      { id: 'PM-07', name: 'Mission Control', latency: '420ms' },
+      { id: 'SP-01', name: 'Strategic Cortex', latency: '1.2s', slug: 'sp01-strategic-cortex' },
+      { id: 'CC-06', name: 'Cognitive Core', latency: '3.2s', slug: 'cc06-cognitive-core' },
+      { id: 'PM-07', name: 'Mission Control', latency: '420ms', slug: 'pm07-mission-control' },
     ],
     faq: [
       { q: 'Does it push directly to Google Ads / Meta?', a: 'In the current version, it generates structured deployment packages (CSV/ZIP) ready for bulk upload. Native API integration for direct pushing is part of the Q3 2026 roadmap.' },
@@ -153,9 +153,9 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Live URLs on your domain with embedded SEO metadata, canonicals, and Schema.org.',
     relatedAgents: [
-      { id: 'CC-06', name: 'Cognitive Core', latency: '3.2s' },
-      { id: 'SP-01', name: 'Strategic Cortex', latency: '1.2s' },
-      { id: 'RA-01', name: 'Security Senate', latency: '280ms' },
+      { id: 'CC-06', name: 'Cognitive Core', latency: '3.2s', slug: 'cc06-cognitive-core' },
+      { id: 'SP-01', name: 'Strategic Cortex', latency: '1.2s', slug: 'sp01-strategic-cortex' },
+      { id: 'RA-01', name: 'Security Senate', latency: '280ms', slug: 'ra01-security-senate' },
     ],
     faq: [
       { q: 'Will AI-generated content rank on Google?', a: 'Yes. Google\'s guidelines focus on content quality, not the method of creation. Because SP-01 grounds research in live market data, and RA-01 checks for hallucinations, the resulting content is highly authoritative and provides genuine value to readers.' },
@@ -182,8 +182,8 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'High-res images (up to 2048x2048) with embedded C2PA data and paired copy strings.',
     relatedAgents: [
-      { id: 'CC-06', name: 'Cognitive Core', latency: '3.2s' },
-      { id: 'DA-03', name: 'Design Architect', latency: '6.8s' },
+      { id: 'CC-06', name: 'Cognitive Core', latency: '3.2s', slug: 'cc06-cognitive-core' },
+      { id: 'DA-03', name: 'Design Architect', latency: '6.8s', slug: 'da03-design-architect' },
     ],
     faq: [
       { q: 'Can I upload my own company logo to be used in the designs?', a: 'Yes. The Asset Vault acts as a retrieval source. If your logo is in the Vault, DA-03 will composite it correctly onto generated assets while respecting brand spacing rules.' },
@@ -210,9 +210,9 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Interactive PDF storyboards containing scripts, keyframes, camera move directions, and voiceover timing.',
     relatedAgents: [
-      { id: 'VE-01', name: 'Voice Engagement', latency: '<800ms' },
-      { id: 'DA-03', name: 'Design Architect', latency: '6.8s' },
-      { id: 'CC-06', name: 'Cognitive Core', latency: '3.2s' },
+      { id: 'VE-01', name: 'Voice Engagement', latency: '<800ms', slug: 've01-voice-engagement' },
+      { id: 'DA-03', name: 'Design Architect', latency: '6.8s', slug: 'da03-design-architect' },
+      { id: 'CC-06', name: 'Cognitive Core', latency: '3.2s', slug: 'cc06-cognitive-core' },
     ],
     faq: [
       { q: 'Does this generate actual playable videos?', a: 'It generates comprehensive storyboards and animatics (slideshows of keyframes with audio). Full frame-interpolation video generation is slated for a future update when computational costs stabilize.' },
@@ -239,8 +239,8 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Secure, authenticated download URLs and direct integration with OS creation modules.',
     relatedAgents: [
-      { id: 'BA-07', name: 'Browser Architect', latency: '2.1s' },
-      { id: 'DA-03', name: 'Design Architect', latency: '6.8s' },
+      { id: 'BA-07', name: 'Browser Architect', latency: '2.1s', slug: 'ba07-browser-architect' },
+      { id: 'DA-03', name: 'Design Architect', latency: '6.8s', slug: 'da03-design-architect' },
     ],
     faq: [
       { q: 'Is my data secure in the Vault?', a: 'Yes. The Vault uses Google Cloud IAM (Identity and Access Management). Assets are private by default and can only be accessed via signed URLs or authenticated OS sessions.' },
@@ -267,8 +267,8 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Automated background execution with execution logs sent to Swarm Analytics.',
     relatedAgents: [
-      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms' },
-      { id: 'PM-07', name: 'Mission Control', latency: '420ms' },
+      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms', slug: 'sn00-orchestrator' },
+      { id: 'PM-07', name: 'Mission Control', latency: '420ms', slug: 'pm07-mission-control' },
     ],
     faq: [
       { q: 'What happens if an agent fails during an automated run?', a: 'The Workflow Builder has built-in resilience. It will retry the failed node up to 3 times with exponential backoff. If it still fails, it sends a notification via PM-07 to human operators.' },
@@ -295,8 +295,8 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Background context windows injected seamlessly into the SN-00 orchestration layer.',
     relatedAgents: [
-      { id: 'SO-00', name: 'Sovereign Core', latency: '580ms' },
-      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms' },
+      { id: 'SO-00', name: 'Sovereign Core', latency: '580ms', slug: 'so00-sovereign' },
+      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms', slug: 'sn00-orchestrator' },
     ],
     faq: [
       { q: 'Is my proprietary data used to train public models?', a: 'Absolutely not. Data in Project Memory is stored in your private GCP project via Firestore. Google Cloud policies strictly forbid using enterprise customer data to train foundation models.' },
@@ -323,8 +323,8 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Technical dashboards, latency distribution charts, and cost analysis exports.',
     relatedAgents: [
-      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms' },
-      { id: 'PM-07', name: 'Mission Control', latency: '420ms' },
+      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms', slug: 'sn00-orchestrator' },
+      { id: 'PM-07', name: 'Mission Control', latency: '420ms', slug: 'pm07-mission-control' },
     ],
     faq: [
       { q: 'Can I set cost alerts?', a: 'Yes. Via integration with Google Cloud Billing, you can set hard caps and receive alerts if a specific agent or workflow is consuming too many tokens.' },
@@ -351,8 +351,8 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Interactive WebGL visualization in the OS browser.',
     relatedAgents: [
-      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms' },
-      { id: 'SO-00', name: 'Sovereign Core', latency: '580ms' },
+      { id: 'SN-00', name: 'Neural Orchestrator', latency: '38ms', slug: 'sn00-orchestrator' },
+      { id: 'SO-00', name: 'Sovereign Core', latency: '580ms', slug: 'so00-sovereign' },
     ],
     faq: [
       { q: 'Is the map showing real data or just an animation?', a: 'It represents the literal, real-time execution graph. If CC-06 takes 4 seconds to execute, the node on the map will pulse for exactly 4 seconds until the payload is passed to the next agent.' },
@@ -379,7 +379,7 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Cryptographically signed certificates of compliance, or detailed veto remediation logs.',
     relatedAgents: [
-      { id: 'RA-01', name: 'Security Senate', latency: '280ms' },
+      { id: 'RA-01', name: 'Security Senate', latency: '280ms', slug: 'ra01-security-senate' },
     ],
     faq: [
       { q: 'Can a human override a Senate veto?', a: 'By design, no. The Senate is absolute. If a human disagrees, they must update the prompt or the system context to force the generating agents to produce compliant output. This ensures the audit trail remains legally defensible.' },
@@ -407,8 +407,8 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Live dashboard feeds, email digests, and actionable strategic briefs.',
     relatedAgents: [
-      { id: 'SP-01', name: 'Strategic Cortex', latency: '1.2s' },
-      { id: 'BA-07', name: 'Browser Architect', latency: '2.1s' },
+      { id: 'SP-01', name: 'Strategic Cortex', latency: '1.2s', slug: 'sp01-strategic-cortex' },
+      { id: 'BA-07', name: 'Browser Architect', latency: '2.1s', slug: 'ba07-browser-architect' },
     ],
     faq: [
       { q: 'How does it know what constitutes a "significant" change?', a: 'It uses semantic vector distance. A minor website typo fix won\'t trigger an alert, but a change from "AI Assistance" to "Autonomous AI" represents a semantic pivot and will trigger an alert.' },
@@ -435,8 +435,8 @@ const MODULES: Record<string, {
     ],
     outputFormat: 'Exportable JSON audit logs and embeddable C2PA manifests.',
     relatedAgents: [
-      { id: 'RA-01', name: 'Security Senate', latency: '280ms' },
-      { id: 'SO-00', name: 'Sovereign Core', latency: '580ms' },
+      { id: 'RA-01', name: 'Security Senate', latency: '280ms', slug: 'ra01-security-senate' },
+      { id: 'SO-00', name: 'Sovereign Core', latency: '580ms', slug: 'so00-sovereign' },
     ],
     faq: [
       { q: 'Is it actually on a blockchain?', a: 'No, it uses append-only Firestore architecture which provides similar immutability without the latency and environmental costs of blockchain technology. The C2PA standard provides the cryptographic signatures needed for public verification.' },
@@ -608,7 +608,7 @@ export function ModuleDetailPage() {
                  <p className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest mb-6">Powered by Swarm Agents</p>
                  <div className="flex flex-col gap-3">
                    {mod.relatedAgents.map(a => (
-                     <Link key={a.id} to={`/agents/${a.id.toLowerCase().replace('-','')}-${a.name.toLowerCase().replace(' ', '-')}`} className="group flex items-center justify-between p-4 bg-[#0A0A0A] hover:bg-[#111] border border-white/5 transition-colors rounded-xl">
+                     <Link key={a.id} to={`/agents/${a.slug}`} className="group flex items-center justify-between p-4 bg-[#0A0A0A] hover:bg-[#111] border border-white/5 transition-colors rounded-xl">
                        <div className="flex flex-col gap-1">
                           <span className="font-mono text-sm text-white">{a.id}</span>
                           <span className="font-mono text-[10px] text-zinc-500 tracking-widest">{a.name}</span>

@@ -137,7 +137,7 @@ export function PillarBlogEngine() {
                   </span>
                   <span className="font-mono text-[9px] text-white/20">{art.type}</span>
                 </div>
-                <h4 className="font-display text-sm uppercase text-white group-hover:text-accent transition-colors mb-2 line-clamp-2">
+                <h4 className="font-display text-sm uppercase text-white group-hover:text-emerald-400 transition-colors mb-2 line-clamp-2">
                   {art.title}
                 </h4>
                 <div className="flex items-center gap-3 text-white/20">
@@ -210,8 +210,9 @@ export function PillarBlogEngine() {
                   <div>
                     <h3 className="font-display text-lg uppercase">{selectedArticle.title}</h3>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className={`badge ${selectedArticle.status === 'published' ? 'badge-online' : 'badge-processing'}`}>{selectedArticle.status}</span>
-                      {selectedArticle.agent && <span className="font-mono text-[9px] text-white/30">{selectedArticle.agent}</span>}
+                      <span className={`badge ${selectedArticle.status === 'published' ? 'badge-online border-emerald-500/50 text-emerald-400' : 'badge-processing border-blue-500/50 text-blue-400'}`}>{selectedArticle.status}</span>
+                      <span className="font-mono text-[9px] text-zinc-400 uppercase tracking-widest px-2 py-0.5 border border-white/10 rounded bg-white/5">{selectedArticle.type}</span>
+                      {selectedArticle.authorAgent && <span className="font-mono text-[9px] text-white/30">{selectedArticle.authorAgent}</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -375,46 +376,47 @@ export function PillarBlogEngine() {
                   </div>
                 </div>
                 {publishStatus && (
-                  <div className="bg-emerald/10 border-b border-emerald/20 px-4 py-1 text-[9px] font-mono text-emerald flex items-center justify-between shrink-0">
+                  <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-[10px] font-mono text-emerald-400 flex items-center justify-between shrink-0 uppercase tracking-widest font-bold">
                     <span>{publishStatus}</span>
-                    <button onClick={() => setPublishStatus('')} className="hover:text-white">✕</button>
+                    <button onClick={() => setPublishStatus('')} className="hover:text-white transition-colors">✕</button>
                   </div>
                 )}
-                <div className={`p-6 overflow-y-auto overflow-x-hidden ${isEditing ? 'flex-1 grid grid-cols-2 gap-6' : 'flex-1'}`}>
+                <div className={`p-6 overflow-y-auto overflow-x-hidden ${isEditing ? 'flex-1 flex flex-col xl:flex-row gap-6 bg-zinc-950/50' : 'flex-1 bg-[#050505]'}`}>
                   {isEditing ? (
                     <>
                       {/* Left: Editor */}
-                      <div className="flex flex-col h-[calc(100vh-250px)] lg:h-[600px] bg-black/30 border border-white/10 rounded-lg overflow-hidden relative">
-                        <div className="bg-white/5 px-4 py-2 text-[10px] font-mono uppercase text-white/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md flex items-center justify-between">
-                          <span>Markdown Editor (Drafting)</span>
-                          <div className="flex gap-2">
-                            <button onClick={() => insertMarkdown('**', '**')} className="hover:text-white transition-colors font-bold">B</button>
-                            <button onClick={() => insertMarkdown('*', '*')} className="hover:text-white transition-colors italic">I</button>
-                            <button onClick={() => insertMarkdown('[', '](url)')} className="hover:text-white transition-colors">Link</button>
+                      <div className="flex-1 flex flex-col min-h-[500px] xl:h-[calc(100vh-280px)] bg-black/60 border border-white/10 rounded-xl overflow-hidden shadow-xl shadow-black">
+                        <div className="bg-[#0A0A0A] px-5 py-3 text-[10px] font-mono uppercase text-zinc-400 border-b border-white/5 flex items-center justify-between shrink-0">
+                          <span className="tracking-widest flex items-center gap-2"><FileText size={12}/> Markdown Editor</span>
+                          <div className="flex gap-4">
+                            <button onClick={() => insertMarkdown('**', '**')} className="hover:text-white transition-colors font-bold px-2 py-1 bg-white/5 rounded border border-white/10">B</button>
+                            <button onClick={() => insertMarkdown('*', '*')} className="hover:text-white transition-colors italic px-2 py-1 bg-white/5 rounded border border-white/10">I</button>
+                            <button onClick={() => insertMarkdown('[', '](url)')} className="hover:text-white transition-colors px-2 py-1 bg-white/5 rounded border border-white/10">Link</button>
                           </div>
                         </div>
                         <textarea
                           ref={editorRef}
                           value={editContent}
                           onChange={e => setEditContent(e.target.value)}
-                          className="flex-1 w-full p-4 bg-transparent font-mono text-xs text-white/80 leading-relaxed resize-none focus:outline-none custom-scrollbar"
-                          placeholder="Write your article in Markdown..."
+                          className="flex-1 w-full p-6 bg-transparent font-mono text-sm text-zinc-300 leading-[1.8] resize-none focus:outline-none custom-scrollbar"
+                          placeholder="Write your intelligence brief..."
+                          spellCheck="false"
                         />
                       </div>
                       
                       {/* Right: Live Preview */}
-                      <div className="flex flex-col h-[calc(100vh-250px)] lg:h-[600px] bg-black/40 border border-white/5 rounded-lg overflow-hidden relative">
-                        <div className="bg-emerald/5 px-4 py-2 text-[10px] font-mono uppercase text-emerald border-b border-emerald/10 flex items-center justify-between sticky top-0 z-10 backdrop-blur-md">
-                          <span>Live Preview</span>
-                          <span className="flex items-center gap-1 opacity-60"><Sparkles size={10} /> VE-02 Rendering Engine Active</span>
+                      <div className="flex-1 flex flex-col min-h-[500px] xl:h-[calc(100vh-280px)] bg-[#0A0A0A] border border-blue-500/20 rounded-xl overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.05)]">
+                        <div className="bg-blue-500/10 px-5 py-3 text-[10px] font-mono uppercase text-blue-400 border-b border-blue-500/20 flex items-center justify-between shrink-0">
+                          <span className="tracking-widest font-bold">OS Preview Rendering</span>
+                          <span className="flex items-center gap-1.5 opacity-80"><Sparkles size={10} className="text-blue-400" /> GPU Accel Active</span>
                         </div>
-                        <div className="flex-1 p-6 overflow-y-auto prose prose-invert max-w-none text-sm wrap-break-word custom-scrollbar">
+                        <div className="flex-1 p-8 overflow-y-auto prose prose-invert prose-blue max-w-none prose-p:leading-relaxed prose-headings:font-display prose-headings:tracking-tight custom-scrollbar">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{editContent}</ReactMarkdown>
                         </div>
                       </div>
                     </>
                   ) : selectedArticle.content ? (
-                    <div className="prose prose-invert max-w-none font-sans text-sm text-white/80 leading-relaxed wrap-break-word pb-20">
+                    <div className="prose prose-invert prose-emerald font-sans text-base text-zinc-300 leading-[1.8] pb-32 w-full max-w-4xl mx-auto mt-6">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedArticle.content}</ReactMarkdown>
                     </div>
                   ) : (
