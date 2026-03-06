@@ -11,13 +11,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       // Sync the session to our global Zustand store
       setUser(currentUser);
-      
-      // Phase 40: Auto-login anonymously for guests to ensure UID for Firestore rules
-      if (!currentUser) {
-        import('firebase/auth').then(({ signInAnonymously }) => {
-          signInAnonymously(auth).catch(console.warn);
-        });
-      }
+      // Removed auto-login (signInAnonymously) to avoid 'auth/admin-restricted-operation'
+      // since the jury will not log in and Firebase Auth is disabled.
     });
 
     return () => unsubscribe();
