@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MegaNav } from '../components/MegaNav';
 import g5ComplianceSenateLP from '../assets/g5_compliance_senate_en_v2_1772174738278.png';
@@ -691,7 +691,7 @@ export function LandingPage() {
 
           <FadeIn delay={0.1}>
             {/* ── LAYER 1: INPUTS ── */}
-            <p className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.25em] text-center mb-3">Input Layer</p>
+            <p className="font-mono text-[9px] text-zinc-400 uppercase tracking-[0.25em] text-center mb-3">Input Layer</p>
             <div className="flex justify-center gap-4 mb-2">
               {[
                 { label: 'Voice (VE-01)', sub: 'Gemini Live API · <800ms', color: 'border-blue-500/50 bg-blue-500/5', glow: 'shadow-[0_0_20px_rgba(59,130,246,0.15)]' },
@@ -713,9 +713,9 @@ export function LandingPage() {
             </div>
 
             {/* ── LAYER 2: ORCHESTRATOR ── */}
-            <p className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.25em] text-center mb-3">Orchestration Layer</p>
+            <p className="font-mono text-[9px] text-zinc-400 uppercase tracking-[0.25em] text-center mb-3">Orchestration Layer</p>
             <div className="flex justify-center mb-2">
-              <div className="group relative w-full max-w-md bg-zinc-900 border-2 border-blue-500/40 rounded-2xl p-6 text-center hover:border-blue-500 hover:shadow-[0_0_40px_rgba(59,130,246,0.2)] transition-all duration-300 cursor-default">
+              <div className="group relative w-full max-w-md bg-zinc-900 border-2 border-blue-500/60 shadow-[0_0_20px_rgba(59,130,246,0.15)] rounded-2xl p-6 text-center hover:border-blue-400 hover:shadow-[0_0_40px_rgba(59,130,246,0.3)] transition-all duration-300 cursor-default">
                 <div className="absolute top-0 left-0 w-full h-0.5 bg-linear-to-r from-transparent via-blue-500 to-transparent" />
                 <div className="flex items-center justify-center gap-3 mb-2">
                   <motion.div className="w-2 h-2 rounded-full bg-blue-500" animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.5 }} />
@@ -736,7 +736,7 @@ export function LandingPage() {
             </div>
 
             {/* ── LAYER 3: AGENT SWARM ── */}
-            <p className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.25em] text-center mb-3">Agent Swarm Layer</p>
+            <p className="font-mono text-[9px] text-zinc-400 uppercase tracking-[0.25em] text-center mb-3">Agent Swarm Layer</p>
             <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2 mb-2">
               {[
                 { id: 'SP-01', label: 'Strategic', desc: 'Competitor intel via Vector Search', latency: '1200ms', color: 'border-yellow-500/40 hover:border-yellow-500 hover:shadow-[0_0_15px_rgba(234,179,8,0.15)]', text: 'text-yellow-400', glyph: '🔍' },
@@ -768,7 +768,7 @@ export function LandingPage() {
             </div>
 
             {/* ── LAYER 4: GOOGLE CLOUD ── */}
-            <p className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.25em] text-center mb-3">Google Cloud Infrastructure</p>
+            <p className="font-mono text-[9px] text-zinc-400 uppercase tracking-[0.25em] text-center mb-3">Google Cloud Infrastructure</p>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {[
                 { t: 'Gemini 2.0 Flash', s: 'europe-west1' },
@@ -908,10 +908,10 @@ export function LandingPage() {
                   body: 'Keyword strategy to Senate-approved published article — fully autonomous. 2,500+ words, Schema.org markup, internal links. Zero editing required.',
                 },
               ].map(mod => (
-                <div
+                <Link
                   key={mod.slug}
-                  className="relative rounded-2xl overflow-hidden border border-zinc-800 group cursor-pointer"
-                  onClick={() => navigate(`/modules/${mod.slug}`)}
+                  to={`/modules/${mod.slug}`}
+                  className="relative block rounded-2xl overflow-hidden border border-zinc-800 group cursor-pointer"
                 >
                   <img
                     src={mod.image}
@@ -929,12 +929,12 @@ export function LandingPage() {
                       View Module →
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
 
             {/* Voice Autonomy cinematic break */}
-            <div className="relative rounded-3xl overflow-hidden border border-zinc-800 h-64 group cursor-pointer" onClick={() => navigate('/os/genius')}>
+            <Link to="/os/genius" className="relative block rounded-3xl overflow-hidden border border-zinc-800 h-64 group cursor-pointer mt-10">
               <img
                 src={g5VoiceAutonomyLP}
                 alt="GenIUS Console — Gemini Live API voice-activated OS interface"
@@ -950,14 +950,14 @@ export function LandingPage() {
                 </p>
               </div>
               <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="px-3 py-1.5 bg-black/70 border border-white/10 rounded-full font-mono text-[9px] text-white">
+                <div className="px-3 py-1.5 bg-black/70 border border-white/10 rounded-full font-mono text-[9px] text-white flex items-center gap-1.5">
                   Boot Console →
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* Hero Dashboard cinematic break */}
-            <div className="relative rounded-3xl overflow-hidden border border-zinc-800 h-64 group cursor-pointer mt-6" onClick={() => navigate('/os')}>
+            <Link to="/os" className="relative block rounded-3xl overflow-hidden border border-zinc-800 h-64 group cursor-pointer mt-6">
               <img
                 src={g5HeroDashboardLP}
                 alt="Executive Dashboard — real-time KPIs and swarm telemetry"
@@ -977,7 +977,7 @@ export function LandingPage() {
                   Open Dashboard →
                 </div>
               </div>
-            </div>
+            </Link>
 
             <div className="text-center mt-10">
               <button
@@ -1173,21 +1173,21 @@ export function LandingPage() {
                   value: 'europe-west1',
                   status: 'LIVE',
                   href: 'https://genius-backend-697051612685.europe-west1.run.app/api/v1/health',
-                  color: 'text-green-400 border-green-500/30 bg-green-500/5',
+                  color: 'text-green-400 border-green-500/50 bg-green-500/15',
                 },
                 {
                   label: 'Firebase Hosting',
                   value: 'online-marketing-manager',
                   status: 'LIVE',
                   href: 'https://online-marketing-manager.web.app',
-                  color: 'text-blue-400 border-blue-500/30 bg-blue-500/5',
+                  color: 'text-blue-400 border-blue-500/50 bg-blue-500/15',
                 },
                 {
                   label: 'Devpost Submission',
                   value: 'Gemini Live Agent Challenge',
                   status: 'SUBMITTED',
                   href: 'https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os',
-                  color: 'text-purple-400 border-purple-500/30 bg-purple-500/5',
+                  color: 'text-purple-400 border-purple-500/50 bg-purple-500/15',
                 },
               ].map(card => (
                 <a key={card.label} href={card.href} target="_blank" rel="noopener noreferrer"
@@ -1227,7 +1227,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      \n\n{/* ================================================================
+      {/* ================================================================
           SECTION 6 — COMPLIANCE
           ================================================================ */}
       <section id="compliance" className="py-32 px-6 border-t border-zinc-900">
@@ -1269,7 +1269,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      \n\n{/* ================================================================
+      {/* ================================================================
           SECTION 6.5 — MISSION & ROADMAP (THE STORY)
           ================================================================ */}
       <section id="roadmap" className="py-32 px-6 border-t border-zinc-900 bg-obsidian/20 relative">
@@ -1352,7 +1352,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      \n\n{/* ================================================================
+      {/* ================================================================
           SECTION 7 — FINAL CTA
           ================================================================ */}
       <section id="cta" className="py-40 px-6 border-t border-zinc-900">
@@ -1391,24 +1391,35 @@ export function LandingPage() {
                 The world's first voice-activated AI creative agency. 
                 Built specifically for the Gemini Live Agent Challenge 2026.
               </p>
-              <div className="flex gap-4">
+              <div className="flex gap-4 mb-6">
                  <a href="https://github.com/yoyo967/agenticum-g5-genius" target="_blank" rel="noopener noreferrer" 
+                    aria-label="GitHub Repository"
                     className="p-2 border border-zinc-800 rounded-lg hover:border-zinc-400 transition-colors text-zinc-500 hover:text-white">
                    <IconGithub size={20} />
+                 </a>
+                 <a href="https://x.com/search?q=%23GeminiLiveAgentChallenge" target="_blank" rel="noopener noreferrer" 
+                    aria-label="Twitter hashtag #GeminiLiveAgentChallenge"
+                    className="p-2 border border-zinc-800 rounded-lg hover:border-zinc-400 transition-colors text-zinc-500 hover:text-white flex items-center justify-center">
+                   <span className="font-black text-lg leading-none" style={{ fontFamily: 'system-ui' }}>𝕏</span>
                  </a>
                  <a href="https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os" target="_blank" rel="noopener noreferrer" 
                      className="flex items-center gap-2 px-4 py-2 border border-zinc-800 rounded-lg hover:border-zinc-400 text-xs font-mono text-zinc-500 hover:text-white transition-colors">
                     DEVPOST SUBMISSION
-                  </a>
+                 </a>
               </div>
             </div>
             <div>
               <h5 className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest mb-4">Navigate</h5>
               <ul className="space-y-2 text-xs font-mono text-zinc-600">
-                <li><button onClick={() => navigate('/demo-workflow')} className="hover:text-blue-500 transition-colors text-left">/demo-workflow</button></li>
-                <li><button onClick={() => navigate('/blog')} className="hover:text-blue-500 transition-colors text-left">/blog</button></li>
+                <li><button onClick={() => navigate('/demo-workflow')} className="hover:text-blue-500 transition-colors text-left flex items-center gap-1.5"><span className="text-[10px] text-blue-500">▶</span> Demo Workflow</button></li>
+                {import.meta.env.VITE_DEMO_VIDEO_ID && import.meta.env.VITE_DEMO_VIDEO_ID !== 'YOUR_YOUTUBE_ID_HERE' && (
+                  <li><a href={`https://youtube.com/watch?v=${import.meta.env.VITE_DEMO_VIDEO_ID}`} target="_blank" rel="noopener noreferrer" className="hover:text-red-500 transition-colors text-left flex items-center gap-1.5"><span className="text-red-500 text-[10px]">▶</span> YouTube Demo</a></li>
+                )}
                 <li><button onClick={() => navigate('/os')} className="hover:text-blue-500 transition-colors text-left">/os (GenIUS Portal)</button></li>
+                <li><button onClick={() => navigate('/blog')} className="hover:text-blue-500 transition-colors text-left">/blog</button></li>
+                <li><button onClick={() => navigate('/tech')} className="hover:text-blue-500 transition-colors text-left">/tech</button></li>
                 <li><button onClick={() => navigate('/privacy')} className="hover:text-blue-500 transition-colors text-left">/privacy</button></li>
+                <li><a href="mailto:hello@agenticum.com" className="hover:text-blue-500 transition-colors text-left block">Contact / Impressum</a></li>
               </ul>
             </div>
             <div className="flex flex-col items-end justify-start">
@@ -1420,9 +1431,12 @@ export function LandingPage() {
           </div>
 
           <div className="pt-8 border-t border-zinc-900 flex flex-col md:flex-row items-center justify-between gap-4">
-            <span className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.4em]">
-              © 2026 · ALL SYSTEMS OPERATIONAL
-            </span>
+            <div className="flex items-center gap-4">
+               <span className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.4em]">
+                 © 2026 · ALL SYSTEMS OPERATIONAL
+               </span>
+               <a href="https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-zinc-500 hover:text-white uppercase tracking-widest underline decoration-zinc-800 underline-offset-2 transition-colors">Devpost Entry</a>
+            </div>
             <div className="flex items-center gap-2 px-3 py-1 bg-green-500/5 border border-green-500/20 rounded-full">
                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                <span className="font-mono text-[9px] text-green-500/80 font-bold uppercase tracking-widest">Hackathon Validated Build</span>

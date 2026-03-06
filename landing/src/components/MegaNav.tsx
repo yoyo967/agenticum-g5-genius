@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ArrowRight, ExternalLink } from 'lucide-react';
 
@@ -173,12 +173,12 @@ export function MegaNav() {
               {/* Footer */}
               <div className="mt-5 pt-4 border-t border-zinc-900 flex items-center justify-between">
                 <span className="font-mono text-[9px] text-zinc-700 uppercase tracking-widest">SwarmProtocol v3.0 · 9 Parallel Threads · 38ms Init</span>
-                <button
-                  onClick={() => navigate('/os')}
+                <Link
+                  to="/os"
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-mono text-[10px] uppercase tracking-widest transition-colors rounded-xl"
                 >
                   Enter OS <ArrowRight size={10} />
-                </button>
+                </Link>
               </div>
             </div>
           </NavDropdown>
@@ -239,12 +239,12 @@ export function MegaNav() {
               {/* Footer */}
               <div className="mt-5 pt-4 border-t border-zinc-900 flex items-center justify-between">
                 <span className="font-mono text-[9px] text-zinc-700 uppercase tracking-widest">React 19 · Firestore · Cloud Run · WebSocket · europe-west1</span>
-                <button
-                  onClick={() => navigate('/os')}
+                <Link
+                  to="/os"
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-mono text-[10px] uppercase tracking-widest transition-colors rounded-xl"
                 >
                   Enter OS Live <ArrowRight size={10} />
-                </button>
+                </Link>
               </div>
             </div>
           </NavDropdown>
@@ -275,12 +275,12 @@ export function MegaNav() {
           >
             Demo
           </button>
-          <button
-            onClick={() => navigate('/os')}
+          <Link
+            to="/os"
             className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-mono text-[10px] uppercase tracking-widest transition-colors rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.2)]"
           >
             Enter OS <ArrowRight size={10} />
-          </button>
+          </Link>
         </div>
 
         {/* Mobile hamburger */}
@@ -325,12 +325,12 @@ export function MegaNav() {
                 </motion.button>
               ))}
               <div className="pt-4 border-t border-zinc-900">
-                <button
-                  onClick={() => navigate('/os')}
+                <Link
+                  to="/os"
                   className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 hover:bg-blue-500 text-white font-mono text-sm uppercase tracking-widest rounded-xl transition-colors"
                 >
                   Enter OS <ArrowRight size={14} />
-                </button>
+                </Link>
               </div>
             </div>
           </motion.div>
