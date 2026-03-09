@@ -258,7 +258,11 @@ export class LiveApiManager {
               lastCognitiveEvent: `Directive Received: ${(message.input || '').substring(0, 30)}...`,
             })
           );
-          await runSwarm(message.input || 'Initial brief', message.campaignId);
+          // Execute swarm async (non-blocking) — must NOT await here
+          // or the message handler blocks and the Live session dies
+          runSwarm(message.input || 'Initial brief', message.campaignId).catch(e =>
+            this.logger.error('runSwarm error (text directive)', e)
+          );
           return;
         }
 
