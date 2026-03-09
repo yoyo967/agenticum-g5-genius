@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Share2, RefreshCw, Palette } from 'lucide-react';
-import type { SwarmState } from '../types';
 import { ExportMenu } from './ui';
 import { downloadSVG, downloadPNG } from '../utils/export';
 
@@ -47,13 +46,21 @@ export function SynergyMap() {
   // Listen for live swarm events
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent<SwarmState>).detail;
-      if (detail?.subAgents) {
+      const detail = (e as CustomEvent).detail;
+      if (!detail) return;
+
+      // Individual agent status event: { id, state, progress, ... }
+      if (detail.id && detail.state) {
+        setAgentStates(prev => ({ ...prev, [detail.id]: detail.state }));
+      }
+
+      // Full swarm object with subAgents (legacy path)
+      if (detail.subAgents) {
         const states: Record<string, string> = {};
-        Object.entries(detail.subAgents).forEach(([id, agent]) => {
+        Object.entries(detail.subAgents).forEach(([id, agent]: [string, any]) => {
           states[id] = agent.state;
         });
-        setAgentStates(states);
+        setAgentStates(prev => ({ ...prev, ...states }));
       }
     };
     window.addEventListener('swarm-status', handler);

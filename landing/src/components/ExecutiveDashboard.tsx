@@ -111,8 +111,31 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
 
     // Listen for real-time swarm status from WebSocket
     const handleStatus = (e: Event) => {
-      const customEvent = e as CustomEvent<SwarmState>;
-      if (customEvent.detail) setSwarmState(customEvent.detail);
+      const detail = (e as CustomEvent).detail;
+      if (!detail) return;
+
+      setSwarmState(prev => {
+        if (!prev) {
+          // No state yet — create initial from the event
+          if (detail.subAgents) return detail;
+          return { id: detail.id, name: detail.name || detail.id, state: detail.state, progress: detail.progress || 0, color: detail.color || 'var(--color-accent)', lastStatus: detail.lastStatus || '', subAgents: {} };
+        }
+        // Individual agent update
+        if (detail.id && detail.state && detail.id !== prev.id) {
+          return {
+            ...prev,
+            subAgents: {
+              ...prev.subAgents,
+              [detail.id.toLowerCase()]: { ...(prev.subAgents?.[detail.id.toLowerCase()] || {}), ...detail }
+            }
+          };
+        }
+        // Top-level SN00 update
+        if (detail.id === prev.id) {
+          return { ...prev, ...detail, subAgents: prev.subAgents };
+        }
+        return prev;
+      });
     };
 
     const handlePayload = (e: Event) => {
