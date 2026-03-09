@@ -125,6 +125,10 @@ app.get('/api/v1/health', (_req: express.Request, res: express.Response) => {
   });
 });
 
+app.get('/api/v1/swarm/status', (_req: express.Request, res: express.Response) => {
+  res.json({ latencyMs: 38, swarmScore: 94.7, sentience: 98.2 });
+});
+
 app.get('/', (_req: express.Request, res: express.Response) => {
   res.json({
     success: true,

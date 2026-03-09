@@ -28,6 +28,10 @@ export class ChainManager {
     return ChainManager.instance;
   }
 
+  public registerAgent(id: string, agent: any) {
+    this.agents[id] = agent;
+  }
+
   public getAgent(id: string) {
     if (this.agents[id]) return this.agents[id];
 

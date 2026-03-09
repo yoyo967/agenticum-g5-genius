@@ -35,8 +35,8 @@ const STACK = [
     layer: 'AI / Gemini', icon: <Zap size={20} />, color: 'border-purple-500/40 bg-purple-500/5',
     textColor: 'text-purple-400',
     technologies: [
-      { name: 'gemini-2.0-flash-001', role: 'Primary Agent Model', note: 'Powers 7 of 9 agents — 38ms dispatch' },
-      { name: 'gemini-2.0-flash-live-001', role: 'Voice Interface (VE-01)', note: 'Bidi audio, tool calling, <800ms RTT' },
+      { name: 'gemini-2.0-flash', role: 'Primary Agent Model', note: 'Powers 8 of 9 agents — 38ms dispatch' },
+      { name: 'gemini-2.5-flash-native-audio-latest', role: 'Voice Interface (VE-01)', note: 'Native audio, tool calling, barge-in, <800ms RTT' },
       { name: 'imagen-3.0-generate-002', role: 'Image Generation (DA-03)', note: 'C2PA provenance, 1024×1024px' },
       { name: 'text-embedding-004', role: 'Vector Embeddings', note: 'Semantic search via Firestore Vector' },
       { name: 'Vertex AI', role: 'ML Platform', note: 'Grounding + model serving backbone' },

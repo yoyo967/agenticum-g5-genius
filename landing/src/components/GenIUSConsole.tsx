@@ -150,13 +150,18 @@ export function GenIUSConsole() {
 
 
   const connectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isConnectingRef = useRef<boolean>(false);
 
   const connect = useCallback(() => {
-    if (ws.current?.readyState === WebSocket.OPEN) {
-      addLog('system', 'Neural Uplink already active.');
+    if (
+      ws.current?.readyState === WebSocket.OPEN ||
+      ws.current?.readyState === WebSocket.CONNECTING ||
+      isConnectingRef.current
+    ) {
       return;
     }
 
+    isConnectingRef.current = true;
     setConnectionState('connecting');
     addLog('system', 'Initializing Neural Uplink... 🔌');
     console.log('🔌 Attempting Neural Uplink to:', WS_BASE_URL);
@@ -166,6 +171,7 @@ export function GenIUSConsole() {
       if (ws.current?.readyState !== WebSocket.OPEN) {
         addLog('error', 'Connection Timeout (10s). Matrix Uplink Failed.');
         setConnectionState('error');
+        isConnectingRef.current = false;
         setMessageQueue([]); // Flush queue on failure
         if (ws.current) {
            ws.current.close();
@@ -179,6 +185,7 @@ export function GenIUSConsole() {
 
       socket.onopen = () => {
         if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+        isConnectingRef.current = false;
         console.log('✅ Neural Uplink Established');
         setConnectionState('connected');
         addLog('success', 'Neural Uplink Stable. Matrix Synchronized.');
@@ -200,7 +207,21 @@ export function GenIUSConsole() {
           const data = JSON.parse(event.data);
 
           if (data.type === 'status') {
-            setSwarm(data.agent);
+            setSwarm(prev => {
+              const agent = data.agent;
+              if (!prev || agent.id === prev.id) {
+                // Top-level agent (SN00) — update root, preserve subAgents
+                return { ...prev, ...agent, subAgents: prev?.subAgents || {} };
+              }
+              // Sub-agent — merge into subAgents map
+              return {
+                ...prev,
+                subAgents: {
+                  ...prev.subAgents,
+                  [agent.id]: { ...(prev.subAgents?.[agent.id] || {}), ...agent }
+                }
+              };
+            });
             window.dispatchEvent(new CustomEvent('swarm-status', { detail: data.agent }));
           }
 
@@ -333,28 +354,32 @@ export function GenIUSConsole() {
       };
 
       socket.onclose = () => {
+        isConnectingRef.current = false;
         stopAllAudio(); // clear any scheduled chunks from the ended session
         setConnectionState('disconnected');
         addLog('system', 'Neural Uplink Terminated.');
       };
 
       socket.onerror = (err) => {
+        isConnectingRef.current = false;
         console.error('❌ Fabric Connectivity Error:', err);
         setConnectionState('error');
         addLog('error', 'Fabric Connectivity Error. Check API Gateway.');
       };
 
     } catch (err) {
+      isConnectingRef.current = false;
       console.error('🚀 Socket Initialization Failed:', err);
       setConnectionState('error');
       addLog('error', 'Critical Error: Neural Bond Initialization Failed.');
     }
   }, [addLog]);
 
-  // Auto-connect on mount
+  // Auto-connect on mount (deferred to avoid synchronous setState in effect body)
   useEffect(() => {
-    connect();
+    const t = setTimeout(connect, 0);
     return () => {
+      clearTimeout(t);
       if (ws.current) ws.current.close();
     };
   }, [connect]);
@@ -413,11 +438,14 @@ export function GenIUSConsole() {
   const handleStart = () => {
     if (connectionState === 'connected' || connectionState === 'active') {
       setOutput(null);
+      const inputEl = document.querySelector<HTMLInputElement>('[data-directive-input]');
+      const userInput = inputEl?.value?.trim() || 'Launch a full swarm campaign';
       ws.current?.send(JSON.stringify({ 
         type: 'start', 
-        input: 'Create a Pillar-Page strategy for AGENTICUM G5.' 
+        input: userInput 
       }));
-      addLog('action', 'Initializing Neural Orchestration...');
+      addLog('action', `Initializing Neural Orchestration: "${userInput.substring(0, 60)}..."`);
+      if (inputEl) inputEl.value = '';
     }
   };
 
@@ -989,6 +1017,7 @@ export function GenIUSConsole() {
                                    </div>
                                    <input 
                                      type="text" 
+                                     data-directive-input
                                      placeholder={messageQueue.length >= MAX_QUEUE_SIZE ? "QUEUE FULL" : "Assign directive to swarm..."}
                                      disabled={connectionState === 'connecting' || messageQueue.length >= MAX_QUEUE_SIZE}
                                      className="flex-1 bg-transparent border-none text-white text-xs focus:outline-none placeholder:text-white/20 font-mono disabled:opacity-50 disabled:cursor-not-allowed"

@@ -219,13 +219,24 @@ ${contentSnippet}...
       tasks: (executionPlan?.nodes || executionPlan?.tasks || []).map((t: any, i: number) => ({
         id: `t-${i}`,
         agentId: t.agentId,
-        description: t.description,
+        description: t.task || t.description || 'Execute assigned task',
         state: TaskState.PENDING,
         dependencies: i > 0 ? [`t-${i-1}`] : [] 
       }))
     };
 
-    // 3. Execute via ChainManager
+    // 3. Register SN00's agent instances so ChainManager reuses them
+    //    (ensures status updates flow through getStatus().subAgents)
+    this.chainManager.registerAgent('sp01', this.strategist);
+    this.chainManager.registerAgent('cc06', this.director);
+    this.chainManager.registerAgent('da03', this.architect);
+    this.chainManager.registerAgent('ve01', this.motionDirector);
+    this.chainManager.registerAgent('ra01', this.auditor);
+    this.chainManager.registerAgent('ba07', this.browserArchitect);
+    this.chainManager.registerAgent('pm07', this.manager);
+    this.chainManager.registerAgent('cc02', this.distributor);
+
+    // 4. Execute via ChainManager
     this.updateStatus(AgentState.WORKING, 'Activating Autonomous Task Chain...', 25);
     await this.chainManager.executeProtocol(protocol);
 

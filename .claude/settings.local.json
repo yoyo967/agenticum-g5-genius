@@ -12,7 +12,22 @@
       "Bash(CLOUDSDK_PYTHON=\"/c/Users/HP/AppData/Local/Programs/Python/Python312/python.exe\" \"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud\" logging read \"resource.type=cloud_run_revision AND resource.labels.service_name=genius-backend\" --project=online-marketing-manager --limit=20 --format=\"value\\(textPayload\\)\")",
       "Bash(node -e \":*)",
       "Bash(git add .claude/settings.local.json)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(CLOUDSDK_PYTHON=\"/c/Users/HP/AppData/Local/Programs/Python/Python312/python.exe\" \"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd\" run revisions describe genius-backend-00027-d76 --region=europe-west1 --project=online-marketing-manager --format=\"value\\(status.conditions\\)\")",
+      "Bash(git add README.md)",
+      "WebFetch(domain:geminiliveagentchallenge.devpost.com)",
+      "Bash(git add landing/src/components/GeniusConsole.tsx)",
+      "Bash(git add \"landing/src/components/GenIUSConsole.tsx\")",
+      "Bash(CLOUDSDK_PYTHON=\"/c/Users/HP/AppData/Local/Programs/Python/Python312/python.exe\" \"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd\" logging read \"resource.type=cloud_run_revision AND resource.labels.service_name=genius-backend AND textPayload=~\"\"audio\"\"\" --project=online-marketing-manager --limit=10 --format=\"value\\(textPayload\\)\")",
+      "Bash(CLOUDSDK_PYTHON=\"/c/Users/HP/AppData/Local/Programs/Python/Python312/python.exe\" \"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd\" logging read \"resource.type=cloud_run_revision AND resource.labels.service_name=genius-backend\" --project=online-marketing-manager --limit=20 --format=\"value\\(textPayload\\)\")",
+      "Bash(\"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd\" logging read \"resource.type=cloud_run_revision AND resource.labels.service_name=genius-backend\" --project=online-marketing-manager --limit=20 --format=\"value\\(textPayload\\)\")",
+      "Bash(git add \"landing/src/components/GenIUSConsole.tsx\" landing/public/audio-processor.js)",
+      "Bash(CLOUDSDK_PYTHON=\"/c/Users/HP/AppData/Local/Programs/Python/Python312/python.exe\" \"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd\" builds submit \"/c/Users/HP/Desktop/agenticum g5 landingpage/backend\" --tag=gcr.io/online-marketing-manager/genius-backend --project=online-marketing-manager)",
+      "Bash(\"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd\" builds submit \"/c/Users/HP/Desktop/agenticum g5 landingpage/backend\" --tag=gcr.io/online-marketing-manager/genius-backend --project=online-marketing-manager)",
+      "Bash(cmd.exe /c \"set CLOUDSDK_PYTHON=C:\\\\Users\\\\HP\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe && \"\"C:\\\\Users\\\\HP\\\\AppData\\\\Local\\\\Google\\\\Cloud SDK\\\\google-cloud-sdk\\\\bin\\\\gcloud.cmd\"\" builds submit \"\"C:\\\\Users\\\\HP\\\\Desktop\\\\agenticum g5 landingpage\\\\backend\"\" --tag=gcr.io/online-marketing-manager/genius-backend --project=online-marketing-manager\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\HP\\Desktop\\agenticum g5 landingpage\\.git\\hooks"
     ]
   }
 }
