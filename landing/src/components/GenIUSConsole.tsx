@@ -248,6 +248,21 @@ export function GenIUSConsole() {
             stopAllAudio();
           }
 
+          // Model finished its turn — ready to listen again
+          if (data.type === 'turn_complete') {
+            setConnectionState('connected'); // back to "listening" state visually
+          }
+
+          if (data.type === 'live_ready') {
+            addLog('success', 'NEXUS Voice Link Active. Speak to command.');
+            setConnectionState('connected');
+          }
+
+          if (data.type === 'live_closed') {
+            stopAllAudio();
+            setConnectionState('disconnected');
+          }
+
           if (data.type === 'error') {
             addLog('error', data.message);
             setConnectionState('error');

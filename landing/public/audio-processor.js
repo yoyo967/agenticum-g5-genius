@@ -1,7 +1,7 @@
 class AudioPCMProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
-    this._bufferSize = 4096;
+    this._bufferSize = 512; // 32ms @ 16kHz — low latency for Gemini VAD
     this._buffer = new Int16Array(this._bufferSize);
     this._bufferOffset = 0;
   }
