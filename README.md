@@ -4,7 +4,7 @@
 > Built for the **Google Gemini Live Agents Developer Challenge 2026**.
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Gemini 2.0 Flash](https://img.shields.io/badge/Model-Gemini_2.0_Flash_Live-orange.svg)](https://deepmind.google/technologies/gemini/)
+[![Gemini 2.5 Flash Native Audio](https://img.shields.io/badge/Model-Gemini_2.5_Flash_Native_Audio-orange.svg)](https://deepmind.google/technologies/gemini/)
 [![Devpost](https://img.shields.io/badge/Hackathon-Devpost_Submission-purple.svg)](https://geminiliveagentchallenge.devpost.com/)
 [![Status](https://img.shields.io/badge/Status-100%25_Operational-success.svg)](#)
 
@@ -20,11 +20,11 @@
 
 ## 🏆 Hackathon Goal: Gemini Live API Mastery
 
-**GenIUS** (Agenticum G5 Edition) is a hyper-autonomous agency operating system designed to move beyond simple chat interfaces. It implements a core matrix of specialized autonomous nodes, coordinated by a central orchestrator that utilizes the **Gemini 2.0 Flash Live API** as its primary multimodal substrate.
+**GenIUS** (Agenticum G5 Edition) is a hyper-autonomous agency operating system designed to move beyond simple chat interfaces. It implements a core matrix of specialized autonomous nodes, coordinated by a central orchestrator that utilizes the **Gemini 2.5 Flash Native Audio Live API** as its primary multimodal substrate.
 
 ### 💎 Key Engineering Achievements:
 
-1. **Multimodal Swarm Orchestration**: The native `launch_swarm` tool allows Gemini 2.0 Flash Live to trigger our vast backend multi-agent payload processing autonomously.
+1. **Multimodal Swarm Orchestration**: The native `launch_swarm` tool allows Gemini 2.5 Flash Native Audio to trigger our vast backend multi-agent payload processing autonomously.
 2. **Bidirectional Low-Latency Audio**: Implemented direct 16kHz PCM audio streams via WebSockets.
 3. **Barge-In Capabilities**: Real-time interruption handling. Say "Stop, change the target to X" and the system aggressively flushes memory buffers and instantly executes the new command.
 4. **Cloud Run Microservices**: A dual architecture separating Node.js WebSockets and Python heavy compute (RAG, Selenium Browserbase logic).
@@ -35,19 +35,26 @@
 
 ```mermaid
 graph TD
-    User((Executive User)) -- "Voice 16kHz PCM" --> API[Live-API Manager]
-    API -- "Gemini 2.0 Live WebSockets" --> GL[Gemini 2.0 Flash Live]
-    GL -- "Function Call: launch_swarm()" --> SN00[SN-00 Orchestrator Node.js]
+    User((Executive User)) -- "Voice 16kHz PCM" --> FE[React Frontend\nFirebase Hosting]
+    FE -- "WSS WebSocket" --> API[Live-API Manager\nCloud Run Node.js]
+    API -- "bidiGenerateContent\ngemini-2.5-flash-native-audio-latest" --> GL[Gemini Live API\nGoogle AI]
+    GL -- "Audio 24kHz PCM" --> API
+    API -- "base64 audio chunks" --> FE
+    FE -- "AudioContext playback" --> User
 
-    subgraph "Dual-Cloud Intelligence Engine (europe-west1)"
-        SN00 -- "RAG Payload" --> PY[Python Engine API]
-        PY -- "Strategic Analytics" --> SP01[SP-01 Strategist]
-        PY -- "Cloud Browser (Browserbase)" --> BA07[BA-07 Web Scraper]
-        PY -- "EU AI Act Compliance" --> RA01[RA-01 Senate Auditor]
+    GL -- "Function Call: launch_swarm(intent)" --> SN00[SN-00 Orchestrator\nMaster Agent]
+
+    subgraph "Cloud Run — europe-west1"
+        API
+        SN00 -- "Campaign brief" --> DA03[DA-03 Architect\nImagen 3 Generation]
+        SN00 -- "Market research" --> SP01[SP-01 Strategist]
+        SN00 -- "Web scraping" --> BA07[BA-07 Browser Agent\nBrowserbase]
+        SN00 -- "EU AI Act audit" --> RA01[RA-01 Senate Auditor]
     end
 
-    SN00 -- "JSON Thought Payloads" --> GC[GenIUS Console Frontend]
-    SN00 -- "Audio Responses" --> User
+    DA03 -- "IMAGE_ASSET event" --> EF[EventFabric\nWebSocket Broadcast]
+    SN00 -- "Agent thoughts" --> EF
+    EF -- "Live log stream" --> FE
 ```
 
 ---

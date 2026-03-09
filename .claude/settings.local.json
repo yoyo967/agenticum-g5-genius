@@ -9,8 +9,10 @@
       "Bash(export PATH=\"/c/Users/HP/AppData/Roaming/npm:$PATH\")",
       "Bash(firebase deploy --only hosting --project online-marketing-manager)",
       "Bash(CLOUDSDK_PYTHON=\"/c/Users/HP/AppData/Local/Programs/Python/Python312/python.exe\" \"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud\" run services describe genius-backend --region=europe-west1 --project=online-marketing-manager --format=\"value\\(spec.template.spec.containers[0].env\\)\")",
-      "Bash(curl -s \"https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSyAUyv45h9cmJAo-vPqDEfy9YW185IeXSyk\")",
-      "Bash(CLOUDSDK_PYTHON=\"/c/Users/HP/AppData/Local/Programs/Python/Python312/python.exe\" \"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud\" logging read \"resource.type=cloud_run_revision AND resource.labels.service_name=genius-backend AND resource.labels.revision_id=genius-backend-00023-554\" --project=online-marketing-manager --limit=20 --format=\"value\\(textPayload\\)\")"
+      "Bash(CLOUDSDK_PYTHON=\"/c/Users/HP/AppData/Local/Programs/Python/Python312/python.exe\" \"/c/Users/HP/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud\" logging read \"resource.type=cloud_run_revision AND resource.labels.service_name=genius-backend\" --project=online-marketing-manager --limit=20 --format=\"value\\(textPayload\\)\")",
+      "Bash(node -e \":*)",
+      "Bash(git add .claude/settings.local.json)",
+      "Bash(git commit:*)"
     ]
   }
 }
