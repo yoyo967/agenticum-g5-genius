@@ -105,11 +105,13 @@ export function GenIUSConsole() {
 
   // Audio playing utility — mimeType e.g. "audio/pcm;rate=24000"
   function playAudioBase64(base64: string, mimeType?: string) {
-    // Lazy-init a dedicated playback context at the device's native rate
+    // Lazy-init at 24kHz to match Gemini native audio — avoids resampling artifacts
     if (!playbackContextRef.current) {
-      playbackContextRef.current = new AudioContext();
+      playbackContextRef.current = new AudioContext({ sampleRate: 24000 });
     }
     const ctx = playbackContextRef.current;
+    // Resume if browser suspended (common after page load before user interaction)
+    if (ctx.state === 'suspended') ctx.resume();
 
     // Parse sample rate from mimeType (Gemini sends 24kHz by default)
     let sampleRate = 24000;
@@ -316,6 +318,7 @@ export function GenIUSConsole() {
       };
 
       socket.onclose = () => {
+        stopAllAudio(); // clear any scheduled chunks from the ended session
         setConnectionState('disconnected');
         addLog('system', 'Neural Uplink Terminated.');
       };
@@ -413,7 +416,9 @@ export function GenIUSConsole() {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      });
       streamRef.current = stream;
       
       const audioCtx = new AudioContext({ sampleRate: 16000 });
@@ -445,7 +450,7 @@ export function GenIUSConsole() {
       };
 
       source.connect(workletNode);
-      workletNode.connect(audioCtx.destination);
+      // workletNode intentionally NOT connected to destination — mic audio must not play through speakers
       
       setIsRecording(true);
       addLog('system', 'Neural Uplink (Voice) Established. Speak now.');
