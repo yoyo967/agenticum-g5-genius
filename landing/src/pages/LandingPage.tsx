@@ -387,7 +387,7 @@ export function LandingPage() {
               </div>
             ))}
           </div>
-          <a href="https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os" target="_blank" rel="noopener noreferrer"
+          <a href="https://geminiliveagentchallenge.devpost.com/" target="_blank" rel="noopener noreferrer"
              className="flex items-center gap-2 px-4 py-1.5 border border-zinc-800 hover:border-blue-500/50 font-mono text-[9px] text-zinc-500 hover:text-blue-400 uppercase tracking-widest transition-all rounded-full shrink-0">
             View Devpost Submission →
           </a>
@@ -1186,7 +1186,7 @@ export function LandingPage() {
                   label: 'Devpost Submission',
                   value: 'Gemini Live Agent Challenge',
                   status: 'SUBMITTED',
-                  href: 'https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os',
+                  href: 'https://geminiliveagentchallenge.devpost.com/',
                   color: 'text-purple-400 border-purple-500/50 bg-purple-500/15',
                 },
               ].map(card => (
@@ -1402,7 +1402,7 @@ export function LandingPage() {
                     className="p-2 border border-zinc-800 rounded-lg hover:border-zinc-400 transition-colors text-zinc-500 hover:text-white flex items-center justify-center">
                    <span className="font-black text-lg leading-none" style={{ fontFamily: 'system-ui' }}>𝕏</span>
                  </a>
-                 <a href="https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os" target="_blank" rel="noopener noreferrer" 
+                 <a href="https://geminiliveagentchallenge.devpost.com/" target="_blank" rel="noopener noreferrer" 
                      className="flex items-center gap-2 px-4 py-2 border border-zinc-800 rounded-lg hover:border-zinc-400 text-xs font-mono text-zinc-500 hover:text-white transition-colors">
                     DEVPOST SUBMISSION
                  </a>
@@ -1435,7 +1435,7 @@ export function LandingPage() {
                <span className="font-mono text-[9px] text-zinc-700 uppercase tracking-[0.4em]">
                  © 2026 · ALL SYSTEMS OPERATIONAL
                </span>
-               <a href="https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-zinc-500 hover:text-white uppercase tracking-widest underline decoration-zinc-800 underline-offset-2 transition-colors">Devpost Entry</a>
+               <a href="https://geminiliveagentchallenge.devpost.com/" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-zinc-500 hover:text-white uppercase tracking-widest underline decoration-zinc-800 underline-offset-2 transition-colors">Devpost Entry</a>
             </div>
             <div className="flex items-center gap-2 px-3 py-1 bg-green-500/5 border border-green-500/20 rounded-full">
                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />

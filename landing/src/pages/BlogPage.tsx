@@ -509,7 +509,7 @@ export function BlogPage() {
                 <div className="inline-flex flex-col items-center">
                    <div className="w-px h-16 bg-linear-to-b from-white/10 to-transparent mb-8" />
                    <p className="font-mono text-[9px] text-zinc-600 uppercase tracking-[0.3em] mb-4">All intelligence verified by Security Senate</p>
-                   <a href="https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os" target="_blank" rel="noopener noreferrer"
+                   <a href="https://geminiliveagentchallenge.devpost.com/" target="_blank" rel="noopener noreferrer"
                      className="px-6 py-2 border border-white/10 hover:border-blue-500/50 hover:bg-blue-500/5 text-zinc-400 hover:text-blue-400 text-[10px] font-mono uppercase tracking-widest transition-all rounded-full">
                      View System Architecture on Devpost
                    </a>

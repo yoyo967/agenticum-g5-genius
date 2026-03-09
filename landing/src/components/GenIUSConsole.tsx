@@ -81,9 +81,11 @@ export function GenIUSConsole() {
   }, [nexusState]);
 
   // Audio refs
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);       // 16kHz capture context
+  const playbackContextRef = useRef<AudioContext | null>(null);    // device-rate playback context
   const streamRef = useRef<MediaStream | null>(null);
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
+  const activeSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
 
   const addLog = useCallback((type: string, message: string, imageUrl?: string) => {
     setLogs(prev => [...prev.slice(-19), { type, message, timestamp: new Date().toLocaleTimeString(), imageUrl }]);
@@ -91,9 +93,28 @@ export function GenIUSConsole() {
 
   // Audio processing functions isolated for mock phase
 
-  // Audio playing utility (hoisted)
-  function playAudioBase64(base64: string) {
-    if (!audioContextRef.current) return;
+  // Stop all active audio sources immediately (used on barge-in)
+  function stopAllAudio() {
+    activeSourcesRef.current.forEach(src => {
+      try { src.stop(); } catch { /* already ended */ }
+    });
+    activeSourcesRef.current.clear();
+  }
+
+  // Audio playing utility — mimeType e.g. "audio/pcm;rate=24000"
+  function playAudioBase64(base64: string, mimeType?: string) {
+    // Lazy-init a dedicated playback context at the device's native rate
+    if (!playbackContextRef.current) {
+      playbackContextRef.current = new AudioContext();
+    }
+    const ctx = playbackContextRef.current;
+
+    // Parse sample rate from mimeType (Gemini sends 24kHz by default)
+    let sampleRate = 24000;
+    if (mimeType) {
+      const rateMatch = mimeType.match(/rate=(\d+)/);
+      if (rateMatch) sampleRate = parseInt(rateMatch[1], 10);
+    }
     try {
       const binaryString = window.atob(base64);
       const len = binaryString.length;
@@ -107,11 +128,13 @@ export function GenIUSConsole() {
           float32[i] = int16[i] / 32768;
       }
 
-      const buffer = audioContextRef.current.createBuffer(1, float32.length, 16000);
+      const buffer = ctx.createBuffer(1, float32.length, sampleRate);
       buffer.getChannelData(0).set(float32);
-      const source = audioContextRef.current.createBufferSource();
+      const source = ctx.createBufferSource();
       source.buffer = buffer;
-      source.connect(audioContextRef.current.destination);
+      source.connect(ctx.destination);
+      activeSourcesRef.current.add(source);
+      source.onended = () => activeSourcesRef.current.delete(source);
       source.start();
     } catch (e) {
       console.error('Audio playback failed', e);
@@ -210,7 +233,12 @@ export function GenIUSConsole() {
           }
 
           if (data.type === 'realtime_output') {
-            playAudioBase64(data.data);
+            playAudioBase64(data.data, data.mimeType);
+          }
+
+          // Barge-in: user spoke while model was talking — stop playback immediately
+          if (data.type === 'barge_in') {
+            stopAllAudio();
           }
 
           if (data.type === 'error') {

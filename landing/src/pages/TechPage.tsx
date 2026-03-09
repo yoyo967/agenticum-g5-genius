@@ -189,7 +189,7 @@ export function TechPage() {
           {[
             { icon: <Globe size={18} />, title: 'Live Backend', url: 'https://genius-backend-697051612685.europe-west1.run.app/api/v1/health', desc: 'Cloud Run health endpoint — live' },
             { icon: <Server size={18} />, title: 'Firebase Hosting', url: 'https://online-marketing-manager.web.app', desc: 'Frontend CDN entry point' },
-            { icon: <Shield size={18} />, title: 'Devpost Submission', url: 'https://devpost.com/software/agenticum-g5-modular-neural-orchestration-os', desc: 'Official hackathon submission' },
+            { icon: <Shield size={18} />, title: 'Devpost Submission', url: 'https://geminiliveagentchallenge.devpost.com/', desc: 'Official hackathon submission' },
           ].map(link => (
             <a key={link.title} href={link.url} target="_blank" rel="noopener noreferrer"
               className="group flex items-start gap-4 p-6 border border-zinc-800 hover:border-zinc-600 bg-zinc-950 rounded-2xl transition-all">

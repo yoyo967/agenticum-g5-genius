@@ -95,7 +95,7 @@ export class LiveApiManager {
     // ──────────────────────────────────────────────
     try {
       liveSession = await this.ai.live.connect({
-        model: 'gemini-2.0-flash-live-001',
+        model: 'gemini-2.5-flash-native-audio-latest',
         callbacks: {
           onopen: () => {
             this.logger.info('Gemini Live session opened');
@@ -103,6 +103,23 @@ export class LiveApiManager {
           },
 
           onmessage: async (msg: any) => {
+            // ── Debug: log message structure (without audio data) ──
+            const debugKeys = Object.keys(msg || {});
+            this.logger.info(`[onmessage] keys: ${debugKeys.join(', ')}`);
+            if (msg?.serverContent) {
+              const scKeys = Object.keys(msg.serverContent);
+              this.logger.info(`[onmessage] serverContent keys: ${scKeys.join(', ')}`);
+              const parts = msg.serverContent?.modelTurn?.parts ?? [];
+              this.logger.info(`[onmessage] parts count: ${parts.length}`);
+              parts.forEach((p: any, i: number) => {
+                const pKeys = Object.keys(p);
+                this.logger.info(`[onmessage] part[${i}] keys: ${pKeys.join(', ')}, mimeType: ${p.inlineData?.mimeType || p.blob?.mimeType || 'none'}`);
+              });
+            }
+            if (msg?.data !== undefined) {
+              this.logger.info(`[onmessage] msg.data type: ${typeof msg.data}, isString: ${typeof msg.data === 'string'}`);
+            }
+
             // ── Barge-in: model was interrupted by user speaking ──
             const serverContent = msg.serverContent;
             if (serverContent?.interrupted) {
@@ -111,19 +128,38 @@ export class LiveApiManager {
             }
 
             // ── Audio response from model → forward to frontend ──
+            // Handle standard format: serverContent.modelTurn.parts[].inlineData
             const parts = serverContent?.modelTurn?.parts ?? [];
             for (const part of parts) {
-              if (part.inlineData?.mimeType?.startsWith('audio/')) {
+              // Standard inlineData format
+              const audioData = part.inlineData?.mimeType?.startsWith('audio/')
+                ? { data: part.inlineData.data, mimeType: part.inlineData.mimeType }
+                : part.blob?.mimeType?.startsWith('audio/')
+                ? { data: part.blob.data, mimeType: part.blob.mimeType }
+                : null;
+
+              if (audioData) {
+                this.logger.info(`[audio] Sending audio chunk, mimeType: ${audioData.mimeType}`);
                 sendToClient({
-                  type: 'audio_output',
-                  data: part.inlineData.data,
-                  mimeType: part.inlineData.mimeType,
+                  type: 'realtime_output',
+                  data: audioData.data,
+                  mimeType: audioData.mimeType,
                 });
               }
               // Text response (e.g. before tool call)
               if (part.text) {
                 sendToClient({ type: 'ai_text', text: part.text });
               }
+            }
+
+            // ── Fallback: some SDK versions send raw base64 audio in msg.data ──
+            if (typeof msg.data === 'string' && parts.length === 0) {
+              this.logger.info('[audio] Sending raw msg.data as audio fallback');
+              sendToClient({
+                type: 'realtime_output',
+                data: msg.data,
+                mimeType: 'audio/pcm;rate=24000',
+              });
             }
 
             // ── Function call: launch_swarm triggered ──
@@ -177,7 +213,7 @@ export class LiveApiManager {
           },
         },
         config: {
-          responseModalities: [Modality.AUDIO, Modality.TEXT],
+          responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [LAUNCH_SWARM_TOOL] }],
           systemInstruction: {
             parts: [
@@ -190,11 +226,6 @@ export class LiveApiManager {
                   'Confirm the action briefly, then let the swarm handle execution.',
               },
             ],
-          },
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { voiceName: 'Aoede' },
-            },
           },
         },
       });

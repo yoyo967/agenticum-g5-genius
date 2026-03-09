@@ -40,7 +40,7 @@ export const ComplianceSection: React.FC = () => (
         <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="font-display font-bold uppercase tracking-tight leading-[0.9] text-white brightness-125 mb-6"
           style={{ fontSize: 'clamp(40px, 6vw, 96px)' }}>
-          Der Algorithmus<br />
+          The Algorithm<br />
           <span className="text-emerald">Als Wächter.</span>
         </motion.h2>
         <p className="font-mono text-white/40 text-lg max-w-2xl mx-auto leading-relaxed">

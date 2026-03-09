@@ -8,7 +8,7 @@ export const VideoSection: React.FC<VideoSectionProps> = ({ videoId }) => {
   const[autoPlay, setAutoPlay] = useState<boolean>(false);
 
   useEffect(() => {
-    // Listener für den Hero-Button (Lücke 4)
+    // Listener for the Hero-Button (Lücke 4)
     const handlePlayVideo = () => {
       setAutoPlay(true);
       const section = document.getElementById('see-it-live');

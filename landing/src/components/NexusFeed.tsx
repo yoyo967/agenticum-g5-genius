@@ -96,7 +96,7 @@ export const NexusFeed = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {loading ? (
-          // Staging/Loading State (wie gewünscht beibehalten, aber nur bei loading)
+          // Staging/Loading State (kept as requested, but only on loading)
           Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="p-6 border border-accent/20 bg-midnight animate-pulse rounded-xl">
               <p className="font-mono text-accent/50 text-xs mb-2">SYNCING NEURAL ARCHIVE // G5</p>

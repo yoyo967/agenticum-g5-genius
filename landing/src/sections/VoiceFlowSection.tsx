@@ -187,7 +187,7 @@ export function VoiceFlowSection() {
           </motion.h2>
           <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
             className="font-mono text-white/40 text-lg max-w-2xl mx-auto leading-relaxed">
-            Glitch-freie Audioverarbeitung auf Background Threads via AudioWorklet. 
+            Glitch-free audio processing on background threads via AudioWorklet. 
             Bidi Protocol ermöglicht Streaming Audio In/Out ohne Turn-taking Latency.
           </motion.p>
         </div>

@@ -531,7 +531,7 @@ export function GlobalRadarConsole() {
                 </div>
              </div>
              <p className="text-[10px] font-mono text-white/50 leading-relaxed italic my-4">
-               "Autonome Verteidigungsalgorithmen sind aktiv. Der Cyber-Umkreis um den Münchener Kernknoten ist gesichert. Unautorisierte Infiltrationen werden sofort neutralisiert."
+               "Autonomous defense algorithms are active. The cyber perimeter around the Munich core node is secured. Unauthorized infiltrations are neutralized immediately."
              </p>
              <div className="flex gap-2">
                 <button
