@@ -86,6 +86,7 @@ export function GenIUSConsole() {
   const streamRef = useRef<MediaStream | null>(null);
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const activeSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
+  const nextAudioStartTimeRef = useRef<number>(0); // sequential chunk scheduling
 
   const addLog = useCallback((type: string, message: string, imageUrl?: string) => {
     setLogs(prev => [...prev.slice(-19), { type, message, timestamp: new Date().toLocaleTimeString(), imageUrl }]);
@@ -99,6 +100,7 @@ export function GenIUSConsole() {
       try { src.stop(); } catch { /* already ended */ }
     });
     activeSourcesRef.current.clear();
+    nextAudioStartTimeRef.current = 0; // reset scheduler so next chunk plays immediately
   }
 
   // Audio playing utility — mimeType e.g. "audio/pcm;rate=24000"
@@ -135,7 +137,10 @@ export function GenIUSConsole() {
       source.connect(ctx.destination);
       activeSourcesRef.current.add(source);
       source.onended = () => activeSourcesRef.current.delete(source);
-      source.start();
+      // Schedule sequentially: each chunk starts exactly when the previous ends
+      const startAt = Math.max(ctx.currentTime, nextAudioStartTimeRef.current);
+      nextAudioStartTimeRef.current = startAt + buffer.duration;
+      source.start(startAt);
     } catch (e) {
       console.error('Audio playback failed', e);
     }
