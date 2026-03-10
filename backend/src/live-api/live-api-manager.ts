@@ -103,100 +103,87 @@ export class LiveApiManager {
           },
 
           onmessage: async (msg: any) => {
-            // ── Debug: log message structure (without audio data) ──
-            const debugKeys = Object.keys(msg || {});
-            this.logger.info(`[onmessage] keys: ${debugKeys.join(', ')}`);
-            if (msg?.serverContent) {
-              const scKeys = Object.keys(msg.serverContent);
-              this.logger.info(`[onmessage] serverContent keys: ${scKeys.join(', ')}`);
-              const parts = msg.serverContent?.modelTurn?.parts ?? [];
-              this.logger.info(`[onmessage] parts count: ${parts.length}`);
-              parts.forEach((p: any, i: number) => {
-                const pKeys = Object.keys(p);
-                this.logger.info(`[onmessage] part[${i}] keys: ${pKeys.join(', ')}, mimeType: ${p.inlineData?.mimeType || p.blob?.mimeType || 'none'}`);
-              });
-            }
-            if (msg?.data !== undefined) {
-              this.logger.info(`[onmessage] msg.data type: ${typeof msg.data}, isString: ${typeof msg.data === 'string'}`);
-            }
-
-            // ── Barge-in: model was interrupted by user speaking ──
-            const serverContent = msg.serverContent;
-            if (serverContent?.interrupted) {
-              this.logger.info('Barge-in detected — model interrupted');
-              sendToClient({ type: 'barge_in' });
-            }
-
-            // ── Audio response from model → forward to frontend ──
-            // Handle standard format: serverContent.modelTurn.parts[].inlineData
-            const parts = serverContent?.modelTurn?.parts ?? [];
-            for (const part of parts) {
-              // Standard inlineData format
-              const audioData = part.inlineData?.mimeType?.startsWith('audio/')
-                ? { data: part.inlineData.data, mimeType: part.inlineData.mimeType }
-                : part.blob?.mimeType?.startsWith('audio/')
-                ? { data: part.blob.data, mimeType: part.blob.mimeType }
-                : null;
-
-              if (audioData) {
-                this.logger.info(`[audio] Sending audio chunk, mimeType: ${audioData.mimeType}`);
-                sendToClient({
-                  type: 'realtime_output',
-                  data: audioData.data,
-                  mimeType: audioData.mimeType,
-                });
+            try {
+              // ── Barge-in: model was interrupted by user speaking ──
+              const serverContent = msg?.serverContent;
+              if (serverContent?.interrupted) {
+                this.logger.info('Barge-in detected — model interrupted');
+                sendToClient({ type: 'barge_in' });
               }
-              // Text response (e.g. before tool call)
-              if (part.text) {
-                sendToClient({ type: 'ai_text', text: part.text });
-              }
-            }
 
-            // ── Fallback: some SDK versions send raw base64 audio in msg.data ──
-            if (typeof msg.data === 'string' && parts.length === 0) {
-              this.logger.info('[audio] Sending raw msg.data as audio fallback');
-              sendToClient({
-                type: 'realtime_output',
-                data: msg.data,
-                mimeType: 'audio/pcm;rate=24000',
-              });
-            }
+              // ── Audio response from model → forward to frontend ──
+              const parts = serverContent?.modelTurn?.parts ?? [];
+              for (const part of parts) {
+                const audioData = part?.inlineData?.mimeType?.startsWith('audio/')
+                  ? { data: part.inlineData.data, mimeType: part.inlineData.mimeType }
+                  : part?.blob?.mimeType?.startsWith('audio/')
+                  ? { data: part.blob.data, mimeType: part.blob.mimeType }
+                  : null;
 
-            // ── Function call: launch_swarm triggered ──
-            const toolCall = msg.toolCall;
-            if (toolCall?.functionCalls?.length) {
-              for (const fn of toolCall.functionCalls) {
-                if (fn.name === 'launch_swarm') {
-                  const args = fn.args as { intent: string; campaignType?: string };
-                  this.logger.info(`launch_swarm called: "${args.intent}"`);
-
-                  // Respond to Gemini immediately so the session stays live
-                  if (liveSession) {
-                    liveSession.sendToolResponse({
-                      functionResponses: [
-                        {
-                          id: fn.id,
-                          name: fn.name,
-                          response: {
-                            output:
-                              'Swarm launched. Processing directive in background. Stay on the line.',
-                          },
-                        },
-                      ],
-                    });
-                  }
-
-                  // Execute swarm async (non-blocking)
-                  runSwarm(args.intent, args.campaignType).catch(e =>
-                    this.logger.error('runSwarm error', e)
-                  );
+                if (audioData) {
+                  sendToClient({
+                    type: 'realtime_output',
+                    data: audioData.data,
+                    mimeType: audioData.mimeType,
+                  });
+                }
+                if (part?.text) {
+                  sendToClient({ type: 'ai_text', text: part.text });
                 }
               }
-            }
 
-            // ── Turn complete ──
-            if (serverContent?.turnComplete) {
-              sendToClient({ type: 'turn_complete' });
+              // ── Fallback: some SDK versions send raw base64 audio in msg.data ──
+              if (typeof msg?.data === 'string' && parts.length === 0) {
+                sendToClient({
+                  type: 'realtime_output',
+                  data: msg.data,
+                  mimeType: 'audio/pcm;rate=24000',
+                });
+              }
+
+              // ── Function call: launch_swarm triggered ──
+              const toolCall = msg?.toolCall;
+              if (toolCall?.functionCalls?.length) {
+                for (const fn of toolCall.functionCalls) {
+                  if (fn.name === 'launch_swarm') {
+                    const args = fn.args as { intent: string; campaignType?: string };
+                    this.logger.info(`launch_swarm called: "${args.intent}"`);
+
+                    // Respond to Gemini immediately so the session stays live
+                    try {
+                      if (liveSession) {
+                        liveSession.sendToolResponse({
+                          functionResponses: [
+                            {
+                              id: fn.id,
+                              name: fn.name,
+                              response: {
+                                output:
+                                  'Swarm launched. Processing directive in background. Stay on the line.',
+                              },
+                            },
+                          ],
+                        });
+                        this.logger.info('sendToolResponse sent OK');
+                      }
+                    } catch (toolErr) {
+                      this.logger.error('sendToolResponse FAILED', toolErr as Error);
+                    }
+
+                    // Execute swarm async (non-blocking)
+                    runSwarm(args.intent, args.campaignType).catch(e =>
+                      this.logger.error('runSwarm error', e)
+                    );
+                  }
+                }
+              }
+
+              // ── Turn complete ──
+              if (serverContent?.turnComplete) {
+                sendToClient({ type: 'turn_complete' });
+              }
+            } catch (handlerErr) {
+              this.logger.error('onmessage handler crashed', handlerErr as Error);
             }
           },
 
