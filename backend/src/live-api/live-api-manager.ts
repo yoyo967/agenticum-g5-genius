@@ -159,8 +159,8 @@ export class LiveApiManager {
                               id: fn.id,
                               name: fn.name,
                               response: {
-                                output:
-                                  'Swarm launched. Processing directive in background. Stay on the line.',
+                                status: 'activated',
+                                background_processing: true
                               },
                             },
                           ],
@@ -175,13 +175,13 @@ export class LiveApiManager {
                     swarmFiredRecently = true;
                     setTimeout(() => { swarmFiredRecently = false; }, 30000);
 
-                    // Defer swarm execution by 2s to let the Live session fully
+                    // Defer swarm execution by 8s to let the Live session fully
                     // process the tool response without concurrent API key contention
                     setTimeout(() => {
                       runSwarm(args.intent, args.campaignType).catch(e =>
                         this.logger.error('runSwarm error', e)
                       );
-                    }, 2000);
+                    }, 8000);
                   }
                 }
               }

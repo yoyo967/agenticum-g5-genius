@@ -201,8 +201,12 @@ ${contentSnippet}...
         const refinementResponse = await refinementResult.response;
         const refinedPlan = JSON.parse(this.cleanJson(refinementResponse.text()) || JSON.stringify(executionPlan));
         
-        // Final Schema Guard: Ensure we have nodes
-        executionPlan = refinedPlan.nodes ? refinedPlan : { nodes: refinedPlan.tasks || refinedPlan };
+        // Final Schema Guard: Ensure we have nodes and they are an array
+        let nodes = refinedPlan.nodes || refinedPlan.tasks || refinedPlan;
+        if (!Array.isArray(nodes)) {
+          nodes = [nodes]; // Wrap single object in array
+        }
+        executionPlan = { nodes };
 
         this.updateStatus(AgentState.THINKING, `Plan Refined: ${executionPlan.nodes?.length || 0} Strategic Pillars established.`, 15);
        
@@ -225,19 +229,38 @@ ${contentSnippet}...
     }
 
     // 2. Build SwarmProtocol
-    const protocol: SwarmProtocol = {
-      id: `p-${Date.now()}`,
-      goal: input,
-      status: 'active',
-      createdAt: Date.now(),
-      tasks: (executionPlan?.nodes || executionPlan?.tasks || []).map((t: any, i: number) => ({
-        id: `t-${i}`,
-        agentId: t.agentId,
-        description: t.task || t.description || 'Execute assigned task',
-        state: TaskState.PENDING,
-        dependencies: i > 0 ? [`t-${i-1}`] : [] 
-      }))
-    };
+    let protocol: SwarmProtocol;
+    try {
+      protocol = {
+        id: `p-${Date.now()}`,
+        goal: input,
+        status: 'active',
+        createdAt: Date.now(),
+        tasks: (executionPlan?.nodes || []).map((t: any, i: number) => ({
+          id: `t-${i}`,
+          agentId: t.agentId || 'pm07',
+          description: t.task || t.description || 'Execute assigned task',
+          state: TaskState.PENDING,
+          dependencies: i > 0 ? [`t-${i-1}`] : [] 
+        }))
+      };
+    } catch (protoErr) {
+      console.error('Failed to build swarm protocol', protoErr);
+      // Absolute Emergency Fallback
+      protocol = {
+        id: `p-emergency-${Date.now()}`,
+        goal: input,
+        status: 'active',
+        createdAt: Date.now(),
+        tasks: [{
+          id: 't-0',
+          agentId: 'sp01',
+          description: 'Emergency Strategic Recovery for: ' + input,
+          state: TaskState.PENDING,
+          dependencies: []
+        }]
+      };
+    }
 
     // 3. Register SN00's agent instances so ChainManager reuses them
     //    (ensures status updates flow through getStatus().subAgents)
