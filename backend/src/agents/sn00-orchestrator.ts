@@ -65,6 +65,10 @@ export class SN00Orchestrator extends BaseAgent {
     this.chainManager = ChainManager.getInstance();
   }
 
+  private cleanJson(text: string): string {
+    return text.replace(/```json\n?|```/g, '').trim();
+  }
+
   async execute(input: string, campaignId?: string): Promise<string> {
     const { VertexAIService } = require('../services/vertex-ai');
     const modelId = VertexAIService.getInstance().GEMINI_MODELS.reasoning;
@@ -173,7 +177,7 @@ ${contentSnippet}...
         `);
        
         const response = await result.response;
-        executionPlan = JSON.parse(response.text() || '{}');
+        executionPlan = JSON.parse(this.cleanJson(response.text()) || '{}');
         
         // --- PHASE 2: ULTIMATE NEURAL REFINEMENT ---
         this.updateStatus(AgentState.THINKING, 'Refining execution plan against Maximum Excellence Standard...', 12);
@@ -195,7 +199,7 @@ ${contentSnippet}...
         `;
         const refinementResult = await model.generateContent(refinementPrompt);
         const refinementResponse = await refinementResult.response;
-        const refinedPlan = JSON.parse(refinementResponse.text() || JSON.stringify(executionPlan));
+        const refinedPlan = JSON.parse(this.cleanJson(refinementResponse.text()) || JSON.stringify(executionPlan));
         
         // Final Schema Guard: Ensure we have nodes
         executionPlan = refinedPlan.nodes ? refinedPlan : { nodes: refinedPlan.tasks || refinedPlan };
@@ -208,6 +212,16 @@ ${contentSnippet}...
     } catch (e) {
        console.error('Failed to parse execution plan via Gemini', e);
        this.updateStatus(AgentState.WORKING, 'Fallback to standard monolithic pipeline...', 10);
+       // Robust Fallback: Populate a baseline execution plan
+       executionPlan = {
+         nodes: [
+           { agentId: 'sp01', task: 'Develop core strategic roadmap for ' + input },
+           { agentId: 'ba07', task: 'Extract market intelligence and competitor data' },
+           { agentId: 'cc06', task: 'Draft comprehensive marketing copy and creative brief' },
+           { agentId: 'da03', task: 'Generate high-fidelity visual assets using Imagen 3' },
+           { agentId: 'ra01', task: 'Perform final compliance audit and excellence check' }
+         ]
+       };
     }
 
     // 2. Build SwarmProtocol
