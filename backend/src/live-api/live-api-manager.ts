@@ -61,6 +61,7 @@ export class LiveApiManager {
 
     let liveSession: any = null;
     let closing = false;
+    let swarmFiredRecently = false;
 
     const sendToClient = (payload: object) => {
       if (clientWs.readyState === WebSocket.OPEN) {
@@ -170,10 +171,17 @@ export class LiveApiManager {
                       this.logger.error('sendToolResponse FAILED', toolErr as Error);
                     }
 
-                    // Execute swarm async (non-blocking)
-                    runSwarm(args.intent, args.campaignType).catch(e =>
-                      this.logger.error('runSwarm error', e)
-                    );
+                    // Mark that swarm was fired — onclose auto-reconnect uses this
+                    swarmFiredRecently = true;
+                    setTimeout(() => { swarmFiredRecently = false; }, 30000);
+
+                    // Defer swarm execution by 2s to let the Live session fully
+                    // process the tool response without concurrent API key contention
+                    setTimeout(() => {
+                      runSwarm(args.intent, args.campaignType).catch(e =>
+                        this.logger.error('runSwarm error', e)
+                      );
+                    }, 2000);
                   }
                 }
               }
@@ -188,13 +196,23 @@ export class LiveApiManager {
           },
 
           onerror: (err: any) => {
-            this.logger.error('Gemini Live error', err);
-            sendToClient({ type: 'error', message: 'Gemini Live API error. Reconnecting...' });
+            this.logger.error(`Gemini Live ERROR: ${JSON.stringify(err?.message || err?.code || err)}`);
+            sendToClient({ type: 'error', message: 'Gemini Live API error.' });
           },
 
           onclose: (ev: any) => {
-            this.logger.info(`Gemini Live session closed: code=${ev?.code}`);
-            if (!closing) {
+            const code = ev?.code ?? 'unknown';
+            const reason = ev?.reason ?? '';
+            this.logger.info(`Gemini Live session CLOSED: code=${code} reason="${reason}" closing=${closing} swarmFired=${swarmFiredRecently}`);
+
+            if (!closing && swarmFiredRecently) {
+              // Session closed right after a tool call — the Gemini Live API
+              // sometimes drops the session after sendToolResponse.
+              // Tell client the voice link is temporarily paused, but swarm continues.
+              this.logger.info('Session closed after tool call — swarm continues in background. Notifying client.');
+              sendToClient({ type: 'ai_text', text: '\n\n[NEXUS] Swarm aktiviert. Die Agenten arbeiten jetzt im Hintergrund. Du kannst die GenIUS Console erneut öffnen um weiterzusprechen.' });
+              sendToClient({ type: 'live_closed' });
+            } else if (!closing) {
               sendToClient({ type: 'live_closed' });
             }
           },
