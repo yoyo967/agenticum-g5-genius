@@ -661,7 +661,7 @@ export function GenIUSConsole() {
              <span className="text-[10px] uppercase font-black tracking-widest text-accent">Active Swarm Matrix</span>
           </div>
           
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             {swarm && [swarm, ...Object.values(swarm.subAgents || {})].map((agent) => (
               <motion.div 
                 key={agent.id}
