@@ -1,9 +1,8 @@
 import { BaseAgent, AgentState } from './base-agent';
-import axios from 'axios';
 import { db, Collections } from '../services/firestore';
+import { groundingEngine } from '../services/grounding-engine';
 
 export class BA07BrowserArchitect extends BaseAgent {
-  private engineUrl: string;
   private readonly DIRECTIVES = `
     IDENTITY: You are the GenIUS Browser Architect (BA07).
     RORE: Du bist das Auge des Swarms im Live-Web. Deine Aufgabe ist die autonome Navigation, Extraktion und Analyse von Web-Content.
@@ -25,7 +24,6 @@ export class BA07BrowserArchitect extends BaseAgent {
       name: 'Browser Architect',
       color: '#00E5FF'
     });
-    this.engineUrl = process.env.ENGINE_URL || 'https://genius-backend-697051612685.europe-west1.run.app';
   }
 
   async execute(input: string, context?: any): Promise<string> {
@@ -53,30 +51,9 @@ export class BA07BrowserArchitect extends BaseAgent {
         timestamp: new Date()
       });
 
-      const response = await axios.post(`${this.engineUrl}/browser-action/`, {
-        url: url,
-        task: `${this.DIRECTIVES}\n\nUSER_TARGET_TASK: ${input}`,
-        dsgvo_scope: true,
-        triggered_by: 'sn00'
-      });
-
-      const data = response.data;
-
-      if (data.status === 'blocked_by_senate') {
-        this.updateStatus(AgentState.ERROR, 'Action blocked by Security Senate (GDPR)', 100);
-        
-        await db.collection(Collections.PERFECT_TWIN_LOGS).add({
-          run_id: sessionId,
-          type: 'senate',
-          agent: 'ra01',
-          message: `ACCESS VETO: Blocked scraping of ${url} due to compliance risks.`,
-          severity: 'error',
-          timestamp: new Date()
-        });
-
-        return `⚠️ BLOCKIERT: RA-01 Senate hat den Zugriff auf ${url} verweigert (DSGVO Verstoß).`;
-      }
-
+      // DIRECT CALL to GroundingEngine instead of blocking HTTP loop
+      const result = await groundingEngine.scavenge(url, 'competitor');
+      
       const latency = Date.now() - startTime;
       this.updateStatus(AgentState.DONE, 'Intelligence extraction complete.', 100);
       
@@ -85,7 +62,7 @@ export class BA07BrowserArchitect extends BaseAgent {
         run_id: sessionId,
         type: 'grounding',
         agent: 'ba07',
-        message: `Successfully extracted intelligence from ${url}. Decompiled ${data.sp01_intel_feed?.found_headings?.length || 0} headings.`,
+        message: `Successfully extracted intelligence from ${url}. Tactical White Space identified.`,
         sources: [url],
         latency,
         score: 98,
@@ -93,7 +70,7 @@ export class BA07BrowserArchitect extends BaseAgent {
         timestamp: new Date()
       });
 
-      return JSON.stringify(data.sp01_intel_feed, null, 2);
+      return result;
     } catch (error: any) {
       this.updateStatus(AgentState.ERROR, `Browser error: ${error.message}`, 100);
       

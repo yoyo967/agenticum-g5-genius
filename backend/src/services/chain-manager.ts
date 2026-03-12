@@ -212,17 +212,26 @@ export class ChainManager {
       }
 
       let result;
-      if (task.sentient) {
-        const { SentientLoopService } = require('./sentient-loop');
-        const loop = await SentientLoopService.getInstance().refine(
-          task.agentId,
-          fullPrompt,
-          task.maxIterations || 3
-        );
-        result = loop.finalOutput;
-      } else {
-        result = await agent.execute(fullPrompt); 
-      }
+      const TIMEOUT_MS = 120000; // 120s safety timeout
+      
+      const executionPromise = (async () => {
+        if (task.sentient) {
+          const { SentientLoopService } = require('./sentient-loop');
+          const loop = await SentientLoopService.getInstance().refine(
+            task.agentId,
+            fullPrompt,
+            task.maxIterations || 3
+          );
+          return loop.finalOutput;
+        } else {
+          return await agent.execute(fullPrompt); 
+        }
+      })();
+
+      result = await Promise.race([
+        executionPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Agent execution timeout (120s)')), TIMEOUT_MS))
+      ]);
       
       task.result = result;
       task.state = TaskState.COMPLETED;

@@ -73,6 +73,15 @@ export class LiveApiManager {
     // Execute the swarm and stream results back
     // ──────────────────────────────────────────────
     const runSwarm = async (intent: string, campaignId?: string) => {
+      // Immediate UI feedback
+      eventFabric.broadcastStatus({
+        id: 'sn00',
+        name: 'Nexus Orchestrator',
+        state: 'thinking',
+        lastStatus: 'Initial directive received. Piercing the veil...',
+        progress: 10
+      });
+
       import('../services/nexus-manager').then(m =>
         m.nexusManager.updateState({
           currentUserIntent: intent,
@@ -96,7 +105,7 @@ export class LiveApiManager {
     // ──────────────────────────────────────────────
     try {
       liveSession = await this.ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-latest',
+        model: 'gemini-2.0-flash-live-001',
         callbacks: {
           onopen: () => {
             this.logger.info('Gemini Live session opened');

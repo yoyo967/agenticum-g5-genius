@@ -157,7 +157,8 @@ ${contentSnippet}...
               }
            }
         });
-        const result = await model.generateContent(`
+         this.updateStatus(AgentState.THINKING, 'Synthesizing Swarm Protocol from directive...', 8);
+         const result = await model.generateContent(`
             IDENTITY: You are SN-00 GenIUS Orchestrator.
             TASK: Create a Swarm Execution Plan for the following directive: "${input}"
             SWARM_MEMORY (Past Logs):
@@ -181,36 +182,39 @@ ${contentSnippet}...
         const response = await result.response;
         executionPlan = JSON.parse(this.cleanJson(response.text()) || '{}');
         
-        // --- PHASE 2: ULTIMATE NEURAL REFINEMENT ---
-        this.updateStatus(AgentState.THINKING, 'Refining execution plan against Maximum Excellence Standard...', 12);
-        const refinementPrompt = `
-          STRATEGIC_AUDIT_PROTOCOL: ULTIMATE_GenIUS_V3
-          PLAN_TO_AUDIT: ${JSON.stringify(executionPlan)}
-          SYSTEM_TRUTH: ${nexusManager.getGlobalContext()}
-          
-          CRITICAL_MISSION: 
-          1. Eviscerate all redundant or shallow agent tasks.
-          2. Ensure SP01 (Strategy) precedes all content generation.
-          3. Ensure DA03 (Design) is tasked with HIGH-FIDELITY visual generation (Imagen 3).
-          4. Force BA07 (Browser) to verify market data for SP01.
-          5. EVERY node must have a "description" that is technical and precise.
-          6. Ensure the output is a valid JSON object with a "nodes" array.
-          
-          If the plan is less than 5 nodes for a complex task, it is INSUFFICIENT. Expand it.
-          Respond with ONLY the Refined JSON.
-        `;
-        const refinementResult = await model.generateContent(refinementPrompt);
-        const refinementResponse = await refinementResult.response;
-        const refinedPlan = JSON.parse(this.cleanJson(refinementResponse.text()) || JSON.stringify(executionPlan));
-        
-        // Final Schema Guard: Ensure we have nodes and they are an array
-        let nodes = refinedPlan.nodes || refinedPlan.tasks || refinedPlan;
-        if (!Array.isArray(nodes)) {
-          nodes = [nodes]; // Wrap single object in array
-        }
-        executionPlan = { nodes };
+         this.updateStatus(AgentState.THINKING, 'Refining execution plan against Maximum Excellence Standard...', 12);
+         try {
+           const refinementPrompt = `
+             STRATEGIC_AUDIT_PROTOCOL: ULTIMATE_GenIUS_V3
+             PLAN_TO_AUDIT: ${JSON.stringify(executionPlan)}
+             SYSTEM_TRUTH: ${nexusManager.getGlobalContext()}
+             
+             CRITICAL_MISSION: 
+             1. Eviscerate all redundant or shallow agent tasks.
+             2. Ensure SP01 (Strategy) precedes all content generation.
+             3. Ensure DA03 (Design) is tasked with HIGH-FIDELITY visual generation (Imagen 3).
+             4. Force BA07 (Browser) to verify market data for SP01.
+             5. EVERY node must have a "description" that is technical and precise.
+             6. Ensure the output is a valid JSON object with a "nodes" array.
+             
+             If the plan is less than 5 nodes for a complex task, it is INSUFFICIENT. Expand it.
+             Respond with ONLY the Refined JSON.
+           `;
+           const refinementResult = await model.generateContent(refinementPrompt);
+           const refinementResponse = await refinementResult.response;
+           const refinedPlan = JSON.parse(this.cleanJson(refinementResponse.text()) || JSON.stringify(executionPlan));
+           
+           // Final Schema Guard: Ensure we have nodes and they are an array
+           let nodes = refinedPlan.nodes || refinedPlan.tasks || refinedPlan;
+           if (!Array.isArray(nodes)) {
+             nodes = [nodes]; // Wrap single object in array
+           }
+           executionPlan = { nodes };
+         } catch (refineErr) {
+           this.logger.warn('Neural refinement failed, proceeding with original plan.', refineErr as Error);
+         }
 
-        this.updateStatus(AgentState.THINKING, `Plan Refined: ${executionPlan.nodes?.length || 0} Strategic Pillars established.`, 15);
+         this.updateStatus(AgentState.THINKING, `Plan Refined: ${executionPlan.nodes?.length || 0} Strategic Pillars established.`, 15);
        
         const { eventFabric } = require('../services/event-fabric');
         eventFabric.broadcast({ type: 'agent-thought', agentId: 'sn00', thought: `Refined Neural Execution Plan for: ${input}` });
