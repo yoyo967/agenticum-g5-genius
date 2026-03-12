@@ -19,6 +19,7 @@ import columnaRoutes from './routes/columna';
 import distributionRoutes from './routes/distribution';
 import contentRoutes from './routes/content';
 import browserRoutes from './routes/browser';
+import swarmRoutes from './routes/swarm';
 import { sovereignService } from './services/sovereign-service';
 import { autopilotService } from './services/cron';
 import { clientManager } from './services/client-manager';
@@ -77,6 +78,7 @@ app.use('/api/v1/bridge', bridgeRoutes);
 app.use('/api/v1/columna', columnaRoutes);
 app.use('/api/v1/distribution', distributionRoutes);
 app.use('/api/v1/content', contentRoutes);
+app.use('/api/v1/swarm', swarmRoutes);
 app.use('/browser-action', browserRoutes);
 
 // --- SOVEREIGN AI / GEOPOLITICS ROUTES ---

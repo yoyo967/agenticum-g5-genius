@@ -123,7 +123,7 @@ router.post('/twin-log', async (req: Request, res: Response) => {
           agent,
           timestamp: timestamp || new Date().toISOString(),
           senateApproved: senateApproved ?? true,
-          createdAt: new Date(),
+          createdAt: new Date().toISOString(),
         });
 
         return res.json({

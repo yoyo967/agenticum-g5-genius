@@ -1,12 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-
-export interface ActivityEntry {
-  id: string;
-  time: string;
-  agent: string;
-  message: string;
-  type?: 'dispatch' | 'action' | 'senate' | 'output' | 'error';
-}
+import type { ActivityEntry } from './activityUtils';
 
 interface ActivityFeedProps {
   entries: ActivityEntry[];

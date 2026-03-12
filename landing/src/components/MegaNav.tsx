@@ -74,7 +74,7 @@ function NavDropdown({ label, isOpen, onToggle, children }: DropdownProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.97 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="absolute top-full mt-2 z-[200]"
+            className="absolute top-full mt-2 z-200"
           >
             {children}
           </motion.div>
@@ -115,7 +115,7 @@ export function MegaNav() {
     location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
-    <nav ref={navRef} className="fixed top-0 inset-x-0 z-[100] border-b border-white/5">
+    <nav ref={navRef} className="fixed top-0 inset-x-0 z-100 border-b border-white/5">
       {/* Blur backdrop */}
       <div className="absolute inset-0 bg-black/80 backdrop-blur-2xl" />
 

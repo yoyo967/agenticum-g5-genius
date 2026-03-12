@@ -25,7 +25,7 @@ def check_competitor_overlap(target_topic: str) -> list:
     target_embedding = model.get_embeddings([target_topic])[0].values
     
     db = get_db()
-    collection = db.collection("columna_intelligence")
+    collection = db.collection("competitor_intel")
     
     # 2. Native Firestore Vector Search (find_nearest)
     # Sucht die 3 ähnlichsten Artikel der Konkurrenz
@@ -44,9 +44,9 @@ def check_competitor_overlap(target_topic: str) -> list:
             data = doc.to_dict()
             # Je nach Vektor-Distanz (Tiefer Score = Höhere Ähnlichkeit)
             threat_intel.append({
-                "competitor": data.get("competitor", "Unknown"),
+                "competitor": data.get("name", "Unknown"),
                 "url": data.get("url", "#"),
-                "their_h2_structure": [h["text"] for h in data.get("skeleton", {}).get("headings", []) if h.get("level") == "h2"]
+                "their_h2_structure": [h["text"] for h in data.get("skeleton", []) if isinstance(h, dict) and h.get("level") == "h2"]
             })
     except Exception as e:
         print(f"WARNING: Counter-Strike Vector Search failed (likely missing index): {e}")
@@ -54,17 +54,14 @@ def check_competitor_overlap(target_topic: str) -> list:
     # 3. Fallback: Keyword search if vector search failed or returned nothing
     if not threat_intel:
         print(f"INFO: Vector search yields no results for '{target_topic}'. Falling back to keyword matching...")
-        # Mocking a keyword-based search against the same collection for reliability
-        # In a real scenario, this would be a .where('tags', 'array_contains', '...') query
         try:
-            keywords = [k.lower() for k in target_topic.split() if len(k) > 3]
             fallback_query = collection.limit(3).get() # Simple limit for demo excellence
             for doc in fallback_query:
                 data = doc.to_dict()
                 threat_intel.append({
-                    "competitor": data.get("competitor", "Market Leader"),
+                    "competitor": data.get("name", "Market Leader"),
                     "url": data.get("url", "https://example.com/analysis"),
-                    "their_h2_structure": [h["text"] for h in data.get("skeleton", {}).get("headings", []) if h.get("level") == "h2"]
+                    "their_h2_structure": [h["text"] for h in data.get("skeleton", []) if isinstance(h, dict) and h.get("level") == "h2"]
                 })
         except:
             pass

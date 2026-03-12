@@ -285,7 +285,8 @@ export function WorkflowBuilder() {
         nodes: nodes.map(n => ({ id: n.id, type: n.type, data: n.data, position: n.position })),
         edges: edges.map(e => ({ source: e.source, target: e.target })),
       };
-      const res = await fetch(`${API_BASE_URL}/workflows/deploy`, {
+      
+      const res = await fetch(`${API_BASE_URL}/workflow/deploy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(workflowData),
@@ -333,7 +334,7 @@ export function WorkflowBuilder() {
       };
       
       // Optionally fire to backend
-      const res = await fetch(`${API_BASE_URL}/api/workflows/deploy`, {
+      const res = await fetch(`${API_BASE_URL}/workflow/deploy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(workflowData),

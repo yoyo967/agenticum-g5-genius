@@ -344,7 +344,7 @@ export function LandingPage() {
             <div className="grid grid-cols-3 gap-px border border-zinc-800 bg-zinc-800">
               {[
                 { value: '9', label: 'AI AGENTS' },
-                { value: '99%', label: 'SENATE APPROVAL' },
+                { value: 'RA-01', label: 'SENATE AUDITED' },
                 { value: '<60s', label: 'CAMPAIGN TIME' },
               ].map((stat) => (
                 <div key={stat.label} className="bg-black py-8 px-4 flex flex-col items-center">
@@ -372,7 +372,7 @@ export function LandingPage() {
           <div className="flex items-center gap-6 flex-wrap">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-600">Gemini Live Agent Challenge 2026</span>
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
               <span className="font-mono text-[9px] text-green-400 uppercase tracking-widest">Category: Live Agents 🗣</span>
             </div>
             {[
@@ -418,7 +418,7 @@ export function LandingPage() {
           {/* G5 Way */}
           <FadeIn delay={0.1} className="bg-zinc-950 p-12">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
               <span className="font-mono text-xs text-green-500 uppercase tracking-widest">The G5 Way</span>
             </div>
             <h3 className="text-2xl font-semibold text-white mb-4 leading-snug">
@@ -497,8 +497,8 @@ export function LandingPage() {
                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.15)_0%,rgba(0,0,0,0.8)_70%)]" />
                  {/* Live data overlay */}
                  <div className="absolute top-6 left-6 flex items-center gap-2">
-                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                   <span className="font-mono text-[9px] text-green-400 uppercase tracking-widest">LIVE SYSTEM · 9 AGENTS ONLINE</span>
+                   <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                    <span className="font-mono text-[9px] text-blue-400 uppercase tracking-widest">Neural Link Active · Dynamic Sync</span>
                  </div>
                  <div className="absolute top-6 right-6 font-mono text-[9px] text-blue-400/60 tracking-widest">GEMINI 2.0 FLASH LIVE</div>
                  {/* Animated waveform */}
@@ -651,7 +651,7 @@ export function LandingPage() {
                     {agent.id}
                   </span>
                   <span className="flex items-center gap-1.5 font-mono text-xs text-green-500">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                     ONLINE
                   </span>
                 </div>
@@ -1212,7 +1212,7 @@ export function LandingPage() {
                 }`}
               >
                 <span className={`w-2 h-2 rounded-full ${
-                  apiHealth === 'online' ? 'bg-green-500 animate-pulse' :
+                  apiHealth === 'online' ? 'bg-blue-500 animate-pulse' :
                   apiHealth === 'offline' ? 'bg-red-500' :
                   apiHealth === 'checking' ? 'bg-blue-500 animate-spin' :
                   'bg-zinc-700'
@@ -1438,7 +1438,7 @@ export function LandingPage() {
                <a href="https://geminiliveagentchallenge.devpost.com/" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-zinc-500 hover:text-white uppercase tracking-widest underline decoration-zinc-800 underline-offset-2 transition-colors">Devpost Entry</a>
             </div>
             <div className="flex items-center gap-2 px-3 py-1 bg-green-500/5 border border-green-500/20 rounded-full">
-               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                <span className="font-mono text-[9px] text-green-500/80 font-bold uppercase tracking-widest">Hackathon Validated Build</span>
             </div>
           </div>

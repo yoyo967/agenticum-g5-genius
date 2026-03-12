@@ -89,5 +89,11 @@ export const Collections = {
   TOOLS: 'tools',
   TALENT_GRAPH: 'talent_graph',
   PERFECT_TWIN_LOGS: 'perfect_twin_logs',
-  COMPETITOR_INTEL: 'competitor_intel'
+  COMPETITOR_INTEL: 'competitor_intel',
+  AGENT_OUTPUTS: 'agent_outputs',
+  SENATE_QUEUE: 'senate_queue',
+  AGENT_STATUS: 'agent_status',
+  AGENT_DATA_FLOWS: 'agent_data_flows',
+  SWARM_RUNS: 'swarm_runs',
+  LEADS: 'leads'
 };

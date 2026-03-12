@@ -119,7 +119,7 @@ export function useSwarmAnalytics() {
         id: 'sys-boot',
         time: timeStr(now),
         agent: 'SYS.CORE',
-        text: `Firestore connected. ${totalOutputs} outputs indexed. 9 agents online.`,
+        text: `Firestore connected. ${totalOutputs} outputs indexed.`,
         type: 'success',
       });
 
@@ -163,7 +163,7 @@ export function useSwarmAnalytics() {
 
         // Map to expected graph format
         // 'tokens' is used by SwarmAnalytics graph, tokensK by the Dashboard
-        const totalTokens = Math.max(dOutputs * 12400, i === 6 ? 400 : 0); // Inject some fake tokens if 0 just to make graph look alive
+        const totalTokens = dOutputs * 12400;
 
         tpResult.push({
           day: dayLabel,

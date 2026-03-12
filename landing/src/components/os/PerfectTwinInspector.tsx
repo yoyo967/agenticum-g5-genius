@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Eye, Search, ExternalLink, CheckCircle, AlertTriangle, Info, Terminal, ArrowLeft } from 'lucide-react';
+import { Shield, Eye, Search, ExternalLink, CheckCircle, AlertTriangle, Info, Terminal, ArrowLeft, RefreshCw } from 'lucide-react';
 import { db } from '../../firebase';
 import { collection, query, orderBy, limit, onSnapshot, where, Timestamp } from 'firebase/firestore';
 
 interface AuditLog {
   id: string;
   run_id: string;
-  type: 'grounding' | 'senate' | 'audit' | 'lifecycle';
+  type: 'grounding' | 'senate' | 'audit' | 'lifecycle' | 'diff';
   agent: string;
   message: string;
   sources?: string[];
@@ -15,6 +15,11 @@ interface AuditLog {
   latency?: number;
   timestamp: Timestamp;
   severity: 'info' | 'success' | 'warning' | 'error';
+  diff?: {
+    original: string;
+    modified: string;
+    explanation?: string;
+  };
 }
 
 interface InspectorProps {
@@ -25,7 +30,7 @@ interface InspectorProps {
 
 export function PerfectTwinInspector({ runId, onClose, standalone = true }: InspectorProps) {
   const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [activeTab, setActiveTab] = useState<'live' | 'grounding' | 'senate'>('live');
+  const [activeTab, setActiveTab] = useState<'live' | 'grounding' | 'senate' | 'diff'>('live');
   const [loading, setLoading] = useState(true);
   const [prevRunId, setPrevRunId] = useState(runId);
 
@@ -71,6 +76,7 @@ export function PerfectTwinInspector({ runId, onClose, standalone = true }: Insp
     if (activeTab === 'live') return true;
     if (activeTab === 'grounding') return log.type === 'grounding';
     if (activeTab === 'senate') return log.type === 'senate' || log.type === 'audit';
+    if (activeTab === 'diff') return log.type === 'diff' || !!log.diff;
     return true;
   });
 
@@ -97,10 +103,10 @@ export function PerfectTwinInspector({ runId, onClose, standalone = true }: Insp
           </div>
         </div>
         <div className="flex bg-white/5 p-1 rounded-lg border border-white/5">
-          {['live', 'grounding', 'senate'].map(tab => (
+          {['live', 'grounding', 'senate', 'diff'].map(tab => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab as 'live' | 'grounding' | 'senate')}
+              onClick={() => setActiveTab(tab as typeof activeTab)}
               className={`px-3 py-1 rounded-md font-mono text-[9px] uppercase transition-colors ${activeTab === tab ? 'bg-accent text-void' : 'text-white/40 hover:text-white'}`}
             >
               {tab}
@@ -182,6 +188,36 @@ export function PerfectTwinInspector({ runId, onClose, standalone = true }: Insp
                           />
                         </div>
                         <span className="font-mono text-[9px] text-white/40">{log.score}% Quality</span>
+                      </div>
+                    )}
+
+                    {/* Diff Visualization */}
+                    {log.diff && (
+                      <div className="mt-4 space-y-2 border-t border-white/5 pt-3">
+                        <div className="flex items-center gap-2 mb-2">
+                           <RefreshCw size={10} className="text-accent animate-spin-slow" />
+                           <span className="text-[9px] font-mono uppercase text-white/40 tracking-widest">Evolution Detected</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <span className="text-[8px] font-mono text-white/20 uppercase">Baseline</span>
+                            <div className="p-2 rounded bg-red-500/5 border border-red-500/10 font-mono text-[10px] text-red-200/60 line-through whitespace-pre-wrap">
+                              {log.diff.original}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <span className="text-[8px] font-mono text-white/20 uppercase">Iterated</span>
+                            <div className="p-2 rounded bg-emerald-500/5 border border-emerald-500/10 font-mono text-[10px] text-emerald-200/80 whitespace-pre-wrap">
+                              {log.diff.modified}
+                            </div>
+                          </div>
+                        </div>
+                        {log.diff.explanation && (
+                          <p className="text-[9px] italic text-white/30 bg-white/3 p-2 rounded border border-white/5">
+                            <span className="text-accent not-italic font-bold mr-1">Rationale:</span>
+                            {log.diff.explanation}
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>

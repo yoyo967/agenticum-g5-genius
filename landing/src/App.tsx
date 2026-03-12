@@ -15,12 +15,14 @@ import { HowItWorksPage } from './pages/HowItWorksPage';
 import { TechPage } from './pages/TechPage';
 import { CompliancePage } from './pages/CompliancePage';
 import { AuthProvider } from './components/auth/AuthProvider';
+import { WebSocketProvider } from './context/WebSocketContext';
 
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <WebSocketProvider>
+      <AuthProvider>
+        <BrowserRouter>
         <Routes>
           {/* Public / Apex */}
           <Route path="/" element={<LandingPage />} />
@@ -78,6 +80,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    </WebSocketProvider>
   );
 }
 

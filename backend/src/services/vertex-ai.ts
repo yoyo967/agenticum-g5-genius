@@ -112,21 +112,7 @@ export class VertexAIService {
       return text;
 
     } catch (error) {
-      this.logger.error('Error generating content, providing simulated response', error as Error);
-      
-      // HACKATHON FALLBACK: If everything fails, return valid storyboard JSON mock if prompt looks like cinematic
-      if (prompt.includes('storyboard')) {
-         return JSON.stringify({
-           storyboard: [
-             { shotNumber: 1, visualPrompt: "Cinematic close-up of a neural network activating in a dark laboratory.", audioDescription: "Deep humming sound, electronic pulses.", durationSec: 3, mood: "Mystery" },
-             { shotNumber: 2, visualPrompt: "Golden light sweeping across an enterprise server rack.", audioDescription: "Rising orchestral strings.", durationSec: 4, mood: "Grand" },
-             { shotNumber: 3, visualPrompt: "A professional marketing manager looking at a holographic dashboard.", audioDescription: "Subtle digital typing sounds.", durationSec: 3, mood: "High-Tech" },
-             { shotNumber: 4, visualPrompt: "Fast cuts of analytics graphs turning green.", audioDescription: "Quick synth pulses.", durationSec: 2, mood: "Success" },
-             { shotNumber: 5, visualPrompt: "Logo of Agenticum G5 appearing in a vacuum of space.", audioDescription: "Impactful bass drop, silence.", durationSec: 5, mood: "Epic" }
-           ]
-         });
-      }
-      
+      this.logger.error('Error generating content', error as Error);
       throw error;
     }
   }
@@ -198,25 +184,25 @@ export class VertexAIService {
     }
 
     try {
-      const ai = new GoogleGenAI(apiKey);
-      const model = ai.getGenerativeModel({ model: 'imagen-3.0-generate-002' });
-      // Note: Imagen 3 via @google/generative-ai might have different method names or be restricted.
-      // Assuming generateContent with task/config if supported, or falling back.
-      const response = await (model as any).generateImages({
+      // Use @google/genai (new SDK, same as Live API) — @google/generative-ai does NOT support generateImages()
+      const { GoogleGenAI } = require('@google/genai');
+      const ai = new GoogleGenAI({ apiKey });
+
+      const response = await ai.models.generateImages({
+        model: 'imagen-3.0-generate-002',
         prompt: prompt,
         config: {
-            numberOfImages: 1,
-            outputMimeType: 'image/jpeg',
-            aspectRatio: '16:9'
+          numberOfImages: 1,
+          outputMimeType: 'image/jpeg',
+          aspectRatio: '16:9'
         }
       });
-      
-      const b64 = response.generatedImages?.[0]?.image?.imageBytes;
-      if (b64) {
-          return `data:image/jpeg;base64,${b64}`;
-      } else {
-          throw new Error('No image bytes returned from Imagen 3.');
+
+      const imageBytes = response.generatedImages?.[0]?.image?.imageBytes;
+      if (imageBytes) {
+        return `data:image/jpeg;base64,${imageBytes}`;
       }
+      throw new Error('No image bytes returned from Imagen 3.');
     } catch (error) {
        this.logger.error('Imagen 3 generation failed', error as Error);
        return `https://storage.googleapis.com/online-marketing-manager-genius-assets/mock-${Date.now()}.png`;

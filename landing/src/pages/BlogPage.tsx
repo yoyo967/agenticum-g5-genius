@@ -139,7 +139,7 @@ function renderContent(content: string) {
     // H4
     if (line.startsWith('#### ')) {
       flushList(i);
-      elements.push(<h4 key={i} className="text-base font-semibold text-zinc-300 mt-6 mb-2 uppercase tracking-wide text-sm font-mono"><InlineMarkdown text={line.slice(5)} /></h4>);
+      elements.push(<h4 key={i} className="font-semibold text-zinc-300 mt-6 mb-2 uppercase tracking-wide text-sm font-mono"><InlineMarkdown text={line.slice(5)} /></h4>);
       return;
     }
     // Blockquote

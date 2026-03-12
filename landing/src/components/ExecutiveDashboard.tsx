@@ -55,17 +55,17 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
           id: 'SN-00',
           name: 'NEXUS PRIME',
           state: 'idle',
-          progress: 100,
+          progress: 0,
           color: 'var(--color-accent)',
-          lastStatus: 'System Ready',
+          lastStatus: 'Initializing Neural Map...',
           subAgents: agentsData.reduce((acc: Record<string, AgentStatus>, agent: { id: string; name: string; state?: string; color: string }) => {
             acc[agent.id.toLowerCase()] = {
               id: agent.id,
               name: agent.name,
-              state: agent.state || 'idle',
-              progress: 100,
+              state: 'idle',
+              progress: 0,
               color: agent.color,
-              lastStatus: 'System Ready'
+              lastStatus: 'Awaiting Command'
             };
             return acc;
           }, {})
@@ -162,15 +162,18 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
     };
   }, [stats?.agentActivity]);
 
-  // Computed resonance index — reflects real swarm health
+  // Resonance index grounded in actual throughput vs errors
   const resonance = useMemo(() => {
     if (!stats) return null;
-    const base = 0.60;
-    const workflowBonus = Math.min((stats.activeWorkflows ?? 0) * 0.05, 0.20);
-    const outputBonus   = Math.min((stats.totalOutputs ?? 0) * 0.002, 0.15);
-    const senatePenalty = Math.min((stats.senatePending ?? 0) * 0.025, 0.10);
-    const val = Math.min(base + workflowBonus + outputBonus - senatePenalty, 0.99);
-    return { value: val.toFixed(2), label: val >= 0.85 ? 'OPTIMAL' : val >= 0.70 ? 'STABLE' : 'DEGRADED', color: val >= 0.85 ? 'var(--color-accent)' : val >= 0.70 ? 'var(--color-gold)' : 'var(--color-magenta)' };
+    const total = (stats.totalOutputs || 0) + (stats.senateBlocked || 0);
+    if (total === 0) return { value: '0.00', label: 'STANDBY', color: 'var(--color-zinc-500)' };
+    const successRate = (stats.totalOutputs || 0) / total;
+    const val = successRate;
+    return { 
+       value: val.toFixed(2), 
+       label: val >= 0.95 ? 'OPTIMAL' : val >= 0.80 ? 'STABLE' : 'DEGRADED', 
+       color: val >= 0.95 ? 'var(--color-accent)' : val >= 0.80 ? 'var(--color-gold)' : 'var(--color-magenta)' 
+    };
   }, [stats]);
 
   // Today's deliverables — computed from fetched data
@@ -241,9 +244,9 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
           className="absolute inset-0 bg-linear-to-r from-transparent via-accent/10 to-transparent pointer-events-none"
         />
         <div className="flex items-center gap-4 relative z-10">
-          <div className="w-2 h-2 rounded-full bg-accent animate-ping" />
+          <div className={`w-2 h-2 rounded-full ${resonance ? 'bg-accent animate-ping' : 'bg-white/20'}`} />
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">
-            Nexus Context: <span className="text-white italic">"Active Swarm Optimization for High-Density Strategic Growth"</span>
+            Nexus Context: <span className="text-white italic">{resonance ? "Neural Fabric Online" : "Waiting for Neural Uplink..."}</span>
           </p>
         </div>
         <div className="flex items-center gap-2 relative z-10">
@@ -275,7 +278,7 @@ export function ExecutiveDashboard({ onNavigate }: { onNavigate?: (module: Navig
         <StatCard
           title="Swarm Readiness"
           value={loading ? '—' : (stats?.readiness ?? 'Offline')}
-          subtext="All 9 agents online"
+          subtext={`${Object.keys(swarmState?.subAgents || {}).length || 9} agents active in mesh`}
           icon={<Users size={20} />}
           accentColor="var(--color-gold)"
         />

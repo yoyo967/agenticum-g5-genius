@@ -36,7 +36,7 @@ const MODULES = [
     agents: ['SN-00', 'PM-07'],
     color: 'border-zinc-700/40 hover:border-zinc-500', textColor: 'text-zinc-300',
     headline: 'Real-time KPIs, swarm telemetry, and system health — one high-density command interface.',
-    what: 'Aggregates live data from all 15 modules into a single pane of glass. Shows the Resonance Index, Swarm Readiness (100%), active campaigns, recent outputs, and live WebSocket heartbeat from all agents. Designed for CMOs who need strategic overview without technical depth.',
+    what: 'Aggregates live data from all 15 modules into a single pane of glass. Shows the Resonance Index, real-time Swarm Readiness, active campaigns, recent outputs, and live WebSocket heartbeat from all agents. Designed for CMOs who need strategic overview without technical depth.',
     output: 'Live operational intelligence: KPIs, campaign count, veto rates, output volume vs human baselines',
     businessValue: 'Gives marketing leadership real-time visibility into AI operations without requiring technical interaction.',
     integrates: ['GenIUS Console', 'Swarm Analytics', 'Project Memory'],
@@ -531,7 +531,7 @@ export function ModulesPage() {
         <div className="mb-40">
           <div className="flex justify-between items-baseline mb-12">
             <p className="font-mono text-[10px] text-zinc-600 uppercase tracking-widest">Module Registry</p>
-            <p className="font-mono text-[9px] text-zinc-700 uppercase tracking-widest">{filtered.length} Active</p>
+            <p className="font-mono text-[9px] text-zinc-700 uppercase tracking-widest">{filtered.length} Total Modules</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Workflow, Play, CheckCircle2, Cpu, Zap, Film, Shield, Bot, ChevronRight, Sparkles, FileText } from 'lucide-react';
+import { Workflow, Play, Pause, RefreshCw, CheckCircle2, Cpu, Zap, Film, Shield, Bot, ChevronRight, Sparkles, FileText, AlertTriangle } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { useSwarmRun } from '../hooks/useSwarmRun';
 
 type AgentId = 'sn00' | 'so00' | 'sp01' | 'cc06' | 'da03' | 'ba07' | 've01' | 'ra01' | 'trigger';
 
@@ -39,14 +40,14 @@ const WORKFLOWS: WorkflowTemplate[] = [
   }
 ];
 
-export function NexusEngineV2() {
+export function NexusEngineV2({ runId, onRunStarted }: { runId: string | null; onRunStarted?: (id: string) => void }) {
   const [activeWorkflowId, setActiveWorkflowId] = useState<string>(WORKFLOWS[0].id);
   const [toast, setToast] = useState<string | null>(null);
-  const [agentProgress, setAgentProgress] = useState<Record<string, 'idle' | 'processing' | 'complete'>>({});
-  const [isRunning, setIsRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [budget, setBudget] = useState(500);
   const [market, setMarket] = useState('EU-DACH');
 
+  const { run } = useSwarmRun(runId);
   const activeWorkflow = WORKFLOWS.find(w => w.id === activeWorkflowId) || WORKFLOWS[0];
 
   const getAgentIcon = (id: AgentId) => {
@@ -76,71 +77,82 @@ export function NexusEngineV2() {
     }
   };
 
+  const getAgentStatus = (agentId: string) => {
+    if (!run) return 'idle';
+    const task = (run.tasks || []).find((t: { agentId: string; state: string }) => t.agentId.toLowerCase() === agentId.toLowerCase());
+    if (!task) return 'idle';
+    return task.state.toLowerCase(); // 'pending', 'running', 'completed', 'failed'
+  };
+
   const runWorkflow = async () => {
-    if (isRunning) return;
-    setIsRunning(true);
+    if (run && run.status === 'active') return;
+    setError(null);
     setToast(`${activeWorkflow.name} — Initializing Swarm...`);
 
-    // Reset all agents to idle
-    const initialState: Record<string, 'idle' | 'processing' | 'complete'> = {};
-    activeWorkflow.agents.forEach(a => initialState[a] = 'idle');
-    setAgentProgress(initialState);
-
     try {
-      const response = await fetch(`${API_BASE_URL}/workflow/deploy`, {
+      const response = await fetch(`${API_BASE_URL}/swarm/launch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          workflowId: activeWorkflow.id,
-          name: activeWorkflow.name,
-          nodes: activeWorkflow.agents.map((id, i) => ({
-            id: `node-${i}`,
-            type: 'agentNode',
-            data: { agentId: id.toLowerCase(), title: id, config: activeWorkflow.desc }
-          })).concat([{
-            id: 'trigger-0',
-            type: 'triggerNode',
-            data: { agentId: 'trigger', title: 'trigger' as AgentId, config: activeWorkflow.desc }
-          }]),
-          edges: activeWorkflow.agents.map((_, i) => ({
-            id: `edge-${i}`,
-            source: i === 0 ? 'trigger-0' : `node-${i-1}`,
-            target: `node-${i}`
-          })),
-          config: { budget, market, priority: 'MAX_EXCELLENCE' }
+          directive: `Execute workflow: ${activeWorkflow.name}. Context: ${activeWorkflow.desc}`,
+          market,
+          budget,
+          priority: 'MAX_EXCELLENCE'
         })
       });
 
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error((data as { error?: string })?.error || 'Deployment failed upstream.');
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Deployment failed.');
 
-      const successMsg = (data as { message?: string })?.message || `${activeWorkflow.name} — Dispatched to Swarm Cluster.`;
-      setToast(successMsg);
+      if (onRunStarted) onRunStarted(data.runId);
+      setToast(data.message || 'Blueprint dispatched to Neural Fabric.');
+      
+      // Secondary trigger for global UI sync
+      window.dispatchEvent(new CustomEvent('trigger-orchestration', {
+        detail: {
+          input: `Execute workflow: ${activeWorkflow.name}`,
+          runId: data.runId
+        }
+      }));
 
-      // Animate agents sequentially through the pipeline
-      for (const agent of activeWorkflow.agents) {
-        setAgentProgress(prev => ({ ...prev, [agent]: 'processing' }));
-        await new Promise<void>(resolve => setTimeout(resolve, 700));
-        setAgentProgress(prev => ({ ...prev, [agent]: 'complete' }));
-        await new Promise<void>(resolve => setTimeout(resolve, 150));
-      }
-
-    } catch (err) {
-      const error = err as Error;
-      setToast(`Error: ${error.message}`);
-    } finally {
-      setIsRunning(false);
-      setTimeout(() => setToast(null), 5000);
+    } catch (err: any) {
+      setError(err.message);
+      setToast(null);
     }
-
-    // Dispatch global event for GeniusConsole to pick up (for visual only)
-    window.dispatchEvent(new CustomEvent('trigger-orchestration', {
-      detail: {
-        input: `Execute workflow: ${activeWorkflow.name}. Context: ${activeWorkflow.desc}`,
-        workflowId: activeWorkflow.id
-      }
-    }));
   };
+
+  const pauseSwarm = async () => {
+    if (!runId) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/swarm/pause`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ runId })
+      });
+      if (!response.ok) throw new Error('Pause failed');
+      setToast('Swarm execution PAUSED.');
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const resumeSwarm = async () => {
+    if (!runId) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/swarm/resume`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ runId })
+      });
+      if (!response.ok) throw new Error('Resume failed');
+      setToast('Swarm execution RESUMED.');
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const isActuallyRunning = run?.status === 'active' || run?.status === 'pending';
+  const isPaused = run?.status === 'paused';
 
   return (
     <div className="w-full h-[800px] glass rounded-3xl overflow-hidden flex flex-col font-mono text-sm border border-white/5 relative bg-obsidian/40 backdrop-blur-3xl shadow-2xl">
@@ -194,6 +206,16 @@ export function NexusEngineV2() {
              </motion.div>
           )}
 
+          {error && (
+             <motion.div 
+               initial={{ opacity: 0, y: -20 }} 
+               animate={{ opacity: 1, y: 0 }} 
+               className="absolute top-6 left-1/2 -translate-x-1/2 z-50 bg-red-500/10 border border-red-500/30 text-red-500 px-4 py-2 rounded-full text-[10px] uppercase font-black tracking-widest flex items-center gap-2"
+             >
+               <AlertTriangle size={12} /> {error}
+             </motion.div>
+          )}
+
           <div className="mb-8">
             <h1 className="text-3xl font-display font-black uppercase italic tracking-tighter text-white mb-2">{activeWorkflow.name}</h1>
             <p className="text-white/50">{activeWorkflow.desc}</p>
@@ -218,7 +240,7 @@ export function NexusEngineV2() {
                 <select 
                   value={market}
                   onChange={(e) => setMarket(e.target.value)}
-                  className="w-full bg-black/40 border-none text-xs font-mono text-white focus:ring-0"
+                  className="w-full bg-black/40 border-none text-xs font-mono text-white focus:ring-0 rounded-lg"
                 >
                    <option value="EU-DACH">EU-DACH (GDPR/AI-ACT)</option>
                    <option value="US-EAST">US-EAST (FED-COMP)</option>
@@ -231,86 +253,119 @@ export function NexusEngineV2() {
           <div className="flex-1 bg-white/5 border border-white/5 rounded-2xl p-8 relative flex items-center justify-center min-h-[400px]">
             {/* Visual Agent Chain */}
             <div className="flex items-center justify-center flex-wrap gap-4 max-w-4xl w-full">
-              {activeWorkflow.agents.map((agent, index) => (
-                <div key={`${agent}-${index}`} className="flex items-center gap-4">
-                  
-                  {/* Node */}
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex flex-col items-center gap-3 relative z-10"
-                  >
-                      <div className={`w-16 h-16 rounded-full border glass bg-black/40 flex items-center justify-center relative shadow-xl transition-all duration-500 ${
-                        agentProgress[agent] === 'processing' ? 'border-neural-gold/60 shadow-[0_0_20px_rgba(255,215,0,0.4)] scale-110' :
-                        agentProgress[agent] === 'complete' ? 'border-green-500/60 shadow-[0_0_20px_rgba(34,197,94,0.4)]' :
-                        'border-white/10'
-                      }`}>
-                        {/* Cognitive Assembly Rings */}
-                        {agentProgress[agent] === 'processing' && (
-                           <>
-                              <motion.div 
-                                 animate={{ rotate: 360, scale: [1, 1.2, 1] }}
-                                 transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                                 className="absolute inset-[-4px] border border-neural-gold/20 rounded-full border-dashed"
-                              />
-                              <motion.div 
-                                 animate={{ rotate: -360, scale: [1, 1.1, 1] }}
-                                 transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                                 className="absolute inset-[-8px] border border-neural-blue/10 rounded-full border-dotted"
-                              />
-                           </>
-                        )}
-                        <div className={`absolute inset-0 rounded-full border blur-sm ${
-                          agentProgress[agent] === 'processing' ? 'border-neural-gold/40 animate-pulse' :
-                          agentProgress[agent] === 'complete' ? 'border-green-500/30' :
-                          'border-neural-blue/20 animate-pulse'
-                        }`} />
-                        {agentProgress[agent] === 'complete' ? (
-                          <CheckCircle2 size={16} className="text-green-500" />
-                        ) : agentProgress[agent] === 'processing' ? (
-                          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
-                            <Cpu size={16} className="text-neural-gold drop-shadow-[0_0_8px_rgba(251,188,4,0.6)]" />
-                          </motion.div>
-                        ) : (
-                          <div className={getAgentColor(agent)}>
-                            {getAgentIcon(agent)}
-                          </div>
-                        )}
+              {activeWorkflow.agents.map((agent, index) => {
+                const status = getAgentStatus(agent);
+                const isProcessing = status === 'running';
+                const isComplete = status === 'completed';
+                const isFailed = status === 'failed';
+
+                return (
+                  <div key={`${agent}-${index}`} className="flex items-center gap-4">
+                    
+                    {/* Node */}
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex flex-col items-center gap-3 relative z-10"
+                    >
+                        <div className={`w-16 h-16 rounded-full border glass bg-black/40 flex items-center justify-center relative shadow-xl transition-all duration-500 ${
+                          isProcessing ? 'border-neural-gold/60 shadow-[0_0_20px_rgba(255,215,0,0.4)] scale-110' :
+                          isComplete ? 'border-green-500/60 shadow-[0_0_20px_rgba(34,197,94,0.4)]' :
+                          isFailed ? 'border-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.4)]' :
+                          'border-white/10'
+                        }`}>
+                          {/* Cognitive Assembly Rings */}
+                          {isProcessing && (
+                             <>
+                                <motion.div 
+                                   animate={{ rotate: 360, scale: [1, 1.2, 1] }}
+                                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                   className="absolute inset-[-4px] border border-neural-gold/20 rounded-full border-dashed"
+                                />
+                                <motion.div 
+                                   animate={{ rotate: -360, scale: [1, 1.1, 1] }}
+                                   transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                                   className="absolute inset-[-8px] border border-neural-blue/10 rounded-full border-dotted"
+                                />
+                             </>
+                          )}
+                          <div className={`absolute inset-0 rounded-full border blur-sm ${
+                            isProcessing ? 'border-neural-gold/40 animate-pulse' :
+                            isComplete ? 'border-green-500/30' :
+                            isFailed ? 'border-red-500/30' :
+                            'border-neural-blue/20'
+                          }`} />
+                          
+                          {isComplete ? (
+                            <CheckCircle2 size={16} className="text-green-500" />
+                          ) : isProcessing ? (
+                            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                              <Cpu size={16} className="text-neural-gold drop-shadow-[0_0_8px_rgba(251,188,4,0.6)]" />
+                            </motion.div>
+                          ) : isFailed ? (
+                            <AlertTriangle size={16} className="text-red-500" />
+                          ) : (
+                            <div className={getAgentColor(agent)}>
+                              {getAgentIcon(agent)}
+                            </div>
+                          )}
+                        </div>
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${
+                        isComplete ? 'text-green-500' :
+                        isProcessing ? 'text-neural-gold' :
+                        isFailed ? 'text-red-500' :
+                        getAgentColor(agent)
+                      }`}>{agent}</span>
+                    </motion.div>
+
+                    {/* Arrow connecting to next */}
+                    {index < activeWorkflow.agents.length - 1 && (
+                      <div className="flex items-center h-full opacity-40">
+                        <ChevronRight size={24} className="text-white/20" />
                       </div>
-                    <span className={`text-[10px] font-black uppercase tracking-widest ${
-                      agentProgress[agent] === 'complete' ? 'text-green-500' :
-                      agentProgress[agent] === 'processing' ? 'text-neural-gold' :
-                      getAgentColor(agent)
-                    }`}>{agent}</span>
-                  </motion.div>
+                    )}
 
-                  {/* Arrow connecting to next */}
-                  {index < activeWorkflow.agents.length - 1 && (
-                    <div className="flex items-center h-full opacity-40">
-                      <ChevronRight size={24} className="text-white/20" />
-                    </div>
-                  )}
-
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Background decoration */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-neural-blue/5 via-transparent to-transparent opacity-50 pointer-events-none" />
           </div>
 
-          <div className="mt-8 flex justify-end">
-            <button 
-              onClick={runWorkflow}
-              aria-label={isRunning ? "Executing Workflow" : "Run Workflow Blueprint"}
-              disabled={isRunning}
-              className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2 active:scale-95 ${
-                isRunning ? 'bg-neural-gold/50 text-obsidian cursor-wait' : 'bg-neural-blue text-obsidian hover:bg-white shadow-[0_0_20px_rgba(0,229,255,0.3)]'
-              }`}
-            >
-              <Play size={16} /> {isRunning ? 'Executing...' : 'Run Workflow Blueprint'}
-            </button>
+          <div className="mt-8 flex justify-end gap-3">
+            {isPaused ? (
+              <button 
+                onClick={resumeSwarm}
+                className="px-6 py-3 rounded-xl bg-green-500 text-obsidian text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2 active:scale-95 shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+              >
+                <Play size={16} /> Resume Swarm
+              </button>
+            ) : isActuallyRunning ? (
+              <>
+                <div className="px-6 py-3 rounded-xl bg-neural-gold/20 border border-neural-gold/30 text-neural-gold text-xs font-black uppercase tracking-widest flex items-center gap-2 cursor-wait">
+                   <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }}>
+                      <RefreshCw size={14} />
+                   </motion.div>
+                   Swarm Active...
+                </div>
+                <button 
+                  onClick={pauseSwarm}
+                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2 hover:bg-white/20 active:scale-95"
+                >
+                  <Pause size={16} /> Pause
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={runWorkflow}
+                className="px-6 py-3 rounded-xl bg-neural-blue text-obsidian text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2 hover:bg-white active:scale-95 shadow-[0_0_20px_rgba(0,229,255,0.3)]"
+              >
+                <Play size={16} /> Run Workflow Blueprint
+              </button>
+            )}
           </div>
         </div>
       </div>

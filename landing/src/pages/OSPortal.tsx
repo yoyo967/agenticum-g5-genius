@@ -9,7 +9,7 @@ import {
 import { StatusBadge } from '../components/ui';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { MeshBackground } from '../components/NeuralSubstrate';
-import { GenIUSConsole } from '../components/GenIUSConsole';
+import { GenIUSConsole } from '../components/GeniusConsole';
 import { AssetVault } from '../components/AssetVault';
 import { CreativeStudio } from '../components/CreativeStudio';
 import { WorkflowBuilder } from '../components/WorkflowBuilder';
@@ -42,6 +42,7 @@ import { ExecutiveIntervention } from '../components/os/ExecutiveIntervention';
 import { JuryPresentation } from '../components/ui/JuryPresentation';
 import { ContentEditor } from '../components/os/ContentEditor';
 import { VoiceCommandLayer } from '../components/os/VoiceCommandLayer';
+import { ModuleErrorBoundary } from '../components/os/ModuleErrorBoundary';
 // OSAuthGate removed — Phase 36: public demo access for judges
 
 type ModuleKey = 'console' | 'nexus-engine' | 'pillar-blog' | 'vault' | 'studio' | 'workflows' | 'dashboard' | 'analytics' | 'senate' | 'settings' | 'memory' | 'synergy' | 'campaign' | 'columna-radar' | 'perfect-twin' | 'client-nexus' | 'cinematic' | 'geopolitics' | 'element-library' | 'script-wizard' | 'playground' | 'swarm-intelligence' | 'global-radar' | 'swarm-command' | 'editor' | 'voice';
@@ -110,6 +111,7 @@ export function OSPortal() {
 
   const initialModule = getInitialModule();
   const [activeModule, setActiveModule] = useState<ModuleKey>(initialModule);
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [osMode, setOsMode] = useState<OSMode>('command');
   const [geniusState, setGenIUSState] = useState<'idle' | 'listening' | 'thinking' | 'speaking'>('idle');
@@ -140,7 +142,11 @@ export function OSPortal() {
 
   // Listen for orchestration triggers to auto-expand to command mode
   useEffect(() => {
-    const handler = () => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.runId) {
+        setActiveRunId(detail.runId);
+      }
       if (osMode === 'genius') {
         setOsMode('command');
         setActiveModule('console');
@@ -363,7 +369,9 @@ export function OSPortal() {
           {/* Persistent GenIUS Console (Maintains WebSocket & Audio) */}
           <div className="absolute inset-4 md:inset-6" style={{ display: activeModule === 'console' ? 'block' : 'none', zIndex: 10 }}>
              <div className="h-full ultra-lucid p-1 rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-               <GenIUSConsole />
+               <ModuleErrorBoundary moduleName="GenIUS Console">
+                 <GenIUSConsole />
+               </ModuleErrorBoundary>
              </div>
           </div>
 
@@ -371,40 +379,42 @@ export function OSPortal() {
             {activeModule !== 'console' && (
               <motion.div
                 key={activeModule}
-                initial={{ opacity: 0, scale: 1.05, filter: 'blur(30px)' }}
+                initial={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
                 animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, scale: 0.95, filter: 'blur(30px)' }}
-                transition={{ 
-                  duration: 0.6, 
-                  ease: [0.16, 1, 0.3, 1] 
+                transition={{
+                  duration: 0.6,
+                  ease: [0.16, 1, 0.3, 1]
                 }}
                 className="h-full relative z-20"
               >
-                {activeModule === 'dashboard' && <ExecutiveDashboard onNavigate={(route) => setActiveModule(route as ModuleKey)} />}
-                {activeModule === 'campaign' && <CampaignManager />}
-                {activeModule === 'nexus-engine' && <NexusEngineV2 />}
-                {activeModule === 'pillar-blog' && <PillarBlogEngine />}
-                {activeModule === 'vault' && <AssetVault />}
-                {activeModule === 'studio' && <CreativeStudio />}
-                {activeModule === 'workflows' && <WorkflowBuilder />}
-                {activeModule === 'analytics' && <SwarmAnalytics />}
-                {activeModule === 'senate' && <SecuritySenate />}
-                {activeModule === 'columna-radar' && <ColumnaRadar />}
-                {activeModule === 'perfect-twin' && <PerfectTwinInspector />}
-                {activeModule === 'settings' && <GlobalControlPlane />}
-                {activeModule === 'memory' && <ProjectMemory />}
-                {activeModule === 'synergy' && <SynergyMap />}
-                {activeModule === 'client-nexus' && <ClientNexus />}
-                {activeModule === 'cinematic' && <CinematicForge />}
-                {activeModule === 'element-library' && <ElementLibrary elements={[]} onAddElement={() => {}} onSelectElement={() => {}} />}
-                {activeModule === 'script-wizard' && <ScriptWizard />}
-                {activeModule === 'playground' && <ProjectPlayground />}
-                {activeModule === 'swarm-intelligence' && <SwarmIntelligence />}
-                {activeModule === 'geopolitics' && <GeopoliticsHub />}
-                {activeModule === 'global-radar' && <GlobalRadarConsole />}
-                {activeModule === 'swarm-command' && <SwarmCommandCenter />}
-                {activeModule === 'editor' && <ContentEditor />}
-                {activeModule === 'voice' && <VoiceCommandLayer />}
+                <ModuleErrorBoundary key={activeModule} moduleName={MODULE_META[activeModule]?.label}>
+                  {activeModule === 'dashboard' && <ExecutiveDashboard onNavigate={(route) => setActiveModule(route as ModuleKey)} />}
+                  {activeModule === 'campaign' && <CampaignManager />}
+                  {activeModule === 'nexus-engine' && <NexusEngineV2 runId={activeRunId} onRunStarted={setActiveRunId} />}
+                  {activeModule === 'pillar-blog' && <PillarBlogEngine />}
+                  {activeModule === 'vault' && <AssetVault />}
+                  {activeModule === 'studio' && <CreativeStudio />}
+                  {activeModule === 'workflows' && <WorkflowBuilder />}
+                  {activeModule === 'analytics' && <SwarmAnalytics />}
+                  {activeModule === 'senate' && <SecuritySenate />}
+                  {activeModule === 'columna-radar' && <ColumnaRadar />}
+                  {activeModule === 'perfect-twin' && <PerfectTwinInspector />}
+                  {activeModule === 'settings' && <GlobalControlPlane />}
+                  {activeModule === 'memory' && <ProjectMemory />}
+                  {activeModule === 'synergy' && <SynergyMap runId={activeRunId} />}
+                  {activeModule === 'client-nexus' && <ClientNexus />}
+                  {activeModule === 'cinematic' && <CinematicForge />}
+                  {activeModule === 'element-library' && <ElementLibrary elements={[]} onAddElement={() => {}} onSelectElement={() => {}} />}
+                  {activeModule === 'script-wizard' && <ScriptWizard />}
+                  {activeModule === 'playground' && <ProjectPlayground />}
+                  {activeModule === 'swarm-intelligence' && <SwarmIntelligence runId={activeRunId} />}
+                  {activeModule === 'geopolitics' && <GeopoliticsHub />}
+                  {activeModule === 'global-radar' && <GlobalRadarConsole />}
+                  {activeModule === 'swarm-command' && <SwarmCommandCenter />}
+                  {activeModule === 'editor' && <ContentEditor />}
+                  {activeModule === 'voice' && <VoiceCommandLayer />}
+                </ModuleErrorBoundary>
               </motion.div>
             )}
           </AnimatePresence>

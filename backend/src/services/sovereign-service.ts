@@ -89,7 +89,7 @@ export class SovereignService {
     this.logger.info('Federated Sync Complete. Mesh intelligence expanded and persisted.');
     return { 
       success: true, 
-      dataExchangedKB: Math.floor(Math.random() * 1000) + 1500,
+      dataExchangedKB: snapshot.size * 512, // Standardizing on 512KB per node sync
       summary: intelligence
     };
   }

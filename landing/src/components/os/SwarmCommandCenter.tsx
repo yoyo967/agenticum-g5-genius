@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CounterStrikePanel } from './CounterStrikePanel';
 import { ContentPanel } from './ContentPanel';
 import { ImageGenPanel } from './ImageGenPanel';
+import { ColumnaRadar } from './ColumnaRadar';
 
-type ActivePanel = 'counter-strike' | 'content' | 'image-gen';
+type ActivePanel = 'counter-strike' | 'content' | 'image-gen' | 'target-intel';
 
 const PANELS: {
   id: ActivePanel;
@@ -19,6 +20,13 @@ const PANELS: {
     label: 'Counter-Strike',
     color: 'text-blue-400',
     dot: 'bg-blue-500',
+  },
+  {
+    id: 'target-intel',
+    agent: 'BA-07',
+    label: 'Target Intel',
+    color: 'text-gold-400',
+    dot: 'bg-gold-500',
   },
   {
     id: 'content',
@@ -44,7 +52,7 @@ export function SwarmCommandCenter() {
   return (
     <div className="h-full flex flex-col text-white">
       {/* Header */}
-      <div className="flex flex-col gap-1 mb-6">
+      <div className="flex flex-col gap-1 mb-6 shrink-0">
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${activeDot} animate-pulse`} />
           <span className="font-mono text-xs text-green-400 uppercase tracking-widest">
@@ -58,7 +66,7 @@ export function SwarmCommandCenter() {
       </div>
 
       {/* Tab Selector */}
-      <div className="flex gap-0 mb-8 border-b border-zinc-800">
+      <div className="flex gap-0 mb-8 border-b border-zinc-800 shrink-0">
         {PANELS.map(panel => (
           <button
             key={panel.id}
@@ -90,8 +98,10 @@ export function SwarmCommandCenter() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18 }}
+            className="h-full"
           >
             {active === 'counter-strike' && <CounterStrikePanel />}
+            {active === 'target-intel' && <ColumnaRadar />}
             {active === 'content' && <ContentPanel />}
             {active === 'image-gen' && <ImageGenPanel />}
           </motion.div>

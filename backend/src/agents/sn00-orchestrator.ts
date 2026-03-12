@@ -69,7 +69,9 @@ export class SN00Orchestrator extends BaseAgent {
     return text.replace(/```json\n?|```/g, '').trim();
   }
 
-  async execute(input: string, campaignId?: string): Promise<string> {
+  async execute(input: string, runId?: string, campaignId?: string): Promise<string> {
+    this.logger.info(`Orchestrating swarm for: ${input}`);
+    this.updateStatus(AgentState.THINKING, 'Contextualizing directive...');
     const { VertexAIService } = require('../services/vertex-ai');
     const modelId = VertexAIService.getInstance().GEMINI_MODELS.reasoning;
     this.updateStatus(AgentState.THINKING, `Parsing user directive via ${modelId}...`, 5);
@@ -230,12 +232,16 @@ ${contentSnippet}...
 
     // 2. Build SwarmProtocol
     let protocol: SwarmProtocol;
+    const effectiveRunId = runId || `p-${Date.now()}`;
+    this.setContext(effectiveRunId, campaignId);
+
     try {
       protocol = {
-        id: `p-${Date.now()}`,
+        id: effectiveRunId,
         goal: input,
         status: 'active',
         createdAt: Date.now(),
+        campaignId: campaignId,
         tasks: (executionPlan?.nodes || []).map((t: any, i: number) => ({
           id: `t-${i}`,
           agentId: t.agentId || 'pm07',
@@ -288,11 +294,43 @@ ${contentSnippet}...
           description: t.description,
           result: String(t.result).substring(0, 500)
         }));
+
+        // Helper to extract assets for PMax structured data
+        const headlines = protocol.tasks
+          .filter(t => t.agentId === 'cc06' && t.result)
+          .flatMap(t => String(t.result).split('\n').filter(line => line.length > 5 && line.length < 30))
+          .slice(0, 15)
+          .map(text => ({ text }));
+
+        const descriptions = protocol.tasks
+          .filter(t => t.agentId === 'cc06' && t.result)
+          .flatMap(t => String(t.result).split('\n').filter(line => line.length >= 30 && line.length < 90))
+          .slice(0, 4)
+          .map(text => ({ text }));
+
+        const images = protocol.tasks
+          .filter(t => t.agentId === 'da03' && t.result && String(t.result).startsWith('http'))
+          .map(t => ({ url: t.result, aspectRatio: 'SQUARE' }));
         
         await db.collection(Collections.CAMPAIGNS).doc(campaignId).update({
           status: 'COMPLETED',
           updatedAt: admin.firestore.FieldValue ? admin.firestore.FieldValue.serverTimestamp() : new Date(),
-          outputLog: tasksSummary
+          outputLog: tasksSummary,
+          assetGroups: [{
+            id: 'ag-generated-' + Date.now(),
+            name: 'Generated Asset Group',
+            status: 'ENABLED',
+            adStrength: 'EXCELLENT',
+            assets: {
+              headlines: headlines.length > 0 ? headlines : [{ text: 'Automated AI Precision' }],
+              longHeadlines: headlines.length > 0 ? headlines.slice(0, 5) : [{ text: 'Full-Spectrum Neural Marketing' }],
+              descriptions: descriptions.length > 0 ? descriptions : [{ text: 'Unleash the power of autonomous agent swarms.' }],
+              businessName: 'Agenticum G5',
+              images: images,
+              videos: [],
+              logos: []
+            }
+          }]
         });
       } catch (e) {
         console.warn(`Could not update campaign ${campaignId} completion status`, e);
@@ -317,13 +355,14 @@ ${protocol.tasks.map((t: any) => `### [${String(t.agentId).toUpperCase()}] ${t.d
     return {
       ...super.getStatus(),
       subAgents: {
-        strategist: this.strategist.getStatus(),
-        director: this.director.getStatus(),
-        architect: this.architect.getStatus(),
-        motionDirector: this.motionDirector.getStatus(),
-        distributor: this.distributor.getStatus(),
-        auditor: this.auditor.getStatus(),
-        manager: this.manager.getStatus()
+        sp01: this.strategist.getStatus(),
+        cc06: this.director.getStatus(),
+        da03: this.architect.getStatus(),
+        ve01: this.motionDirector.getStatus(),
+        cc02: this.distributor.getStatus(),
+        ra01: this.auditor.getStatus(),
+        pm07: this.manager.getStatus(),
+        ba07: this.browserArchitect.getStatus()
       }
     };
   }

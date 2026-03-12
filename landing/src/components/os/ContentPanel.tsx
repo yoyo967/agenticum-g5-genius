@@ -1,13 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, Loader2, FileText } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 import { SenateGate } from './SenateGate';
 import { ActivityFeed } from './ActivityFeed';
-import { makeEntry } from './activityUtils';
-import type { ActivityEntry } from './ActivityFeed';
+import { makeEntry, type ActivityEntry } from './activityUtils';
+import { useAgentOutputs } from '../../hooks/useAgentOutputs';
+import { useAgentStatus } from '../../hooks/useAgentStatus';
+import { useSwarmRun } from '../../hooks/useSwarmRun';
 
-// ── Content Type Registry (13 types — Phase 36) ──────────────────────────
+// ── Content Type Registry (12 types) ──────────────────────────
 const CONTENT_TYPES = [
   'LinkedIn Post',
   'LinkedIn Article',
@@ -26,12 +28,6 @@ const CONTENT_TYPES = [
 type ContentType = typeof CONTENT_TYPES[number];
 type Tone = 'Professional' | 'Casual' | 'Bold' | 'Empathic';
 type ReadingLevel = 'C-Suite' | 'Manager' | 'General Public';
-type PanelState = 'idle' | 'loading' | 'done' | 'error';
-
-const MAX_LOG = 10;
-function addEntry(prev: ActivityEntry[], e: ActivityEntry): ActivityEntry[] {
-  return [e, ...prev].slice(0, MAX_LOG);
-}
 
 const TYPE_ICONS: Record<string, string> = {
   'LinkedIn Post': 'in', 'LinkedIn Article': 'in+', 'Blog Post': '📄',
@@ -45,73 +41,60 @@ export function ContentPanel() {
   const [type, setType] = useState<ContentType>('LinkedIn Post');
   const [tone, setTone] = useState<Tone>('Professional');
   const [readingLevel, setReadingLevel] = useState<ReadingLevel>('Manager');
-  const [state, setState] = useState<PanelState>('idle');
-  const [output, setOutput] = useState('');
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [copied, setCopied] = useState(false);
   const [senateTrigger, setSenateTrigger] = useState(0);
-  const [twinId, setTwinId] = useState<string | null>(null);
-  const [log, setLog] = useState<ActivityEntry[]>([]);
 
-  const logEntry = useCallback((agent: string, message: string, type: ActivityEntry['type'] = 'action') => {
-    setLog(prev => addEntry(prev, makeEntry(agent, message, type)));
-  }, []);
+  // Neural Fabric Hooks
+  const { outputs } = useAgentOutputs({ runId: activeRunId || undefined });
+  const { statuses } = useAgentStatus();
+  const { run } = useSwarmRun(activeRunId);
+
+  // Derive output from CC-06
+  const output = useMemo(() => {
+    const contentOutput = outputs.find(o => o.agent_id === 'cc06' && o.type === 'content');
+    return contentOutput?.payload?.content || '';
+  }, [outputs]);
+
+  // Derive logs
+  const logs = useMemo(() => {
+    const entries: ActivityEntry[] = [];
+    Object.entries(statuses).forEach(([id, status]) => {
+      if (status.run_id === activeRunId) {
+        entries.push(makeEntry(id.toUpperCase(), status.message, 'action'));
+      }
+    });
+    outputs.forEach(o => {
+      entries.push(makeEntry(o.agent_id.toUpperCase(), `Output generated: ${o.type}`, 'output'));
+    });
+    return entries.sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
+  }, [statuses, outputs, activeRunId]);
 
   const handleGenerate = async () => {
-    if (!brief.trim() || state === 'loading') return;
+    if (!brief.trim() || activeRunId && run?.status === 'active') return;
 
-    setState('loading');
-    setOutput('');
     setErrorMsg('');
-    setTwinId(null);
-
-    logEntry('SN-00', 'Task dispatched to CC-06', 'dispatch');
-    logEntry('CC-06', `Content generation activated · Type: ${type} · Tone: ${tone}`, 'action');
+    setActiveRunId(null);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/content/generate`, {
+      const res = await fetch(`${API_BASE_URL}/swarm/launch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brief, type, tone, readingLevel }),
+        body: JSON.stringify({ 
+          prompt: `Generate ${type} with ${tone} tone for ${readingLevel} audience based on brief: "${brief}"`
+        }),
       });
 
-      if (!res.ok) throw new Error(`CC-06 responded with HTTP ${res.status}`);
+      if (!res.ok) throw new Error(`CC-06 Orchestration failed with HTTP ${res.status}`);
 
       const data = await res.json();
-      const text: string = data.content ?? '';
-
-      setOutput(text);
-      setState('done');
-
-      logEntry('CC-06', `${type} generated · ${text.split(' ').length} words`, 'output');
-      logEntry('RA-01', 'Senate review initiated', 'senate');
+      setActiveRunId(data.runId);
       setSenateTrigger(k => k + 1);
-
-      // Perfect Twin Log
-      try {
-        const twinRes = await fetch(`${API_BASE_URL}/vault/twin-log`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: `content-generate-${type.toLowerCase().replace(/\s/g, '-')}`,
-            input: brief,
-            output: text,
-            agent: 'CC-06',
-            timestamp: new Date().toISOString(),
-            senateApproved: true,
-          }),
-        }).catch(() => null);
-        if (twinRes?.ok) {
-          const td = await twinRes.json().catch(() => ({}));
-          setTwinId(td?.id ?? td?.docId ?? 'logged');
-        }
-      } catch { /* Twin log is non-critical */ }
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
       setErrorMsg(msg);
-      setState('error');
-      logEntry('CC-06', `Error: ${msg}`, 'error');
     }
   };
 
@@ -121,6 +104,8 @@ export function ContentPanel() {
       setTimeout(() => setCopied(false), 2000);
     });
   };
+
+  const isGenerating = run && run.status === 'active';
 
   return (
     <div className="space-y-5">
@@ -144,7 +129,7 @@ export function ContentPanel() {
         placeholder="Enter your content brief... e.g. 'Write about AGENTICUM G5 — an AI OS for enterprise marketing that uses 9 specialized agents to automate campaigns 10x faster than humans.'"
         rows={3}
         className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 rounded text-sm font-mono placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
-        disabled={state === 'loading'}
+        disabled={isGenerating}
       />
 
       {/* Content Type Grid */}
@@ -211,30 +196,30 @@ export function ContentPanel() {
       {/* Generate Button */}
       <button
         onClick={handleGenerate}
-        disabled={state === 'loading' || !brief.trim()}
+        disabled={isGenerating || !brief.trim()}
         className={`w-full py-3 font-mono text-sm uppercase tracking-widest rounded transition-all flex items-center justify-center gap-2 ${
-          state === 'loading'
+          isGenerating
             ? 'bg-emerald-900 text-emerald-300 animate-pulse cursor-not-allowed'
             : 'bg-emerald-700 hover:bg-emerald-600 text-white'
         } disabled:opacity-50`}
       >
-        {state === 'loading' ? (
-          <><Loader2 size={16} className="animate-spin" /> CC-06 GENERATING...</>
+        {isGenerating ? (
+          <><Loader2 size={16} className="animate-spin" /> CC-06 ORCHESTRATING...</>
         ) : (
-          <>✦ GENERATE WITH CC-06</>
+          <>✦ LAUNCH CC-06 SWARM</>
         )}
       </button>
 
       {/* Error */}
-      {state === 'error' && (
+      {errorMsg && (
         <div className="border border-red-800 bg-red-950/40 rounded p-4 font-mono text-xs text-red-400">
-          ❌ CC-06 ERROR: {errorMsg}
+          ❌ SYSTEM ERROR: {errorMsg}
         </div>
       )}
 
       {/* Output */}
       <AnimatePresence>
-        {state === 'done' && output && (
+        {output && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -266,14 +251,6 @@ export function ContentPanel() {
               <span className="font-mono text-xs text-green-600 bg-green-950/30 border border-green-800 px-2 py-1 rounded">
                 RA-01 APPROVED · EU AI ACT ART.50
               </span>
-              {twinId && (
-                <span
-                  title={`Firestore: ${twinId}`}
-                  className="font-mono text-xs text-zinc-500 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded cursor-default"
-                >
-                  🔒 TWIN SEALED
-                </span>
-              )}
             </div>
           </motion.div>
         )}
@@ -283,7 +260,7 @@ export function ContentPanel() {
       <SenateGate triggerKey={senateTrigger} onComplete={() => {}} />
 
       {/* F4 — Activity Feed */}
-      <ActivityFeed entries={log} />
+      <ActivityFeed entries={logs} />
     </div>
   );
 }

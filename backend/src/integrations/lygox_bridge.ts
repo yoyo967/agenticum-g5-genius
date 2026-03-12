@@ -50,15 +50,15 @@ export class LygoxBridge {
     try {
       // Future Implementation: JWT / Service Account auth logic here
       if (this.authEnabled) {
-        this.logger.info('Auth contract verification simulated: SUCCESS');
+        this.logger.info('Auth contract verification: STANDBY');
       }
 
       // Skeleton Payload Transfer
       this.logger.info('Payload packaged:', JSON.stringify(payload).substring(0, 50) + '...');
       
       return {
-        status: 'accepted',
-        lygoxTraceId: `LX-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+        status: 'queued',
+        lygoxTraceId: `LX-${Date.now()}-G5`
       };
       
     } catch (error) {

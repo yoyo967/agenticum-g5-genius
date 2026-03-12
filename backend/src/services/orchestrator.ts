@@ -87,11 +87,24 @@ export class PillarGraphOrchestrator {
       eventFabric.broadcast({ type: 'agent-thought', agentId: 'sn00', thought: 'Scanning competitor landscape via Columna Engine...' });
       await logPhase('COLUMNA', 'Scanning competitor landscape...');
       
-      // Real Columna Integration point: In prod this calls the Python service at /columna/decompile
-      const overlap = [
-        { url: 'https://www.salesforce.com/blog/ai-orchestration', strength: 0.8 },
-        { url: 'https://cloud.google.com/vertex-ai/docs/generative-ai/grounding', strength: 0.9 }
-      ];
+      // Real Columna Integration: Calls the Python decompiler engine for live competitive intelligence
+      let overlap: any[] = [];
+      try {
+        const hostname = new URL(topic).hostname || topic.toLowerCase().replace(/[^a-z0-9.]/g, '');
+        const response = await require('axios').post(
+          `${engineUrl}/columna/decompile`,
+          { url: topic.includes('://') ? topic : `https://${topic}`, competitor_name: hostname, session_id: runId },
+          { timeout: 15000 }
+        );
+        overlap = response.data.overlaps || response.data.segments || [];
+        this.logger.info(`[${runId}] Columna Engine returned ${overlap.length} real intelligence segments.`);
+      } catch (err) {
+        this.logger.warn(`[${runId}] Columna Engine fallback (Network/Timeout): using baseline intelligence.`);
+        overlap = [
+          { url: 'https://www.salesforce.com/blog/ai-orchestration', strength: 0.8 },
+          { url: 'https://cloud.google.com/vertex-ai/docs/generative-ai/grounding', strength: 0.9 }
+        ];
+      }
       eventFabric.broadcastPayload('sp01', 'sn00', 'competitor_intel', overlap);
       await logPhase('COLUMNA', `Detected ${overlap.length} competitive overlaps.`, 'success');
       

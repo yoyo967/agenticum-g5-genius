@@ -13,7 +13,8 @@ import { Distribution } from './Distribution';
 import { useNavigate } from 'react-router-dom';
 import { ExportMenu } from './ui';
 import { downloadJSON, downloadTextFile } from '../utils/export';
-import { API_BASE_URL, WS_BASE_URL } from '../config';
+import { API_BASE_URL } from '../config';
+import { useWebSocket } from '../context/WebSocketContext';
 
 import { type SwarmState } from '../types';
 import { useAppStore } from '../store/useAppStore';
@@ -22,8 +23,27 @@ import type { WorldState } from '../../../backend/src/services/nexus-manager';
 
 const SESSION_KEY = 'agenticum_g5_session';
 
+const INITIAL_SWARM: SwarmState = {
+  id: 'sn00',
+  name: 'Neural Orchestrator',
+  color: '#00E5FF',
+  state: 'idle',
+  lastStatus: 'Awaiting directive...',
+  progress: 0,
+  subAgents: {
+    'sp01': { id: 'sp01', name: 'Strategic Intelligence', color: '#FBBC04', state: 'idle', lastStatus: 'Standby', progress: 0 },
+    'cc06': { id: 'cc06', name: 'Cognitive Core', color: '#4285F4', state: 'idle', lastStatus: 'Standby', progress: 0 },
+    'da03': { id: 'da03', name: 'Design Architect', color: '#00FF88', state: 'idle', lastStatus: 'Standby', progress: 0 },
+    'ra01': { id: 'ra01', name: 'Security Senate', color: '#EA4335', state: 'idle', lastStatus: 'Standby', progress: 0 },
+    'ba07': { id: 'ba07', name: 'Browser Architect', color: '#9C27B0', state: 'idle', lastStatus: 'Standby', progress: 0 },
+    'pm07': { id: 'pm07', name: 'Project Manager', color: '#FF6D00', state: 'idle', lastStatus: 'Standby', progress: 0 },
+    've01': { id: 've01', name: 'Motion Director', color: '#FF4081', state: 'idle', lastStatus: 'Standby', progress: 0 },
+    'so00': { id: 'so00', name: 'Sovereign Core', color: '#00E5FF', state: 'idle', lastStatus: 'Standby', progress: 0 }
+  }
+};
+
 export function GenIUSConsole() {
-  const [swarm, setSwarm] = useState<SwarmState | null>(null);
+  const [swarm, setSwarm] = useState<SwarmState | null>(INITIAL_SWARM);
   const [logs, setLogs] = useState<{ type: string; message: string; timestamp: string; imageUrl?: string }[]>(() => {
     try {
       const saved = localStorage.getItem(SESSION_KEY);
@@ -33,14 +53,13 @@ export function GenIUSConsole() {
   const [output, setOutput] = useState<string | null>(null);
   const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'active' | 'error'>('connecting');
   const [messageQueue, setMessageQueue] = useState<string[]>([]);
+  const { isConnected, send, subscribe, connectionState: wsState } = useWebSocket();
   const MAX_QUEUE_SIZE = 5;
-  const QUEUE_TIMEOUT_MS = 10000;
   const [isRecording, setIsRecording] = useState(false);
   const [settings, setSettings] = useState<{ projectId?: string; geminiKey?: string }>({});
   const [activeTab, setActiveTab] = useState<'orchestration' | 'trace' | 'brand' | 'distribution'>('orchestration');
 
   const navigate = useNavigate();
-  const ws = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -89,31 +108,28 @@ export function GenIUSConsole() {
   const nextAudioStartTimeRef = useRef<number>(0); // sequential chunk scheduling
 
   const addLog = useCallback((type: string, message: string, imageUrl?: string) => {
-    setLogs(prev => [...prev.slice(-19), { type, message, timestamp: new Date().toLocaleTimeString(), imageUrl }]);
+    setLogs(prev => [...prev.slice(-99), { type, message, timestamp: new Date().toLocaleTimeString(), imageUrl }]);
   }, []);
 
   // Audio processing functions isolated for mock phase
 
   // Stop all active audio sources immediately (used on barge-in)
-  function stopAllAudio() {
+  const stopAllAudio = useCallback(() => {
     activeSourcesRef.current.forEach(src => {
       try { src.stop(); } catch { /* already ended */ }
     });
     activeSourcesRef.current.clear();
     nextAudioStartTimeRef.current = 0; // reset scheduler so next chunk plays immediately
-  }
+  }, []);
 
   // Audio playing utility — mimeType e.g. "audio/pcm;rate=24000"
-  function playAudioBase64(base64: string, mimeType?: string) {
-    // Lazy-init at 24kHz to match Gemini native audio — avoids resampling artifacts
+  const playAudioBase64 = useCallback((base64: string, mimeType?: string) => {
     if (!playbackContextRef.current) {
       playbackContextRef.current = new AudioContext({ sampleRate: 24000 });
     }
     const ctx = playbackContextRef.current;
-    // Resume if browser suspended (common after page load before user interaction)
     if (ctx.state === 'suspended') ctx.resume();
 
-    // Parse sample rate from mimeType (Gemini sends 24kHz by default)
     let sampleRate = 24000;
     if (mimeType) {
       const rateMatch = mimeType.match(/rate=(\d+)/);
@@ -139,261 +155,236 @@ export function GenIUSConsole() {
       source.connect(ctx.destination);
       activeSourcesRef.current.add(source);
       source.onended = () => activeSourcesRef.current.delete(source);
-      // Schedule sequentially: each chunk starts exactly when the previous ends
       const startAt = Math.max(ctx.currentTime, nextAudioStartTimeRef.current);
       nextAudioStartTimeRef.current = startAt + buffer.duration;
       source.start(startAt);
     } catch (e) {
       console.error('Audio playback failed', e);
     }
-  }
+  }, []);
 
 
-  const connectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isConnectingRef = useRef<boolean>(false);
-
-  const connect = useCallback(() => {
-    if (
-      ws.current?.readyState === WebSocket.OPEN ||
-      ws.current?.readyState === WebSocket.CONNECTING ||
-      isConnectingRef.current
-    ) {
-      return;
-    }
-
-    isConnectingRef.current = true;
-    setConnectionState('connecting');
-    addLog('system', 'Initializing Neural Uplink... 🔌');
-    console.log('🔌 Attempting Neural Uplink to:', WS_BASE_URL);
-
-    if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
-    connectTimeoutRef.current = setTimeout(() => {
-      if (ws.current?.readyState !== WebSocket.OPEN) {
-        addLog('error', 'Connection Timeout (10s). Matrix Uplink Failed.');
-        setConnectionState('error');
-        isConnectingRef.current = false;
-        setMessageQueue([]); // Flush queue on failure
-        if (ws.current) {
-           ws.current.close();
-        }
-      }
-    }, QUEUE_TIMEOUT_MS);
-
-    try {
-      const socket = new WebSocket(WS_BASE_URL);
-      ws.current = socket;
-
-      socket.onopen = () => {
-        if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
-        isConnectingRef.current = false;
-        console.log('✅ Neural Uplink Established');
-        setConnectionState('connected');
-        addLog('success', 'Neural Uplink Stable. Matrix Synchronized.');
-
-        setMessageQueue(prev => {
-          if (prev.length > 0) {
-            addLog('system', `Flushing ${prev.length} queued directives...`);
-            prev.forEach(msg => {
-              socket.send(JSON.stringify({ type: 'start', input: msg }));
-              addLog('action', `Manual Directive: ${msg} (sent)`);
-            });
-          }
-          return [];
-        });
-      };
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-
-          if (data.type === 'status') {
-            setSwarm(prev => {
-              const agent = data.agent;
-              if (!prev || agent.id === prev.id) {
-                // Top-level agent (SN00) — update root, preserve subAgents
-                return { ...prev, ...agent, subAgents: prev?.subAgents || {} };
-              }
-              // Sub-agent — merge into subAgents map
-              return {
-                ...prev,
-                subAgents: {
-                  ...prev.subAgents,
-                  [agent.id]: { ...(prev.subAgents?.[agent.id] || {}), ...agent }
-                }
-              };
-            });
-            window.dispatchEvent(new CustomEvent('swarm-status', { detail: data.agent }));
-          }
-
-          if (data.type === 'swarm-payload') {
-            window.dispatchEvent(new CustomEvent('swarm-payload', { detail: data }));
-            addLog('action', `Data Transfer: ${String(data.from).toUpperCase()} → ${String(data.to).toUpperCase()}`);
-            if (data.payloadType === 'IMAGE_ASSET' && data.payload) {
-              addLog('agent', `[da03] Visual asset generated`, data.payload);
-              useAppStore.getState().addGlobalAsset({
-                url: data.payload,
-                type: 'IMAGE',
-                timestamp: new Date(),
-                agent: data.from || 'da03'
-              });
-            } else {
-              addLog('system', `Payload: [${data.payloadType}]`);
-            }
-          }
-
-          if (data.type === 'transcript') {
-            addLog('action', `[VOICE] "${data.text}"`);
-            addLog('system', `Directive type: ${data.campaignType || 'auto'} — Swarm activating...`);
-            setConnectionState('active');
-          }
-
-          if (data.type === 'senate') {
-            window.dispatchEvent(new CustomEvent('swarm-senate', { detail: data }));
-            addLog('error', `SENATE VETO: RA-01 has halted orchestration.`);
-            addLog('system', `Reason: ${data.payload}`);
-          }
-
-          if (data.type === 'output') {
-            addLog('agent', `[${data.agentId.toUpperCase()}] ${data.data.substring(0, 100)}...`);
-            if (data.agentId === 'sn00') {
-              setOutput(data.data);
-            }
-          }
-
-          if (data.type === 'realtime_output') {
-            playAudioBase64(data.data, data.mimeType);
-          }
-
-          // Barge-in: user spoke while model was talking — stop playback immediately
-          if (data.type === 'barge_in') {
-            stopAllAudio();
-          }
-
-          // Model finished its turn — ready to listen again
-          if (data.type === 'turn_complete') {
-            setConnectionState('connected'); // back to "listening" state visually
-          }
-
-          if (data.type === 'live_ready') {
-            addLog('success', 'NEXUS Voice Link Active. Speak to command.');
-            setConnectionState('connected');
-          }
-
-          if (data.type === 'live_closed') {
-            stopAllAudio();
-            setConnectionState('disconnected');
-          }
-
-          if (data.type === 'error') {
-            addLog('error', data.message);
-            setConnectionState('error');
-          }
-
-          if (data.type === 'metric') {
-            addLog('system', `Metric Update: ${data.metric} = ${data.value}`);
-            window.dispatchEvent(new CustomEvent('swarm-metric', { detail: data }));
-          }
-
-          if (data.type === 'telemetry') {
-            addLog('system', `Neural Latency: ${data.stats.total_latency}ms across nodes.`);
-            window.dispatchEvent(new CustomEvent('swarm-telemetry', { detail: data }));
-          }
-
-          if (data.type === 'protocol-activated') {
-            addLog('action', `Neural Protocol [${data.protocol.id}] Activated.`);
-            addLog('system', `Goal: ${data.protocol.goal}`);
-            setConnectionState('active');
-          }
-
-          if (data.type === 'agent-thought') {
-            addLog('agent', `[${data.agentId.toUpperCase()}] Cognitive Phase: ${data.thought}`);
-            window.dispatchEvent(new CustomEvent('agent-thought', { detail: data }));
-          }
-
-          if (data.type === 'nexus-state-update') {
-            window.dispatchEvent(new CustomEvent('nexus-world-state', { detail: data.state }));
-          }
-
-          if (data.type === 'sovereign-wisdom') {
-            addLog('success', `[so00 sovereign] ${data.data}`);
-          }
-
-          if (data.type === 'task-update') {
-            const { task } = data;
-            const statusEmoji = task.state === 'running' ? '⚡' : task.state === 'completed' ? '✅' : '❌';
-            addLog('agent', `${statusEmoji} [${task.agentId.toUpperCase()}] ${task.description} (${task.state.toUpperCase()})`);
-
-            if (task.state === 'completed' && task.result) {
-               addLog('system', `Intel Acquired: ${String(task.result).substring(0, 50)}...`);
-            }
-          }
-
-          if (data.type === 'awaiting-intervention') {
-            window.dispatchEvent(new CustomEvent('swarm-intervention', { detail: data.data }));
-            addLog('error', `EXECUTIVE ACTION REQUIRED: Task [${data.data.taskId}] is stalled.`);
-          }
-
-          if (data.type === 'calibration') {
-            window.dispatchEvent(new CustomEvent('swarm-calibration', { detail: data.data }));
-            addLog('success', `[SENTIENT LOOP] ${data.data.agentId.toUpperCase()} calibration: ${data.data.status}`);
-          }
-
-          // Global Dispatch for Thinking Trace
-          if (['task-update', 'agent-thought', 'status', 'protocol-activated', 'senate', 'swarm-payload'].includes(data.type)) {
-            window.dispatchEvent(new CustomEvent('swarm-dispatch', {
-              detail: {
-                agentId: data.agentId || data.agent?.id || 'SN-00',
-                action: data.type.toUpperCase(),
-                detail: data.thought || data.lastStatus || data.payloadType || data.type
-              }
-            }));
-          }
-        } catch (err) {
-          console.error('Failed to parse socket message', err);
-        }
-      };
-
-      socket.onclose = () => {
-        isConnectingRef.current = false;
-        stopAllAudio(); // clear any scheduled chunks from the ended session
-        setConnectionState('disconnected');
-        addLog('system', 'Neural Uplink Terminated.');
-      };
-
-      socket.onerror = (err) => {
-        isConnectingRef.current = false;
-        console.error('❌ Fabric Connectivity Error:', err);
-        setConnectionState('error');
-        addLog('error', 'Fabric Connectivity Error. Check API Gateway.');
-      };
-
-    } catch (err) {
-      isConnectingRef.current = false;
-      console.error('🚀 Socket Initialization Failed:', err);
-      setConnectionState('error');
-      addLog('error', 'Critical Error: Neural Bond Initialization Failed.');
-    }
-  }, [addLog]);
-
-  // Auto-connect on mount (deferred to avoid synchronous setState in effect body)
+  // Sync connection state with WebSocketContext
   useEffect(() => {
-    const t = setTimeout(connect, 0);
-    return () => {
-      clearTimeout(t);
-      if (ws.current) ws.current.close();
-    };
-  }, [connect]);
+    setConnectionState(wsState);
+  }, [wsState]);
+
+  useEffect(() => {
+    const unsubscribe = subscribe('*', (data) => {
+      try {
+        if (data.type === 'status') {
+          setSwarm(prev => {
+            const agent = data.agent;
+            if (!agent) return prev;
+            
+            const normalizedAgent = {
+              ...agent,
+              name: agent.name || agent.id
+            };
+
+            if (!prev || normalizedAgent.id === prev.id) {
+              return { ...prev, ...normalizedAgent, subAgents: prev?.subAgents || {} } as SwarmState;
+            }
+            return {
+              ...prev,
+              subAgents: {
+                ...prev.subAgents,
+                [normalizedAgent.id]: normalizedAgent
+              }
+            } as SwarmState;
+          });
+          window.dispatchEvent(new CustomEvent('swarm-status', { detail: data.agent }));
+        }
+
+        if (data.type === 'swarm-payload') {
+          const from = data.from as string;
+          const to = data.to as string;
+          addLog('action', `Data Transfer: ${String(from).toUpperCase()} → ${String(to).toUpperCase()}`);
+          if (data.payloadType === 'IMAGE_ASSET' && data.payload) {
+            addLog('agent', `[da03] Visual asset generated`, data.payload as string);
+            useAppStore.getState().addGlobalAsset({
+              url: data.payload as string,
+              type: 'IMAGE',
+              timestamp: new Date(),
+              agent: from || 'da03'
+            });
+          } else {
+            addLog('system', `Payload: [${data.payloadType}]`);
+          }
+        }
+
+        if (data.type === 'transcript') {
+          addLog('action', `[VOICE] "${data.text}"`);
+          addLog('system', `Directive type: ${data.campaignType || 'auto'} — Swarm activating...`);
+          setConnectionState('active');
+        }
+
+        if (data.type === 'senate') {
+          window.dispatchEvent(new CustomEvent('swarm-senate', { detail: data }));
+          addLog('error', `SENATE VETO: RA-01 has halted orchestration.`);
+          addLog('system', `Reason: ${data.payload}`);
+        }
+
+        if (data.type === 'output') {
+          const content = data.data as string;
+          addLog('agent', `[${data.agentId?.toUpperCase()}] ${content?.substring(0, 100)}...`);
+          if (data.agentId === 'sn00') {
+            setOutput(content);
+          }
+        }
+
+        if (data.type === 'realtime_output') {
+          playAudioBase64(data.data as string, data.mimeType as string);
+        }
+
+        if (data.type === 'barge_in') {
+          stopAllAudio();
+        }
+
+        if (data.type === 'turn_complete') {
+          setConnectionState('connected');
+        }
+
+        if (data.type === 'live_ready') {
+          stopAllAudio(); // Clear any leftover audio from the previous session
+          addLog('success', 'NEXUS Voice Link Active. Speak to command.');
+          setConnectionState('connected');
+        }
+
+        if (data.type === 'live_closed') {
+          // Do NOT stopAllAudio() here — Nexus may still be speaking its confirmation.
+          // The audio buffer drains naturally. stopAllAudio() is called on the NEXT live_ready.
+          // CRITICAL: Do NOT set 'disconnected' here — the WebSocket is still open.
+          // Showing the "Offline" overlay would block the UI while the swarm activates.
+          // Sync back to the actual WebSocket connection state instead.
+          addLog('system', 'NEXUS voice session ended. Swarm activating or text input available.');
+          setConnectionState(wsState === 'connected' || wsState === 'active' ? 'connected' : wsState);
+        }
+
+        if (data.type === 'error') {
+          addLog('error', data.message);
+          setConnectionState('error');
+        }
+
+        if (data.type === 'metric') {
+          addLog('system', `Metric Update: ${data.metric} = ${data.value}`);
+          window.dispatchEvent(new CustomEvent('swarm-metric', { detail: { metric: data.metric, value: data.value } }));
+        }
+
+        if (data.type === 'telemetry') {
+          addLog('system', `Neural Latency: ${data.stats?.total_latency}ms across nodes.`);
+          window.dispatchEvent(new CustomEvent('swarm-telemetry', { detail: data }));
+        }
+
+        if (data.type === 'protocol-activated') {
+          addLog('action', `Neural Protocol [${data.protocol?.id}] Activated.`);
+          addLog('system', `Goal: ${data.protocol?.goal}`);
+          setConnectionState('active');
+        }
+
+        if (data.type === 'agent-thought') {
+          addLog('agent', `[${data.agentId?.toUpperCase()}] Cognitive Phase: ${data.thought}`);
+          window.dispatchEvent(new CustomEvent('agent-thought', { detail: data }));
+        }
+
+        if (data.type === 'nexus-state-update') {
+          window.dispatchEvent(new CustomEvent('nexus-world-state', { detail: data.state }));
+        }
+
+        if (data.type === 'sovereign-wisdom') {
+          addLog('success', `[so00 sovereign] ${data.data}`);
+        }
+
+        if (data.type === 'task-update') {
+          const { task } = data;
+          const statusEmoji = task.state === 'running' ? '⚡' : task.state === 'completed' ? '✅' : '❌';
+          addLog('agent', `${statusEmoji} [${task.agentId.toUpperCase()}] ${task.description} (${task.state.toUpperCase()})`);
+
+          if (task.state === 'completed' && task.result) {
+             addLog('system', `Intel Acquired: ${String(task.result).substring(0, 50)}...`);
+          }
+
+          // Update sidebar swarm state (fallback when status events are delayed/missing)
+          const agentId = task.agentId?.toLowerCase();
+          if (agentId) {
+            const agentColors: Record<string, string> = {
+              sn00: '#00E5FF', sp01: '#FBBC04', cc06: '#4285F4',
+              da03: '#00FF88', ra01: '#EA4335', ba07: '#9C27B0', pm07: '#FF6D00', ve01: '#FF4081', cc02: '#34A853'
+            };
+            const stateMap: Record<string, string> = {
+              running: 'working', completed: 'done', failed: 'error', pending: 'idle'
+            };
+            const agentUpdate = {
+              id: agentId, name: agentId.toUpperCase(),
+              color: agentColors[agentId] || '#00E5FF',
+              state: stateMap[task.state] || task.state,
+              lastStatus: task.description,
+              progress: task.state === 'completed' ? 100 : task.state === 'running' ? 50 : 0
+            };
+            setSwarm(prev => {
+              if (!prev) return { ...agentUpdate, subAgents: {} };
+              return { ...prev, subAgents: { ...prev.subAgents, [agentId]: agentUpdate } };
+            });
+          }
+        }
+
+        if (data.type === 'protocol-finished') {
+          addLog('success', `✅ Swarm Protocol Complete. All agents finished.`);
+          setConnectionState('connected');
+        }
+
+        if (data.type === 'awaiting-intervention') {
+          const intervention = data.data as { taskId: string };
+          window.dispatchEvent(new CustomEvent('swarm-intervention', { detail: intervention }));
+          addLog('error', `EXECUTIVE ACTION REQUIRED: Task [${intervention?.taskId}] is stalled.`);
+        }
+
+        if (data.type === 'calibration') {
+          const calibration = data.data as { agentId: string; status: string };
+          window.dispatchEvent(new CustomEvent('swarm-calibration', { detail: calibration }));
+          addLog('success', `[SENTIENT LOOP] ${calibration?.agentId.toUpperCase()} calibration: ${calibration?.status}`);
+        }
+
+        // Global Dispatch for Thinking Trace
+        if (['task-update', 'agent-thought', 'status', 'protocol-activated', 'senate', 'swarm-payload'].includes(data.type)) {
+          window.dispatchEvent(new CustomEvent('swarm-dispatch', {
+            detail: {
+              agentId: data.agentId || data.agent?.id || 'SN-00',
+              action: data.type.toUpperCase(),
+              detail: data.thought || data.lastStatus || data.payloadType || data.type
+            }
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to process message in GenIUSConsole', err);
+      }
+    });
+
+    return unsubscribe;
+  }, [subscribe, addLog, isConnected, send, stopAllAudio, playAudioBase64, wsState]);
+
+  // Auto-connect managed by WebSocketContext
+  useEffect(() => {
+    if (isConnected && messageQueue.length > 0) {
+        addLog('system', `Flushing ${messageQueue.length} queued directives...`);
+        messageQueue.forEach(msg => {
+          send({ type: 'start', input: msg });
+          addLog('action', `Manual Directive: ${msg} (sent)`);
+        });
+        setMessageQueue([]);
+    }
+  }, [isConnected, messageQueue, send, addLog]);
 
   useEffect(() => {
     const handleTrigger = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (ws.current?.readyState === WebSocket.OPEN) {
+      if (isConnected) {
         setOutput(null);
-        ws.current?.send(JSON.stringify({
+        send({
           type: 'start',
           input: detail.directive || detail.input || 'Initial brief',
           campaignId: detail.campaignId
-        }));
+        });
         addLog('action', `External Directive: ${detail.workflowId || 'Manual Injection'}`);
       }
     };
@@ -402,11 +393,11 @@ export function GenIUSConsole() {
 
     const handleSendIntervention = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (ws.current?.readyState === WebSocket.OPEN) {
-        ws.current.send(JSON.stringify({
+      if (isConnected) {
+        send({
           type: 'executive-intervention',
           data: detail
-        }));
+        });
         addLog('success', `EXECUTIVE DIRECTIVE DISPATCHED: ${detail.directive}`);
       }
     };
@@ -436,14 +427,14 @@ export function GenIUSConsole() {
   }, []);
 
   const handleStart = () => {
-    if (connectionState === 'connected' || connectionState === 'active') {
+    if (isConnected) {
       setOutput(null);
       const inputEl = document.querySelector<HTMLInputElement>('[data-directive-input]');
       const userInput = inputEl?.value?.trim() || 'Launch a full swarm campaign';
-      ws.current?.send(JSON.stringify({ 
+      send({ 
         type: 'start', 
         input: userInput 
-      }));
+      });
       addLog('action', `Initializing Neural Orchestration: "${userInput.substring(0, 60)}..."`);
       if (inputEl) inputEl.value = '';
     }
@@ -483,12 +474,12 @@ export function GenIUSConsole() {
         }
         const base64Data = window.btoa(binary);
 
-        if (ws.current?.readyState === WebSocket.OPEN) {
-           ws.current.send(JSON.stringify({
+        if (isConnected) {
+           send({
              type: 'realtime_input',
              sampleRate: 16000,
              data: base64Data
-           }));
+           });
         }
       };
 
@@ -515,6 +506,7 @@ export function GenIUSConsole() {
       case 'ra01': return <Shield size={16} />;
       case 'pm07': return <Bot size={16} />;
       case 've01': return <Film size={16} />;
+      case 'cc02': return <Share2 size={16} />;
       default: return <Bot size={16} />;
     }
   };
@@ -749,7 +741,7 @@ export function GenIUSConsole() {
         <div className="flex-1 flex flex-col relative">
           {/* Algorithmic Senate Bar */}
           <AnimatePresence>
-            {swarm?.subAgents?.auditor?.state === 'working' || swarm?.subAgents?.auditor?.state === 'done' ? (
+            {swarm?.subAgents?.['ra01']?.state === 'working' || swarm?.subAgents?.['ra01']?.state === 'done' ? (
               <motion.div 
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
@@ -773,8 +765,8 @@ export function GenIUSConsole() {
                         <senator.icon size={12} style={{ color: senator.color }} />
                         <span className="text-[9px] uppercase font-bold opacity-60">{senator.name}</span>
                         <div className="ml-auto flex items-center gap-1">
-                           <div className={`w-1.5 h-1.5 rounded-full ${swarm.subAgents.auditor.state === 'done' ? 'bg-green-500' : 'bg-white/10 animate-pulse'}`} />
-                           <span className="text-[8px] font-black opacity-40 italic">{swarm.subAgents.auditor.state === 'done' ? 'APPROVE' : 'VOTING'}</span>
+                           <div className={`w-1.5 h-1.5 rounded-full ${swarm.subAgents['ra01']?.state === 'done' ? 'bg-green-500' : 'bg-white/10 animate-pulse'}`} />
+                           <span className="text-[8px] font-black opacity-40 italic">{swarm.subAgents['ra01']?.state === 'done' ? 'APPROVE' : 'VOTING'}</span>
                         </div>
                      </div>
                    ))}
@@ -951,8 +943,8 @@ export function GenIUSConsole() {
                                 </div>
 
                                <div className="flex gap-4">
-                                 <button onClick={() => connect()} className="px-6 py-2 rounded bg-neural-blue text-obsidian hover:bg-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(0,229,255,0.3)]">
-                                   <Zap size={14} /> Connect
+                                 <button onClick={() => window.location.reload()} className="px-6 py-2 rounded bg-neural-blue text-obsidian hover:bg-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(0,229,255,0.3)]">
+                                   <Zap size={14} /> Reconnect
                                  </button>
                                </div>
                              </div>
@@ -961,7 +953,7 @@ export function GenIUSConsole() {
                                <Link2Off size={48} className="text-red-500/50 mb-6" />
                                <h3 className="text-2xl font-display font-black text-red-500 uppercase tracking-tighter mb-2">Connection Failed</h3>
                                <div className="flex gap-4 mt-4">
-                                 <button onClick={() => connect()} className="px-6 py-2 rounded bg-neural-blue text-obsidian hover:bg-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(0,229,255,0.3)]">
+                                 <button onClick={() => window.location.reload()} className="px-6 py-2 rounded bg-neural-blue text-obsidian hover:bg-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(0,229,255,0.3)]">
                                    <Zap size={14} /> Retry
                                  </button>
                                </div>
@@ -1026,9 +1018,9 @@ export function GenIUSConsole() {
                                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                                          const val = e.currentTarget.value.trim();
                                          e.currentTarget.value = '';
-                                         if (connectionState === 'connected' || connectionState === 'active') {
+                                         if (isConnected) {
                                            setOutput(null);
-                                           ws.current?.send(JSON.stringify({ type: 'start', input: val }));
+                                           send({ type: 'start', input: val });
                                            addLog('action', `Manual Directive: ${val} (sent)`);
                                          } else {
                                            if (messageQueue.length >= MAX_QUEUE_SIZE) {
@@ -1039,9 +1031,7 @@ export function GenIUSConsole() {
                                            setMessageQueue(prev => [...prev, val]);
                                            addLog('system', `Directive queued (${messageQueue.length + 1}/${MAX_QUEUE_SIZE}). Connecting...`);
                                            
-                                           if (String(connectionState) === 'disconnected' || String(connectionState) === 'error') {
-                                             connect();
-                                           }
+                                           // Reconnection is handled automatically by context
                                          }
                                        }
                                      }}

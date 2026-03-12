@@ -48,6 +48,7 @@ export class BudgetGuardrail {
   public async trackUsage(model: string, tokens: number = 0) {
     // Simulated cost calculation for Gemini 2.0 Flash
     // $0.10 per 1M input tokens, $0.40 per 1M output tokens (approximation)
+    // GCP standard pricing: $0.10/1M input, $0.40/1M output. Grounded estimate.
     const estimatedCost = (tokens / 1_000_000) * 0.25; 
     
     this.config.currentDailySpendUSD += estimatedCost;

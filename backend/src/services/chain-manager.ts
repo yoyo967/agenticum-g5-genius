@@ -12,7 +12,7 @@ import { BA07BrowserArchitect } from '../agents/ba07-browser-architect';
 
 export class ChainManager {
   private logger: Logger;
-  private activeProtocol: SwarmProtocol | null = null;
+  private activeProtocols: Map<string, SwarmProtocol> = new Map();
   private agents: Record<string, any> = {};
   private static instance: ChainManager;
 
@@ -73,58 +73,98 @@ export class ChainManager {
     return this.agents[id];
   }
 
-  public pauseProtocol() {
-    if (this.activeProtocol) {
-      this.activeProtocol.status = 'paused';
-      this.logger.info(`Protocol ${this.activeProtocol.id} PAUSED.`);
-      eventFabric.broadcast({ type: 'protocol-paused', protocol: this.activeProtocol });
+  public async pauseProtocol(runId: string) {
+    const protocol = this.activeProtocols.get(runId);
+    if (protocol) {
+      protocol.status = 'paused';
+      this.logger.info(`Protocol ${runId} PAUSED.`);
+      
+      const { db, Collections } = require('./firestore');
+      await db.collection(Collections.SWARM_RUNS).doc(runId).update({ status: 'paused' });
+      
+      eventFabric.broadcast({ type: 'protocol-paused', protocol });
     }
   }
 
-  public resumeProtocol() {
-    if (this.activeProtocol && this.activeProtocol.status === 'paused') {
-      this.activeProtocol.status = 'active';
-      this.logger.info(`Protocol ${this.activeProtocol.id} RESUMED.`);
-      eventFabric.broadcast({ type: 'protocol-resumed', protocol: this.activeProtocol });
+  public async resumeProtocol(runId: string) {
+    const protocol = this.activeProtocols.get(runId);
+    if (protocol && protocol.status === 'paused') {
+      protocol.status = 'active';
+      this.logger.info(`Protocol ${runId} RESUMED.`);
+      
+      const { db, Collections } = require('./firestore');
+      await db.collection(Collections.SWARM_RUNS).doc(runId).update({ status: 'active' });
+      
+      eventFabric.broadcast({ type: 'protocol-resumed', protocol });
     }
   }
 
   public async executeProtocol(protocol: SwarmProtocol) {
-    this.activeProtocol = protocol;
+    this.activeProtocols.set(protocol.id, protocol);
     this.logger.info(`Activating Protocol: ${protocol.id} - Goal: ${protocol.goal}`);
     
+    // Phase 1: Initial Persistence
+    try {
+      const { db, Collections } = require('./firestore');
+      await db.collection(Collections.SWARM_RUNS).doc(protocol.id).set(protocol);
+    } catch (e) {
+      this.logger.warn(`Failed to persist initial protocol ${protocol.id}`, e as Error);
+    }
+
     eventFabric.broadcast({ type: 'protocol-activated', protocol });
 
-    while (this.hasPendingTasks()) {
-      if (this.activeProtocol?.status === 'paused') {
+    while (this.hasPendingTasks(protocol.id)) {
+      if (this.activeProtocols.get(protocol.id)?.status === 'paused') {
         await new Promise(resolve => setTimeout(resolve, 1000));
         continue;
       }
 
-      const runnableTasks = this.getRunnableTasks();
-      if (runnableTasks.length === 0 && this.hasRunningTasks()) {
-        // Wait for running tasks to complete (simple poll for now, could use events)
+      const runnableTasks = this.getRunnableTasks(protocol.id);
+      if (runnableTasks.length === 0 && this.hasRunningTasks(protocol.id)) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         continue;
       }
 
-      if (runnableTasks.length === 0 && !this.hasRunningTasks()) {
+      if (runnableTasks.length === 0 && !this.hasRunningTasks(protocol.id)) {
         this.logger.error('Deadlock detected in SwarmProtocol graph.');
+        protocol.status = 'failed';
+        try {
+          const { db, Collections } = require('./firestore');
+          await db.collection(Collections.SWARM_RUNS).doc(protocol.id).update({ status: 'failed' });
+        } catch (e) {}
         break;
       }
 
       // Execute runnable tasks in parallel
-      await Promise.all(runnableTasks.map(task => this.executeTask(task)));
+      await Promise.all(runnableTasks.map(task => this.executeTask(protocol.id, task)));
     }
 
     this.logger.info(`Protocol ${protocol.id} Execution Finished.`);
-    eventFabric.broadcast({ type: 'protocol-finished', protocol: this.activeProtocol });
+    
+    // Update final status in Firestore
+    protocol.status = 'completed';
+    try {
+      const { db, Collections } = require('./firestore');
+      await db.collection(Collections.SWARM_RUNS).doc(protocol.id).update({ 
+         status: 'completed',
+         finishedAt: Date.now()
+      });
+    } catch (e) {}
+
+    this.activeProtocols.delete(protocol.id);
+    eventFabric.broadcast({ type: 'protocol-finished', protocol });
   }
 
-  private async executeTask(task: Task) {
+  private async executeTask(protocolId: string, task: Task) {
+    const protocol = this.activeProtocols.get(protocolId);
+    if (!protocol) return;
+
     task.state = TaskState.RUNNING;
     task.startTime = Date.now();
     this.logger.info(`Starting Task [${task.id}] on Agent [${task.agentId}]`);
+    
+    // Sync task state to Firestore
+    this.syncTaskState(protocolId, task);
     
     eventFabric.broadcast({ type: 'task-update', task });
 
@@ -136,13 +176,18 @@ export class ChainManager {
       return;
     }
 
+    // Phase 1: Context Synchronization
+    if (protocol && typeof agent.setContext === 'function') {
+      agent.setContext(protocol.id, protocol.campaignId);
+    }
+
     try {
       // Collect results from dependencies
       const dependencies = task.dependencies.map(depId => 
-        this.activeProtocol?.tasks.find(t => t.id === depId)
+        protocol.tasks.find(t => t.id === depId)
       ).filter(t => !!t);
       
-      const contextFromDeps = dependencies.map(t => 
+      const contextFromDeps = dependencies.map((t: any) => 
         `RESULT FROM [${t?.agentId}]:\n${t?.result}`
       ).join('\n\n');
 
@@ -205,21 +250,40 @@ export class ChainManager {
     }
   }
 
-  private hasPendingTasks() {
-    return this.activeProtocol?.tasks.some(t => t.state === TaskState.PENDING || t.state === TaskState.RUNNING) ?? false;
+  private async syncTaskState(protocolId: string, task: Task) {
+    const protocol = this.activeProtocols.get(protocolId);
+    if (!protocol) return;
+    try {
+      const { db, Collections } = require('./firestore');
+      const protocolRef = db.collection(Collections.SWARM_RUNS).doc(protocol.id);
+      
+      // Update the entire tasks array to ensure Firestore consistency
+      await protocolRef.update({
+        tasks: protocol.tasks
+      });
+    } catch (e) {
+      this.logger.warn(`Failed to sync task ${task.id} to Firestore`, e as Error);
+    }
   }
 
-  private hasRunningTasks() {
-    return this.activeProtocol?.tasks.some(t => t.state === TaskState.RUNNING) ?? false;
+  private hasPendingTasks(protocolId: string) {
+    const protocol = this.activeProtocols.get(protocolId);
+    return protocol?.tasks.some(t => t.state === TaskState.PENDING || t.state === TaskState.RUNNING) ?? false;
   }
 
-  private getRunnableTasks() {
-    if (!this.activeProtocol) return [];
-    return this.activeProtocol.tasks.filter(task => {
+  private hasRunningTasks(protocolId: string) {
+    const protocol = this.activeProtocols.get(protocolId);
+    return protocol?.tasks.some(t => t.state === TaskState.RUNNING) ?? false;
+  }
+
+  private getRunnableTasks(protocolId: string) {
+    const protocol = this.activeProtocols.get(protocolId);
+    if (!protocol) return [];
+    return protocol.tasks.filter(task => {
       if (task.state !== TaskState.PENDING) return false;
       // Check if all dependencies are COMPLETED
       return task.dependencies.every(depId => {
-        const depTask = this.activeProtocol!.tasks.find(t => t.id === depId);
+        const depTask = protocol.tasks.find(t => t.id === depId);
         return depTask?.state === TaskState.COMPLETED;
       });
     });

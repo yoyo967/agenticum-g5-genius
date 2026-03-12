@@ -27,4 +27,5 @@ export interface SwarmProtocol {
   tasks: Task[];
   status: 'active' | 'completed' | 'failed' | 'paused';
   createdAt: number;
+  campaignId?: string;
 }

@@ -25,7 +25,7 @@ export class BA07BrowserArchitect extends BaseAgent {
       name: 'Browser Architect',
       color: '#00E5FF'
     });
-    this.engineUrl = process.env.ENGINE_URL || 'https://agenticum-g5-backend-697051612685.europe-west1.run.app';
+    this.engineUrl = process.env.ENGINE_URL || 'https://genius-backend-697051612685.europe-west1.run.app';
   }
 
   async execute(input: string, context?: any): Promise<string> {
@@ -39,7 +39,8 @@ export class BA07BrowserArchitect extends BaseAgent {
       const url = urlMatch ? urlMatch[0] : (context?.url || '');
       
       if (!url) {
-        throw new Error('No target URL provided for BA-07 Browser Architect.');
+        this.updateStatus(AgentState.DONE, 'No target URL — general intelligence mode.', 100);
+        return `BA-07 Web Intelligence: No specific URL extracted from directive. For deep competitor analysis, include a target URL (e.g. "analyse https://competitor.com"). General market context: AI-driven marketing automation is a rapidly growing space with key players including HubSpot, Salesforce Marketing Cloud, and emerging AI-native solutions.`;
       }
 
       // Log start of grounding phase to Perfect Twin

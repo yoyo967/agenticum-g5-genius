@@ -4,7 +4,7 @@ import {
   Wand2, Lightbulb, FileText,
   ChevronLeft, Sparkles,
   Send, RefreshCw, CheckCircle,
-  Type, Layout, Image as ImageIcon, Download
+  Type, Layout, Image as ImageIcon, Download, AlertTriangle
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -24,7 +24,16 @@ export const ScriptWizard: React.FC = () => {
     script: ''
   });
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isEvolving, setIsEvolving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+
+  const steps: { key: WizardStep; label: string; icon: React.ReactNode }[] = [
+    { key: 'idea', label: 'Seed Idea', icon: <Lightbulb size={16} /> },
+    { key: 'concept', label: 'Neural Concept', icon: <Sparkles size={16} /> },
+    { key: 'outline', label: 'Structure', icon: <Layout size={16} /> },
+    { key: 'script', label: 'Cinematic Script', icon: <FileText size={16} /> },
+  ];
 
   const handleExport = () => {
     const allContent = (Object.entries(content) as [WizardStep, string][])
@@ -40,43 +49,79 @@ export const ScriptWizard: React.FC = () => {
     URL.revokeObjectURL(a.href);
   };
 
-  const steps: { key: WizardStep; label: string; icon: React.ReactNode }[] = [
-    { key: 'idea', label: 'Seed Idea', icon: <Lightbulb size={16} /> },
-    { key: 'concept', label: 'Neural Concept', icon: <Sparkles size={16} /> },
-    { key: 'outline', label: 'Structure', icon: <Layout size={16} /> },
-    { key: 'script', label: 'Cinematic Script', icon: <FileText size={16} /> },
-  ];
-
   const handleGenerate = async () => {
     if (isGenerating) return;
-    setIsGenerating(true);
-    setProgress(10);
-
+    
     const stepOrder: WizardStep[] = ['idea', 'concept', 'outline', 'script'];
     const currentIndex = stepOrder.indexOf(currentStep);
     const nextStep = stepOrder[currentIndex + 1];
+    if (!nextStep) return;
+
+    setIsGenerating(true);
+    setError(null);
+    setProgress(10);
 
     try {
       const response = await fetch(`${API_BASE_URL}/blog/script-wizard/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          idea,
-          tone,
-          step: nextStep,
-          context: content[currentStep]
+          step: currentIndex + 1, // 1 for idea->concept, 2 for concept->outline, etc
+          context: {
+            idea,
+            tone,
+            concept: content.concept,
+            outline: content.outline,
+            script: content.script
+          }
         })
       });
 
-      if (!response.ok) throw new Error('Generation failed');
+      if (!response.ok) throw new Error('Synthesis failure. Swarm connection unstable.');
       
       const data = await response.json();
-      setContent(prev => ({ ...prev, [nextStep]: data.result }));
+      setContent(prev => ({ ...prev, [nextStep]: data.output || data.result }));
       setCurrentStep(nextStep);
-    } catch (error) {
-      console.error('Wizard failed:', error);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Quantum synthesis interrupted.';
+      setError(msg);
     } finally {
       setIsGenerating(false);
+      setProgress(0);
+    }
+  };
+
+  const handleEvolve = async () => {
+    if (isEvolving) return;
+    setIsEvolving(true);
+    setError(null);
+    setProgress(10);
+    try {
+      const resp = await fetch(`${API_BASE_URL}/blog/script-wizard/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          step: 4, // Evolve step
+          context: { 
+            idea, 
+            concept: content.concept, 
+            outline: content.outline, 
+            script: content.script, 
+            tone, 
+            evolve: true 
+          } 
+        }),
+      });
+      
+      if (!resp.ok) throw new Error('Evolution cycle failed. Check sensor array.');
+      
+      const data = await resp.json();
+      setContent(prev => ({ ...prev, script: data.output || data.result }));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Evolutionary leap aborted.';
+      setError(msg);
+    } finally {
+      setIsEvolving(false);
       setProgress(0);
     }
   };
@@ -95,7 +140,7 @@ export const ScriptWizard: React.FC = () => {
                 Idea to Cinematic Narrative Pipeline
               </p>
            </div>
-           <StatusBadge status={isGenerating ? 'processing' : 'idle'} />
+           <StatusBadge status={isGenerating || isEvolving ? 'processing' : 'idle'} />
         </div>
 
         <div className="flex items-center justify-between relative px-4">
@@ -128,6 +173,17 @@ export const ScriptWizard: React.FC = () => {
 
       {/* Main Area */}
       <div className="flex-1 p-8 overflow-y-auto overflow-x-hidden relative">
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-400 text-xs"
+          >
+            <AlertTriangle size={16} />
+            {error}
+          </motion.div>
+        )}
+
         <AnimatePresence mode="wait">
           {currentStep === 'idea' && (
             <motion.div
@@ -175,7 +231,7 @@ export const ScriptWizard: React.FC = () => {
                   <button 
                     disabled={!idea || isGenerating}
                     onClick={handleGenerate}
-                    className="flex items-center gap-3 bg-accent text-void px-6 py-2.5 rounded-xl font-black text-xs hover:bg-accent/80 transition-all disabled:opacity-30 shadow-[0_0_20px_rgba(0,229,255,0.3)] animate-glow"
+                    className="flex items-center gap-3 bg-accent text-void px-6 py-2.5 rounded-xl font-black text-xs hover:bg-accent/80 transition-all disabled:opacity-30 shadow-[0_0_20px_rgba(0,229,255,0.3)]"
                   >
                     {isGenerating ? (
                       <RefreshCw size={14} className="animate-spin" />
@@ -205,10 +261,14 @@ export const ScriptWizard: React.FC = () => {
                      <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-accent/60">
                            <ImageIcon size={12} />
-                           Drafting {currentStep}...
+                           {isGenerating ? 'Synthesizing...' : isEvolving ? 'Evolving...' : `Current ${currentStep}`}
                         </div>
                         <div className="flex items-center gap-2">
-                           <button className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-white transition-colors">
+                           <button 
+                            onClick={currentStep === 'script' ? handleEvolve : handleGenerate}
+                            disabled={isGenerating || isEvolving}
+                            className={`p-2 rounded-lg bg-white/5 text-white/40 hover:text-white transition-colors disabled:opacity-30 ${isGenerating || isEvolving ? 'animate-spin' : ''}`}
+                           >
                               <RefreshCw size={14} />
                            </button>
                         </div>
@@ -222,11 +282,11 @@ export const ScriptWizard: React.FC = () => {
                              Neural sequence engaged. Synthesizing cinematic fragments based on seed idea...
                           </p>
                         )}
-                        {isGenerating && <div className="typing-cursor w-2 h-4 bg-accent/40 inline-block animate-pulse" />}
+                        {(isGenerating || isEvolving) && <div className="typing-cursor w-2 h-4 bg-accent/40 inline-block animate-pulse" />}
                      </div>
                   </div>
 
-                  {isGenerating && (
+                  {(isGenerating || isEvolving) && (
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5">
                       <motion.div 
                         initial={{ width: 0 }}
@@ -241,7 +301,7 @@ export const ScriptWizard: React.FC = () => {
                  <button 
                   onClick={() => {
                     const idx = steps.findIndex(s => s.key === currentStep);
-                    setCurrentStep(steps[idx - 1].key);
+                    if (idx > 0) setCurrentStep(steps[idx - 1].key);
                   }}
                   className="flex items-center gap-2 text-white/40 hover:text-white transition-colors uppercase text-[10px] font-bold tracking-widest"
                  >
@@ -257,13 +317,25 @@ export const ScriptWizard: React.FC = () => {
                     >
                       <Download size={12} /> Export Draft
                     </button>
-                    <button 
-                      onClick={handleGenerate}
-                      className="flex items-center gap-3 bg-accent text-void px-8 py-2.5 rounded-xl font-black text-xs hover:bg-accent/80 transition-all shadow-[0_0_20px_rgba(0,229,255,0.3)]"
-                    >
-                      {isGenerating ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                      Evolve to {steps[steps.findIndex(s => s.key === currentStep) + 1]?.label}
-                    </button>
+                    {currentStep !== 'script' ? (
+                      <button 
+                        onClick={handleGenerate}
+                        disabled={isGenerating}
+                        className="flex items-center gap-3 bg-accent text-void px-8 py-2.5 rounded-xl font-black text-xs hover:bg-accent/80 transition-all shadow-[0_0_20px_rgba(0,229,255,0.3)] disabled:opacity-30"
+                      >
+                        {isGenerating ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                        Draft {steps[steps.findIndex(s => s.key === currentStep) + 1]?.label}
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={handleEvolve}
+                        disabled={isEvolving}
+                        className="flex items-center gap-3 bg-magenta text-white px-8 py-2.5 rounded-xl font-black text-xs hover:bg-magenta/80 transition-all shadow-[0_0_20px_rgba(255,0,122,0.3)] disabled:opacity-30"
+                      >
+                        {isEvolving ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                        Evolve Narrative
+                      </button>
+                    )}
                  </div>
                </div>
             </motion.div>

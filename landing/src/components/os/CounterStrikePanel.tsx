@@ -1,126 +1,102 @@
-import { useState, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ENGINE_URL, API_BASE_URL } from '../../config';
+import { API_BASE_URL } from '../../config';
 import { SenateGate } from './SenateGate';
 import { ActivityFeed } from './ActivityFeed';
-import { makeEntry } from './activityUtils';
-import type { ActivityEntry } from './ActivityFeed';
+import { makeEntry, type ActivityEntry } from './activityUtils';
+import { useAgentOutputs } from '../../hooks/useAgentOutputs';
+import { useAgentStatus } from '../../hooks/useAgentStatus';
+import { useSwarmRun } from '../../hooks/useSwarmRun';
 
 interface Competitor {
-  // Engine actual fields
   competitor?: string;
-  their_h2_structure?: string[];
-  // Normalized / alternate names
   name?: string;
-  title?: string;
   url?: string;
-  h2_structure?: string[];
+  their_h2_structure?: string[];
   overlap_score?: number;
   keywords?: string[];
 }
 
-type PanelState = 'idle' | 'loading' | 'done' | 'error';
-
-const MAX_LOG = 10;
-
-function addEntry(prev: ActivityEntry[], entry: ActivityEntry): ActivityEntry[] {
-  return [entry, ...prev].slice(0, MAX_LOG);
-}
-
 export function CounterStrikePanel() {
   const [topic, setTopic] = useState('');
-  const [state, setState] = useState<PanelState>('idle');
-  const [competitors, setCompetitors] = useState<Competitor[]>([]);
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [senateTrigger, setSenateTrigger] = useState(0);
-  const [twinId, setTwinId] = useState<string | null>(null);
-  const [log, setLog] = useState<ActivityEntry[]>([]);
+  
+  // Neural Fabric Hooks
+  const { outputs } = useAgentOutputs({ runId: activeRunId || undefined });
+  const { statuses } = useAgentStatus();
+  const { run } = useSwarmRun(activeRunId);
 
-  const logEntry = useCallback((agent: string, message: string, type: ActivityEntry['type'] = 'action') => {
-    setLog(prev => addEntry(prev, makeEntry(agent, message, type)));
-  }, []);
+  // Derive competitors from BA-07 outputs
+  const competitors = useMemo(() => {
+    const browserOutput = outputs.find(o => o.agent_id === 'ba07' && o.type === 'competitors');
+    if (browserOutput && Array.isArray(browserOutput.payload?.list)) {
+      return browserOutput.payload.list as Competitor[];
+    }
+    return [];
+  }, [outputs]);
+
+  // Derive logs from active statuses and outputs
+  const logs = useMemo(() => {
+    const entries: ActivityEntry[] = [];
+    
+    // Add status updates from statuses
+    Object.entries(statuses).forEach(([id, status]) => {
+      if (status.run_id === activeRunId) {
+        entries.push(makeEntry(id.toUpperCase(), status.message, 'action'));
+      }
+    });
+
+    // Add final outputs
+    outputs.forEach(o => {
+      entries.push(makeEntry(o.agent_id.toUpperCase(), `Output generated: ${o.type}`, 'output'));
+    });
+
+    return entries.sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
+  }, [statuses, outputs, activeRunId]);
 
   const handleRun = async () => {
     if (!topic.trim()) return;
 
-    setState('loading');
-    setCompetitors([]);
     setErrorMsg('');
-    setTwinId(null);
-
-    logEntry('SN-00', 'Task dispatched to SP-01', 'dispatch');
-    logEntry('SP-01', `Counter-Strike activated — topic: "${topic}"`, 'action');
+    setActiveRunId(null);
 
     try {
-      const url = `${ENGINE_URL}/engine/counter-strike?topic=${encodeURIComponent(topic)}`;
-      const res = await fetch(url);
+      const res = await fetch(`${API_BASE_URL}/swarm/launch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          prompt: `Perform complete competitive analysis and counter-strike strategy for topic: "${topic}"`
+        }),
+      });
 
-      if (!res.ok) {
-        throw new Error(`Engine responded with HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`Swarm launch failed with HTTP ${res.status}`);
 
       const data = await res.json();
-
-      // Normalize response — engine may return { overlap: [...] } or []
-      const raw: Competitor[] = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.overlap)
-        ? data.overlap
-        : Array.isArray(data?.competitors)
-        ? data.competitors
-        : [];
-
-      setCompetitors(raw);
-      setState('done');
-
-      logEntry('SP-01', `${raw.length} competitors identified`, 'output');
-      logEntry('RA-01', 'Senate review initiated', 'senate');
-
-      // Trigger Senate Gate sequence
+      setActiveRunId(data.runId);
       setSenateTrigger(k => k + 1);
-
-      // F5 — Perfect Twin Log
-      try {
-        const twinRes = await fetch(`${API_BASE_URL}/vault/twin-log`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'counter-strike',
-            input: topic,
-            output: raw,
-            agent: 'SP-01',
-            timestamp: new Date().toISOString(),
-            senateApproved: true,
-          }),
-        }).catch(() => null);
-        if (twinRes?.ok) {
-          const twinData = await twinRes.json().catch(() => ({}));
-          setTwinId(twinData?.id ?? twinData?.docId ?? 'logged');
-        }
-      } catch {
-        // Twin log is non-critical
-      }
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
       setErrorMsg(msg);
-      setState('error');
-      logEntry('SP-01', `Error: ${msg}`, 'error');
     }
   };
+
+  const isScanning = run && run.status === 'active';
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-mono text-xs text-blue-400 uppercase tracking-widest">SP-01</span>
+          <span className="font-mono text-xs text-blue-400 uppercase tracking-widest">SP-01 + BA-07</span>
           <span className="font-mono text-xs text-zinc-600">·</span>
-          <span className="font-mono text-xs text-zinc-500 uppercase tracking-widest">Strategic Cortex</span>
+          <span className="font-mono text-xs text-zinc-500 uppercase tracking-widest">Live Matrix Intelligence</span>
         </div>
         <h2 className="text-xl font-bold text-white">Counter-Strike Analysis</h2>
         <p className="text-zinc-500 text-sm mt-1">
-          Real-time competitor intelligence via Google Search grounding.
+          Real-time competitor intelligence via Swarm Orchestration and Google Search grounding.
         </p>
       </div>
 
@@ -129,34 +105,34 @@ export function CounterStrikePanel() {
         <input
           value={topic}
           onChange={e => setTopic(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && state !== 'loading' && handleRun()}
+          onKeyDown={e => e.key === 'Enter' && !isScanning && handleRun()}
           placeholder="Enter topic to analyze... e.g. AI Marketing Automation"
           className="flex-1 bg-zinc-900 border border-zinc-700 text-white px-4 py-2.5 rounded text-sm font-mono placeholder:text-zinc-600 focus:outline-none focus:border-blue-500 transition-colors"
-          disabled={state === 'loading'}
+          disabled={isScanning}
         />
         <button
           onClick={handleRun}
-          disabled={state === 'loading' || !topic.trim()}
+          disabled={isScanning || !topic.trim()}
           className={`px-6 py-2.5 font-mono text-xs uppercase tracking-widest rounded transition-all ${
-            state === 'loading'
+            isScanning
               ? 'bg-blue-900 text-blue-300 animate-pulse cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-500 text-white'
           } disabled:opacity-50`}
         >
-          {state === 'loading' ? 'SP-01 SCANNING...' : 'RUN COUNTER-STRIKE'}
+          {isScanning ? 'SWARM SCANNING...' : 'ACTIVATE SWARM'}
         </button>
       </div>
 
       {/* Error */}
-      {state === 'error' && (
+      {errorMsg && (
         <div className="border border-red-800 bg-red-950/40 rounded p-4 font-mono text-xs text-red-400">
-          ❌ SP-01 ERROR: {errorMsg}
+          ❌ SYSTEM ERROR: {errorMsg}
         </div>
       )}
 
       {/* Results */}
       <AnimatePresence>
-        {state === 'done' && competitors.length > 0 && (
+        {competitors.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -181,7 +157,7 @@ export function CounterStrikePanel() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="font-bold text-white text-sm">
-                        {c.competitor ?? c.name ?? c.title ?? `Competitor ${i + 1}`}
+                        {c.competitor ?? c.name ?? `Competitor ${i + 1}`}
                       </p>
                       {c.url && (
                         <a
@@ -206,7 +182,7 @@ export function CounterStrikePanel() {
 
                   {/* H2 Structure */}
                   {(() => {
-                    const h2s = c.their_h2_structure ?? c.h2_structure ?? [];
+                    const h2s = c.their_h2_structure ?? [];
                     return h2s.length > 0 ? (
                       <div>
                         <p className="font-mono text-xs text-zinc-600 uppercase tracking-widest mb-1.5">
@@ -239,12 +215,11 @@ export function CounterStrikePanel() {
           </motion.div>
         )}
 
-        {state === 'done' && competitors.length === 0 && (
+        {run && run.status === 'done' && competitors.length === 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="border border-zinc-800 bg-zinc-900 rounded p-6 text-center">
             <p className="font-mono text-xs text-zinc-500">
-              SP-01 — No structured competitor data returned for this topic.
-              The engine may be in fallback mode. Try a more specific topic.
+              Analysis complete. No structured competitor data found for this topic.
             </p>
           </motion.div>
         )}
@@ -253,21 +228,8 @@ export function CounterStrikePanel() {
       {/* F3 — Senate Gate */}
       <SenateGate triggerKey={senateTrigger} onComplete={() => {}} />
 
-      {/* F5 — Perfect Twin Badge */}
-      {twinId && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="flex items-center gap-2 group relative cursor-default w-fit">
-          <span className="font-mono text-xs text-zinc-500 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded">
-            🔒 TWIN SEALED
-          </span>
-          <span className="absolute -top-7 left-0 hidden group-hover:block bg-zinc-800 px-2 py-1 rounded font-mono text-xs text-zinc-400 whitespace-nowrap">
-            Firestore: {twinId}
-          </span>
-        </motion.div>
-      )}
-
       {/* F4 — Activity Feed */}
-      <ActivityFeed entries={log} />
+      <ActivityFeed entries={logs} />
     </div>
   );
 }

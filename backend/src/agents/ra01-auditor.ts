@@ -67,21 +67,34 @@ export class RA01Auditor extends BaseAgent {
 
     const complianceAudit = await vertexAI.generateContent(auditPrompt);
     
-    this.updateStatus(AgentState.WORKING, '🔮 Data Senators: Running Predictive Performance Scoring...', 70);
+    await this.updateStatus(AgentState.WORKING, '🔮 Data Senators: Running Predictive Performance Scoring...', 70);
     const performanceScore = await vertexAI.predictiveScoring(input);
 
     const verdict = complianceAudit.includes('APPROVED') ? 'APPROVED' : 'REJECTED';
     
-    // Phase 2: Functional Senate Docket Integration
+    // Phase 1: Direct Output Routing
+    await this.writeOutput('audit', {
+      title: `Security Senate Audit: ${input.substring(0, 40)}`,
+      verdict: verdict,
+      compliance_analysis: complianceAudit,
+      genius_score: performanceScore.score,
+      reasoning: performanceScore.reasoning
+    });
+
+    // Phase 2: Functional Senate Docket Integration (Synchronized with UI)
     try {
       await db.collection(Collections.SENATE_DOCKET).add({
+        agentId: this.id,
         agent: 'RA-01',
         type: 'CONTENT_REVIEW',
         risk: performanceScore.score < 60 ? 'HIGH' : 'MEDIUM',
         title: `Audit: ${input.substring(0, 40)}...`,
         payload: `SCORE: ${performanceScore.score}/100\nREASONING: ${performanceScore.reasoning}\n\n${complianceAudit}`,
-        verdict: 'PENDING', // Initial state for human-in-the-loop
+        verdict: 'PENDING',
         aiVerdict: verdict,
+        aiScore: performanceScore.score,
+        runId: this.runId,
+        campaignId: this.campaignId,
         timestamp: new Date(),
         createdAt: new Date()
       });
@@ -89,7 +102,7 @@ export class RA01Auditor extends BaseAgent {
       console.error('Failed to submit RA-01 case to docket:', e);
     }
 
-    this.updateStatus(AgentState.DONE, 'Audit finalized. Senate decision delivered.', 100);
+    await this.updateStatus(AgentState.DONE, 'Audit finalized. Senate decision delivered.', 100);
 
     return `
 ## AUDIT REPORT: ALGORITHMIC SENATE VERDICT

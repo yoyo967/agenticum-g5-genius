@@ -10,7 +10,7 @@ const AGENTS = [
     description: "The commanding node. Translates user briefs into parallelized sub-tasks. Masters the Boydian OODA loop for rapid decision making.",
     color: "#00e5ff",
     icon: Network,
-    stats: { latency: "42ms", success: "99.9%" }
+    stats: { latency: "<100ms", success: "Verified" }
   },
   {
     id: "so00",
@@ -18,7 +18,7 @@ const AGENTS = [
     description: "The systems consciousness. Fuses user vision with machine-logic to maintain 'Maximal Excellence' across the entire swarm.",
     color: "#FFD700",
     icon: Cpu,
-    stats: { latency: "25ms", success: "100%" }
+    stats: { latency: "<50ms", success: "Sovereign" }
   },
   {
     id: "sp01",
@@ -26,7 +26,7 @@ const AGENTS = [
     description: "The strategic brain. Runs market analysis and competitive scavenging using the Columna Radar for real-time monitoring.",
     color: "#8b5cf6",
     icon: Cpu,
-    stats: { latency: "120ms", success: "98.5%" }
+    stats: { latency: "SYNCING", success: "Active" }
   },
   {
     id: "cc06",
@@ -34,7 +34,7 @@ const AGENTS = [
     description: "The creative architect. Orchestrates semantic SEO frameworks and conversion-optimized copy using high-dimensional reasoning and the 'Ogilvy Codex'.",
     color: "#10b981",
     icon: PenTool,
-    stats: { latency: "85ms", success: "96.2%" }
+    stats: { latency: "NEXUS", success: "Active" }
   },
   {
     id: "da03",
@@ -42,7 +42,7 @@ const AGENTS = [
     description: "The visual artist. Hardwired to Vertex AI Imagen 3 to forge fotorealistic Studio-Assets based on Bauhaus design principles.",
     color: "#ec4899",
     icon: ImageIcon,
-    stats: { latency: "140ms", success: "94.0%" }
+    stats: { latency: "IMAGEN", success: "Active" }
   },
   {
     id: "ba07",
@@ -50,7 +50,7 @@ const AGENTS = [
     description: "The deep-intel specialist. Uses a 5-layer brain and Playwright for autonomous web interaction and zero-day intelligence.",
     color: "#f59e0b",
     icon: Network, // Update with appropriate icon if needed
-    stats: { latency: "150ms", success: "97.8%" }
+    stats: { latency: "BROWSER", success: "Active" }
   },
   {
     id: "ve01",
@@ -58,7 +58,7 @@ const AGENTS = [
     description: "The cinematic architect. Orchestrates the Cinematic Forge pipeline to transform storyboards into high-fidelity motion assets.",
     color: "#ef4444",
     icon: Cpu, // Update with appropriate icon if needed
-    stats: { latency: "200ms", success: "95.5%" }
+    stats: { latency: "CINEMATIC", success: "Active" }
   },
   {
     id: "ra01",
@@ -66,7 +66,7 @@ const AGENTS = [
     description: "The adversarial algorithm. Reviews every output against GDPR, EU AI Act, and brand safety guidelines before release.",
     color: "#ef4444",
     icon: ShieldCheck,
-    stats: { latency: "65ms", success: "100%" }
+    stats: { latency: "<100ms", success: "RA-01" }
   }
 ];
 

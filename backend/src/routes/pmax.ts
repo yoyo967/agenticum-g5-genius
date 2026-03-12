@@ -109,11 +109,19 @@ let mockCampaignStore: PMaxCampaign[] = [
 router.get('/campaigns', async (req: Request, res: Response) => {
   try {
     // Attempt Firestore first
-    const snapshot = await db.collection('pmax_campaigns').get();
+    const snapshot = await db.collection(Collections.CAMPAIGNS).get();
     if (snapshot.empty && mockCampaignStore.length > 0) {
       return res.json({ campaigns: mockCampaignStore });
     }
-    const campaigns = snapshot.docs.map(doc => doc.data() as PMaxCampaign);
+    const campaigns = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        ...data,
+        id: doc.id,
+        createdAt: data.createdAt?.toDate?.() ? data.createdAt.toDate().toISOString() : data.createdAt,
+        updatedAt: data.updatedAt?.toDate?.() ? data.updatedAt.toDate().toISOString() : data.updatedAt
+      } as PMaxCampaign;
+    });
     res.json({ campaigns: campaigns.length > 0 ? campaigns : mockCampaignStore });
   } catch (err) {
     console.error('Firestore Pmax fetch failed, returning local mock store:', err);
@@ -124,7 +132,7 @@ router.get('/campaigns', async (req: Request, res: Response) => {
 // GET /api/pmax/campaigns/:id - Get specific campaign
 router.get('/campaigns/:id', async (req: Request, res: Response) => {
   try {
-    const doc = await db.collection('pmax_campaigns').doc(req.params.id).get();
+    const doc = await db.collection(Collections.CAMPAIGNS).doc(req.params.id).get();
     if (doc.exists) {
       res.json(doc.data());
     } else {
@@ -150,7 +158,7 @@ router.post('/campaigns', async (req: Request, res: Response) => {
     };
     
     // Attempt Firestore
-    await db.collection('pmax_campaigns').doc(newCampaign.id).set(newCampaign).catch(() => {
+    await db.collection(Collections.CAMPAIGNS).doc(newCampaign.id).set(newCampaign).catch(() => {
         // Fallback
         mockCampaignStore.push(newCampaign);
     });
@@ -169,7 +177,7 @@ router.put('/campaigns/:id', async (req: Request, res: Response) => {
       updatedAt: new Date().toISOString()
     };
     
-    await db.collection('pmax_campaigns').doc(req.params.id).set(updateData, { merge: true }).catch(() => {
+    await db.collection(Collections.CAMPAIGNS).doc(req.params.id).set(updateData, { merge: true }).catch(() => {
         mockCampaignStore = mockCampaignStore.map(c => c.id === req.params.id ? { ...c, ...updateData } : c);
     });
     
@@ -188,7 +196,7 @@ router.post('/launch', async (req: Request, res: Response) => {
     const launchReport = await pm07.execute(`LAUNCH CAMPAIGN ${campaignId} WITH CONFIG: ${JSON.stringify(config)}`);
     
     // 2. Trigger the real (simulated) Google Ads Launch
-    const campaignDoc = await db.collection('pmax_campaigns').doc(campaignId).get();
+    const campaignDoc = await db.collection(Collections.CAMPAIGNS).doc(campaignId).get();
     const campaignData = campaignDoc.exists ? campaignDoc.data() : mockCampaignStore.find(c => c.id === campaignId);
     
     if (campaignData) {

@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, 
   User, Image as ImageIcon, Box, 
   MoreVertical, 
-  Trash2, Edit3, Grid, List, ChevronRight
+  Trash2, Edit3, Grid, List, ChevronRight,
+  Cloud
 } from 'lucide-react';
 import type { StoryboardElement, ElementType } from '../../types';
+import { db } from '../../firebase';
+import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
 
 interface ElementLibraryProps {
   elements: StoryboardElement[];
@@ -15,6 +18,7 @@ interface ElementLibraryProps {
 }
 
 const MARKETPLACE_ELEMENTS: StoryboardElement[] = [
+  // ... (keep existing)
   {
     id: 'm1',
     projectId: 'marketplace',
@@ -55,17 +59,53 @@ export const ElementLibrary: React.FC<ElementLibraryProps> = ({
   onSelectElement
 }) => {
   const [libraryMode, setLibraryMode] = useState<'local' | 'market'>('market');
+  const [cloudElements, setCloudElements] = useState<StoryboardElement[]>([]);
   const [filter, setFilter] = useState<ElementType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    // Real-time synchronization with cloud-generated assets
+    const q = query(
+      collection(db, 'agent_outputs'),
+      orderBy('timestamp', 'desc'),
+      limit(20)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const gAssets = snapshot.docs
+        .map(doc => {
+          const data = doc.data();
+          // Filter only image-like outputs for the storyboard
+          if (data.type === 'image' || data.content?.startsWith('data:image') || data.content?.startsWith('http')) {
+            return {
+              id: doc.id,
+              projectId: data.runId || 'swarm',
+              name: data.agentId ? `${data.agentId.toUpperCase()} Synthesis` : 'Neural Asset',
+              type: 'object' as ElementType, // Fallback type
+              prompt: data.prompt || data.content?.substring(0, 100) || 'AI Generated Asset',
+              images: [data.content].filter(Boolean)
+            };
+          }
+          return null;
+        })
+        .filter(Boolean) as StoryboardElement[];
+      
+      setCloudElements(gAssets);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const deleteElement = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setDeletedIds(prev => { const s = new Set(prev); s.add(id); return s; });
   };
 
-  const displayElements = libraryMode === 'local' ? elements : MARKETPLACE_ELEMENTS;
+  const displayElements = libraryMode === 'local' 
+    ? [...elements, ...cloudElements] 
+    : MARKETPLACE_ELEMENTS;
 
   const filteredElements = displayElements.filter(el => {
     if (deletedIds.has(el.id)) return false;
@@ -204,6 +244,11 @@ export const ElementLibrary: React.FC<ElementLibraryProps> = ({
                       {getTypeIcon(el.type)}
                       {el.type}
                     </div>
+                    {el.projectId !== 'marketplace' && (
+                      <div className="absolute top-3 right-10 px-2 py-1 rounded-md bg-void/60 text-accent/60 border border-accent/20 text-[8px] font-bold uppercase tracking-widest flex items-center gap-1">
+                        <Cloud size={8} /> CLOUD
+                      </div>
+                    )}
                     <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                        <button className="p-1.5 rounded-lg bg-black/60 text-white/60 hover:text-white transition-colors">
                           <MoreVertical size={14} />

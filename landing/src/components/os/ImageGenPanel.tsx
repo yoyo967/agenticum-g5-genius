@@ -1,22 +1,18 @@
-import { useState, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Loader2, ImageIcon, Sparkles, RefreshCw } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 import { SenateGate } from './SenateGate';
 import { ActivityFeed } from './ActivityFeed';
-import { makeEntry } from './activityUtils';
-import type { ActivityEntry } from './ActivityFeed';
+import { makeEntry, type ActivityEntry } from './activityUtils';
+import { useAgentOutputs } from '../../hooks/useAgentOutputs';
+import { useAgentStatus } from '../../hooks/useAgentStatus';
+import { useSwarmRun } from '../../hooks/useSwarmRun';
 
 const STYLES = ['Photographic', 'Illustration', 'Flat Design', '3D Render', 'Cinematic'] as const;
 const RATIOS = ['1:1', '16:9', '9:16', '3:1'] as const;
 type StyleType = typeof STYLES[number];
 type RatioType = typeof RATIOS[number];
-type PanelState = 'idle' | 'loading' | 'done' | 'error';
-
-const MAX_LOG = 10;
-function addEntry(prev: ActivityEntry[], e: ActivityEntry): ActivityEntry[] {
-  return [e, ...prev].slice(0, MAX_LOG);
-}
 
 const RATIO_LABELS: Record<RatioType, string> = {
   '1:1':  'Square · Social',
@@ -29,52 +25,64 @@ export function ImageGenPanel() {
   const [prompt, setPrompt] = useState('');
   const [style, setStyle] = useState<StyleType>('Photographic');
   const [ratio, setRatio] = useState<RatioType>('1:1');
-  const [state, setState] = useState<PanelState>('idle');
-  const [images, setImages] = useState<string[]>([]);
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [senateTrigger, setSenateTrigger] = useState(0);
-  const [log, setLog] = useState<ActivityEntry[]>([]);
   const [activeImg, setActiveImg] = useState<string | null>(null);
 
-  const logEntry = useCallback((agent: string, message: string, type: ActivityEntry['type'] = 'action') => {
-    setLog(prev => addEntry(prev, makeEntry(agent, message, type)));
-  }, []);
+  // Neural Fabric Hooks
+  const { outputs } = useAgentOutputs({ runId: activeRunId || undefined });
+  const { statuses } = useAgentStatus();
+  const { run } = useSwarmRun(activeRunId);
+
+  // Derive images from DA-03
+  const images = useMemo(() => {
+    const designOutput = outputs.find(o => o.agent_id === 'da03' && (o.type === 'images' || o.type === 'image'));
+    if (designOutput && Array.isArray(designOutput.payload?.images)) {
+      return designOutput.payload.images as string[];
+    }
+    return [];
+  }, [outputs]);
+
+  // Derive logs
+  const logs = useMemo(() => {
+    const entries: ActivityEntry[] = [];
+    Object.entries(statuses).forEach(([id, status]) => {
+      if (status.run_id === activeRunId) {
+        entries.push(makeEntry(id.toUpperCase(), status.message, 'action'));
+      }
+    });
+    outputs.forEach(o => {
+      entries.push(makeEntry(o.agent_id.toUpperCase(), `Output generated: ${o.type}`, 'output'));
+    });
+    return entries.sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
+  }, [statuses, outputs, activeRunId]);
 
   const handleGenerate = async () => {
-    if (!prompt.trim() || state === 'loading') return;
+    if (!prompt.trim() || activeRunId && run?.status === 'active') return;
 
-    setState('loading');
-    setImages([]);
     setErrorMsg('');
-
-    logEntry('SN-00', 'Task dispatched to DA-03', 'dispatch');
-    logEntry('DA-03', `Image generation initiated · Style: ${style} · Ratio: ${ratio}`, 'action');
+    setActiveRunId(null);
+    setActiveImg(null);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/content/generate-image`, {
+      const res = await fetch(`${API_BASE_URL}/swarm/launch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, style, aspectRatio: ratio, count: 1 }),
+        body: JSON.stringify({ 
+          prompt: `Generate ${style} image with ${ratio} aspect ratio for: "${prompt}"`
+        }),
       });
 
-      if (!res.ok) throw new Error(`DA-03 responded with HTTP ${res.status}`);
+      if (!res.ok) throw new Error(`DA-03 Orchestration failed with HTTP ${res.status}`);
 
       const data = await res.json();
-      const imgs: string[] = data.images ?? [];
-
-      setImages(imgs);
-      setState('done');
-      setActiveImg(imgs[0] ?? null);
-
-      logEntry('DA-03', `${imgs.length} image(s) generated via Imagen 3`, 'output');
-      logEntry('RA-01', 'Senate review initiated', 'senate');
+      setActiveRunId(data.runId);
       setSenateTrigger(k => k + 1);
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
       setErrorMsg(msg);
-      setState('error');
-      logEntry('DA-03', `Error: ${msg}`, 'error');
     }
   };
 
@@ -84,6 +92,8 @@ export function ImageGenPanel() {
     a.download = `da03-image-${Date.now()}-${idx + 1}.jpg`;
     a.click();
   };
+
+  const isGenerating = run && run.status === 'active';
 
   return (
     <div className="space-y-6">
@@ -108,7 +118,7 @@ export function ImageGenPanel() {
           placeholder="Describe your image... e.g. 'A professional marketing team in a modern office using AI software, cinematic lighting'"
           rows={3}
           className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 rounded text-sm font-mono placeholder:text-zinc-600 focus:outline-none focus:border-purple-500 transition-colors resize-none"
-          disabled={state === 'loading'}
+          disabled={isGenerating}
         />
       </div>
 
@@ -159,30 +169,30 @@ export function ImageGenPanel() {
       {/* Generate Button */}
       <button
         onClick={handleGenerate}
-        disabled={state === 'loading' || !prompt.trim()}
+        disabled={isGenerating || !prompt.trim()}
         className={`w-full py-3 font-mono text-sm uppercase tracking-widest rounded transition-all flex items-center justify-center gap-2 ${
-          state === 'loading'
+          isGenerating
             ? 'bg-purple-900 text-purple-300 animate-pulse cursor-not-allowed'
             : 'bg-purple-600 hover:bg-purple-500 text-white'
         } disabled:opacity-50`}
       >
-        {state === 'loading' ? (
-          <><Loader2 size={16} className="animate-spin" /> DA-03 GENERATING...</>
+        {isGenerating ? (
+          <><Loader2 size={16} className="animate-spin" /> DA-03 ORCHESTRATING...</>
         ) : (
-          <><Sparkles size={16} /> GENERATE WITH IMAGEN 3</>
+          <><Sparkles size={16} /> LAUNCH DA-03 SWARM</>
         )}
       </button>
 
       {/* Error */}
-      {state === 'error' && (
+      {errorMsg && (
         <div className="border border-red-800 bg-red-950/40 rounded p-4 font-mono text-xs text-red-400">
-          ❌ DA-03 ERROR: {errorMsg}
+          ❌ SYSTEM ERROR: {errorMsg}
         </div>
       )}
 
       {/* Image Results */}
       <AnimatePresence>
-        {state === 'done' && images.length > 0 && (
+        {images.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -195,8 +205,9 @@ export function ImageGenPanel() {
               <button
                 onClick={handleGenerate}
                 className="flex items-center gap-1.5 text-xs font-mono text-zinc-400 hover:text-white transition-colors"
+                disabled={isGenerating}
               >
-                <RefreshCw size={12} /> Regenerate
+                <RefreshCw size={12} className={isGenerating ? 'animate-spin' : ''} /> Regenerate
               </button>
             </div>
 
@@ -309,7 +320,7 @@ export function ImageGenPanel() {
       <SenateGate triggerKey={senateTrigger} onComplete={() => {}} />
 
       {/* F4 — Activity Feed */}
-      <ActivityFeed entries={log} />
+      <ActivityFeed entries={logs} />
     </div>
   );
 }

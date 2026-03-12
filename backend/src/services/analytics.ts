@@ -101,7 +101,7 @@ export class AnalyticsService {
         result.push({
           day: i === 0 ? 'Today' : dayLabel,
           outputs,
-          tokensK: Math.round(outputs * 12.4),
+          tokensK: Math.round(outputs * 12.4), // EST based on average 12.4k tokens per pillar/campaign
           blocked,
         });
       }

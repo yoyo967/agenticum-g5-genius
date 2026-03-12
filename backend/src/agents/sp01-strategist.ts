@@ -78,19 +78,25 @@ export class SP01Strategist extends BaseAgent {
     `;
 
     const strategy = await vertexAI.generateGroundedContent(prompt);
+    let docUrl = '';
 
-    this.updateStatus(AgentState.WORKING, 'Publishing Master Brief to Google Docs...', 80);
+    await this.updateStatus(AgentState.WORKING, 'Publishing Master Brief to Google Docs...', 80);
     
-    let responseText = strategy;
     try {
       const docTitle = `G5 Master Brief: ${input.substring(0, 40).replace(/[^a-zA-Z0-9 -]/g, '')}`;
-      const docUrl = await workspace.createDocument(docTitle, strategy);
-      responseText = `[View Live Master Brief on Google Docs](${docUrl})\n\n${strategy}`;
+      docUrl = await workspace.createDocument(docTitle, strategy);
     } catch (e: any) {
       this.logger.error('Failed to publish brief to Google Docs', e);
     }
 
-    this.updateStatus(AgentState.DONE, 'Strategy synthesis & Docs publication complete', 100);
-    return responseText;
+    // Phase 1: Direct Output Routing
+    await this.writeOutput('strategy', {
+      title: `Strategic Master Brief: ${input}`,
+      content: strategy,
+      google_doc_url: docUrl || null
+    });
+
+    await this.updateStatus(AgentState.DONE, 'Strategy synthesis & Docs publication complete', 100);
+    return docUrl ? `[View Live Master Brief on Google Docs](${docUrl})\n\n${strategy}` : strategy;
   }
 }

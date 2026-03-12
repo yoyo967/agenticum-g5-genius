@@ -175,13 +175,13 @@ export class LiveApiManager {
                     swarmFiredRecently = true;
                     setTimeout(() => { swarmFiredRecently = false; }, 30000);
 
-                    // Defer swarm execution by 8s to let the Live session fully
-                    // process the tool response without concurrent API key contention
+                    // Defer swarm execution by 3s to let the Live session close cleanly
+                    // before concurrent Gemini API calls begin for swarm planning.
                     setTimeout(() => {
                       runSwarm(args.intent, args.campaignType).catch(e =>
                         this.logger.error('runSwarm error', e)
                       );
-                    }, 8000);
+                    }, 3000);
                   }
                 }
               }

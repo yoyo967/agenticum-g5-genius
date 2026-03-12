@@ -1,8 +1,10 @@
-import { useEffect, useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Share2, RefreshCw, Palette } from 'lucide-react';
+import { Activity, Share2, Palette } from 'lucide-react';
 import { ExportMenu } from './ui';
 import { downloadSVG, downloadPNG } from '../utils/export';
+import { useSwarmRun } from '../hooks/useSwarmRun';
+import { useAgentOutputs } from '../hooks/useAgentOutputs';
 
 interface Agent {
   id: string;
@@ -14,7 +16,7 @@ interface Agent {
 }
 
 interface DataFlow {
-  id: number;
+  id: string;
   from: string;
   to: string;
   type: string;
@@ -33,103 +35,54 @@ const AGENTS: Agent[] = [
   { id: 'pm07', name: 'MISSION MANAGER', role: 'Pilot Coordination', color: '#FFD700', cx: 15, cy: 15 },
 ];
 
-let flowIdCounter = 0;
-
-export function SynergyMap() {
-  const [agentStates, setAgentStates] = useState<Record<string, string>>({});
-  const [flows, setFlows] = useState<DataFlow[]>([]);
+export function SynergyMap({ runId }: { runId: string | null }) {
   const [hoveredAgent, setHoveredAgent] = useState<string | null>(null);
-  const [totalFlows, setTotalFlows] = useState(0);
-  const [liveImages, setLiveImages] = useState<{ url: string; timestamp: string }[]>([]);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  // Listen for live swarm events
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (!detail) return;
+  const { run } = useSwarmRun(runId);
+  const { outputs } = useAgentOutputs({ runId: runId || undefined });
 
-      // Individual agent status event: { id, state, progress, ... }
-      if (detail.id && detail.state) {
-        setAgentStates(prev => ({ ...prev, [detail.id]: detail.state }));
-      }
+  // Compute agent states from run tasks
+  const agentStates = useMemo(() => {
+    const states: Record<string, string> = {};
+    if (run?.tasks) {
+      run.tasks.forEach((task: any) => {
+        states[task.agentId.toLowerCase()] = task.state.toLowerCase();
+      });
+    }
+    return states;
+  }, [run]);
 
-      // Full swarm object with subAgents (legacy path)
-      if (detail.subAgents) {
-        const states: Record<string, string> = {};
-        Object.entries(detail.subAgents).forEach(([id, agent]: [string, any]) => {
-          states[id] = agent.state;
-        });
-        setAgentStates(prev => ({ ...prev, ...states }));
-      }
-    };
-    window.addEventListener('swarm-status', handler);
-    return () => window.removeEventListener('swarm-status', handler);
-  }, []);
+  // Compute data flows from outputs
+  const flows = useMemo<DataFlow[]>(() => {
+    return (outputs || []).map(output => ({
+      id: output.output_id,
+      from: output.agent_id.toUpperCase(),
+      to: 'SN-00', // Assuming all data flows back to orchestrator initially
+      type: output.type,
+      timestamp: output.created_at?.toDate ? output.created_at.toDate().toLocaleTimeString() : new Date().toLocaleTimeString()
+    })).slice(0, 20);
+  }, [outputs]);
 
-  // Listen for payload events from GenIUSConsole
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent<{ from: string; to: string; payloadType: string }>).detail;
-      if (detail) {
-        const newFlow: DataFlow = {
-          id: ++flowIdCounter,
-          from: detail.from,
-          to: detail.to,
-          type: detail.payloadType || 'data',
-          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        };
-        setFlows(prev => [newFlow, ...prev].slice(0, 20));
-        setTotalFlows(prev => prev + 1);
-      }
-    };
-    window.addEventListener('swarm-payload', handler);
-    return () => window.removeEventListener('swarm-payload', handler);
-  }, []);
+  // Filter live images — DA03 writes type 'image_prompt', payload = { image_url, prompt, vault_id }
+  const liveImages = useMemo(() => {
+    return (outputs || [])
+      .filter(o => o.type === 'image_prompt' || o.type === 'IMAGE_ASSET' || o.type === 'visual')
+      .map(o => ({
+        url: o.payload?.image_url || o.payload?.url || (typeof o.payload === 'string' ? o.payload : null),
+        timestamp: o.created_at?.toDate ? o.created_at.toDate().toLocaleTimeString() : new Date().toLocaleTimeString()
+      }))
+      .filter(o => !!o.url)
+      .slice(0, 6);
+  }, [outputs]);
 
-  // Listen for live image assets from DA-03
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail?.payloadType === 'IMAGE_ASSET' && detail?.payload) {
-        setLiveImages(prev => [
-          { url: detail.payload, timestamp: new Date().toLocaleTimeString() },
-          ...prev
-        ].slice(0, 6));
-      }
-    };
-    window.addEventListener('swarm-payload', handler);
-    return () => window.removeEventListener('swarm-payload', handler);
-  }, []);
-
-  // Listen for senate veto events
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent<{ type: string; verdict?: string; payload?: string }>).detail;
-      if (detail?.type === 'senate' || detail?.verdict === 'REJECTED') {
-         const newFlow: DataFlow = {
-           id: ++flowIdCounter,
-           from: 'RA-01',
-           to: 'SN-00',
-           type: 'VETO_ALERT',
-           timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-         };
-         setFlows(prev => [newFlow, ...prev].slice(0, 20));
-         // Update RA-01 state to error-like visually
-         setAgentStates(prev => ({ ...prev, 'ra01': 'error' }));
-      }
-    };
-    window.addEventListener('swarm-senate', handler);
-    return () => window.removeEventListener('swarm-senate', handler);
-  }, []);
-
-  // No fake data — flows only come from real swarm-state and agent-payload events above
+  const totalFlows = outputs?.length || 0;
 
   const getAgent = (id: string) => AGENTS.find(a => a.id === id);
   const getStateClass = (id: string) => {
     const state = agentStates[id];
-    if (state === 'working' || state === 'processing') return 'animate-glow-pulse';
-    if (state === 'error') return 'animate-ping text-red-500';
+    if (state === 'running' || state === 'processing') return 'animate-glow-pulse';
+    if (state === 'failed' || state === 'error') return 'animate-ping text-red-500';
     return '';
   };
 
@@ -144,9 +97,6 @@ export function SynergyMap() {
         </div>
         <div className="flex items-center gap-3">
           <span className="badge badge-processing"><Activity size={10} /> {totalFlows} flows</span>
-          <button onClick={() => { setFlows([]); setTotalFlows(0); }} className="btn-outline text-xs py-2 px-4 flex items-center gap-2">
-            <RefreshCw size={12} /> Reset
-          </button>
           <ExportMenu options={[
             { label: 'SVG Map', format: 'SVG', onClick: () => downloadSVG(svgRef.current, 'G5_Synergy_Map') },
             { label: 'PNG Screenshot', format: 'PNG', onClick: () => downloadPNG('synergy-export-container', 'G5_Synergy_Map') },

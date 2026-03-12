@@ -53,9 +53,9 @@ export class CronScheduler {
         'Predictive Performance Max: Zero-Wait Attribution',
         'The Geopolitics of Sovereign AI Clouds'
       ];
-      const selectedTopic = topics[Math.floor(Math.random() * topics.length)];
+      const selectedTopic = topics[Math.round(Date.now() / 1000 / 3600 / 24) % topics.length];
       
-      this.logger.info(`[AUTOPILOT] Mission selected: ${selectedTopic}`);
+      this.logger.info(`[AUTOPILOT] Deterministic mission selected based on cycle: ${selectedTopic}`);
       const { eventFabric } = require('./event-fabric');
       eventFabric.broadcast({ 
         type: 'autopilot-trigger', 

@@ -370,7 +370,7 @@ export function VoiceFlowSection() {
                 className="glass-card p-12 mb-12 text-center border-dashed"
               >
                 <p className="font-mono text-white/20 text-sm uppercase tracking-widest italic">
-                  Run Demo to activate the Pulse of Intelligence simulation
+                  View Architectural Flow Documentation (Static Architecture)
                 </p>
               </motion.div>
             )}
@@ -402,7 +402,7 @@ export function VoiceFlowSection() {
                 whileTap={{ scale: 0.95 }}
                 className="btn-primary flex items-center gap-3 text-sm px-8 py-4"
               >
-                <Play size={16} /> {completedSteps.size === 0 ? 'Run Demo' : 'Restart Simulation'}
+                <Play size={16} /> {completedSteps.size === 0 ? 'Run Flow Blueprint' : 'Restart Architecture Review'}
               </motion.button>
             ) : (
               <motion.button

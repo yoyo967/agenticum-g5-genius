@@ -91,7 +91,7 @@ export class CC06Director extends BaseAgent {
        `;
     }
 
-    this.updateStatus(AgentState.WORKING, "Applying AI Synthesis via Gemini 2.0 Pro...", 50);
+    await this.updateStatus(AgentState.WORKING, "Applying AI Synthesis via Gemini 2.0 Pro...", 50);
     
     let creativeAssets = '';
     try {
@@ -99,10 +99,19 @@ export class CC06Director extends BaseAgent {
        if (isPillarGraph) {
           creativeAssets += `\n\n---\n**PROVENANCE: AGENTICUM G5 PERFECT TWIN ARCHIVE**\n- **Agent:** CC-06 Director\n- **Grounding State:** Verified (Live Web)\n- **Compliance:** EU-First Enterprise Standard\n- **Timestamp:** ${new Date().toISOString()}`;
        }
-       this.updateStatus(AgentState.DONE, 'Narrative finalized. Ready for Senate audit.', 100);
+
+       // Phase 1: Direct Output Routing
+       await this.writeOutput('copy', {
+         title: isPillarGraph ? 'Grounded Narrative Synthesis' : 'Creative Package Content',
+         content: creativeAssets,
+         isPillar: isPillarGraph
+       });
+
+       await this.updateStatus(AgentState.DONE, 'Narrative finalized. Ready for Senate audit.', 100);
     } catch (e) {
        console.error('CC-06 Gemini Generation failed', e);
        creativeAssets = `## CONTENT: ${input}\nFallback generated due to API error.`;
+       await this.updateStatus(AgentState.ERROR, 'Generation failed.');
     }
 
     return creativeAssets.trim();

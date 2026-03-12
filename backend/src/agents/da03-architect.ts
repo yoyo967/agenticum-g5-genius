@@ -48,18 +48,19 @@ export class DA03Architect extends BaseAgent {
     
     const vertexAI = VertexAIService.getInstance();
 
-    this.updateStatus(AgentState.WORKING, 'Applying Bauhaus Principles & Golden Ratio...', 40);
+    await this.updateStatus(AgentState.WORKING, 'Applying Bauhaus Principles & Golden Ratio...', 40);
     let imageUrl = await vertexAI.generateImage(input);
+    let filename = '';
     
     // Phase 2: Functional Asset Persistence
     if (imageUrl.startsWith('data:image')) {
       try {
         const base64Data = imageUrl.split(',')[1];
-        const filename = `DA03-${Date.now()}.jpg`;
+        filename = `DA03-${Date.now()}.jpg`;
         const vaultPath = path.join(process.cwd(), 'data', 'vault');
-        
+
         if (!fs.existsSync(vaultPath)) fs.mkdirSync(vaultPath, { recursive: true });
-        
+
         fs.writeFileSync(path.join(vaultPath, filename), base64Data, 'base64');
         this.logger.info(`Saved asset to vault: ${filename}`);
         const backendUrl = process.env.BACKEND_URL;
@@ -70,17 +71,28 @@ export class DA03Architect extends BaseAgent {
           imageUrl = `${backendUrl}/vault/${filename}`;
         }
 
+        // Phase 1: Direct Output Routing for Image
+        await this.writeOutput('image_prompt', {
+          prompt: input,
+          image_url: imageUrl,
+          vault_id: filename
+        }, undefined, true); // Image usually goes to Senate
+
         // Broadcast live image to all connected frontend clients (Interleaved Output)
         eventFabric.broadcastPayload('DA-03', 'CONSOLE', 'IMAGE_ASSET', imageUrl);
         this.logger.info(`Live image broadcast to frontend: ${imageUrl}`);
       } catch (e) {
         this.logger.error('Failed to save image to vault', e as Error);
       }
+    } else if (imageUrl.startsWith('http')) {
+      // Imagen 3 fallback URL — still broadcast so the frontend receives something
+      this.logger.warn(`Imagen 3 returned fallback URL (no data:image), broadcasting anyway: ${imageUrl}`);
+      eventFabric.broadcastPayload('DA-03', 'CONSOLE', 'IMAGE_ASSET', imageUrl);
     }
 
     this.logger.info(`Asset finalized for: ${input}`);
 
-    this.updateStatus(AgentState.WORKING, 'Optimizing for Cognitive Load & Fitts Law...', 75);
+    await this.updateStatus(AgentState.WORKING, 'Optimizing for Cognitive Load & Fitts Law...', 75);
     
     const designIntel = getDesignIntelligence();
     
@@ -88,7 +100,7 @@ export class DA03Architect extends BaseAgent {
       ${this.DIRECTIVES}
       DESIGN_INTELLIGENCE: 
       ${designIntel}
-
+ 
       TASK: Create a design manifesto for: "${input}"
       NOTE: An image has already been generated using Imagen 3.
       
@@ -99,10 +111,16 @@ export class DA03Architect extends BaseAgent {
       4. Format as a clean, authoritative technical manifesto.
       5. Tone: "Design Architect" — precise, aesthetic, theory-driven.
     `;
-
+ 
     const manifesto = await vertexAI.generateContent(prompt);
 
-    this.updateStatus(AgentState.DONE, 'Design architecture finalized. Assets ready.', 100);
+    // Phase 1: Direct Output Routing for Manifesto/Analysis
+    await this.writeOutput('analysis', {
+      title: 'Design Architecture Manifesto',
+      content: manifesto
+    });
+
+    await this.updateStatus(AgentState.DONE, 'Design architecture finalized. Assets ready.', 100);
     return `
       ${manifesto}
       

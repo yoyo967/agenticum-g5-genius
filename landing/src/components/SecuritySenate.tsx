@@ -10,12 +10,17 @@ import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase
 
 interface SenateCase {
   id: string;
+  agentId?: string;
   agent: string;
   type: string;
   risk: string;
   title: string;
   payload: string;
   verdict: 'PENDING' | 'APPROVED' | 'REJECTED';
+  aiVerdict?: string;
+  aiScore?: number;
+  runId?: string;
+  campaignId?: string;
   reason?: string;
   timestamp?: string;
   reviewedAt?: string;
@@ -33,19 +38,24 @@ export function SecuritySenate() {
 
   useEffect(() => {
     setLoading(true);
-    const q = query(collection(db, 'senate_docket'), orderBy('timestamp', 'desc'));
+    const q = query(collection(db, 'senate_queue'), orderBy('timestamp', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const list: SenateCase[] = [];
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         list.push({
           id: docSnap.id,
+          agentId: data.agentId || data.agent?.toLowerCase(),
           agent: data.agent,
           type: data.type,
           risk: data.risk,
           title: data.title,
           payload: data.payload,
           verdict: data.verdict,
+          aiVerdict: data.aiVerdict,
+          aiScore: data.aiScore,
+          runId: data.runId,
+          campaignId: data.campaignId,
           reason: data.reason,
           timestamp: data.timestamp?.toDate?.()?.toISOString() || data.timestamp,
           reviewedAt: data.reviewedAt?.toDate?.()?.toISOString() || data.reviewedAt,
@@ -64,24 +74,34 @@ export function SecuritySenate() {
   const castVerdict = async (caseId: string, verdict: 'APPROVED' | 'REJECTED') => {
     setCastingVerdict(true);
     try {
-      await updateDoc(doc(db, 'senate_docket', caseId), {
+      // 1. Update the docket entry
+      await updateDoc(doc(db, 'senate_queue', caseId), {
         verdict,
         reason: verdictReason,
         reviewedAt: new Date()
       });
       
-      // If approved, trigger blog publish via backend since it needs backend secrets to connect to CMS.
-      // Or we can just do the same REST call for the specific backend action (publishing)
+      // 2. Perform follow-up actions based on case type/metadata
       if (verdict === 'APPROVED' && selectedCase) {
-        const slugMatch = selectedCase.title.match(/Audit: (.*)\.\.\./);
-        const slug = slugMatch ? slugMatch[1].trim() : null;
+        // Handle Blog articles
+        const slugMatch = selectedCase.title.match(/Audit: (.*)\.\.\./) || selectedCase.title.match(/Article: (.*)/);
+        const slug = slugMatch ? slugMatch[1].trim().toLowerCase().replace(/\s+/g, '-') : null;
         
-        if (slug) {
+        if (slug && (selectedCase.type.includes('CONTENT') || selectedCase.type.includes('PILLAR'))) {
           await fetch(`${API_BASE_URL}/blog/article/${slug}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'published' }),
-          }).catch(console.warn);
+          }).catch(err => console.error('[Senate] Publication failed:', err));
+        }
+
+        // Handle SWARM Campaign activation (if pending senate approval)
+        if (selectedCase.campaignId && selectedCase.type === 'CAMPAIGN_SAFETY') {
+          await fetch(`${API_BASE_URL}/campaigns/${selectedCase.campaignId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'ACTIVE' }),
+          }).catch(err => console.error('[Senate] Campaign activation failed:', err));
         }
       }
 
@@ -223,16 +243,28 @@ export function SecuritySenate() {
                     {c.verdict === 'REJECTED' && <XCircle size={14} className="text-magenta" />}
                     <span className="font-mono text-[9px] uppercase text-white/40">{c.agent}</span>
                   </div>
-                  <span className={`badge ${c.verdict === 'PENDING' ? 'badge-warning' : c.verdict === 'APPROVED' ? 'badge-online' : 'badge-error'}`}>
-                    {c.verdict}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className={`badge ${c.verdict === 'PENDING' ? 'badge-warning' : c.verdict === 'APPROVED' ? 'badge-online' : 'badge-error'}`}>
+                      {c.verdict}
+                    </span>
+                    {c.aiScore !== undefined && (
+                      <span className="font-mono text-[8px] text-white/20">AI: {c.aiScore}%</span>
+                    )}
+                  </div>
                 </div>
                 <h4 className="font-display text-sm uppercase text-white group-hover:text-accent transition-colors mb-1">
                   {c.title || c.type}
                 </h4>
-                <div className="flex items-center gap-2 text-white/20">
-                  <span className="font-mono text-[9px]">{c.risk} risk</span>
-                  {c.timestamp && <span className="font-mono text-[9px] flex items-center gap-1"><Clock size={8} />{formatDate(c.timestamp)}</span>}
+                <div className="flex items-center justify-between mt-2">
+                   <div className="flex items-center gap-2 text-white/20">
+                     <span className="font-mono text-[9px]">{c.risk} risk</span>
+                     {c.timestamp && <span className="font-mono text-[9px] flex items-center gap-1"><Clock size={8} />{formatDate(c.timestamp)}</span>}
+                   </div>
+                   {c.runId && (
+                     <span className="font-mono text-[8px] text-accent/40 bg-accent/5 px-1.5 py-0.5 rounded border border-accent/10">
+                       {c.runId}
+                     </span>
+                   )}
                 </div>
               </motion.div>
             ))
@@ -243,15 +275,25 @@ export function SecuritySenate() {
         <div className="w-1/2 glass flex flex-col overflow-hidden">
           {selectedCase ? (
             <>
-              <div className="p-4 border-b border-white/5 shrink-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <ShieldAlert size={16} className="text-gold" />
-                  <h3 className="font-display text-sm uppercase">{selectedCase.title || 'Case Review'}</h3>
+              <div className="p-4 border-b border-white/5 shrink-0 bg-white/2">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert size={16} className="text-gold" />
+                    <h3 className="font-display text-sm uppercase">{selectedCase.title || 'Case Review'}</h3>
+                  </div>
+                  {selectedCase.runId && (
+                    <button 
+                      onClick={() => navigator.clipboard.writeText(selectedCase.runId!)}
+                      className="font-mono text-[8px] text-white/30 hover:text-white transition-colors bg-white/5 px-2 py-1 rounded"
+                    >
+                      ID: {selectedCase.runId}
+                    </button>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <span className="badge badge-processing">{selectedCase.type}</span>
-                  <span className="badge badge-warning">{selectedCase.risk} risk</span>
-                  <span className="font-mono text-[9px] text-white/25">{selectedCase.agent}</span>
+                  <span className={`badge ${selectedCase.risk === 'HIGH' ? 'badge-error' : 'badge-warning'}`}>{selectedCase.risk} risk</span>
+                  <span className="font-mono text-[9px] text-white/25 ml-auto">{selectedCase.agentId?.toUpperCase() || selectedCase.agent}</span>
                 </div>
               </div>
               <div className="flex-1 p-4 overflow-y-auto">
@@ -269,29 +311,51 @@ export function SecuritySenate() {
                   </div>
                 )}
 
-                {/* GenIUS Score Display */}
-                {(() => {
-                  const payload = selectedCase.payload || selectedCase.reason || '';
-                  const scoreMatch = payload.match(/GENIUS SCORE:\s*(\d+)\s*\/\s*100/i) ||
-                                     payload.match(/GenIUS Score:\s*(\d+)/i) ||
-                                     payload.match(/"score":\s*(\d+)/);
-                  if (!scoreMatch) return null;
-                  const score = parseInt(scoreMatch[1]);
-                  const color = score >= 71 ? 'var(--color-emerald)' : score >= 41 ? 'var(--color-gold)' : 'var(--color-magenta)';
-                  const label = score >= 71 ? 'EXCELLENT' : score >= 41 ? 'NEEDS REVIEW' : 'CRITICAL';
-                  return (
-                    <div className="mb-4 p-4 rounded-lg border flex items-center gap-4" style={{ borderColor: color + '40', background: color + '10' }}>
-                      <div className="text-center">
-                        <div className="font-display text-3xl font-bold" style={{ color }}>{score}</div>
-                        <div className="font-mono text-[8px] uppercase tracking-widest text-white/40">/ 100</div>
-                      </div>
-                      <div>
-                        <div className="font-display text-sm uppercase tracking-tight" style={{ color }}>{label}</div>
-                        <div className="font-mono text-[10px] text-white/30">GenIUS Predictive Score — RA-01 Assessment</div>
+                {/* GenIUS Intelligence Section */}
+                {(selectedCase.aiScore !== undefined || selectedCase.aiVerdict) && (
+                  <div className="mb-6 p-4 rounded-xl border border-accent/20 bg-accent/5 backdrop-blur-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-2 opacity-10">
+                      <Scale size={48} />
+                    </div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h5 className="font-mono text-[10px] uppercase tracking-widest text-accent">GenIUS Intelligence Dashboard</h5>
+                      {selectedCase.aiVerdict && (
+                        <span className={`font-mono text-[9px] px-2 py-0.5 rounded border ${
+                          selectedCase.aiVerdict === 'APPROVED' ? 'border-emerald-500/30 text-emerald-400' : 'border-red-500/30 text-red-400'
+                        }`}>
+                          AI VERDICT: {selectedCase.aiVerdict}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-6">
+                      {selectedCase.aiScore !== undefined && (
+                        <div className="text-center">
+                          <div className="font-display text-4xl font-black text-white">
+                            {selectedCase.aiScore}
+                          </div>
+                          <div className="font-mono text-[8px] uppercase tracking-tighter text-white/30">/ 100 Score</div>
+                        </div>
+                      )}
+                      
+                      <div className="flex-1 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="font-mono text-[9px] text-white/40">Compliance Probability</span>
+                          <span className="font-mono text-[9px] text-white">{selectedCase.aiScore}%</span>
+                        </div>
+                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-accent transition-all duration-1000" 
+                            style={{ width: `${selectedCase.aiScore || 0}%`, boxShadow: '0 0 10px var(--color-accent)' }} 
+                          />
+                        </div>
+                        <p className="font-mono text-[9px] text-white/20 italic mt-2">
+                          "Autonomous Market Intelligence suggests {selectedCase.aiScore && selectedCase.aiScore > 70 ? 'High' : 'Mixed'} Quality alignment."
+                        </p>
                       </div>
                     </div>
-                  );
-                })()}
+                  </div>
+                )}
               </div>
 
               {verdictError && (

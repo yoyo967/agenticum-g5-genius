@@ -1,59 +1,62 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Cpu, Zap, Brain, Hexagon, Layers } from 'lucide-react';
-import { API_BASE_URL } from '../../config';
+import { useSwarmRun } from '../../hooks/useSwarmRun';
+
+interface Task {
+  id: string;
+  agentId: string;
+  state: string;
+  description: string;
+  result?: string;
+}
 
 interface CognitiveNode {
   id: string;
   label: string;
   agentId: string;
-  status: 'active' | 'synced' | 'pending';
+  status: 'active' | 'synced' | 'pending' | 'failed';
   x: number;
   y: number;
 }
 
-export const SwarmIntelligence: React.FC = () => {
-  const [nodes, setNodes] = useState<CognitiveNode[]>([
-    { id: '1', label: 'Semantic Extraction', agentId: 'SN-00', status: 'synced', x: 30, y: 40 },
-    { id: '2', label: 'Market Sentiment', agentId: 'SP-01', status: 'active', x: 60, y: 20 },
+export const SwarmIntelligence: React.FC<{ runId: string | null }> = ({ runId }) => {
+  const { run } = useSwarmRun(runId);
+
+  const [initialNodes] = useState<CognitiveNode[]>([
+    { id: '1', label: 'Semantic Extraction', agentId: 'SN-00', status: 'pending', x: 30, y: 40 },
+    { id: '2', label: 'Market Sentiment', agentId: 'SP-01', status: 'pending', x: 60, y: 20 },
     { id: '3', label: 'Narrative Synthesis', agentId: 'CC-06', status: 'pending', x: 50, y: 70 },
-    { id: '4', label: 'Visual Archetype', agentId: 'DA-03', status: 'active', x: 80, y: 50 },
-    { id: '5', label: 'Senate & Intel Core', agentId: 'RA-01', status: 'synced', x: 20, y: 80 },
+    { id: '4', label: 'Visual Archetype', agentId: 'DA-03', status: 'pending', x: 80, y: 50 },
+    { id: '5', label: 'Senate & Intel Core', agentId: 'RA-01', status: 'pending', x: 20, y: 80 },
   ]);
-  const [swarmStats, setSwarmStats] = useState({ synapticLoad: '12.4ms', swarmScore: '89.4', sentience: '98.2%' });
+
+  const nodes = useMemo(() => {
+    if (!run?.tasks) return initialNodes;
+    
+    return initialNodes.map(node => {
+      const task = (run.tasks as Task[]).find((t: Task) => t.agentId.toLowerCase().replace('-', '') === node.agentId.toLowerCase().replace('-', ''));
+      if (!task) return node;
+      
+      let status: CognitiveNode['status'] = 'pending';
+      if (task.state === 'running' || task.state === 'processing') status = 'active';
+      if (task.state === 'completed') status = 'synced';
+      if (task.state === 'failed' || task.state === 'error') status = 'failed';
+      
+      return { ...node, status };
+    });
+  }, [run, initialNodes]);
+
+  const swarmStats = useMemo(() => ({
+    synapticLoad: run?.stats?.latency ? `${run.stats.latency}ms` : '12.4ms',
+    swarmScore: run?.stats?.score ? String(run.stats.score) : '89.4',
+    sentience: run?.stats?.sentience ? `${run.stats.sentience}%` : 'Synced'
+  }), [run]);
 
   const totalOperational = useMemo(
     () => nodes.filter(n => n.status === 'active' || n.status === 'synced').length,
     [nodes]
   );
-
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/swarm/status`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data) return;
-        setSwarmStats({
-          synapticLoad: data.latencyMs != null ? `${data.latencyMs}ms` : swarmStats.synapticLoad,
-          swarmScore: data.swarmScore != null ? String(data.swarmScore) : swarmStats.swarmScore,
-          sentience: data.sentience != null ? `${data.sentience}%` : swarmStats.sentience,
-        });
-      })
-      .catch(() => {});
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    const handleCalibration = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      setNodes(prev => prev.map(node => {
-        if (node.agentId.toLowerCase().replace('-', '') === detail.agentId.toLowerCase().replace('-', '')) {
-          return { ...node, status: 'active' };
-        }
-        return node;
-      }));
-    };
-    window.addEventListener('swarm-calibration', handleCalibration);
-    return () => window.removeEventListener('swarm-calibration', handleCalibration);
-  }, []);
 
   const CalibrationLogs = () => {
     const [logs, setLogs] = useState<{agent: string, msg: string, type?: string}[]>([]);
