@@ -109,12 +109,9 @@ router.post('/twin-log', async (req: Request, res: Response) => {
 
     // Try to persist to Firestore
     try {
-      const { FirestoreManager } = require('../services/firestore');
-      const firestore = FirestoreManager.getInstance();
-      const db = firestore.getDb();
+      const { db } = require('../services/firestore');
 
-      if (db) {
-        const docRef = await db.collection('perfect_twin_logs').add({
+      const docRef = await db.collection('perfect_twin_logs').add({
           action,
           input: typeof input === 'string' ? input.slice(0, 500) : JSON.stringify(input).slice(0, 500),
           outputSummary: typeof output === 'string'
@@ -133,7 +130,6 @@ router.post('/twin-log', async (req: Request, res: Response) => {
           agent,
           message: `Perfect Twin log sealed in Firestore — ID: ${docRef.id}`,
         });
-      }
     } catch (firestoreErr) {
       console.warn('[Twin Log] Firestore unavailable, using fallback ID:', firestoreErr);
     }
@@ -151,6 +147,50 @@ router.post('/twin-log', async (req: Request, res: Response) => {
   } catch (err) {
     console.error('[Twin Log] Error:', err);
     return res.status(500).json({ error: 'Twin log failed', details: String(err) });
+  }
+});
+
+/**
+ * GET /api/v1/vault/outputs
+ * Returns all agent outputs from Firestore AGENT_OUTPUTS collection.
+ * Optional query param: ?runId=xxx to filter by run
+ */
+router.get('/outputs', async (req: Request, res: Response) => {
+  try {
+    const limitParam = typeof req.query.limit === 'string' ? parseInt(req.query.limit, 10) : 50;
+    const runId = typeof req.query.runId === 'string' ? req.query.runId : null;
+
+    const { db, Collections } = require('../services/firestore');
+
+    let query: any = db.collection(Collections.AGENT_OUTPUTS)
+      .orderBy('created_at', 'desc')
+      .limit(limitParam);
+
+    if (runId) {
+      query = query.where('run_id', '==', runId);
+    }
+
+    const snap = await query.get();
+    const outputs = snap.docs.map((doc: any) => {
+      const d = doc.data();
+      return {
+        id: doc.id,
+        name: d.payload?.title || `${d.agent_name || d.agent_id} — ${d.type}`,
+        type: d.type,
+        agentId: d.agent_id,
+        agentName: d.agent_name,
+        runId: d.run_id,
+        campaignId: d.campaign_id,
+        payload: d.payload,
+        timestamp: d.created_at?.toDate?.()?.toISOString?.() || new Date().toISOString(),
+        senateStatus: d.senate_status || 'approved',
+      };
+    });
+
+    res.json({ outputs });
+  } catch (error) {
+    console.error('Failed to fetch agent outputs:', error);
+    res.status(500).json({ error: 'Failed to fetch agent outputs.', outputs: [] });
   }
 });
 

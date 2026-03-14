@@ -237,6 +237,10 @@ export function GenIUSConsole() {
           playAudioBase64(data.data as string, data.mimeType as string);
         }
 
+        if (data.type === 'ai_text') {
+          addLog('agent', `[NEXUS] ${data.text}`);
+        }
+
         if (data.type === 'barge_in') {
           stopAllAudio();
         }

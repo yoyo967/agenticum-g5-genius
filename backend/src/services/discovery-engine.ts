@@ -12,11 +12,11 @@ export class DiscoveryEngineService {
     this.logger = new Logger('DiscoveryEngine');
     
     // Ensure vault directory exists
-    const vaultPath = join(process.cwd(), 'data', 'vault');
-    if (!existsSync(vaultPath)) {
-      mkdirSync(vaultPath, { recursive: true });
-    }
     try {
+      const vaultPath = join(process.cwd(), 'data', 'vault');
+      if (!existsSync(vaultPath)) {
+        mkdirSync(vaultPath, { recursive: true });
+      }
       // Handling different import styles in the compiled JS
       const v1beta = (DiscoveryEngine as any).v1beta || DiscoveryEngine;
       // Using v1beta if available, or falling back to a dummy client

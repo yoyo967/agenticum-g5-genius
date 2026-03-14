@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { ChainManager } from '../services/chain-manager';
 
-const ENGINE_URL = process.env.ENGINE_URL || 'https://agenticum-g5-backend-697051612685.europe-west1.run.app';
+const ENGINE_URL = process.env.ENGINE_URL || 'https://genius-backend-697051612685.europe-west1.run.app';
 
 const router = Router();
 

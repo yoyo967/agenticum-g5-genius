@@ -191,15 +191,18 @@ export class ChainManager {
         `RESULT FROM [${t?.agentId}]:\n${t?.result}`
       ).join('\n\n');
 
-      const { nexusManager } = require('./nexus-manager');
-      const globalContext = nexusManager.getGlobalContext();
+      const swarmGoal = protocol.goal;
 
-      const fullPrompt = `
-        ${globalContext}
-        
-        TASK: ${task.description}
-        ${contextFromDeps ? `\nDEPENDENCY CONTEXT:\n${contextFromDeps}` : ''}
-      `.trim();
+      const formattedDeps = dependencies.map((t: any) => {
+        const result = typeof t?.result === 'string' ? t.result.substring(0, 2000) : '';
+        return `[${(t?.agentId || '').toUpperCase()} RESULT]:\n${result}`;
+      }).join('\n\n---\n\n');
+
+      const fullPrompt = [
+        `SWARM_GOAL: ${swarmGoal}`,
+        `YOUR_TASK: ${task.description}`,
+        formattedDeps ? `PRIOR_INTELLIGENCE:\n${formattedDeps}` : '',
+      ].filter(Boolean).join('\n\n').trim();
 
       let finalPrompt = fullPrompt;
       if (task.interventionRequired) {
@@ -238,8 +241,9 @@ export class ChainManager {
       task.endTime = Date.now();
       
       // Phase 33: Dynamic Knowledge Persistence
+      const { nexusManager } = require('./nexus-manager');
       nexusManager.recordSuccess(
-        task.description, 
+        task.description,
         85, // Default score
         typeof result === 'string' ? result.substring(0, 500) : 'Structured Data Outcome'
       );
@@ -290,10 +294,11 @@ export class ChainManager {
     if (!protocol) return [];
     return protocol.tasks.filter(task => {
       if (task.state !== TaskState.PENDING) return false;
-      // Check if all dependencies are COMPLETED
+      // A task is runnable when all dependencies are COMPLETED or FAILED
+      // (FAILED deps unblock downstream tasks so one crash doesn't deadlock the whole swarm)
       return task.dependencies.every(depId => {
         const depTask = protocol.tasks.find(t => t.id === depId);
-        return depTask?.state === TaskState.COMPLETED;
+        return depTask?.state === TaskState.COMPLETED || depTask?.state === TaskState.FAILED;
       });
     });
   }

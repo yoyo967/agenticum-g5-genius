@@ -45,12 +45,24 @@ export class DA03Architect extends BaseAgent {
 
   async execute(input: string): Promise<string> {
     this.updateStatus(AgentState.THINKING, 'Synthesizing visual language and color psychology...');
-    
+
     const vertexAI = VertexAIService.getInstance();
 
+    // Extract clean topic from chain-manager's structured prompt format
+    const swarmGoalMatch = input.match(/SWARM_GOAL:\s*(.+?)(?:\n|$)/);
+    const topic = swarmGoalMatch?.[1]?.trim() || input.split('\n')[0].substring(0, 200);
+
+    // Build a focused, high-quality Imagen 3 prompt
+    const imagePrompt = `Professional marketing campaign visual for: "${topic}". Enterprise AI technology aesthetic. Dark obsidian background with luminous gold neural network patterns. Clean, minimal, photorealistic. 8K quality. Suitable for LinkedIn header and print advertising. No text overlays.`;
+
     await this.updateStatus(AgentState.WORKING, 'Applying Bauhaus Principles & Golden Ratio...', 40);
-    let imageUrl = await vertexAI.generateImage(input);
+    let imageUrl = '';
     let filename = '';
+    try {
+      imageUrl = await vertexAI.generateImage(imagePrompt);
+    } catch (imgErr) {
+      this.logger.error('Imagen 3 unavailable, continuing without image', imgErr as Error);
+    }
     
     // Phase 2: Functional Asset Persistence
     if (imageUrl.startsWith('data:image')) {
@@ -63,13 +75,9 @@ export class DA03Architect extends BaseAgent {
 
         fs.writeFileSync(path.join(vaultPath, filename), base64Data, 'base64');
         this.logger.info(`Saved asset to vault: ${filename}`);
-        const backendUrl = process.env.BACKEND_URL;
-        if (!backendUrl) {
-          this.logger.warn('BACKEND_URL missing, using relative path for vault asset.');
-          imageUrl = `/vault/${filename}`;
-        } else {
-          imageUrl = `${backendUrl}/vault/${filename}`;
-        }
+        const backendUrl = process.env.BACKEND_URL ||
+          'https://genius-backend-697051612685.europe-west1.run.app';
+        imageUrl = `${backendUrl}/vault/${filename}`;
 
         // Phase 1: Direct Output Routing for Image
         await this.writeOutput('image_prompt', {
@@ -85,8 +93,12 @@ export class DA03Architect extends BaseAgent {
         this.logger.error('Failed to save image to vault', e as Error);
       }
     } else if (imageUrl.startsWith('http')) {
-      // Imagen 3 fallback URL — still broadcast so the frontend receives something
-      this.logger.warn(`Imagen 3 returned fallback URL (no data:image), broadcasting anyway: ${imageUrl}`);
+      this.logger.info(`Imagen 3 returned HTTP URL, persisting and broadcasting: ${imageUrl}`);
+      await this.writeOutput('image_prompt', {
+        prompt: imagePrompt,
+        image_url: imageUrl,
+        vault_id: null
+      }, undefined, true);
       eventFabric.broadcastPayload('DA-03', 'CONSOLE', 'IMAGE_ASSET', imageUrl);
     }
 
@@ -101,7 +113,7 @@ export class DA03Architect extends BaseAgent {
       DESIGN_INTELLIGENCE: 
       ${designIntel}
  
-      TASK: Create a design manifesto for: "${input}"
+      TASK: Create a design manifesto for: "${topic}"
       NOTE: An image has already been generated using Imagen 3.
       
       REQUIREMENTS:
@@ -116,7 +128,7 @@ export class DA03Architect extends BaseAgent {
 
     // Phase 1: Direct Output Routing for Manifesto/Analysis
     await this.writeOutput('analysis', {
-      title: 'Design Architecture Manifesto',
+      title: `Design Architecture Manifesto: ${topic.substring(0, 50)}`,
       content: manifesto
     });
 

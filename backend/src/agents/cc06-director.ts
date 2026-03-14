@@ -63,17 +63,23 @@ export class CC06Director extends BaseAgent {
   async execute(input: string): Promise<string> {
     const isPillarGraph = input.includes('TOPIC:') && input.includes('GROUNDING_DATA:');
     this.updateStatus(AgentState.THINKING, isPillarGraph ? 'Synthesizing grounded narrative from truth anchors...' : 'Exploring narrative arcs and emotional resonance...');
-    
+
     const ai = VertexAIService.getInstance();
     let prompt = '';
-    
+
+    // Extract structured context from chain-manager format
+    const swarmGoalMatch = input.match(/SWARM_GOAL:\s*(.+?)(?:\n|$)/);
+    const topic = swarmGoalMatch?.[1]?.trim() || 'Marketing Campaign';
+    const priorIntelMatch = input.match(/PRIOR_INTELLIGENCE:\n([\s\S]+)/);
+    const priorIntel = priorIntelMatch?.[1]?.trim() || '';
+
     if (isPillarGraph) {
        prompt = `
           IDENTITY: You are the AGENTICUM G5 Narrative Synthesis Engine (CC-06).
           TASK: Forge an authoritative, enterprise-grade article.
           INPUT:
           ${input}
-          
+
            DIRECTIVES:
            1. Use the GROUNDING_DATA as the factual spine.
            2. Structure with Semantic H1/H2 (Obsidian/Gold style).
@@ -83,16 +89,36 @@ export class CC06Director extends BaseAgent {
            6. CRITICAL: Remove all [DOCUMENT_START] and [DOCUMENT_END] tags.
            7. CRITICAL: No placeholders like "DECRYPTING..." or "SYNCING..." in the final output.
         `;
+    } else if (priorIntel) {
+       // Grounded copy path: SP01 strategy is available
+       prompt = `
+          ${this.DIRECTIVES}
+          CAMPAIGN_TARGET: "${topic}"
+
+          STRATEGIC_FOUNDATION (from SP-01 Strategy Agent):
+          ${priorIntel.substring(0, 3000)}
+
+          TASK: Based on this strategic foundation, produce a complete Marketing Copy Package for "${topic}":
+
+          1. **LinkedIn Posts** (3x): Hook line + body (3-4 sentences) + CTA. Tone: authoritative & visionary.
+          2. **Email Subject Lines** (3x): With preview text. Optimized for B2B open rates.
+          3. **Landing Page Copy**: H1 headline + subheadline + 3 key benefit bullets (specific, not generic).
+          4. **Google Ad Headlines** (3x): Max 30 characters each.
+          5. **Brand Messaging Pillars** (3x): Core differentiators in 1 sentence each.
+
+          CRITICAL: Use concrete data and insights from STRATEGIC_FOUNDATION. No placeholders. No generic filler. Every claim must be specific to "${topic}".
+       `;
     } else {
        prompt = `
           ${this.DIRECTIVES}
-          TASK: Create a Creative Package: "${input}"
-          ...
+          TASK: Create a Creative Package for: "${topic}"
+
+          Produce: 3x LinkedIn Posts, 3x Email Subject Lines, Landing Page Copy (H1 + subheadline + 3 bullets), 3x Google Ad Headlines, 3x Brand Messaging Pillars.
        `;
     }
 
     await this.updateStatus(AgentState.WORKING, "Applying AI Synthesis via Gemini 2.0 Pro...", 50);
-    
+
     let creativeAssets = '';
     try {
        creativeAssets = await ai.generateContent(prompt);
@@ -102,7 +128,7 @@ export class CC06Director extends BaseAgent {
 
        // Phase 1: Direct Output Routing
        await this.writeOutput('copy', {
-         title: isPillarGraph ? 'Grounded Narrative Synthesis' : 'Creative Package Content',
+         title: priorIntel ? `Campaign Copy: ${topic}` : (isPillarGraph ? 'Grounded Narrative Synthesis' : 'Creative Package Content'),
          content: creativeAssets,
          isPillar: isPillarGraph
        });

@@ -1353,7 +1353,53 @@ export function LandingPage() {
       </section>
 
       {/* ================================================================
-          SECTION 7 — FINAL CTA
+          SECTION 7 — PRESS / FEATURED ON
+          ================================================================ */}
+      <section id="press" className="py-24 px-6 border-t border-zinc-900">
+        <div className="max-w-4xl mx-auto">
+          <FadeIn className="text-center mb-12">
+            <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-[0.3em]">Engineering Blog</span>
+            <h2 className="text-2xl font-bold text-white mt-3 tracking-tight">Featured On</h2>
+          </FadeIn>
+
+          <FadeIn delay={0.1}>
+            <a
+              href="https://dev.to/yahya_yildirim_78bcb89afc/agenticum-g5-genius-how-we-built-a-real-time-ai-live-agent-for-googles-gemini-live-agent-challenge-39ba"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block p-8 border border-zinc-800 hover:border-blue-500/50 bg-zinc-950 hover:bg-zinc-900/80 transition-all duration-300 rounded-2xl"
+            >
+              <div className="flex flex-col sm:flex-row items-start gap-6">
+                {/* dev.to badge */}
+                <div className="shrink-0 w-14 h-14 bg-black border border-zinc-700 rounded-xl flex items-center justify-center group-hover:border-blue-500/50 transition-colors">
+                  <span className="font-black text-white text-xs tracking-tighter leading-none text-center">DEV<br/>.TO</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="font-mono text-[10px] text-blue-400 uppercase tracking-widest">dev.to · March 14, 2026</span>
+                    <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-widest">Technical Deep-Dive</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-3 leading-snug group-hover:text-blue-300 transition-colors">
+                    How We Built a Real-Time AI Live Agent for Google's Gemini Live Agent Challenge
+                  </h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed mb-4">
+                    The full engineering story behind AGENTICUM G5 GENIUS — from the barge-in mechanism
+                    and 9-agent swarm architecture to Vertex AI, Imagen 3, and EU AI Act compliance.
+                    How a voice command becomes a campaign in under 60 seconds.
+                  </p>
+                  <div className="flex items-center gap-2 text-blue-500 font-mono text-xs group-hover:text-blue-300 transition-colors">
+                    Read the full article
+                    <IconArrowRight />
+                  </div>
+                </div>
+              </div>
+            </a>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ================================================================
+          SECTION 8 — FINAL CTA
           ================================================================ */}
       <section id="cta" className="py-40 px-6 border-t border-zinc-900">
         <FadeIn className="max-w-3xl mx-auto text-center">
@@ -1402,9 +1448,14 @@ export function LandingPage() {
                     className="p-2 border border-zinc-800 rounded-lg hover:border-zinc-400 transition-colors text-zinc-500 hover:text-white flex items-center justify-center">
                    <span className="font-black text-lg leading-none" style={{ fontFamily: 'system-ui' }}>𝕏</span>
                  </a>
-                 <a href="https://geminiliveagentchallenge.devpost.com/" target="_blank" rel="noopener noreferrer" 
+                 <a href="https://dev.to/yahya_yildirim_78bcb89afc/agenticum-g5-genius-how-we-built-a-real-time-ai-live-agent-for-googles-gemini-live-agent-challenge-39ba" target="_blank" rel="noopener noreferrer"
+                    aria-label="dev.to engineering article"
+                    className="flex items-center gap-1.5 px-3 py-2 border border-zinc-800 rounded-lg hover:border-zinc-400 text-xs font-mono text-zinc-500 hover:text-white transition-colors font-bold">
+                    DEV.TO
+                 </a>
+                 <a href="https://geminiliveagentchallenge.devpost.com/" target="_blank" rel="noopener noreferrer"
                      className="flex items-center gap-2 px-4 py-2 border border-zinc-800 rounded-lg hover:border-zinc-400 text-xs font-mono text-zinc-500 hover:text-white transition-colors">
-                    DEVPOST SUBMISSION
+                    DEVPOST
                  </a>
               </div>
             </div>

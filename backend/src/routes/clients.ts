@@ -10,6 +10,7 @@ router.get('/list', async (_req: Request, res: Response) => {
     const clients = await clientManager.listClients();
     res.json(clients);
   } catch (error) {
+    console.error('Failed to fetch clients:', error);
     res.status(500).json({ error: 'Failed to fetch clients' });
   }
 });
@@ -20,6 +21,7 @@ router.get('/dockets/:clientId', async (req: Request, res: Response) => {
     const dockets = await approvalWorkflow.getClientDockets(req.params.clientId);
     res.json(dockets);
   } catch (error) {
+    console.error('Failed to fetch approval dockets:', error);
     res.status(500).json({ error: 'Failed to fetch approval dockets' });
   }
 });
@@ -30,6 +32,7 @@ router.post('/dockets/:id/status', async (req: Request, res: Response) => {
     await approvalWorkflow.updateStatus(req.params.id, status, comment);
     res.json({ success: true });
   } catch (error) {
+    console.error('Failed to update docket status:', error);
     res.status(500).json({ error: 'Failed to update docket status' });
   }
 });
@@ -41,6 +44,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     if (!client) return res.status(404).json({ error: 'Client not found' });
     res.json(client);
   } catch (error) {
+    console.error('Failed to fetch client profile:', error);
     res.status(500).json({ error: 'Failed to fetch client' });
   }
 });

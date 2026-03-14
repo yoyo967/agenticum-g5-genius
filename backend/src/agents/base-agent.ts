@@ -110,7 +110,7 @@ export abstract class BaseAgent {
       output_id: outputId,
       run_id: this.runId,
       campaign_id: this.campaignId,
-      task_id: taskId,
+      task_id: taskId ?? null,
       agent_id: this.id,
       agent_name: this.config.name,
       type: type,

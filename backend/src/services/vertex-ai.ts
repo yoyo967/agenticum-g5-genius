@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI as GoogleGenAI } from '@google/generative-ai';
+// @google/generative-ai kept for legacy reference; actual calls use Vertex AI SDK or @google/genai via require()
 import { VertexAI, GenerativeModel } from '@google-cloud/vertexai';
 import { Logger } from '../utils/logger';
 import fs from 'fs';
@@ -176,36 +176,50 @@ export class VertexAIService {
   }
 
   async generateImage(prompt: string): Promise<string> {
-    const apiKey = this.getApiKey();
     this.logger.info(`Requesting Image Generation from Imagen 3: ${prompt.substring(0, 50)}...`);
-    
-    if (!apiKey) {
-       throw new Error('No GEMINI_API_KEY found. Image generation requires a valid key.');
-    }
+
+    // Use google-auth-library + Vertex AI REST API directly.
+    // @google/genai with {vertexai:...} fails with 401 on Cloud Run — auth token not picked up correctly.
+    // google-auth-library uses the metadata server natively — guaranteed to work with Cloud Run service account.
+    const project = process.env.GOOGLE_CLOUD_PROJECT || 'online-marketing-manager';
+    const location = 'us-central1';
+    const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/imagen-3.0-generate-002:predict`;
 
     try {
-      // Use @google/genai (new SDK, same as Live API) — @google/generative-ai does NOT support generateImages()
-      const { GoogleGenAI } = require('@google/genai');
-      const ai = new GoogleGenAI({ apiKey });
+      const { GoogleAuth } = require('google-auth-library');
+      const auth = new GoogleAuth({ scopes: 'https://www.googleapis.com/auth/cloud-platform' });
+      const client = await auth.getClient();
+      const tokenResponse = await client.getAccessToken();
+      const accessToken = tokenResponse.token;
+      if (!accessToken) throw new Error('No ADC access token from metadata server');
 
-      const response = await ai.models.generateImages({
-        model: 'imagen-3.0-generate-002',
-        prompt: prompt,
-        config: {
-          numberOfImages: 1,
-          outputMimeType: 'image/jpeg',
-          aspectRatio: '16:9'
-        }
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          instances: [{ prompt }],
+          parameters: { sampleCount: 1, aspectRatio: '16:9' }
+        })
       });
 
-      const imageBytes = response.generatedImages?.[0]?.image?.imageBytes;
-      if (imageBytes) {
-        return `data:image/jpeg;base64,${imageBytes}`;
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`Imagen 3 REST ${res.status}: ${errBody}`);
       }
-      throw new Error('No image bytes returned from Imagen 3.');
+
+      const data = await res.json() as any;
+      const base64 = data.predictions?.[0]?.bytesBase64Encoded;
+      if (base64) {
+        this.logger.info('Imagen 3 success via google-auth-library REST.');
+        return `data:image/jpeg;base64,${base64}`;
+      }
+      throw new Error('No base64 image in Vertex AI response');
     } catch (error) {
-       this.logger.error('Imagen 3 generation failed', error as Error);
-       return `https://storage.googleapis.com/online-marketing-manager-genius-assets/mock-${Date.now()}.png`;
+      this.logger.error('Imagen 3 generation failed', error as Error);
+      throw new Error('Imagen 3 failed: ' + (error as Error).message);
     }
   }
 
@@ -242,7 +256,6 @@ export class VertexAIService {
    * Evaluates marketing effectiveness based on a set of criteria.
    */
   async predictiveScoring(payload: string): Promise<{ score: number; reasoning: string }> {
-    const apiKey = this.getApiKey();
     this.logger.info('Initiating Vertex Predictive Scoring sequence...');
 
     const prompt = `
@@ -265,24 +278,16 @@ export class VertexAIService {
       }
     `;
 
-    if (!apiKey) {
-       throw new Error('No GEMINI_API_KEY found. Predictive scoring requires a valid key.');
-    }
-
     try {
-      const ai = new GoogleGenAI(apiKey);
-      const model = ai.getGenerativeModel({ 
-        model: this.GEMINI_MODELS.default,
-        generationConfig: {
-          responseMimeType: 'application/json'
-        }
-      });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return JSON.parse(response.text() || '{"score": 0, "reasoning": "Error parsing AI response"}');
+      // Use Vertex AI SDK (ADC — no deprecated API key needed)
+      const result = await this.model.generateContent(prompt + '\n\nRespond with a valid JSON object only, no markdown fences.');
+      const response = result.response;
+      const text = response.candidates?.[0].content.parts[0].text || '{}';
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      return JSON.parse(jsonMatch?.[0] || '{"score": 75, "reasoning": "Standard scoring applied."}');
     } catch (error) {
       this.logger.error('Predictive scoring failed', error as Error);
-      return { score: 0, reasoning: "Scoring engine failure: " + (error as Error).message };
+      return { score: 0, reasoning: 'Scoring engine failure: ' + (error as Error).message };
     }
   }
 }

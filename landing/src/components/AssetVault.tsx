@@ -19,6 +19,11 @@ interface VaultFile {
   tags?: string[];
   status?: 'Draft' | 'Review' | 'Approved' | 'Archived';
   folder?: string;
+  // Agent output fields
+  content?: string;
+  agentId?: string;
+  outputType?: string;
+  isAgentOutput?: boolean;
 }
 
 interface VaultFolder {
@@ -64,6 +69,21 @@ const CATEGORY_TABS: { key: CategoryKey; label: string }[] = [
   { key: 'videos',    label: 'Videos' },
   { key: 'other',     label: 'Other' },
 ];
+
+function inferFolder(name: string): string {
+  if (/brand|logo/i.test(name)) return 'brand';
+  if (/campaign/i.test(name)) return 'campaigns';
+  if (/report|analysis/i.test(name)) return 'reports';
+  if (/legal|senate|audit/i.test(name)) return 'legal';
+  return 'root';
+}
+
+function inferOutputFolder(type: string): string {
+  if (type === 'strategy' || type === 'copy' || type === 'blog_post') return 'campaigns';
+  if (type === 'audit') return 'legal';
+  if (type === 'analysis' || type === 'video') return 'reports';
+  return 'root';
+}
 
 function autoTags(name: string): string[] {
   const tags: string[] = [];
@@ -133,25 +153,47 @@ export function AssetVault() {
   const fetchFiles = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/vault/list`);
-      if (res.ok) {
-        const data = await res.json();
-        const enriched: VaultFile[] = (data.files || []).map((f: VaultFile) => {
-          let folder = 'root';
-          if (/brand|logo/i.test(f.name)) folder = 'brand';
-          if (/campaign/i.test(f.name))   folder = 'campaigns';
-          if (/report|analysis/i.test(f.name)) folder = 'reports';
-          if (/legal|senate|audit/i.test(f.name)) folder = 'legal';
-          
-          return {
-            ...f,
-            tags: f.tags ?? autoTags(f.name),
-            status: f.status ?? 'Approved',
-            folder: f.folder ?? folder
-          };
-        });
-        setFiles(enriched);
-      }
+      const [filesRes, outputsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/vault/list`).catch(() => null),
+        fetch(`${API_BASE_URL}/vault/outputs?limit=50`).catch(() => null),
+      ]);
+
+      const physicalFiles: VaultFile[] =
+        (filesRes?.ok ? (await filesRes.json()).files : []) || [];
+      const agentOutputsRaw = ((outputsRes?.ok ? (await outputsRes.json()).outputs : []) || []) as {
+        name?: string; type: string; agentId: string; agentName?: string;
+        payload?: Record<string, string>; timestamp?: string; senateStatus?: string;
+      }[];
+
+      const enrichedPhysical = physicalFiles.map((f: VaultFile) => ({
+        ...f,
+        tags: f.tags ?? autoTags(f.name),
+        status: (f.status ?? 'Approved') as VaultFile['status'],
+        folder: f.folder ?? inferFolder(f.name),
+      }));
+
+      const enrichedOutputs: VaultFile[] = agentOutputsRaw
+        .filter(o => o.type !== 'image_prompt') // DA03 images already in vault
+        .map(o => ({
+          name: o.name || `${o.agentName} — ${o.type}`,
+          url: '#',
+          timestamp: o.timestamp,
+          tags: [o.type, o.agentId, 'ai-generated'].filter(Boolean) as string[],
+          status: (o.senateStatus === 'pending' ? 'Review' : 'Approved') as VaultFile['status'],
+          folder: inferOutputFolder(o.type),
+          content:
+            o.payload?.content ||
+            o.payload?.report ||
+            o.payload?.analysis ||
+            (typeof o.payload === 'object'
+              ? JSON.stringify(o.payload, null, 2)
+              : String(o.payload || '')),
+          agentId: o.agentId,
+          outputType: o.type,
+          isAgentOutput: true as const,
+        }));
+
+      setFiles([...enrichedOutputs, ...enrichedPhysical]);
     } catch { /* backend unavailable */ }
     finally { setLoading(false); }
   }, []);
@@ -201,10 +243,10 @@ export function AssetVault() {
   const filteredFiles = files.filter(f => {
     const catMatch =
       category === 'all'       ? true :
-      category === 'images'    ? isImage(f.name) :
+      category === 'images'    ? isImage(f.name) && !f.isAgentOutput :
       category === 'videos'    ? isVideo(f.name) :
-      category === 'documents' ? isDoc(f.name) :
-      !isImage(f.name) && !isVideo(f.name) && !isDoc(f.name);
+      category === 'documents' ? isDoc(f.name) || (!!f.isAgentOutput && f.outputType !== 'image_prompt') :
+      !isImage(f.name) && !isVideo(f.name) && !isDoc(f.name) && !f.isAgentOutput;
 
     const statusMatch = filterStatus === 'all' || f.status === filterStatus;
 
@@ -288,6 +330,12 @@ export function AssetVault() {
     if (isVideo(name))  return <Video size={size} className="text-blue-400" />;
     if (isDoc(name))    return <FileText size={size} className="text-cyan-400" />;
     return <File size={size} className="text-zinc-500" />;
+  };
+
+  const getAgentOutputIcon = (type?: string, size = 16) => {
+    if (type === 'audit') return <Shield size={size} className="text-rose-400" />;
+    if (type === 'strategy') return <Shield size={size} className="text-cyan-400" />;
+    return <FileText size={size} className="text-cyan-400" />;
   };
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -512,7 +560,7 @@ export function AssetVault() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {getIcon(f.name)}
+                        {f.isAgentOutput ? getAgentOutputIcon(f.outputType) : getIcon(f.name)}
                         <div>
                           <p className="font-mono text-[11px] font-bold text-white tracking-tight">{f.name}</p>
                           <div className="flex gap-1.5 mt-0.5">
@@ -544,9 +592,9 @@ export function AssetVault() {
                      <input type="checkbox" checked={selectedNames.has(f.name)} onChange={() => toggleSelect(f.name)} className="rounded border-zinc-800 bg-zinc-900" />
                    </div>
                    <div className="flex-1 flex items-center justify-center">
-                     {isImage(f.name) ? (
+                     {isImage(f.name) && !f.isAgentOutput ? (
                        <img src={f.url} alt={f.name} className="max-w-full max-h-full object-contain rounded-lg shadow-sm" loading="lazy" />
-                     ) : getIcon(f.name, 48)}
+                     ) : f.isAgentOutput ? getAgentOutputIcon(f.outputType, 48) : getIcon(f.name, 48)}
                    </div>
                    <div className="mt-3">
                      <p className="font-mono text-[10px] font-bold text-white truncate">{f.name}</p>
@@ -579,9 +627,9 @@ export function AssetVault() {
               <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
                 {/* Preview */}
                 <div className="aspect-square bg-midnight rounded-2xl border border-white/5 flex items-center justify-center overflow-hidden shadow-inner group relative">
-                  {isImage(selectedFile.name) ? (
+                  {isImage(selectedFile.name) && !selectedFile.isAgentOutput ? (
                     <img src={selectedFile.url} alt={selectedFile.name} className={`max-w-full max-h-full object-contain p-4 transition-all duration-700 ${isScanning ? 'contrast-125 brightness-110 hue-rotate-15' : ''}`} />
-                  ) : getIcon(selectedFile.name, 64)}
+                  ) : selectedFile.isAgentOutput ? getAgentOutputIcon(selectedFile.outputType, 64) : getIcon(selectedFile.name, 64)}
                   
                   {/* Neural Scan Lens Effect */}
                   <AnimatePresence>
@@ -654,6 +702,20 @@ export function AssetVault() {
                   </div>
                 </div>
 
+                {/* Content Preview — Agent Outputs */}
+                {selectedFile.content && (
+                  <div className="space-y-2 border-t border-white/5 pt-4">
+                    <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-wider flex items-center gap-2">
+                      <FileText size={10} /> Content
+                    </p>
+                    <div className="max-h-56 overflow-y-auto rounded-xl bg-midnight border border-white/5 p-3">
+                      <pre className="font-mono text-[10px] text-zinc-400 whitespace-pre-wrap leading-relaxed">
+                        {selectedFile.content}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+
                 {/* Neural AI Actions */}
                 <div className="space-y-2 border-t border-white/5 pt-4">
                   <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-wider flex items-center gap-2">
@@ -679,7 +741,21 @@ export function AssetVault() {
 
                 {/* File System Actions */}
                 <div className="mt-auto space-y-2 border-t border-white/5 pt-4 pb-4">
-                  <button onClick={() => window.open(selectedFile.url, '_blank')} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black font-mono text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-zinc-200 transition-colors">
+                  <button
+                    onClick={() => {
+                      if (selectedFile.isAgentOutput && selectedFile.content) {
+                        const blob = new Blob([selectedFile.content], { type: 'text/plain' });
+                        const blobUrl = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = blobUrl;
+                        a.download = `${selectedFile.name}.txt`;
+                        a.click();
+                        URL.revokeObjectURL(blobUrl);
+                      } else {
+                        window.open(selectedFile.url, '_blank');
+                      }
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black font-mono text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-zinc-200 transition-colors">
                     <Download size={14} /> Download
                   </button>
                   <button onClick={() => handleShare(selectedFile)} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-900 border border-zinc-800 text-white font-mono text-xs uppercase tracking-widest rounded-lg hover:bg-zinc-800 transition-colors">

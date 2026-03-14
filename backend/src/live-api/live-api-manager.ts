@@ -52,6 +52,9 @@ export class LiveApiManager {
 
   public async handleConnection(clientWs: WebSocket) {
     this.logger.info('New Neural client connected — opening Gemini Live session');
+    clientWs.on('error', (err) => this.logger.error('Client WebSocket error', err));
+    clientWs.on('close', (code, reason) => this.logger.info(`Client WebSocket closed: ${code} ${reason}`));
+
     import('../services/nexus-manager').then(m =>
       m.nexusManager.updateState({
         activeModule: 'NexusConsole',
@@ -62,6 +65,9 @@ export class LiveApiManager {
     let liveSession: any = null;
     let closing = false;
     let swarmFiredRecently = false;
+    let capturedUserTranscript = '';
+    let capturedNexusText = '';
+    let userSpoke = false;
 
     const sendToClient = (payload: object) => {
       if (clientWs.readyState === WebSocket.OPEN) {
@@ -105,7 +111,7 @@ export class LiveApiManager {
     // ──────────────────────────────────────────────
     try {
       liveSession = await this.ai.live.connect({
-        model: 'gemini-2.0-flash-live-001',
+        model: 'gemini-2.5-flash-native-audio-latest',
         callbacks: {
           onopen: () => {
             this.logger.info('Gemini Live session opened');
@@ -160,9 +166,12 @@ export class LiveApiManager {
                     this.logger.info(`launch_swarm called: "${args.intent}"`);
 
                     // Respond to Gemini immediately so the session stays live
+                    swarmFiredRecently = true;
+                    setTimeout(() => { swarmFiredRecently = false; }, 30000);
+
                     try {
                       if (liveSession) {
-                        liveSession.sendToolResponse({
+                        await liveSession.sendToolResponse({
                           functionResponses: [
                             {
                               id: fn.id,
@@ -180,24 +189,59 @@ export class LiveApiManager {
                       this.logger.error('sendToolResponse FAILED', toolErr as Error);
                     }
 
-                    // Mark that swarm was fired — onclose auto-reconnect uses this
-                    swarmFiredRecently = true;
-                    setTimeout(() => { swarmFiredRecently = false; }, 30000);
-
-                    // Defer swarm execution by 3s to let the Live session close cleanly
-                    // before concurrent Gemini API calls begin for swarm planning.
+                    // Defer swarm execution by 500ms (just enough for tool response to clear)
                     setTimeout(() => {
                       runSwarm(args.intent, args.campaignType).catch(e =>
                         this.logger.error('runSwarm error', e)
                       );
-                    }, 3000);
+                    }, 500);
                   }
+                }
+              }
+
+              // ── User speech transcript (inputAudioTranscription) ──
+              const inputTranscription = msg?.serverContent?.inputTranscription;
+              if (inputTranscription?.text) {
+                capturedUserTranscript += ' ' + inputTranscription.text;
+                userSpoke = true;
+                this.logger.info(`[Transcript] User: "${inputTranscription.text}"`);
+              }
+
+              // ── NEXUS text parts → capture for auto-fallback ──
+              for (const part of parts) {
+                if (part?.text) {
+                  capturedNexusText += ' ' + part.text;
                 }
               }
 
               // ── Turn complete ──
               if (serverContent?.turnComplete) {
                 sendToClient({ type: 'turn_complete' });
+
+                // Auto-fallback: if no swarm was fired but user gave a directive,
+                // trigger the swarm using the captured transcript
+                const transcript = capturedUserTranscript.trim();
+                const nexusText = capturedNexusText.trim();
+                capturedUserTranscript = '';
+                capturedNexusText = '';
+
+                if (!swarmFiredRecently && (transcript.length > 8 || userSpoke)) {
+                  const isDirective = /\b(erstell|kampagne|campaign|creat|launch|start|mach|starte|design|schreib|write|analys|content|strateg|market|make|build|generat|produz|zeig|erstell|bau)\b/i.test(transcript);
+                  const nexusImpliedAction = /\b(launch|start|activat|creat|execut|campaign|swarm|on it|got it|starte|erstell|mach|aktivier|arbeite|running|launching)\b/i.test(nexusText);
+
+                  if (isDirective || (nexusImpliedAction && userSpoke)) {
+                    this.logger.info(`[Auto-fallback] No tool call detected — triggering swarm with: "${transcript}"`);
+                    swarmFiredRecently = true;
+                    setTimeout(() => { swarmFiredRecently = false; }, 30000);
+                    userSpoke = false;
+                    setTimeout(() => {
+                      runSwarm(transcript || 'Voice directive', 'Voice-Auto').catch(e =>
+                        this.logger.error('Auto-runSwarm error', e)
+                      );
+                    }, 300);
+                  }
+                }
+                userSpoke = false;
               }
             } catch (handlerErr) {
               this.logger.error('onmessage handler crashed', handlerErr as Error);
@@ -229,20 +273,32 @@ export class LiveApiManager {
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [LAUNCH_SWARM_TOOL] }],
+          inputAudioTranscription: {},
           systemInstruction: {
             parts: [
               {
                 text:
-                  'You are NEXUS — the intelligent voice and strategic mind behind AGENTICUM G5, ' +
-                  'an autonomous AI marketing swarm. You are sharp, warm, and direct. ' +
-                  'You never sound robotic or over-formal. You speak like a brilliant colleague who knows exactly what to do. ' +
-                  'Keep your responses short — 1 to 3 sentences max. No long lists. No repetition. ' +
-                  'React naturally to what the user says. Use occasional affirmations like "Got it", "On it", "Interesting" — but only when they fit. ' +
-                  'When the user gives a marketing, campaign, content, design, research, or strategy directive: ' +
-                  'IMMEDIATELY call launch_swarm. Say ONE brief sentence confirming what you understood, then activate. ' +
-                  'If the user asks a question, answer it concisely and personally — no filler phrases. ' +
-                  'If the user interrupts or changes direction, acknowledge it naturally ("Sure, switching to that") and adapt. ' +
-                  'You are not a tool. You are a partner. Speak with intelligence and intention.',
+                  'You are NEXUS — the voice intelligence of AGENTICUM G5, an autonomous AI marketing swarm. ' +
+                  'ABSOLUTE RULE — READ THIS CAREFULLY: ' +
+                  'Whenever the user gives ANY task, directive, goal, or operational intent — in ANY language, including German — ' +
+                  'you MUST call the launch_swarm function IMMEDIATELY. ' +
+                  'Do NOT describe what you will do. Do NOT ask clarifying questions. Just call launch_swarm at once. ' +
+                  'EXAMPLES that always trigger launch_swarm (no exceptions): ' +
+                  '"Create a campaign" → call launch_swarm. ' +
+                  '"Erstelle eine Kampagne" → call launch_swarm. ' +
+                  '"Launch something for our product" → call launch_swarm. ' +
+                  '"Starte den Swarm" → call launch_swarm. ' +
+                  '"Make content for X" → call launch_swarm. ' +
+                  '"Mach mir Content für X" → call launch_swarm. ' +
+                  '"Analysiere unsere Konkurrenz" → call launch_swarm. ' +
+                  '"Design a banner" → call launch_swarm. ' +
+                  '"Write a blog post" → call launch_swarm. ' +
+                  '"Schreib einen Blog" → call launch_swarm. ' +
+                  '"Do something cool" → call launch_swarm. ' +
+                  'ONLY skip launch_swarm for pure factual questions with no task intent: ' +
+                  '"What is AGENTICUM?" or "Was kannst du?" — these are the only exceptions. ' +
+                  'After calling launch_swarm, speak ONE brief sentence confirming what you understood. ' +
+                  'Keep ALL responses under 2 sentences. You are a partner, not a chatbot.',
               },
             ],
           },
@@ -282,6 +338,7 @@ export class LiveApiManager {
 
         // PCM16 audio from browser microphone → forward to Gemini Live
         if (message.type === 'realtime_input' && message.data) {
+          userSpoke = true;
           if (liveSession) {
             liveSession.sendRealtimeInput({
               audio: {

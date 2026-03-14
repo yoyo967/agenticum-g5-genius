@@ -42,8 +42,12 @@ export class RA01Auditor extends BaseAgent {
 
   async execute(input: string): Promise<string> {
     this.updateStatus(AgentState.THINKING, 'Initiating Algorithmic Senate quality shield...');
-    
+
     const vertexAI = VertexAIService.getInstance();
+
+    // Extract clean campaign name from chain-manager's structured prompt format
+    const swarmGoalMatch = input.match(/SWARM_GOAL:\s*(.+?)(?:\n|$)/);
+    const topic = swarmGoalMatch?.[1]?.trim() || input.substring(0, 40);
 
     this.updateStatus(AgentState.WORKING, '⚖️ Ethics & Economy Senators: Checking FTC & ROI...', 30);
     
@@ -70,11 +74,14 @@ export class RA01Auditor extends BaseAgent {
     await this.updateStatus(AgentState.WORKING, '🔮 Data Senators: Running Predictive Performance Scoring...', 70);
     const performanceScore = await vertexAI.predictiveScoring(input);
 
-    const verdict = complianceAudit.includes('APPROVED') ? 'APPROVED' : 'REJECTED';
+    const isApproved = /\bAPPROVED\b/i.test(complianceAudit) &&
+      !/\bNOT\s+APPROVED\b/i.test(complianceAudit) &&
+      !/\bREJECTED\b/i.test(complianceAudit);
+    const verdict = isApproved ? 'APPROVED' : 'REJECTED';
     
     // Phase 1: Direct Output Routing
     await this.writeOutput('audit', {
-      title: `Security Senate Audit: ${input.substring(0, 40)}`,
+      title: `Security Senate Audit: ${topic.substring(0, 50)}`,
       verdict: verdict,
       compliance_analysis: complianceAudit,
       genius_score: performanceScore.score,
@@ -83,12 +90,12 @@ export class RA01Auditor extends BaseAgent {
 
     // Phase 2: Functional Senate Docket Integration (Synchronized with UI)
     try {
-      await db.collection(Collections.SENATE_DOCKET).add({
+      await db.collection(Collections.SENATE_QUEUE).add({
         agentId: this.id,
         agent: 'RA-01',
         type: 'CONTENT_REVIEW',
         risk: performanceScore.score < 60 ? 'HIGH' : 'MEDIUM',
-        title: `Audit: ${input.substring(0, 40)}...`,
+        title: `Audit: ${topic.substring(0, 50)}`,
         payload: `SCORE: ${performanceScore.score}/100\nREASONING: ${performanceScore.reasoning}\n\n${complianceAudit}`,
         verdict: 'PENDING',
         aiVerdict: verdict,

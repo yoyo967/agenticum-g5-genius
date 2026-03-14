@@ -82,7 +82,7 @@ export class SN00Orchestrator extends BaseAgent {
         const admin = require('firebase-admin');
         await db.collection(Collections.CAMPAIGNS).doc(campaignId).update({
           status: 'ACTIVE_SWARM',
-          updatedAt: admin.firestore.FieldValue ? admin.firestore.FieldValue.serverTimestamp() : new Date()
+          updatedAt: (admin.firestore as any).FieldValue.serverTimestamp()
         });
       } catch (e) {
         console.warn(`Could not update campaign ${campaignId} start status`, e);
@@ -143,6 +143,7 @@ ${contentSnippet}...
                 type: Type.OBJECT,
                 properties: {
                   summary: { type: Type.STRING },
+                  reasoning: { type: Type.STRING },
                   nodes: {
                     type: Type.ARRAY,
                     items: {
@@ -296,7 +297,7 @@ ${contentSnippet}...
         const tasksSummary = protocol.tasks.map((t: any) => ({
           agentId: t.agentId,
           description: t.description,
-          result: String(t.result).substring(0, 500)
+          result: String(t.result||'').substring(0, 500)
         }));
 
         // Helper to extract assets for PMax structured data
@@ -318,7 +319,7 @@ ${contentSnippet}...
         
         await db.collection(Collections.CAMPAIGNS).doc(campaignId).update({
           status: 'COMPLETED',
-          updatedAt: admin.firestore.FieldValue ? admin.firestore.FieldValue.serverTimestamp() : new Date(),
+          updatedAt: (admin.firestore as any).FieldValue.serverTimestamp(),
           outputLog: tasksSummary,
           assetGroups: [{
             id: 'ag-generated-' + Date.now(),
@@ -348,7 +349,7 @@ ${contentSnippet}...
 ${executionPlan ? executionPlan.reasoning : 'Standard execution pipeline engaged.'}
 
 ## 📊 Chain Execution Results
-${protocol.tasks.map((t: any) => `### [${String(t.agentId).toUpperCase()}] ${t.description}\n${String(t.result).substring(0, 300)}...`).join('\n\n')}
+${protocol.tasks.map((t: any) => `### [${String(t.agentId).toUpperCase()}] ${t.description}\n${t.result ? String(t.result).substring(0, 300) + '...' : `(${t.state})`}`).join('\n\n')}
 
 ---
 *Autonomous Mesh OS Status: Verified & Deployed.*

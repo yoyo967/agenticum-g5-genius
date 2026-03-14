@@ -25,7 +25,6 @@ interface DataFlow {
 
 const AGENTS: Agent[] = [
   { id: 'sn00', name: 'NEXUS PRIME', role: 'Orchestrator', color: '#00E5FF', cx: 50, cy: 20 },
-  { id: 'so00', name: 'SOVEREIGN CORE', role: 'Pilot', color: '#00E5FF', cx: 75, cy: 30 },
   { id: 'sp01', name: 'STRATEGIC CORTEX', role: 'Strategist', color: 'var(--color-gold)', cx: 85, cy: 50 },
   { id: 'cc06', name: 'COGNITIVE CORE', role: 'Copywriter', color: 'var(--color-emerald)', cx: 75, cy: 70 },
   { id: 'da03', name: 'DESIGN ARCHITECT', role: 'Visual Artist', color: '#FFD700', cx: 50, cy: 80 },

@@ -5,17 +5,16 @@ steps:
       [
         "build",
         "-t",
-        "europe-west1-docker.pkg.dev/$PROJECT_ID/agenticum-containers/backend:latest",
+        "europe-west1-docker.pkg.dev/$PROJECT_ID/genius-agents/backend:latest",
         ".",
       ]
-    dir: "backend"
 
   # 2. Push the image to Artifact Registry
   - name: "gcr.io/cloud-builders/docker"
     args:
       [
         "push",
-        "europe-west1-docker.pkg.dev/$PROJECT_ID/agenticum-containers/backend:latest",
+        "europe-west1-docker.pkg.dev/$PROJECT_ID/genius-agents/backend:latest",
       ]
 
   # 3. Deploy to Cloud Run
@@ -24,9 +23,9 @@ steps:
     args:
       - "run"
       - "deploy"
-      - "agenticum-backend"
+      - "genius-backend"
       - "--image"
-      - "europe-west1-docker.pkg.dev/$PROJECT_ID/agenticum-containers/backend:latest"
+      - "europe-west1-docker.pkg.dev/$PROJECT_ID/genius-agents/backend:latest"
       - "--region"
       - "europe-west1"
       - "--platform"
@@ -42,4 +41,4 @@ steps:
       - "300"
 
 images:
-  - "europe-west1-docker.pkg.dev/$PROJECT_ID/agenticum-containers/backend:latest"
+  - "europe-west1-docker.pkg.dev/$PROJECT_ID/genius-agents/backend:latest"

@@ -130,7 +130,17 @@ app.get('/api/v1/health', (_req: express.Request, res: express.Response) => {
 });
 
 app.get('/api/v1/swarm/status', (_req: express.Request, res: express.Response) => {
-  res.json({ latencyMs: 38, swarmScore: 94.7, sentience: 98.2 });
+  const { ChainManager } = require('./services/chain-manager');
+  const cm = ChainManager.getInstance();
+  const activeProtocols = cm.activeProtocols ? cm.activeProtocols.size : 0;
+  const state = require('./services/nexus-manager').nexusManager.getState();
+  res.json({
+    activeProtocols,
+    activeNodes: activeProtocols > 0 ? 8 : 0,
+    swarmHealth: state.swarmHealth ?? 100,
+    swarmScore: state.swarmHealth ?? 100,
+    lastCognitiveEvent: state.lastCognitiveEvent ?? 'Standby'
+  });
 });
 
 app.get('/', (_req: express.Request, res: express.Response) => {

@@ -37,7 +37,7 @@ export class ApprovalWorkflow {
       updatedAt: new Date().toISOString()
     };
 
-    await db.collection(Collections.SENATE_DOCKET).doc(docket.id).set(docket);
+    await db.collection(Collections.SENATE_QUEUE).doc(docket.id).set(docket);
     this.logger.info(`Created approval docket ${docket.id} for client ${clientId}`);
     
     eventFabric.broadcast({
@@ -50,7 +50,7 @@ export class ApprovalWorkflow {
   }
 
   public async updateStatus(docketId: string, status: ApprovalStatus, comment?: string) {
-    await db.collection(Collections.SENATE_DOCKET).doc(docketId).update({
+    await db.collection(Collections.SENATE_QUEUE).doc(docketId).update({
       status,
       comments: comment,
       updatedAt: new Date().toISOString()
@@ -66,9 +66,9 @@ export class ApprovalWorkflow {
   }
 
   public async getClientDockets(clientId: string): Promise<ApprovalDocket[]> {
-    const snapshot = await db.collection(Collections.SENATE_DOCKET)
+    const snapshot = await db.collection(Collections.SENATE_QUEUE)
       .where('clientId', '==', clientId)
-      .orderBy('updatedAt', 'desc')
+      // .orderBy('updatedAt', 'desc') // Temp fallback until index builds
       .get();
       
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ApprovalDocket));

@@ -39,7 +39,7 @@ export class PillarGraphOrchestrator {
     const runId = `run_${uuidv4().substring(0, 8)}`;
     const startTime = Date.now();
     this.logger.info(`[${runId}] Starting Pillar Graph execution for: ${topic}`);
-    const engineUrl = process.env.ENGINE_URL || 'https://agenticum-g5-backend-697051612685.europe-west1.run.app';
+    const engineUrl = process.env.ENGINE_URL || 'https://genius-backend-697051612685.europe-west1.run.app';
     
     const logPhase = async (phase: string, msg: string, severity: 'info' | 'success' | 'warning' | 'error' = 'info') => {
       await db.collection('perfect_twin_logs').add({
@@ -145,7 +145,7 @@ export class PillarGraphOrchestrator {
         });
 
         // PUSH TO SENATE DOCKET (Human-in-the-Loop)
-        await db.collection(Collections.SENATE_DOCKET).add({
+        await db.collection(Collections.SENATE_QUEUE).add({
           agent: 'ra01',
           type: 'ETHICS_VETO',
           risk: 'HIGH',
@@ -218,7 +218,7 @@ export class PillarGraphOrchestrator {
         });
 
         // PUSH TO SENATE DOCKET (Human-in-the-Loop)
-        await db.collection(Collections.SENATE_DOCKET).add({
+        await db.collection(Collections.SENATE_QUEUE).add({
           agent: 'ra01',
           type: 'QUALITY_VETO',
           risk: auditResult.score < 40 ? 'HIGH' : 'MEDIUM',

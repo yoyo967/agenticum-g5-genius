@@ -24,12 +24,21 @@ export class CC02Distributor extends BaseAgent {
         const res = await distributionService.publishToLinkedIn(input);
         resultMsg = `LinkedIn Post synchronized: ${res.url}`;
       } else if (channel === 'email' || input.includes('CC-03')) {
-        const res = await distributionService.publishToEmail({
-          subject: 'G5 Swarm Intelligence Dispatch',
-          body: input,
-          recipients: ['executive@agenticum.ai']
-        });
-        resultMsg = `Email Campaign dispatched: ${res.url}`;
+        const { SettingsService } = require('../services/settings');
+        const settings = SettingsService.getCachedSettings?.() || {};
+        const recipients = settings.notificationEmail
+          ? [settings.notificationEmail]
+          : [];
+        if (recipients.length === 0) {
+          resultMsg = 'Email skipped — no recipient configured in Settings.';
+        } else {
+          const res = await distributionService.publishToEmail({
+            subject: 'G5 Swarm Intelligence Dispatch',
+            body: input,
+            recipients
+          });
+          resultMsg = `Email Campaign dispatched: ${res.url}`;
+        }
       } else if (channel === 'wordpress' || input.includes('CC-04')) {
         const res = await distributionService.publishToWordPress({
           title: 'G5 Sentience Update',
